@@ -1,0 +1,2 @@
+group,name,price,prioritize,area,deposit,debt,countTenant,invoiceDate,paymentCircle,moveInDate,contractDuration,status,finance
+Nhóm,Tên phòng,0,Trung Bình,0,0,0,0,0,0,1970-01-01,1970-01-01,false,Thanh toán

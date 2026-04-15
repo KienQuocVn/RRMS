@@ -1,0 +1,20 @@
+package com.rrms.rrms.dto.response;
+
+import java.io.Serializable;
+import java.util.Set;
+import java.util.UUID;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class RoleResponse implements Serializable {
+    UUID roleId;
+    String roleName;
+    String roleDescription;
+    Set<PermissionResponse> permissions;
+}
