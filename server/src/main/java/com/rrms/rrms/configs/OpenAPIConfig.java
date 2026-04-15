@@ -1,24 +1,24 @@
-//package com.rrms.rrms.configs;
+// package com.rrms.rrms.configs;
 //
-//import java.util.List;
+// import java.util.List;
 //
-//import org.springdoc.core.customizers.OperationCustomizer;
-//import org.springdoc.core.models.GroupedOpenApi;
-//import org.springframework.context.annotation.Bean;
-//import org.springframework.context.annotation.Configuration;
-//import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+// import org.springdoc.core.customizers.OperationCustomizer;
+// import org.springdoc.core.models.GroupedOpenApi;
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.Configuration;
+// import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 //
-//import io.swagger.v3.oas.models.Components;
-//import io.swagger.v3.oas.models.OpenAPI;
-//import io.swagger.v3.oas.models.info.Info;
-//import io.swagger.v3.oas.models.info.License;
-//import io.swagger.v3.oas.models.parameters.Parameter;
-//import io.swagger.v3.oas.models.security.SecurityRequirement;
-//import io.swagger.v3.oas.models.security.SecurityScheme;
-//import io.swagger.v3.oas.models.servers.Server;
+// import io.swagger.v3.oas.models.Components;
+// import io.swagger.v3.oas.models.OpenAPI;
+// import io.swagger.v3.oas.models.info.Info;
+// import io.swagger.v3.oas.models.info.License;
+// import io.swagger.v3.oas.models.parameters.Parameter;
+// import io.swagger.v3.oas.models.security.SecurityRequirement;
+// import io.swagger.v3.oas.models.security.SecurityScheme;
+// import io.swagger.v3.oas.models.servers.Server;
 //
-//@Configuration
-//public class OpenAPIConfig implements WebMvcConfigurer {
+// @Configuration
+// public class OpenAPIConfig implements WebMvcConfigurer {
 //
 //    @Bean
 //    public GroupedOpenApi publicApi() {
@@ -76,4 +76,4 @@
 //            return operation;
 //        };
 //    }
-//}
+// }

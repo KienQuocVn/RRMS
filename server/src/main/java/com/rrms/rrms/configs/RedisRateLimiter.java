@@ -1,16 +1,16 @@
-//package com.rrms.rrms.configs;
+// package com.rrms.rrms.configs;
 //
-//import java.time.Duration;
+// import java.time.Duration;
 //
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.data.redis.core.StringRedisTemplate;
-//import org.springframework.stereotype.Component;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.data.redis.core.StringRedisTemplate;
+// import org.springframework.stereotype.Component;
 //
-//import lombok.extern.slf4j.Slf4j;
+// import lombok.extern.slf4j.Slf4j;
 //
-//@Slf4j
-//@Component
-//public class RedisRateLimiter {
+// @Slf4j
+// @Component
+// public class RedisRateLimiter {
 //    @Autowired
 //    private StringRedisTemplate redisTemplate;
 //    //  ten request only one second
@@ -27,4 +27,4 @@
 //        }
 //        return currentCount <= LIMIT;
 //    }
-//}
+// }

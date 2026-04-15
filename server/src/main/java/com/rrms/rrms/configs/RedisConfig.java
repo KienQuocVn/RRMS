@@ -1,24 +1,24 @@
-//package com.rrms.rrms.configs;
+// package com.rrms.rrms.configs;
 //
-//import jakarta.annotation.PostConstruct;
+// import jakarta.annotation.PostConstruct;
 //
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.cache.annotation.EnableCaching;
-//import org.springframework.context.annotation.Bean;
-//import org.springframework.context.annotation.Configuration;
-//import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-//import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-//import org.springframework.data.redis.core.RedisTemplate;
-//import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-//import org.springframework.data.redis.serializer.StringRedisSerializer;
+// import org.springframework.beans.factory.annotation.Value;
+// import org.springframework.cache.annotation.EnableCaching;
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.Configuration;
+// import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+// import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+// import org.springframework.data.redis.core.RedisTemplate;
+// import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+// import org.springframework.data.redis.serializer.StringRedisSerializer;
 //
-//import lombok.AccessLevel;
-//import lombok.experimental.FieldDefaults;
+// import lombok.AccessLevel;
+// import lombok.experimental.FieldDefaults;
 //
-//@Configuration
-//@EnableCaching
-//@FieldDefaults(level = AccessLevel.PRIVATE)
-//public class RedisConfig {
+// @Configuration
+// @EnableCaching
+// @FieldDefaults(level = AccessLevel.PRIVATE)
+// public class RedisConfig {
 //
 //    @Value("${redis.host}")
 //    String redisHostName;
@@ -57,4 +57,4 @@
 //        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
 //        return template;
 //    }
-//}
+// }

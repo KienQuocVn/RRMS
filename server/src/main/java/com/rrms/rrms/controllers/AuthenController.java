@@ -368,14 +368,14 @@ public class AuthenController {
                     .build();
         }
 
-//        // Kiểm tra số điện thoại đã tồn tại chưa
-//        if (accountRepository.existsByPhone(request.getPhone())) {
-//            return ApiResponse.<Boolean>builder()
-//                    .code(HttpStatus.BAD_REQUEST.value())
-//                    .message("Số điện thoại đã tồn tại!")
-//                    .result(false)
-//                    .build();
-//        }
+        //        // Kiểm tra số điện thoại đã tồn tại chưa
+        //        if (accountRepository.existsByPhone(request.getPhone())) {
+        //            return ApiResponse.<Boolean>builder()
+        //                    .code(HttpStatus.BAD_REQUEST.value())
+        //                    .message("Số điện thoại đã tồn tại!")
+        //                    .result(false)
+        //                    .build();
+        //        }
 
         // Kiểm tra email đã tồn tại chưa
         // if (accountRepository.existsAccountByEmail(request.getEmail())) {

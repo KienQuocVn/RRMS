@@ -9,8 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -21,7 +19,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @TestPropertySource("/test.properties")
 public class RedisConfigTest {
-
 
     @Mock
     private ApplicationContext applicationContext;
@@ -55,6 +52,4 @@ public class RedisConfigTest {
         // Kiểm tra bean RedisTemplate
         assertThat(redisTemplate).isNotNull();
     }
-
-
 }

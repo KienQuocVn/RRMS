@@ -3,7 +3,6 @@ package com.rrms.rrms.controllers;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class MotelController {
     IMotelService motelService;
-
 
     @Operation(summary = "Get all motels")
     @GetMapping()

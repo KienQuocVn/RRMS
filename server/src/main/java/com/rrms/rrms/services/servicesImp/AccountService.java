@@ -89,9 +89,9 @@ public class AccountService implements IAccountService {
             throw new AppException(ErrorCode.INVALID_PHONE);
         }
 
-//        if (accountRepository.existsAccountByEmail(request.getEmail())) {
-//            throw new AppException(ErrorCode.INVALID_EMAIL);
-//        }
+        //        if (accountRepository.existsAccountByEmail(request.getEmail())) {
+        //            throw new AppException(ErrorCode.INVALID_EMAIL);
+        //        }
 
         // Kiểm tra độ dài mật khẩu (ít nhất 8 ký tự)
         if (request.getPassword().length() < 8) {
