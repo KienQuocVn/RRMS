@@ -7,18 +7,15 @@ import java.security.*;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
+import java.util.Base64;
 import java.util.Formatter;
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.tomcat.util.codec.binary.Base64;
-
 /**
  * @author khangdoan
  */
-@SuppressWarnings("restriction")
 public class Encoder {
 
     private static final char[] HEX_CHARS = "0123456789ABCDEF".toCharArray();
@@ -60,17 +57,15 @@ public class Encoder {
 
     public static String decode64(String s) {
         try {
-            byte[] valueDecoded = Base64.decodeBase64(Arrays.toString(s.getBytes()));
-            return new String(valueDecoded);
+            byte[] valueDecoded = Base64.getDecoder().decode(s);
+            return new String(valueDecoded, StandardCharsets.UTF_8);
         } catch (Exception e) {
             return "";
         }
     }
 
     public static String encode64(String s) {
-        // encode data on your side using BASE64
-        byte[] bytesEncoded = Base64.decodeBase64(Arrays.toString(s.getBytes()));
-        return new String(bytesEncoded);
+        return Base64.getEncoder().encodeToString(s.getBytes(StandardCharsets.UTF_8));
     }
 
     public static String hashSHA256(String input) throws Exception {
@@ -99,7 +94,7 @@ public class Encoder {
 
         // Compute the hmac on input data bytes
         byte[] rawHmac = mac.doFinal(value.getBytes());
-        return Base64.encodeBase64String(rawHmac);
+        return Base64.getEncoder().encodeToString(rawHmac);
     }
 
     public static String encryptRSA(byte[] dataBytes, String publicKey) throws Exception {
@@ -107,8 +102,8 @@ public class Encoder {
         PublicKey pubk;
         //        BASE64Decoder decoder = new BASE64Decoder();
         //        BASE64Encoder encoder = new BASE64Encoder();
-        java.util.Base64.Decoder decoder = java.util.Base64.getDecoder();
-        java.util.Base64.Encoder encoder = java.util.Base64.getEncoder();
+        Base64.Decoder decoder = Base64.getDecoder();
+        Base64.Encoder encoder = Base64.getEncoder();
 
         byte[] publicKeyBytes = decoder.decode(publicKey);
         //        byte[] publicKeyBytes = decoder.decodeBuffer(publicKey);
@@ -123,13 +118,13 @@ public class Encoder {
 
     public static String decryptRSA(String encryptData, String privateKey) {
         try {
-            byte[] privateKeyBytes = Base64.decodeBase64(privateKey);
+            byte[] privateKeyBytes = Base64.getDecoder().decode(privateKey);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
             PrivateKey prvk = keyFactory.generatePrivate(privateKeySpec);
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, prvk);
-            return new String(cipher.doFinal(Base64.decodeBase64(encryptData)));
+            return new String(cipher.doFinal(Base64.getDecoder().decode(encryptData)));
         } catch (Exception ex) {
             LogUtils.error("[DecryptRSA] Error: " + ex);
             return "";

@@ -115,8 +115,6 @@ public class DB {
 
                 // Khởi tạo Faker một lần
                 Faker faker = new Faker(new Locale("vi"));
-                List<RentalAmenities> rentalAmenities = new ArrayList<>();
-                List<BulletinBoard> bulletinBoards = new ArrayList<>();
                 List<BulletinBoardImage> bulletinBoardImages = new ArrayList<>();
                 List<BulletinBoardRule> bulletinBoardRule = new ArrayList<>();
                 List<BulletinBoardReviews> bulletinBoardReviews = new ArrayList<>();
@@ -474,13 +472,6 @@ public class DB {
 
     private Room createRoom(Faker faker, RoomRepository roomRepository, Motel motel) {
         Room room = new Room();
-        Date randomDate = faker.date()
-                .between(
-                        new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000), // 30
-                        // ngày
-                        // trước
-                        new Date() // Ngày hiện tại
-                        );
         room.setDeposit(faker.number().randomDouble(2, 500000, 5000000));
         room.setMotel(motel);
         room.setPrice(faker.number().randomDouble(2, 500000, 5000000));
@@ -603,9 +594,7 @@ public class DB {
             Account account,
             BulletinBoardReviewsRepository bulletinBoardReviewsRepository) {
 
-        BulletinBoardReviews bulletinBoardReviews = new BulletinBoardReviews();
-        bulletinBoardReviewList.add(bulletinBoardReviewsRepository.save(bulletinBoardReviews
-                .builder()
+        bulletinBoardReviewList.add(bulletinBoardReviewsRepository.save(BulletinBoardReviews.builder()
                 .account(account)
                 .bulletinBoard(bulletinBoard)
                 .rating(faker.number().numberBetween(1, 5))
