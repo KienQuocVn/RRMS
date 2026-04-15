@@ -7,8 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.response.*;
-import com.rrms.rrms.services.IBulletinBoard;
-import com.rrms.rrms.services.servicesImp.AccountService;
 import com.rrms.rrms.services.servicesImp.HeartService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,12 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 public class HeartController {
     @Autowired
     private HeartService heartService;
-
-    @Autowired
-    private IBulletinBoard iBulletinBoard;
-
-    @Autowired
-    private AccountService accountService;
 
     @Operation(summary = "Get heart by username")
     @GetMapping("/{username}")

@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +26,6 @@ import com.rrms.rrms.dto.request.StripeRequest;
 import com.rrms.rrms.dto.response.PaymentResponse;
 import com.rrms.rrms.dto.response.StripeResponse;
 import com.rrms.rrms.enums.RequestType;
-import com.rrms.rrms.repositories.InvoiceRepository;
-import com.rrms.rrms.repositories.PaymentRepository;
 import com.rrms.rrms.services.IPayment;
 import com.rrms.rrms.services.servicesImp.CreateOrderMoMo;
 import com.rrms.rrms.utils.LogUtils;
@@ -54,18 +51,6 @@ public class PaymentController {
     public String secretKey;
 
     IPayment paymentService;
-
-    @Autowired
-    private CustomerEnvironment environment;
-
-    @Autowired
-    private CreateOrderMoMo createOrderMoMo;
-
-    @Autowired
-    private InvoiceRepository invoiceRepository;
-
-    @Autowired
-    private PaymentRepository paymentRepository;
 
     // Paypal payment
     // sb-fo7f331992187@personal.example.com
@@ -202,10 +187,6 @@ public class PaymentController {
 
     @GetMapping("/vnpay-callback")
     public ResponseEntity<Void> paymentCallback(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-
-        String orderID = request.getParameter("vnp_TxnRef");
-        String amount = request.getParameter("vnp_Amount");
         String status = request.getParameter("vnp_ResponseCode");
 
         if ("00".equals(status)) {
@@ -241,17 +222,15 @@ public class PaymentController {
         // Khởi tạo các tham số để giao dịch
         String requestId = String.valueOf(System.currentTimeMillis());
         String orderId = VNPayConfig.getRandomNumber(6);
-        Long transId = 2L;
         double totalPrice = Double.valueOf(requestData.get("totalPrice").toString());
         long amount = (long) (totalPrice * 100);
-        String partnerClientId = "partnerClientId";
         String orderInfo = "Pay With MoMo";
         String returnUrl = "http://localhost:8080/payment/paymentMoMoSuccess";
         String notifyURL = "http://google.com.vn";
 
         // Chọn môi trường và thanh toán bằng momo
         CustomerEnvironment environment = CustomerEnvironment.selectEnv("dev");
-        PaymentResponse captureWalletMoMoResponse = createOrderMoMo.process(
+        PaymentResponse captureWalletMoMoResponse = CreateOrderMoMo.process(
                 environment,
                 orderId,
                 requestId,

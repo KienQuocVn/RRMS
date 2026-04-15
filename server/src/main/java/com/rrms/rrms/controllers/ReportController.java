@@ -11,9 +11,7 @@ import com.rrms.rrms.dto.response.MotelRoomCountResponse;
 import com.rrms.rrms.dto.response.TenantSummaryDTO;
 import com.rrms.rrms.services.IMotelService;
 import com.rrms.rrms.services.ITenantService;
-import com.rrms.rrms.services.servicesImp.AccountService;
 import com.rrms.rrms.services.servicesImp.ContractService;
-import com.rrms.rrms.services.servicesImp.InvoiceServiceService;
 
 @RestController
 @RequestMapping("/report")
@@ -23,12 +21,6 @@ public class ReportController {
 
     @Autowired
     private ContractService contractService;
-
-    @Autowired
-    private AccountService accountService;
-
-    @Autowired
-    private InvoiceServiceService invoiceService;
 
     @Autowired
     private ITenantService tenantService;

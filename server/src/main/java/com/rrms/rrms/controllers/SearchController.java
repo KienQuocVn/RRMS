@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.BulletinBoardSearchResponse;
-import com.rrms.rrms.services.IRoom;
 import com.rrms.rrms.services.ISearchService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,8 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 public class SearchController {
 
     ISearchService searchService;
-
-    IRoom roomService;
 
     //    @Operation(summary = "Get all rooms sorted by move-in date")
     //    @GetMapping("/rooms")
