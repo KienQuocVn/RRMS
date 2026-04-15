@@ -4,8 +4,6 @@ import java.util.UUID;
 
 import jakarta.persistence.*;
 
-import org.hibernate.annotations.GenericGenerator;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import lombok.AllArgsConstructor;
@@ -20,8 +18,7 @@ import lombok.NoArgsConstructor;
 public class Auth {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID authId;
 
     @ManyToOne

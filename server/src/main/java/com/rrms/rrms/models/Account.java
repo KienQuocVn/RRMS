@@ -65,6 +65,7 @@ public class Account {
 
     // Thêm trường ngày tạo
     @Column(name = "created_date", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Builder.Default
     private LocalDateTime createdDate = LocalDateTime.now();
 
     public List<String> getRoles() {

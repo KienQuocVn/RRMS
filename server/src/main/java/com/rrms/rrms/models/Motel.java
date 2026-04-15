@@ -61,6 +61,7 @@ public class Motel {
 
     // them trường ngày tạo phoing
     @Column(name = "created_date", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Builder.Default
     private LocalDateTime createdDate = LocalDateTime.now();
 
     // de xoa motell xoa luon dich vu

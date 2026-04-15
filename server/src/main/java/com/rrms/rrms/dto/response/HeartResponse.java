@@ -3,8 +3,6 @@ package com.rrms.rrms.dto.response;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.persistence.*;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

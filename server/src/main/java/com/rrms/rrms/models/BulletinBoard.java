@@ -63,6 +63,7 @@ public class BulletinBoard {
     private Date moveInDate;
 
     @Column(columnDefinition = "Date")
+    @Builder.Default
     private Date createdDate = new Date();
 
     @Column(columnDefinition = "VARCHAR(255)")

@@ -24,7 +24,10 @@ public class MotelRequest {
     int maxperson;
     int invoicedate;
     int paymentdeadline;
+
+    @Builder.Default
     LocalDateTime createdDate = LocalDateTime.now();
+
     TypeRoom typeRoom;
     AccountRequest account;
     List<MotelServiceResponse> motelServices;

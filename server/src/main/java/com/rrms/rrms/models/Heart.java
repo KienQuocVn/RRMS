@@ -31,5 +31,6 @@ public class Heart {
             name = "heart_bulletinBoard",
             joinColumns = @JoinColumn(name = "heart_id"),
             inverseJoinColumns = @JoinColumn(name = "bulletinBoard_id"))
+    @Builder.Default
     private List<BulletinBoard> bulletinBoards = new ArrayList<>();
 }

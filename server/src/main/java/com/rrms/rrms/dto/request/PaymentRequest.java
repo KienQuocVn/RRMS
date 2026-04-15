@@ -4,8 +4,10 @@ import com.rrms.rrms.enums.Language;
 import com.rrms.rrms.enums.RequestType;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class PaymentRequest extends Request {
     private String orderInfo;
     private long amount;
