@@ -1,14 +1,10 @@
 package com.rrms.rrms.controllers;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rrms.rrms.services.IAccountService;
 import com.rrms.rrms.services.IAuthorityService;
 import com.rrms.rrms.services.IMailService;
@@ -18,9 +14,6 @@ import com.rrms.rrms.services.IMailService;
 @TestPropertySource("/test.properties")
 public class AuthenControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
     @MockBean
     private IAccountService accountService;
 
@@ -29,13 +22,6 @@ public class AuthenControllerTest {
 
     @MockBean
     private IMailService mailService;
-
-    private ObjectMapper objectMapper;
-
-    @BeforeEach
-    void setup() {
-        objectMapper = new ObjectMapper();
-    }
     //
     // @Test
     // void errorEndpoint_returnsUnauthorizedWithErrorMessage() throws Exception {

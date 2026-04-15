@@ -41,8 +41,6 @@ public class MotelDeviceControllerTest {
 
     private UUID motelDeviceId;
 
-    private ObjectMapper objectMapper;
-
     @BeforeEach
     public void setUp() {
         motelDeviceId = UUID.randomUUID();

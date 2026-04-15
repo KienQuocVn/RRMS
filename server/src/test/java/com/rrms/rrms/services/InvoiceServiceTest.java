@@ -317,7 +317,6 @@ public class InvoiceServiceTest {
 
         request.setServiceDetails(List.of(new InvoiceDetailServiceRequest(roomService.getRoomServiceId(), 2)));
 
-        InvoiceResponse response = null;
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             invoiceService.updateInvoice(invoiceId, request);
         });
@@ -327,7 +326,6 @@ public class InvoiceServiceTest {
 
     @Test
     void updateInvoice_nullRequest() {
-        InvoiceResponse response = null;
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             invoiceService.updateInvoice(invoiceId, null);
         });
@@ -337,7 +335,6 @@ public class InvoiceServiceTest {
     @Test
     void updateInvoice_nullFieldsInRequest() {
         UpdateInvoiceRequest request = new UpdateInvoiceRequest();
-        InvoiceResponse response = null;
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             invoiceService.updateInvoice(invoiceId, request);
         });
@@ -390,7 +387,6 @@ public class InvoiceServiceTest {
 
         when(roomDeviceRepository.findById(deviceId)).thenReturn(Optional.of(roomDevice));
 
-        InvoiceResponse response = null;
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             invoiceService.updateInvoice(invoiceId, request);
         });
@@ -409,7 +405,6 @@ public class InvoiceServiceTest {
         additionItem.setAdditionalChargeId(additionItemId);
         invoice.getAdditionItems().add(additionItem); // Add existing item to the invoice
 
-        InvoiceResponse response = null;
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             invoiceService.updateInvoice(invoiceId, request);
         });
@@ -430,7 +425,6 @@ public class InvoiceServiceTest {
         when(roomServiceRepository.findById(any(UUID.class))).thenReturn(Optional.of(roomService));
         request.setServiceDetails(List.of(new InvoiceDetailServiceRequest(roomService.getRoomServiceId(), 2)));
 
-        InvoiceResponse response = null;
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             invoiceService.updateInvoice(invoiceId, request);
         });

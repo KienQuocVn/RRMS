@@ -36,13 +36,10 @@ public class TenantControllerTest {
     @InjectMocks
     private TenantController tenantController;
 
-    private ObjectMapper objectMapper;
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(tenantController).build();
-        objectMapper = new ObjectMapper();
     }
 
     @Test
