@@ -1,7 +1,5 @@
 package com.rrms.rrms.services.servicesImp;
 
-import jakarta.persistence.EntityManager;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +10,4 @@ import com.rrms.rrms.services.IInvoiceService;
 public class InvoiceServiceService implements IInvoiceService {
     @Autowired
     InvoiceRepository invoiceRepository;
-
-    @Autowired
-    private EntityManager entityManager;
 }

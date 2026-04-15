@@ -13,7 +13,6 @@ import com.rrms.rrms.dto.request.RoomRequest2;
 import com.rrms.rrms.dto.response.*;
 import com.rrms.rrms.enums.ErrorCode;
 import com.rrms.rrms.exceptions.AppException;
-import com.rrms.rrms.mapper.BulletinBoardMapper;
 import com.rrms.rrms.mapper.RoomMapper;
 import com.rrms.rrms.models.Account;
 import com.rrms.rrms.models.Motel;
@@ -23,27 +22,21 @@ import com.rrms.rrms.repositories.AccountRepository;
 import com.rrms.rrms.repositories.MotelRepository;
 import com.rrms.rrms.repositories.RoomRepository;
 import com.rrms.rrms.repositories.RoomServiceRepository;
-import com.rrms.rrms.repositories.ServiceRepository;
 import com.rrms.rrms.services.IRoom;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-@Slf4j
 public class RoomService implements IRoom {
     RoomRepository roomRepository;
     MotelRepository motelRepository;
-    ServiceRepository serviceRepository;
     AccountRepository accountRepository;
     RoomServiceRepository roomServiceRepository;
     RoomMapper roomMapper;
-
-    BulletinBoardMapper bulletinBoardMapper;
 
     @Override
     public RoomDetailResponse getRoomById(UUID id) {
@@ -238,8 +231,7 @@ public class RoomService implements IRoom {
 
     @Override
     public List<RoomResponse2> getRoomsByMotelIdContract(UUID motelId) {
-        Motel motel =
-                motelRepository.findById(motelId).orElseThrow(() -> new IllegalArgumentException("Motel not found"));
+        motelRepository.findById(motelId).orElseThrow(() -> new IllegalArgumentException("Motel not found"));
 
         // Lấy danh sách phòng có hợp đồng
         List<Room> rooms = roomRepository.findRoomsWithContractsByMotelId(motelId);

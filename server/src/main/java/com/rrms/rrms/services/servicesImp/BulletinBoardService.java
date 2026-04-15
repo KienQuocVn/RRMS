@@ -20,16 +20,13 @@ import com.rrms.rrms.models.*;
 import com.rrms.rrms.repositories.*;
 import com.rrms.rrms.services.IBulletinBoard;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-@Slf4j
 @Transactional(propagation = Propagation.REQUIRED)
 public class BulletinBoardService implements IBulletinBoard {
 
@@ -43,8 +40,6 @@ public class BulletinBoardService implements IBulletinBoard {
     BulletinBoardElasticsearchRepository bulletinBoardElasticsearchRepository;
 
     BulletinBoardMapper bulletinBoardMapper;
-
-    ElasticsearchClient elasticsearchClient;
 
     @Override
     public List<BulletinBoardResponse> getAllBulletinBoards() {

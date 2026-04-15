@@ -163,7 +163,7 @@ public class ContractService implements IContractService {
         cal.add(Calendar.DATE, thresholdDays);
         Date thresholdDate = cal.getTime();
 
-        int updatedRows = contractRepository.updateStatusForContractsBasedOnDaysDifference(newStatus, thresholdDate);
+        contractRepository.updateStatusForContractsBasedOnDaysDifference(newStatus, thresholdDate);
     }
 
     @Override
@@ -172,7 +172,7 @@ public class ContractService implements IContractService {
         cal.add(Calendar.DATE, thresholdDays);
         Date thresholdDate = cal.getTime();
 
-        int updatedRows = contractRepository.updateStatusForContractsBasedOnDaysDifference2(newStatus, thresholdDate);
+        contractRepository.updateStatusForContractsBasedOnDaysDifference2(newStatus, thresholdDate);
     }
 
     @Override

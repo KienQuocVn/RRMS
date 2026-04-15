@@ -20,6 +20,12 @@ import com.rrms.rrms.models.Account;
 public interface AccountMapper {
 
     // Nhận một AccountRequest và trả về đối tượng Account
+    @Mapping(target = "authorities", ignore = true)
+    @Mapping(target = "commissionRate", ignore = true)
+    @Mapping(target = "contracts", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "heart", ignore = true)
+    @Mapping(target = "motels", ignore = true)
     Account toAccount(AccountRequest request);
 
     // Chuyển đổi từ Account sang AccountResponse
@@ -34,7 +40,14 @@ public interface AccountMapper {
             Account account); // Phương thức nhận một Account và trả về đối tượng AccountResponse
 
     // Phương thức để cập nhật thông tin của tài khoản người dùng mà không thay đổi mật khẩu
+    @Mapping(target = "authorities", ignore = true)
+    @Mapping(target = "commissionRate", ignore = true)
+    @Mapping(target = "contracts", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "heart", ignore = true)
+    @Mapping(target = "motels", ignore = true)
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     // Bỏ qua trường "password" trong quá trình cập nhật
     void updateAccount(
             @MappingTarget Account user, AccountRequest request); // Cập nhật user dựa trên thông tin từ AccountRequest
@@ -66,5 +79,7 @@ public interface AccountMapper {
         return Collections.emptyList(); // Nếu không có authorities, trả về danh sách rỗng
     }
 
+    @Mapping(target = "name", source = "fullname")
+    @Mapping(target = "status", ignore = true)
     BrokerResponse toBrokerResponse(Account account);
 }

@@ -9,28 +9,20 @@ import com.rrms.rrms.dto.response.BulletinBoardSearchResponse;
 import com.rrms.rrms.enums.ErrorCode;
 import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.BulletinBoardMapper;
-import com.rrms.rrms.mapper.RoomMapper;
 import com.rrms.rrms.models.BulletinBoard;
 import com.rrms.rrms.repositories.BulletinBoardRepository;
-import com.rrms.rrms.repositories.RoomRepository;
-import com.rrms.rrms.repositories.RoomRepositoryElasticsearch;
 import com.rrms.rrms.repositories.SearchRepository;
 import com.rrms.rrms.services.ISearchService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class SearchService implements ISearchService {
-    RoomRepository roomRepository;
-    RoomRepositoryElasticsearch roomRepositoryElasticsearch;
     BulletinBoardMapper bulletinBoardMapper;
-    RoomMapper roomMapper;
     private final BulletinBoardRepository bulletinBoardRepository;
 
     SearchRepository searchRepository;

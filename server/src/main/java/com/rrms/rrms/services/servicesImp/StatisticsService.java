@@ -52,8 +52,6 @@ public class StatisticsService implements IStatistics {
         Map<DayOfWeek, Long> counts = new HashMap<>();
         LocalDate today = LocalDate.now();
         LocalDate startOfWeek = today.minusWeeks(1).with(DayOfWeek.MONDAY);
-        LocalDate endOfWeek = today.minusWeeks(1).with(DayOfWeek.SUNDAY).plusDays(1);
-
         for (DayOfWeek day : DayOfWeek.values()) {
             LocalDate startDate = startOfWeek.with(day);
             LocalDateTime startDateTime = startDate.atStartOfDay();
@@ -91,11 +89,6 @@ public class StatisticsService implements IStatistics {
     @Override
     public Map<Integer, Long> getTotalMotelsByMonth() {
         List<Motel> motels = motelRepository.findAll();
-        ZonedDateTime currentYear = ZonedDateTime.now(ZoneId.systemDefault())
-                .withDayOfYear(1)
-                .withHour(0)
-                .withMinute(0)
-                .withSecond(0);
 
         // Khởi tạo Map để chứa tổng số nhà trọ cho từng tháng
         Map<Integer, Long> totalsByMonth = new HashMap<>();
