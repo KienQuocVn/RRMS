@@ -6,6 +6,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
 
 interface ExpandedMenuProps {
@@ -19,13 +20,37 @@ export default function ExpandedMenu({
   onBankPress,
   onLearnMorePress,
 }: ExpandedMenuProps) {
+  const router = useRouter();
+
+  const handleBrokerPress = () => {
+    if (onBrokerPress) {
+      onBrokerPress();
+    } else {
+      router.push('/broker-management' as any);
+    }
+  };
+
+  const handleBankPress = () => {
+    if (onBankPress) {
+      onBankPress();
+    } else {
+      router.push('/bank-account' as any);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Menu mở rộng</Text>
       <Text style={styles.sectionSubtitle}>Thiết lập tùy chọn nâng cao</Text>
 
       {/* Card 1: Quản lý môi giới */}
-      <TouchableOpacity style={styles.card} onPress={onBrokerPress} activeOpacity={0.7}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={handleBrokerPress}
+        activeOpacity={0.7}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        accessibilityLabel="Quản lý môi giới"
+      >
         <View style={[styles.cardIcon, { backgroundColor: '#E8F5E9' }]}>
           <Ionicons name="megaphone-outline" size={28} color={Colors.primary} />
         </View>
@@ -59,11 +84,21 @@ export default function ExpandedMenu({
 
         {/* Bank card buttons */}
         <View style={styles.bankButtons}>
-          <TouchableOpacity style={styles.outlineBtn} onPress={onLearnMorePress}>
+          <TouchableOpacity
+            style={styles.outlineBtn}
+            onPress={onLearnMorePress}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel="Tìm hiểu thêm"
+          >
             <Ionicons name="help-circle-outline" size={18} color={Colors.primary} />
             <Text style={styles.outlineBtnText}>Tìm hiểu thêm</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.filledBtn} onPress={onBankPress}>
+          <TouchableOpacity
+            style={styles.filledBtn}
+            onPress={handleBankPress}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel="Quản lý tài khoản"
+          >
             <Text style={styles.filledBtnText}>Quản lý tài khoản</Text>
             <Ionicons name="chevron-forward" size={16} color={Colors.white} />
           </TouchableOpacity>

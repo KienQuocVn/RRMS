@@ -246,12 +246,15 @@ const styles = StyleSheet.create({
   filterContainer: {
     backgroundColor: Colors.white,
     paddingBottom: Spacing.md,
+    paddingTop: Spacing.sm,
+    zIndex: 1,
   },
   filterTabs: {
     paddingHorizontal: Spacing.base,
     flexDirection: 'row',
     gap: Spacing.sm,
     alignItems: 'center',
+    paddingTop: 12,
   },
   filterTab: {
     flexDirection: 'row',
@@ -260,6 +263,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: BorderRadius.full,
     position: 'relative',
+    overflow: 'visible',
   },
   filterTabActive: {
     backgroundColor: '#8BC34A',

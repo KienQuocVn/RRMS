@@ -6,7 +6,16 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+
+/** Map action id → route path */
+const ACTION_ROUTES: Record<string, string> = {
+  finance: '/finance-summary',
+  'service-summary': '/service-summary',
+  'zalo-history': '/zalo-history',
+  'transfer-history': '/transfer-history',
+};
 
 interface ActionListItem {
   id: string;
@@ -57,6 +66,17 @@ interface OtherActionsProps {
 }
 
 export default function OtherActions({ onItemPress }: OtherActionsProps) {
+  const router = useRouter();
+
+  const handleItemPress = (id: string) => {
+    const route = ACTION_ROUTES[id];
+    if (route) {
+      router.push(route as any);
+    } else {
+      onItemPress?.(id);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Thao tác khác</Text>
@@ -68,8 +88,10 @@ export default function OtherActions({ onItemPress }: OtherActionsProps) {
         <TouchableOpacity
           key={item.id}
           style={styles.listItem}
-          onPress={() => onItemPress?.(item.id)}
+          onPress={() => handleItemPress(item.id)}
           activeOpacity={0.7}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel={item.title}
         >
           <View style={[styles.iconWrap, { backgroundColor: item.iconBg }]}>
             <Ionicons name={item.icon} size={24} color={item.iconColor} />
