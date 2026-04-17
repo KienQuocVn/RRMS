@@ -1,194 +1,243 @@
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import {
-  Avatar,
-  Box,
-  Button,
-  Container,
-  Divider,
-  Grid,
-  IconButton,
-  InputBase,
-  Paper,
-  styled,
-  Tab,
-  Typography,
-} from '@mui/material';
-import { useEffect, useState } from 'react';
-import ProfileTab from './ProfileTab';
-import imageCompression from 'browser-image-compression';
-import CameraAltIcon from '@mui/icons-material/CameraAlt';
-import BillingTab from './BillingTab';
-import SecurityTab from './SecurityTab';
-import NotificationTab from './NotificationTab';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { getProfile } from '~/apis/profileAPI';
+import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded'
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded'
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded'
+import SecurityRoundedIcon from '@mui/icons-material/SecurityRounded'
+import { TabContext, TabList, TabPanel } from '@mui/lab'
+import { Box, Container, Paper, Skeleton, Tab } from '@mui/material'
+import imageCompression from 'browser-image-compression'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'react-toastify'
+import { getProfile } from '~/apis/profileAPI'
+import BillingTab from './BillingTab'
+import NotificationTab from './NotificationTab'
+import ProfileTab from './ProfileTab'
+import SecurityTab from './SecurityTab'
+import ProfilePageHeader from './sections/ProfilePageHeader'
+import ProfileSidebarCard from './sections/ProfileSidebarCard'
 
-const VisuallyHiddenInput = styled('input')({
-  clip: 'rect(0 0 0 0)',
-  clipPath: 'inset(50%)',
-  height: 1,
-  overflow: 'hidden',
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  whiteSpace: 'nowrap',
-  width: 1,
-});
+function Profile({ setIsAdmin, username }) {
+  const { t } = useTranslation()
+  const [tabIndex, setTabIndex] = useState('1')
+  const [selectedImage, setSelectedImage] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState('')
+  const [profile, setProfile] = useState({})
+  const [loading, setLoading] = useState(true)
 
-const Profile = ({ setIsAdmin, username }) => {
-  const [tabIndex, setTabIndex] = useState('1');
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [profile, setProfile] = useState({});
-  const [loading, setLoading] = useState(true);
+  const tabs = [
+    { value: '1', label: t('profile.tabs.profile'), icon: <PersonRoundedIcon fontSize="small" /> },
+    { value: '2', label: t('profile.tabs.billing'), icon: <ReceiptLongRoundedIcon fontSize="small" /> },
+    { value: '3', label: t('profile.tabs.security'), icon: <SecurityRoundedIcon fontSize="small" /> },
+    { value: '4', label: t('profile.tabs.notifications'), icon: <NotificationsActiveRoundedIcon fontSize="small" /> }
+  ]
+
+  const metricItems = [
+    { label: t('profile.metrics.monthsRented'), value: 0, color: '#0f172a' },
+    { label: t('profile.metrics.monthsPaid'), value: 0, color: '#16a34a' },
+    { label: t('profile.metrics.monthsUnpaid'), value: 0, color: '#ef4444' }
+  ]
 
   useEffect(() => {
-    setIsAdmin(false);
-    fetchProfile();
-  }, [username]);
+    setIsAdmin(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  const fetchProfile = async () => {
-    setLoading(true);
-    try {
-      const res = await getProfile(username);
-      setProfile(res.data.result || {});
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!username) {
+        setLoading(false)
+        return
+      }
 
-  const handleChange = (event, newValue) => {
-    setTabIndex(newValue);
-  };
-
-  const handleImageChange = async (event) => {
-    const image = event.target.files[0];
-    if (image) {
+      setLoading(true)
       try {
-        const options = {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 800,
-          useWebWorker: true,
-        };
-        const compressedImage = await imageCompression(image, options);
-        setSelectedImage(compressedImage);
+        const res = await getProfile(username)
+        setProfile(res.data.result || {})
       } catch (error) {
-        console.log('Lỗi khi nén ảnh:', error);
+        console.error('Failed to fetch profile:', error)
+        toast.error(t('profile.alerts.loadFailed'))
+      } finally {
+        setLoading(false)
       }
     }
-  };
 
-  if (loading) return <Typography>Loading...</Typography>;
+    fetchProfile()
+  }, [t, username])
+
+  useEffect(() => {
+    if (!selectedImage) {
+      setPreviewUrl('')
+      return
+    }
+
+    const objectUrl = URL.createObjectURL(selectedImage)
+    setPreviewUrl(objectUrl)
+
+    return () => {
+      URL.revokeObjectURL(objectUrl)
+    }
+  }, [selectedImage])
+
+  const handleChange = (event, newValue) => {
+    setTabIndex(newValue)
+  }
+
+  const handleImageChange = async (event) => {
+    const image = event.target.files?.[0]
+    if (!image) return
+
+    try {
+      const compressedImage = await imageCompression(image, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 800,
+        useWebWorker: true
+      })
+      setSelectedImage(compressedImage)
+    } catch (error) {
+      console.error('Image compression failed:', error)
+      toast.error(t('profile.alerts.imageFailed'))
+    }
+  }
+
+  const handleCopyProfileLink = async () => {
+    const profileLink = `${window.location.origin}/profile`
+
+    try {
+      await navigator.clipboard.writeText(profileLink)
+      toast.success(t('profile.alerts.copiedLink'))
+    } catch (error) {
+      console.error('Copy failed:', error)
+      toast.error(t('profile.alerts.copyFailed'))
+    }
+  }
+
+  if (loading) {
+    return (
+      <Container maxWidth="xl" sx={{ py: { xs: 3, md: 4 } }}>
+        <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
+          <Skeleton variant="rounded" height={140} sx={{ borderRadius: 4 }} />
+          <Box
+            sx={{
+              mt: 3,
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: '320px minmax(0, 1fr)' },
+              gap: 3
+            }}
+          >
+            <Skeleton variant="rounded" height={420} sx={{ borderRadius: 4 }} />
+            <Skeleton variant="rounded" height={520} sx={{ borderRadius: 4 }} />
+          </Box>
+        </Box>
+      </Container>
+    )
+  }
 
   return (
-    <Container sx={{ my: 2 }}>
-      <Box>
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={4}>
-            <Paper variant="outlined" sx={{ textAlign: 'center', position: 'relative' }}>
-              <Box sx={{ position: 'relative', display: 'inline-block', mt: 3 }}>
-                <Avatar
-                  alt={profile.fullname}
-                  src={selectedImage ? URL.createObjectURL(selectedImage) : profile.avatar}
-                  sx={{ width: 100, height: 100, margin: 'auto' }}
-                />
-                <IconButton
-                  component="label"
-                  sx={{
-                    position: 'absolute',
-                    bottom: 0,
-                    right: 0,
-                    backgroundColor: 'white',
-                    borderRadius: '50%',
-                    border: '2px solid #f0f0f0',
-                    width: 30,
-                    height: 30,
-                    padding: 0,
-                    '&:hover': { backgroundColor: '#f0f0f0' },
-                  }}>
-                  <CameraAltIcon fontSize="small" />
-                  <VisuallyHiddenInput type="file" accept="image/*" onChange={handleImageChange} />
-                </IconButton>
-              </Box>
-              <Typography variant="h6" sx={{ marginTop: '10px' }}>
-                {profile.fullname || 'Người dùng ẩn danh'}
-              </Typography>
-              <Typography variant="subtitle1" color="textSecondary">
-                {profile.username || 'tridung778'}
-              </Typography>
-              <Divider sx={{ bgcolor: '#ced6e0', mt: 1 }} />
-              <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
-                  <Typography variant="body1">Tổng số tháng đã thuê</Typography>
-                  <Typography variant="body1">0</Typography>
-                </Box>
-                <Divider sx={{ bgcolor: '#ced6e0' }} />
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
-                  <Typography variant="body1">Tổng số tháng đã thanh toán</Typography>
-                  <Typography variant="body1" color="green">
-                    0
-                  </Typography>
-                </Box>
-                <Divider sx={{ bgcolor: '#ced6e0' }} />
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
-                  <Typography variant="body1">Tổng số tháng chưa thanh toán</Typography>
-                  <Typography variant="body1" color="red">
-                    0
-                  </Typography>
-                </Box>
-              </Box>
-              <Divider sx={{ bgcolor: '#ced6e0' }} />
-              <Button sx={{ mt: 5, width: '80%', height: 45 }} variant="outlined">
-                Xem trang cá nhân công khai
-              </Button>
-              <Paper
-                variant="outlined"
-                color="primary"
-                sx={{ display: 'flex', alignItems: 'center', width: '80%', mx: 'auto', my: 2 }}>
-                <InputBase
-                  sx={{ ml: 1, flex: 1 }}
-                  placeholder="Link information"
-                  inputProps={{ 'aria-label': 'link information' }}
-                  value={'https://rrms.vercel.app/'}
-                />
-                <Divider sx={{ height: 28 }} orientation="vertical" />
-                <IconButton color="primary" sx={{ p: '10px' }} aria-label="directions">
-                  <ContentCopyIcon />
-                </IconButton>
-              </Paper>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={8}>
-            <Paper variant="outlined" sx={{ height: '100%' }}>
+    <Box
+      component="main"
+      sx={{
+        minHeight: '100vh',
+        py: { xs: 3, md: 4 },
+        background: 'linear-gradient(180deg, #f5f9ff 0%, #eef6ff 42%, #ffffff 100%)'
+      }}
+    >
+      <Container maxWidth="xl">
+        <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
+          <ProfilePageHeader profile={profile} username={username} />
+
+          <Box
+            sx={{
+              mt: 3,
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: '320px minmax(0, 1fr)' },
+              gap: 3,
+              alignItems: 'start'
+            }}
+          >
+            <ProfileSidebarCard
+              profile={profile}
+              avatarPreview={previewUrl || profile.avatar}
+              metrics={metricItems}
+              profileLink={`${window.location.origin}/profile`}
+              onImageChange={handleImageChange}
+              onCopyLink={handleCopyProfileLink}
+            />
+
+            <Paper
+              variant="outlined"
+              sx={{
+                overflow: 'hidden',
+                borderRadius: 4,
+                borderColor: 'rgba(148, 163, 184, 0.2)',
+                boxShadow: '0 24px 60px rgba(15, 23, 42, 0.06)',
+                backgroundColor: 'rgba(255,255,255,0.96)',
+                backdropFilter: 'blur(10px)'
+              }}
+            >
               <TabContext value={tabIndex}>
-                <Box>
-                  <TabList onChange={handleChange} aria-label="lab API tabs example">
-                    <Tab iconPosition="start" label="Hồ sơ" value="1" />
-                    <Tab iconPosition="start" label="Chi tiêu" value="2" />
-                    <Tab iconPosition="start" label="Bảo mật" value="3" />
-                    <Tab iconPosition="start" label="Thông báo" value="4" />
+                <Box
+                  sx={{
+                    px: { xs: 1.5, md: 2.5 },
+                    pt: { xs: 1.5, md: 2 },
+                    borderBottom: '1px solid rgba(148, 163, 184, 0.16)'
+                  }}
+                >
+                  <TabList
+                    onChange={handleChange}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    aria-label={t('profile.header.title')}
+                    sx={{
+                      minHeight: 58,
+                      '& .MuiTabs-flexContainer': {
+                        gap: 0.75
+                      },
+                      '& .MuiTab-root': {
+                        minHeight: 46,
+                        px: 1.75,
+                        borderRadius: 2.5,
+                        fontWeight: 700,
+                        color: '#667085'
+                      },
+                      '& .Mui-selected': {
+                        color: '#155eef',
+                        backgroundColor: '#eef4ff'
+                      },
+                      '& .MuiTabs-indicator': {
+                        display: 'none'
+                      }
+                    }}
+                  >
+                    {tabs.map((tab) => (
+                      <Tab key={tab.value} icon={tab.icon} iconPosition="start" label={tab.label} value={tab.value} />
+                    ))}
                   </TabList>
                 </Box>
-                <TabPanel value="1">
-                  <ProfileTab profile={profile} setProfile={setProfile} selectedImage={selectedImage} />
+
+                <TabPanel value="1" sx={{ p: { xs: 2, md: 3 } }}>
+                  <ProfileTab
+                    profile={profile}
+                    setProfile={setProfile}
+                    selectedImage={selectedImage}
+                    setSelectedImage={setSelectedImage}
+                  />
                 </TabPanel>
-                <TabPanel value="2">
+                <TabPanel value="2" sx={{ p: { xs: 2, md: 3 } }}>
                   <BillingTab />
                 </TabPanel>
-                <TabPanel value="3">
+                <TabPanel value="3" sx={{ p: { xs: 2, md: 3 } }}>
                   <SecurityTab />
                 </TabPanel>
-                <TabPanel value="4">
+                <TabPanel value="4" sx={{ p: { xs: 2, md: 3 } }}>
                   <NotificationTab />
                 </TabPanel>
               </TabContext>
             </Paper>
-          </Grid>
-        </Grid>
-      </Box>
-    </Container>
-  );
-};
+          </Box>
+        </Box>
+      </Container>
+    </Box>
+  )
+}
 
-export default Profile;
+export default Profile

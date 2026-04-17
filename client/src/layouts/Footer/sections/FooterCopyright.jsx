@@ -1,17 +1,16 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 
 export function FooterCopyright() {
+  const { t } = useTranslation()
+
   return (
-    <Box sx={{ bgcolor: '#37474F', color: 'white', py: 4, textAlign: 'center' }}>
-      <Typography variant="body2">
-        Copyright © LOZIDO - Tìm trọ, căn hộ, việc làm
+    <Box sx={{ textAlign: 'center', pb: { xs: 1, md: 0.5 } }}>
+      <Typography sx={{ fontSize: 14, color: '#101828' }}>{t('footer.copyright.line1')}</Typography>
+      <Typography sx={{ mt: 0.7, fontSize: 14, fontWeight: 800, color: '#475467', textTransform: 'uppercase' }}>
+        {t('footer.copyright.company')}
       </Typography>
-      <Typography variant="caption" fontWeight="bold" sx={{ mt: 1, display: 'block', textTransform: 'uppercase' }}>
-        CÔNG TY TNHH GIẢI PHÁP THÔNG MINH POPIPLUS
-      </Typography>
-      <Typography variant="caption" sx={{ mt: 1, opacity: 0.7, display: 'block' }}>
-        Đăng ký kinh doanh số 0318272823 - do Sở Kế hoạch và Đầu tư thành phố Hồ Chí Minh cấp lần đầu ngày 19 tháng 01 năm 2024
-      </Typography>
+      <Typography sx={{ mt: 0.7, fontSize: 13, color: '#667085' }}>{t('footer.copyright.line3')}</Typography>
     </Box>
-  );
+  )
 }

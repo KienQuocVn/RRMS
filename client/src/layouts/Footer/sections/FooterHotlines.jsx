@@ -1,36 +1,43 @@
-import { Box, Typography, Grid } from '@mui/material';
-
-const hotlines = [
-  { city: "Kinh doanh Hồ Chí Minh", label: "HỖ TRỢ CHÍNH SÁCH", labelColor: "#E65100", phone: "0965-227-453" },
-  { city: "Kinh doanh Hà Nội", label: "HỖ TRỢ ĐĂNG TIN", labelColor: "#2E7D32", phone: "0868-000-845" },
-  { city: "Kinh doanh Đà Nẵng", label: "HỖ TRỢ ĐĂNG TIN", labelColor: "#2E7D32", phone: "0868-000-845" },
-];
+import { Box, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
+import { footerHotlines } from '../footer.data'
 
 export function FooterHotlines() {
+  const { t } = useTranslation()
+
   return (
     <Box sx={{ textAlign: 'center' }}>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-        Liên hệ với chúng tôi nếu bạn cần hỗ trợ
-      </Typography>
+      <Typography sx={{ mb: 1.8, fontSize: 15, color: '#667085' }}>{t('footer.supportText')}</Typography>
 
-      <Grid container spacing={3} justifyContent="center">
-        {hotlines.map((item) => (
-          <Grid item xs={12} sm={4} key={item.city}>
-            <Box sx={{
-              border: '1px solid', borderColor: 'divider',
-              borderRadius: 2, p: 3, bgcolor: 'background.paper'
-            }}>
-              <Typography variant="body2" color="text.secondary">{item.city}</Typography>
-              <Typography variant="caption" fontWeight="bold" sx={{ color: item.labelColor, textTransform: 'uppercase' }}>
-                {item.label}
-              </Typography>
-              <Typography variant="h6" fontWeight="bold" sx={{ mt: 1 }}>
-                {item.phone}
-              </Typography>
-            </Box>
-          </Grid>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
+          gap: 2
+        }}
+      >
+        {footerHotlines.map((item) => (
+          <Box
+            key={item.cityKey}
+            sx={{
+              px: 2,
+              py: 1.75,
+              borderRadius: 2.5,
+              border: '1px solid rgba(140, 180, 120, 0.18)',
+              background: 'linear-gradient(180deg, #f7fbe9 0%, #eef7de 100%)',
+              boxShadow: '0 10px 22px rgba(149, 163, 184, 0.08)'
+            }}
+          >
+            <Typography sx={{ fontSize: 14, color: '#667085' }}>{t(`footer.hotlines.${item.cityKey}`)}</Typography>
+            <Typography sx={{ mt: 0.2, fontSize: 13, fontWeight: 800, color: item.accent, textTransform: 'uppercase' }}>
+              {t(`footer.hotlines.${item.labelKey}`)}
+            </Typography>
+            <Typography sx={{ mt: 0.55, fontSize: { xs: 18, md: 20 }, fontWeight: 900, color: '#101828' }}>
+              {item.phone}
+            </Typography>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
-  );
+  )
 }

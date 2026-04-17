@@ -1,54 +1,62 @@
-import { Avatar, Box, Card, CardContent, IconButton, Rating, Tooltip, Typography } from '@mui/material';
 import DeleteSweepOutlinedIcon from '@mui/icons-material/DeleteSweepOutlined';
-import { deleteBulletinBoardReview } from '~/apis/bulletinBoardReviewsAPI';
+import { Avatar, Box, Card, IconButton, Rating, Stack, Tooltip, Typography } from '@mui/material';
 import { toast } from 'react-toastify';
+import { deleteBulletinBoardReview } from '~/apis/bulletinBoardReviewsAPI';
 
 const Comment = ({ item, username, refreshBulletinBoards, setReview, roomId }) => {
-  const handleDeleteComment = () => {
+  const handleDeleteComment = async () => {
     try {
-      deleteBulletinBoardReview(item.bulletinBoardReviewsId).then(() => {
-        toast.success('Đã xóa bình luận thành công!');
-        refreshBulletinBoards();
-        setReview({
-          username: username,
-          bulletinBoardId: roomId,
-          rating: 0,
-          content: '',
-        });
+      await deleteBulletinBoardReview(item.bulletinBoardReviewsId);
+      toast.success('Da xoa binh luan thanh cong');
+      refreshBulletinBoards();
+      setReview({
+        username,
+        bulletinBoardId: roomId,
+        rating: 0,
+        content: '',
       });
     } catch (error) {
-      console.error('Lỗi xóa bình luận:', error);
+      console.error('Loi xoa binh luan:', error);
     }
   };
 
+  const canDelete = username === item?.account?.username;
+
   return (
-    <Card variant="outlined" sx={{ borderRadius: 3, '--Card-radius': 0, mb: 1 }}>
-      <CardContent orientation="horizontal">
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Avatar src={item.account.avatar} alt={item.account.fullname} variant="rectangular" width={44} height={44} />
+    <Card
+      elevation={0}
+      sx={{
+        borderRadius: 3,
+        border: '1px solid',
+        borderColor: 'divider',
+        p: 2,
+      }}>
+      <Stack direction="row" spacing={1.5} alignItems="flex-start" justifyContent="space-between">
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <Avatar src={item?.account?.avatar} alt={item?.account?.fullname} sx={{ width: 48, height: 48 }}>
+            {item?.account?.fullname?.[0]}
+          </Avatar>
+
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              {item?.account?.fullname}
+            </Typography>
+            <Rating value={item?.rating || 0} size="small" readOnly />
+          </Box>
+        </Stack>
+
+        {canDelete && (
           <Tooltip title="Xóa bình luận này">
-            <IconButton>
-              <DeleteSweepOutlinedIcon
-                style={{
-                  display: username === item.account.username ? 'block' : 'none',
-                  cursor: 'pointer',
-                  fontSize: '30px',
-                }}
-                onClick={handleDeleteComment}
-              />
+            <IconButton color="error" onClick={handleDeleteComment}>
+              <DeleteSweepOutlinedIcon />
             </IconButton>
           </Tooltip>
-        </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="subtitle1" width={100}>
-            {item.account.fullname}
-          </Typography>
-          <Rating value={item.rating} size="small" readOnly />
-        </Box>
-      </CardContent>
-      <CardContent sx={{ pt: 0, '&:last-child': { pb: 1 } }}>
-        <Typography variant="body1">{item.content}</Typography>
-      </CardContent>
+        )}
+      </Stack>
+
+      <Typography variant="body1" sx={{ mt: 1.5, lineHeight: 1.7 }}>
+        {item?.content}
+      </Typography>
     </Card>
   );
 };

@@ -141,7 +141,7 @@ export default function DesktopActionsDesktop({
           }}
         >
           <EditIcon />
-          DANG TIN
+          {t('header.postNow')}
         </Box>
       )}
     </Box>

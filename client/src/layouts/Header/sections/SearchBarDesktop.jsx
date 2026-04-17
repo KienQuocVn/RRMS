@@ -24,37 +24,37 @@ const BurgerIcon = ({ color }) => (
   </svg>
 )
 
-const CATEGORY_ITEMS = ['Muốn thuê', 'Cho thuê', 'Dự án']
+const CATEGORY_KEYS = ['wantRent', 'forRent', 'project']
 
 const CATEGORY_MENU_ITEMS = [
   {
-    label: 'Muốn thuê',
+    key: 'wantRent',
     icon: 'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2FPTY_lv1_cat_muban.png?alt=media&token=0a78f985-f7dc-4211-b14c-cc64c9892136',
     to: '#',
     active: true
   },
   {
-    label: 'Cho thuê',
+    key: 'forRent',
     icon: 'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2FPTY_lv1_cat_chothue.png?alt=media&token=6ebeeb22-5d71-45e9-b02c-3c03499ce555',
     to: '#'
   },
   {
-    label: 'Dự án',
+    key: 'project',
     icon: 'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2FPTY_lv1_cat_duan.png?alt=media&token=88b33caf-3f11-4025-a18c-653c0a6056c4',
     to: '#'
   },
   {
-    label: 'Tìm môi giới',
+    key: 'findBroker',
     icon: 'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2FPTY_lv1_cat_timmoigioi.png?alt=media&token=a08d9169-cf8a-4fdd-aa1c-200a888b0abd',
     to: '#'
   },
   {
-    label: 'Biểu đồ biến động giá',
+    key: 'priceChart',
     icon: 'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2FPTY_lv1_cat_bieudogia.png?alt=media&token=e62c4212-ee82-4985-b2a5-02e225c1e4d1',
     to: '/chart'
   },
   {
-    label: 'Vay mua nhà',
+    key: 'homeLoan',
     icon: 'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2FPTY_lv1_cat_vaymuanha.png?alt=media&token=ec55ddd5-2e94-408d-b167-d8f02582ac73',
     to: '#'
   }
@@ -116,7 +116,7 @@ export default function SearchBarDesktop({ onSearchKeywordChange }) {
           <Box
             component="img"
             src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Flogo.png?alt=media&token=719c4675-1dc4-42d2-af36-ec52626519e4"
-            alt="Nha tro"
+            alt={t('header.search.logoAlt')}
             sx={{ width: '100%', height: 34, objectFit: 'contain', objectPosition: 'left center' }}
           />
         </Box>
@@ -172,7 +172,7 @@ export default function SearchBarDesktop({ onSearchKeywordChange }) {
               >
                 {CATEGORY_MENU_ITEMS.map((item) => (
                   <Box
-                    key={item.label}
+                    key={item.key}
                     component={Link}
                     to={item.to}
                     onClick={() => setIsCategoryOpen(false)}
@@ -197,7 +197,7 @@ export default function SearchBarDesktop({ onSearchKeywordChange }) {
                         <Box component="img" src={item.icon} alt="" sx={{ width: 24, height: 24 }} />
                       </Box>
                       <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
-                        {item.label}
+                        {t(`header.search.menuItems.${item.key}`)}
                       </Box>
                     </Box>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -264,13 +264,13 @@ export default function SearchBarDesktop({ onSearchKeywordChange }) {
                   zIndex: 20
                 }}
               >
-                {CATEGORY_ITEMS.map((item, index) => (
+                {CATEGORY_KEYS.map((item, index) => (
                   <Box
                     key={item}
                     sx={{
                       px: 1.5,
                       py: 1.5,
-                      borderBottom: index < CATEGORY_ITEMS.length - 1 ? '1px solid #E8E8E8' : 'none',
+                      borderBottom: index < CATEGORY_KEYS.length - 1 ? '1px solid #E8E8E8' : 'none',
                       display: 'flex',
                       alignItems: 'center',
                       gap: 0.5,
@@ -280,7 +280,7 @@ export default function SearchBarDesktop({ onSearchKeywordChange }) {
                       '&:hover': { bgcolor: '#f4f4f4' }
                     }}
                   >
-                    <Box component="span">{item}</Box>
+                    <Box component="span">{t(`header.search.categoryItems.${item}`)}</Box>
                     {index === 0 && (
                       <svg viewBox="0 0 16 12" width="1em" height="1em" fill="none" style={{ color: '#FF8800' }}>
                         <path fill="currentColor" d="M6.096 12L0 6.154l2.104-2.04 3.935 3.773L13.839 0 16 1.986z" />
@@ -313,7 +313,7 @@ export default function SearchBarDesktop({ onSearchKeywordChange }) {
 
           <IconButton
             onClick={handleSearch}
-            aria-label="Search"
+            aria-label={t('header.search.searchButtonAria')}
             sx={{
               position: 'absolute',
               right: 6,

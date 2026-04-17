@@ -1,37 +1,44 @@
-import { Box, Typography, Link as MuiLink } from '@mui/material';
-
-const links = [
-  { label: "Liên hệ", href: "#" },
-  { label: "Giới thiệu về LOZIDO", href: "#" },
-  { label: "Chính sách bảo mật", href: "#", highlight: true },
-  { label: "Điều khoản sử dụng", href: "#" },
-  { label: "Quy chế hoạt động", href: "#" },
-  { label: "Chính sách giải quyết khiếu nại", href: "#" },
-];
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
+import { Box, Link as MuiLink, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
+import { Link as RouterLink } from 'react-router-dom'
+import { footerLinks } from '../footer.data'
 
 export function FooterLinks() {
+  const { t } = useTranslation()
+
   return (
     <Box>
-      <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-        Liên kết
-      </Typography>
-      <Box component="ul" sx={{ p: 0, m: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        {links.map((link) => (
-          <Box component="li" key={link.label}>
+      <Typography sx={{ mb: 1.75, fontSize: 18, fontWeight: 800, color: '#1f2937' }}>{t('footer.linksTitle')}</Typography>
+
+      <Box component="ul" sx={{ p: 0, m: 0, listStyle: 'none', display: 'grid', gap: 1 }}>
+        {footerLinks.map((link) => (
+          <Box component="li" key={link.key}>
             <MuiLink
-              href={link.href}
-              underline="hover"
+              component={link.isInternal ? RouterLink : 'a'}
+              to={link.isInternal ? link.href : undefined}
+              href={link.isInternal ? undefined : link.href}
+              underline="none"
               sx={{
-                color: link.highlight ? '#1565C0' : 'text.secondary',
-                fontWeight: link.highlight ? 500 : 400,
-                '&:hover': { color: 'primary.main' }
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+                fontSize: 15,
+                color: link.highlight ? '#1d72f3' : '#475467',
+                fontWeight: link.highlight ? 700 : 500,
+                transition: 'transform 0.2s ease, color 0.2s ease',
+                '&:hover': {
+                  color: '#111827',
+                  transform: 'translateX(2px)'
+                }
               }}
             >
-              {link.label}
+              <ChevronRightRoundedIcon sx={{ fontSize: 18, color: 'inherit' }} />
+              {t(`footer.links.${link.key}`)}
             </MuiLink>
           </Box>
         ))}
       </Box>
     </Box>
-  );
+  )
 }

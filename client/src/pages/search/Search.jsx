@@ -1,231 +1,158 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
-import { useEffect, useState } from 'react'
-import { Box, Container, Grid } from '@mui/material'
-import RoomList from './RoomList'
-import Name from './Name'
-import DistrictList from './DistrictList'
-import BannerHorizontal from '~/components/BannerHorizontal'
-import Text from './Text'
-import ItemSearch from './ItemSearch'
-import LoadingPage from '~/components/LoadingPage/LoadingPage'
-import FilterSearch from './FilterSearch'
+import { Box, Container } from '@mui/material'
 import axios from 'axios'
-import { getTinhThanh } from '~/apis/addressAPI'
-import { env } from '~/configs/environment'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { searchBulletinBoardByAddress } from '~/apis/bulletinBoardAPI'
+import BannerHorizontal from '~/components/BannerHorizontal'
+import { env } from '~/configs/environment'
+import DistrictList from './DistrictList'
+import FilterSearch from './FilterSearch'
+import ItemSearch from './ItemSearch'
+import Name from './Name'
+import RoomList from './RoomList'
+import Text from './Text'
 
-const Search = ({ setIsAdmin }) => {
-  const [provinces, setProvinces] = useState([])
+const queryKeywordMap = {
+  hcm: 'Hồ Chí Minh',
+  hn: 'Hà Nội',
+  bd: 'Bình Dương',
+  ct: 'Cần Thơ',
+  dn: 'Đà Nẵng',
+  'đn': 'Đồng Nai',
+  'Quận 1': 'Quận 1',
+  'Quận 12': 'Quận 12',
+  'Quận Tân Bình': 'Quận Tân Bình',
+  'Quận Gò Vấp': 'Quận Gò Vấp',
+  'Quận Tân Phú': 'Quận Tân Phú',
+  'Quận 3': 'Quận 3',
+  'Quận 4': 'Quận 4',
+  'Quận 10': 'Quận 10',
+  'Quận 5': 'Quận 5',
+  'Quận 11': 'Quận 11',
+  'Quận 6': 'Quận 6',
+  'Thành Phố Thủ Đức': 'Thành Phố Thủ Đức',
+  'Quận Phú Nhuận': 'Quận Phú Nhuận',
+  'Tân Định': 'Tân Định',
+  'Đa Kao': 'Đa Kao',
+  'Bến Nghé': 'Bến Nghé',
+  'Bến Thành': 'Bến Thành',
+  'Nguyễn Thái Bình': 'Nguyễn Thái Bình',
+  'Phạm Ngũ Lão': 'Phạm Ngũ Lão',
+  'Cầu Ông Lãnh': 'Cầu Ông Lãnh',
+  'Cô Giang': 'Cô Giang',
+  'Nguyễn Cư Trinh': 'Nguyễn Cư Trinh',
+  'Cầu Kho': 'Cầu Kho',
+  'Thu Dau 1': 'Thu Dau 1',
+  'Dong An Ba': 'Dong An Ba',
+  'Ngoc To': 'Ngoc To',
+  'Quận Bình Thạnh': 'Quận Bình Thạnh'
+}
+
+function Search({ setIsAdmin }) {
   const [searchData, setSearchData] = useState([])
   const [totalRooms, setTotalRooms] = useState(0)
-  const [searchValue, setSearchValue] = useState('')
-  const [recordedText, setRecordedText] = useState('')
   const [keyword, setKeyword] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
   const location = useLocation()
   const { searchKeyWord } = location.state || {}
   const [searchParams] = useSearchParams()
 
-  useEffect(() => {
-    switch (searchParams.get('query')) {
-      case 'hcm':
-        setKeyword('Hồ chí minh')
-        break
-      case 'hn':
-        setKeyword('Hà nội')
-        break
-      case 'bd':
-        setKeyword('Bình dương')
-        break
-      case 'ct':
-        setKeyword('Cẩn thơ')
-        break
-      case 'dn':
-        setKeyword('Đà nẵng')
-        break
-      case 'đn':
-        setKeyword('Đồng nai')
-        break
-      case 'Quận 1':
-        setKeyword('Quận 1')
-        break
-      case 'Quận 12':
-        setKeyword('Quận 12')
-        break
-      case 'Quận Tân Bình':
-        setKeyword('Quận Tân Bình')
-        break
-      case 'Quận Gò Vấp':
-        setKeyword('Quận Gò Vấp')
-        break
-      case 'Quận Tân Phú':
-        setKeyword('Quận Tân Phú')
-        break
-      case 'Quận 3':
-        setKeyword('Quận 3')
-        break
-      case 'Quận 4':
-        setKeyword('Quận 4')
-        break
-      case 'Quận 10':
-        setKeyword('Quận 10')
-        break
-      case 'Quận 5':
-        setKeyword('Quận 5')
-        break
-      case 'Quận 11':
-        setKeyword('Quận 11')
-        break
-      case 'Quận 6':
-        setKeyword('Quận 6')
-        break
-      case 'Thành Phố Thủ Đức':
-        setKeyword('Thành Phố Thủ Đức')
-        break
-      case 'Quận Phú Nhuận':
-        setKeyword('Quận Phú Nhuận')
-        break
-      case 'Tân Định':
-        setKeyword('Tân Định')
-        break
-      case 'Đa Kao':
-        setKeyword('Đa Kao')
-        break
-      case 'Bến Nghé':
-        setKeyword('Bến Nghé')
-        break
-      case 'Bến Thành':
-        setKeyword('Bến Thành')
-        break
-      case 'Nguyễn Thái Bình':
-        setKeyword('Nguyễn Thái Bình')
-        break
-      case 'Phạm Ngũ Lão':
-        setKeyword('Phạm Ngũ Lão')
-        break
-      case 'Cầu Ông Lãnh':
-        setKeyword('Cầu Ông Lãnh')
-        break
-      case 'Cô Giang':
-        setKeyword('Cô Giang')
-        break
-      case 'Nguyễn Cư Trinh':
-        setKeyword('Nguyễn Cư Trinh')
-        break
-      case 'Cầu Kho':
-        setKeyword('Cầu Kho')
-        break
-      case 'Thu Dau 1':
-        setKeyword('Thu Dau 1')
-        break
-      case 'Dong An Ba':
-        setKeyword('Dong An Ba')
-        break
-      case 'Ngoc To':
-        setKeyword('Ngoc To')
-        break
-      case 'Quận Bình Thạnh':
-        setKeyword('Quận Bình Thạnh')
-        break
-      default:
-        setKeyword('')
-    }
-  }, [searchParams.get('query')])
+  const queryKeyword = searchParams.get('query')
+  const resolvedKeyword = useMemo(() => {
+    if (searchKeyWord) return searchKeyWord
+    return queryKeywordMap[queryKeyword] || ''
+  }, [queryKeyword, searchKeyWord])
+
   useEffect(() => {
     setIsAdmin(false)
-    loadDataSearch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    getTinhThanh()
-      .then((response) => {
-        if (response.data.error === 0) {
-          setProvinces(response.data.data)
+    setKeyword(resolvedKeyword)
+  }, [resolvedKeyword])
+
+  useEffect(() => {
+    const loadDataSearch = async () => {
+      setIsLoading(true)
+
+      try {
+        if (resolvedKeyword) {
+          const res = await searchBulletinBoardByAddress(resolvedKeyword)
+          const result = Array.isArray(res.result) ? res.result : []
+          setSearchData(result)
+          setTotalRooms(result.length)
+          return
         }
-      })
-      .catch((error) => {
-        console.error('Error fetching provinces:', error)
-      })
-  }, [])
 
-  // /name?name=${searchValue}
-  // Hàm để tải dữ liệu
-  const loadDataSearch = async (searchValue) => {
-    if (searchKeyWord) {
-      setKeyword(searchKeyWord)
+        const response = await axios.get(`${env.API_URL}/searchs`, {
+          headers: {
+            'ngrok-skip-browser-warning': '69420'
+          }
+        })
 
-      searchBulletinBoardByAddress(searchKeyWord).then((res) => {
-        setSearchData(res.result)
-        setTotalRooms(res.result.length)
-      })
-      return
-    }
-
-    try {
-      const response = await axios.get(`${env.API_URL}/searchs`, {
-        headers: {
-          'ngrok-skip-browser-warning': '69420'
-        }
-      })
-
-      // Kiểm tra trạng thái phản hồi
-      if (response.status === 200) {
-        const fetchedData = response.data.result
-
-        if (Array.isArray(fetchedData) && fetchedData.length > 0) {
+        if (response.status === 200) {
+          const fetchedData = Array.isArray(response.data.result) ? response.data.result : []
           setSearchData(fetchedData)
           setTotalRooms(fetchedData.length)
         } else {
           setSearchData([])
           setTotalRooms(0)
         }
-      } else {
-        console.log('Error: Status', response.status)
+      } catch (error) {
+        console.error('Error fetching search data:', error)
+        setSearchData([])
+        setTotalRooms(0)
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error('Error fetching data:', error)
     }
-  }
-  useEffect(() => {
-    loadDataSearch(searchValue)
-  }, [])
-  if (!provinces) {
-    return <LoadingPage />
-  }
+
+    loadDataSearch()
+  }, [resolvedKeyword])
 
   return (
-    <Box container>
-      <Container
-        sx={{
-          mt: 5,
-          borderRadius: '6px'
-        }}>
-        <FilterSearch
-          setTotalRooms={setTotalRooms}
-          searchKeyWord={searchKeyWord}
-          setSearchData={setSearchData}
-          recordedText={recordedText}
-          keyword={keyword}
-          setKeyword={setKeyword}
-        />
-      </Container>
-      <Container>
-        <Grid container>
-          <Grid item md={9} sx={{ mb: 4 }}>
-            <RoomList setSearchValue={setSearchValue} searchData={searchData} totalRooms={totalRooms} />
-          </Grid>
-          <Grid item md={3}>
-            <Name />
-            <DistrictList />
-          </Grid>
-        </Grid>
-      </Container>
-      {/* <ResponsiveMenu /> */}
-      <Container>
-        <Text />
-        <BannerHorizontal />
-        <ItemSearch />
+    <Box
+      component="main"
+      sx={{
+        minHeight: '100vh',
+        py: { xs: 2.5, md: 4 },
+        background: 'linear-gradient(180deg, #f8fbff 0%, #eef5ff 28%, #ffffff 100%)'
+      }}
+    >
+      <Container maxWidth="xl">
+        <Box sx={{ maxWidth: 1240, mx: 'auto' }}>
+          <FilterSearch
+            setTotalRooms={setTotalRooms}
+            searchKeyWord={searchKeyWord}
+            setSearchData={setSearchData}
+            keyword={keyword}
+            setKeyword={setKeyword}
+          />
+
+          <Box
+            sx={{
+              mt: 3,
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 320px' },
+              gap: 3,
+              alignItems: 'start'
+            }}
+          >
+            <RoomList searchData={searchData} totalRooms={totalRooms} keyword={keyword} isLoading={isLoading} />
+
+            <Box sx={{ display: 'grid', gap: 2.25 }}>
+              <Name />
+              <DistrictList />
+            </Box>
+          </Box>
+
+          <Box sx={{ mt: 3, display: 'grid', gap: 3 }}>
+            <Text keyword={keyword} totalRooms={totalRooms} />
+            <BannerHorizontal />
+            <ItemSearch />
+          </Box>
+        </Box>
       </Container>
     </Box>
   )

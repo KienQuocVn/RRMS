@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { Box, Avatar } from '@mui/material'
-import { useTheme } from '@emotion/react'
 import { useTranslation } from 'react-i18next'
 
 const MenuItem = ({ to, icon, label, highlight, badge, onClick }) => (
@@ -44,7 +43,7 @@ const SectionLabel = ({ label }) => (
 )
 
 export default function AccountMenu({ username, avatar, tokenExists, onMenuClose, onLogout }) {
-  const theme = useTheme()
+  const { t } = useTranslation()
 
   return (
     <Box
@@ -63,7 +62,6 @@ export default function AccountMenu({ username, avatar, tokenExists, onMenuClose
         zIndex: 1001
       }}
     >
-      {/* User header */}
       <Box sx={{ position: 'relative', p: 1.5, height: 124 }}>
         {username ? (
           <Box component={Link} to="/profile" onClick={onMenuClose} sx={{ display: 'flex', textDecoration: 'none' }}>
@@ -84,12 +82,11 @@ export default function AccountMenu({ username, avatar, tokenExists, onMenuClose
               }}
             />
             <Box sx={{ ml: 1, mt: '14px', fontWeight: 700, fontSize: '1rem', color: '#222222' }}>
-              Đăng nhập / Đăng ký
+              {t('header.accountMenu.loginRegister')}
             </Box>
           </Box>
         )}
 
-        {/* VA Banner */}
         <Box
           sx={{
             width: '100%',
@@ -119,7 +116,7 @@ export default function AccountMenu({ username, avatar, tokenExists, onMenuClose
           >
             <Box sx={{ display: 'flex', alignItems: 'center', pl: '47px', position: 'relative' }}>
               <Box component="img" src="/virtual-account-banner-icon.png" alt="" sx={{ width: 50, height: 40, position: 'absolute', left: -3, bottom: 0 }} />
-              <span>Nạp Đồng Tốt giá trị linh hoạt</span>
+              <span>{t('header.accountMenu.vaBanner')}</span>
             </Box>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path fill="#fff" d="M5.37301 3.12235C5.58129 2.91407 5.91893 2.91407 6.12721 3.12235L10.6273 7.62235C10.8356 7.83063 10.8356 8.16827 10.6273 8.37655L6.12721 12.8766C5.91893 13.0849 5.58129 13.0849 5.37301 12.8766C5.16473 12.6683 5.16473 12.3307 5.37301 12.1224L9.49588 7.99951L5.37301 3.87664C5.16473 3.66836 5.16473 3.33072 5.37301 3.0183Z" />
@@ -129,44 +126,47 @@ export default function AccountMenu({ username, avatar, tokenExists, onMenuClose
         <Box sx={{ borderTop: '1px solid rgba(0,0,0,0.08)', mt: 1 }} />
       </Box>
 
-      {/* Quản lý đơn hàng */}
-      <SectionLabel label="Quản lí đơn hàng" />
-      <MenuItem to="#" icon="/escrow_buy_orders.svg" label="Đơn mua" onClick={onMenuClose} />
-      <MenuItem to="#" icon="/escrow-orders.svg" label="Đơn bán" onClick={onMenuClose} />
-      <MenuItem to="#" icon="/escrow.svg" label="Ví bán hàng" badge="Liên kết ngay" highlight onClick={onMenuClose} />
+      <SectionLabel label={t('header.accountMenu.sections.orders')} />
+      <MenuItem to="#" icon="/escrow_buy_orders.svg" label={t('header.accountMenu.items.buyOrders')} onClick={onMenuClose} />
+      <MenuItem to="#" icon="/escrow-orders.svg" label={t('header.accountMenu.items.sellOrders')} onClick={onMenuClose} />
+      <MenuItem
+        to="#"
+        icon="/escrow.svg"
+        label={t('header.accountMenu.items.salesWallet')}
+        badge={t('header.accountMenu.badges.linkNow')}
+        highlight
+        onClick={onMenuClose}
+      />
 
-      {/* Tiện ích - chỉ hiện khi đã đăng nhập */}
       {tokenExists && (
         <>
-          <SectionLabel label="Tiện ích" />
-          <MenuItem to="/heart" icon="/menu-saved-ad.svg" label="Tin đăng đã lưu" onClick={onMenuClose} />
-          <MenuItem to="#" icon="/menu-saved-search.svg" label="Tìm kiếm đã lưu" onClick={onMenuClose} />
-          <MenuItem to="/rating-history" icon="/menu-rating-management.svg" label="Đánh giá từ tôi" onClick={onMenuClose} />
+          <SectionLabel label={t('header.accountMenu.sections.utilities')} />
+          <MenuItem to="/heart" icon="/menu-saved-ad.svg" label={t('header.accountMenu.items.savedPosts')} onClick={onMenuClose} />
+          <MenuItem to="#" icon="/menu-saved-search.svg" label={t('header.accountMenu.items.savedSearches')} onClick={onMenuClose} />
+          <MenuItem to="/rating-history" icon="/menu-rating-management.svg" label={t('header.accountMenu.items.myRatings')} onClick={onMenuClose} />
         </>
       )}
 
-      {/* Dịch vụ trả phí */}
-      <SectionLabel label="Dịch vụ trả phí" />
-      <MenuItem to="#" icon="/sub-pro.svg" label="Gói PRO" onClick={onMenuClose} />
-      {tokenExists && (
-        <MenuItem to="#" icon="/circle-list.svg" label="Lịch sử giao dịch" onClick={onMenuClose} />
-      )}
-      <MenuItem to="#" icon="/shop-more.svg" label="Cửa hàng" badge="Tạo ngay" highlight onClick={onMenuClose} />
+      <SectionLabel label={t('header.accountMenu.sections.paidServices')} />
+      <MenuItem to="#" icon="/sub-pro.svg" label={t('header.accountMenu.items.proPackage')} onClick={onMenuClose} />
+      {tokenExists && <MenuItem to="#" icon="/circle-list.svg" label={t('header.accountMenu.items.transactionHistory')} onClick={onMenuClose} />}
+      <MenuItem
+        to="#"
+        icon="/shop-more.svg"
+        label={t('header.accountMenu.items.store')}
+        badge={t('header.accountMenu.badges.createNow')}
+        highlight
+        onClick={onMenuClose}
+      />
 
-      {/* Ưu đãi */}
-      <SectionLabel label="Ưu đãi, khuyến mãi" />
-      <MenuItem to="#" icon="/reward-icon.svg" label="RRMS ưu đãi" onClick={onMenuClose} />
-      <MenuItem to="#" icon="/voucher-icon.svg" label="Ưu đãi của tôi" onClick={onMenuClose} />
+      <SectionLabel label={t('header.accountMenu.sections.offers')} />
+      <MenuItem to="#" icon="/reward-icon.svg" label={t('header.accountMenu.items.rrmsOffers')} onClick={onMenuClose} />
+      <MenuItem to="#" icon="/voucher-icon.svg" label={t('header.accountMenu.items.myOffers')} onClick={onMenuClose} />
 
-      {/* Khác */}
-      <SectionLabel label="Khác" />
-      {tokenExists && (
-        <MenuItem to="/profile" icon="/setting.svg" label="Cài đặt tài khoản" onClick={onMenuClose} />
-      )}
-      <MenuItem to="#" icon="/setting.svg" label="Trợ giúp" onClick={onMenuClose} />
-      {tokenExists && (
-        <MenuItem icon="/setting.svg" label="Đăng xuất" onClick={onLogout} />
-      )}
+      <SectionLabel label={t('header.accountMenu.sections.others')} />
+      {tokenExists && <MenuItem to="/profile" icon="/setting.svg" label={t('header.accountMenu.items.accountSettings')} onClick={onMenuClose} />}
+      <MenuItem to="#" icon="/setting.svg" label={t('header.accountMenu.items.help')} onClick={onMenuClose} />
+      {tokenExists && <MenuItem icon="/setting.svg" label={t('header.accountMenu.items.logout')} onClick={onLogout} />}
     </Box>
   )
 }

@@ -13,7 +13,7 @@
   "gio-giac": "Giờ giấc",
   "ngay-bat-dau-cho-thue": "Ngày bắt đầu cho thuê",
   "kiem-duyet": "Kiểm duyệt",
-  "toi-da-nguoi-o": "Tối đã người ở",
+  "toi-da-nguoi-o": "Tối đa người ở",
   "tien-coc": "Tiền cọc",
   "dien-tich": "Diện tích",
   "tien-dien": "Tiền điện",
@@ -36,7 +36,7 @@
   "gia_tu": "Giá từ",
   "khoang-dien-tich": "Khoảng diện tích",
   "tieu-chi-tim-kiem": "TIÊU CHÍ TÌM KIẾM",
-  "khu-vuc-tim-kiem": "Bạn muốn tìm kiếm tại Khu vực quận/huyện nào?",
+  "khu-vuc-tim-kiem": "Bạn muốn tìm kiếm tại khu vực quận/huyện nào?",
   "tinh-thanhpho": "Chọn Tỉnh/Thành phố",
   "quan-huyen": "Chọn Quận/Huyện",
   "loai-hinh": "Loại hình tìm kiếm?",
@@ -56,7 +56,7 @@
   "nganh-nghe-khac": "Ngành nghề khác",
   "quay-ve": "Quay về",
   "404-xin-loi-khong-ton-tai": "Xin lỗi, trang bạn tìm kiếm không tồn tại. Vui lòng trở về trang chủ để tiếp tục.",
-  "duoi-phong-tro": "Dưới phòng trọ gần",
+  "duoi-phong-tro": "Dưới đây là phòng trọ gần",
   "ban-kinh-tim-kiem": "Bán kính tìm kiếm",
   "khi-tim-phong-tro-gan": "Khi tìm phòng trọ gần",
   "tim-phong-tro": "Tìm phòng trọ gần",
@@ -84,13 +84,13 @@
   "dac-diem": "Đặc điểm khu vực",
   "noi-dung-3": "TPHCM hiện có 16 quận, 5 huyện và 1 thành phố. Dịch vụ",
   "cho-thue-phong-tro-hcm": "cho thuê phòng trọ TPHCM",
-  "noi-dung-4": " cũng trải dài theo các vị trí này. Trong đó, phòng trọ gần trường, gần KCN, gần chợ, gần siêu thị là những vị trí “đắc địa”, nhận được nhiều sự quan tâm của khách thuê.",
+  "noi-dung-4": "cũng trải dài theo các vị trí này. Trong đó, phòng trọ gần trường, gần KCN, gần chợ, gần siêu thị là những vị trí “đắc địa”, nhận được nhiều sự quan tâm của khách thuê.",
   "noi-dung-5": "Có thể thấy, đối tượng lựa chọn loại hình",
   "noi-dung-6": "rất đa dạng, thuộc nhiều độ tuổi và ngành nghề khác nhau. Từ đó, đặt ra nhu cầu tìm phòng trọ khác nhau, bao gồm cả về vị trí, giá cả, diện tích và các tiện ích xung quanh.",
   "noi-dung-7": "Không chỉ cung cấp thông tin về dịch vụ",
   "noi-dung-8": "còn mang giải pháp tìm trọ nhanh đến người dùng trên mọi miền đất nước như phòng trọ Hà Nội,",
   "noi-dung-9": "phòng trọ Đà Nẵng, phòng trọ Cần Thơ",
-  "noi-dung-10": " ,... DQ4T sẽ đồng hành để mang đến cho bạn căn trọ hài lòng nhất.",
+  "noi-dung-10": ",... DQ4T sẽ đồng hành để mang đến cho bạn căn trọ hài lòng nhất.",
   "an-bot": "Ẩn bớt",
   "cho-thue-phong-tro": "Cho thuê phòng trọ:",
   "tiep-can-khach-hang-de-dang-tin": "Tiếp cận khách thuê dễ dàng với tính năng đăng tin",
@@ -107,7 +107,7 @@
   "luot-truy-cap": "Lượt truy cập",
   "chung-toi-tu-hao": "Chúng tôi tự hào là một trong những dịch vụ tìm kiếm phòng trọ đứng đầu Việt Nam, với phương châm tìm là có chúng tôi luôn cập nhật phòng nhanh nhất, chính xác nhất và ưu tiên sự tiện lợi cho người tìm trọ lên hàng đầu.",
   "tai": "tại",
-  "phan-mem-quan-ly-nha-cho-thue": " Phần mềm quản lý nhà cho thuê",
+  "phan-mem-quan-ly-nha-cho-thue": "Phần mềm quản lý nhà cho thuê",
   "dt-mt": "Điện thoại - iPad - Máy tính",
   "quan-ly-nhe-nhang": "Quản lý nhẹ nhàng như chiếc smartphone trong tay của bạn!",
   "su-dung-don-gian": "Sử dụng đơn giản, chi phí tối ưu, hỗ trợ sâu sát & phù hợp với tất cả loại hình tòa nhà cho thuê như văn phòng, nhà trọ – căn hộ, coworking space,…",
@@ -122,5 +122,805 @@
   "danh-muc": "Danh mục",
   "muon-thue": "Muốn thuê",
   "nhap-thong-tin": "Nhập thông tin tìm kiếm",
-  "tai-khoan": "Tài khoản"
+  "tai-khoan": "Tài khoản",
+  "header": {
+    "alerts": {
+      "noticeTitle": "Thông báo",
+      "tokenMissing": "Không tìm thấy token, vui lòng đăng nhập lại.",
+      "logoutSuccessTitle": "Thành công",
+      "logoutSuccessText": "Đăng xuất thành công!",
+      "logoutFailedTitle": "Đăng xuất thất bại",
+      "errorTitle": "Lỗi",
+      "logoutErrorText": "Đã xảy ra lỗi khi thực hiện đăng xuất."
+    },
+    "warningEmail": {
+      "prefix": "Vui lòng thêm email",
+      "link": "tại đây",
+      "suffix": "để có thể sử dụng chức năng quên mật khẩu"
+    },
+    "language": {
+      "vi": "Tiếng Việt",
+      "en": "English"
+    },
+    "search": {
+      "categoryItems": {
+        "wantRent": "Muốn thuê",
+        "forRent": "Cho thuê",
+        "project": "Dự án"
+      },
+      "menuItems": {
+        "wantRent": "Muốn thuê",
+        "forRent": "Cho thuê",
+        "project": "Dự án",
+        "findBroker": "Tìm môi giới",
+        "priceChart": "Biểu đồ biến động giá",
+        "homeLoan": "Vay mua nhà"
+      },
+      "searchButtonAria": "Tìm kiếm",
+      "logoAlt": "RRMS"
+    },
+    "mobileNav": {
+      "home": "Trang chủ",
+      "manage": "Quản lý tin",
+      "post": "Đăng tin",
+      "notify": "Thông báo",
+      "account": "Tài khoản",
+      "searchPlaceholder": "Nhập thông tin tìm kiếm",
+      "wantRent": "Muốn thuê"
+    },
+    "accountMenu": {
+      "loginRegister": "Đăng nhập / Đăng ký",
+      "vaBanner": "Nạp Đồng Tốt giá trị linh hoạt",
+      "sections": {
+        "orders": "Quản lý đơn hàng",
+        "utilities": "Tiện ích",
+        "paidServices": "Dịch vụ trả phí",
+        "offers": "Ưu đãi, khuyến mãi",
+        "others": "Khác"
+      },
+      "items": {
+        "buyOrders": "Đơn mua",
+        "sellOrders": "Đơn bán",
+        "salesWallet": "Ví bán hàng",
+        "savedPosts": "Tin đăng đã lưu",
+        "savedSearches": "Tìm kiếm đã lưu",
+        "myRatings": "Đánh giá từ tôi",
+        "proPackage": "Gói PRO",
+        "transactionHistory": "Lịch sử giao dịch",
+        "store": "Cửa hàng",
+        "rrmsOffers": "RRMS ưu đãi",
+        "myOffers": "Ưu đãi của tôi",
+        "accountSettings": "Cài đặt tài khoản",
+        "help": "Trợ giúp",
+        "logout": "Đăng xuất"
+      },
+      "badges": {
+        "linkNow": "Liên kết ngay",
+        "createNow": "Tạo ngay"
+      }
+    },
+    "notifications": {
+      "activity": "HOẠT ĐỘNG",
+      "news": "TIN MỚI",
+      "loginPrompt": "Vui lòng đăng nhập để xem danh sách hoạt động.",
+      "registerLogin": "Đăng ký / Đăng nhập",
+      "emptyActivity": "Không có hoạt động nào.",
+      "emptyNews": "Chúng tôi không có cập nhật nào. Vui lòng kiểm tra lại sau"
+    },
+    "postNow": "ĐĂNG TIN"
+  },
+  "footer": {
+    "linksTitle": "Liên kết",
+    "infoTitle": "RRMS",
+    "infoDescription": "RRMS là nền tảng hỗ trợ tìm phòng trọ và căn hộ thuận tiện, an toàn, phù hợp với nhu cầu thực tế của người thuê. Chúng tôi kết hợp dữ liệu, công nghệ và đội ngũ hỗ trợ để giúp quá trình tìm phòng diễn ra nhanh, rõ ràng và tiết kiệm thời gian hơn.",
+    "contactTitle": "Thông tin & Liên hệ",
+    "contacts": {
+      "officeRepresentative": {
+        "title": "VP đại diện:",
+        "content": "Verosa Park, Số 39 Đường số 10, Khu phố 2 - P. Long Trường - TP. Hồ Chí Minh"
+      },
+      "officeWorking": {
+        "title": "VP làm việc:",
+        "content": "201/15 - Lê Văn Việt - P. Tăng Nhơn Phú - TP. Hồ Chí Minh"
+      },
+      "email": {
+        "title": "Email:",
+        "content": "RRMS.com@gmail.com"
+      },
+      "workingHours": {
+        "title": "Giờ làm:",
+        "content": "Từ 8h - 18h từ Thứ 2 đến Thứ 6 và sáng Thứ 7"
+      },
+      "hotline": {
+        "title": "Hotline - Zalo:",
+        "content": "0919925302"
+      }
+    },
+    "supportText": "Liên hệ với chúng tôi nếu bạn cần hỗ trợ",
+    "links": {
+      "contact": "Liên hệ",
+      "introduce": "Giới thiệu về RRMS",
+      "privacy": "Chính sách bảo mật",
+      "terms": "Điều khoản sử dụng",
+      "regulation": "Quy chế hoạt động",
+      "complaints": "Chính sách giải quyết khiếu nại"
+    },
+    "hotlines": {
+      "hcmCity": "Kinh doanh Hồ Chí Minh",
+      "hanoi": "Kinh doanh Hà Nội",
+      "danang": "Kinh doanh Đà Nẵng",
+      "policySupport": "Hỗ trợ chính sách",
+      "postingSupport": "Hỗ trợ đăng tin"
+    },
+    "social": {
+      "zalo": "Kênh ZALO",
+      "facebook": "Kênh Facebook",
+      "youtube": "Kênh Youtube",
+      "tiktok": "Kênh Tiktok"
+    },
+    "badges": {
+      "notified": "Đã thông báo",
+      "registered": "Đã đăng ký",
+      "industryTrade": "Bộ Công Thương"
+    },
+    "apps": {
+      "ownerTitle": "App RRMS - Chủ nhà, ban quản lý",
+      "ownerDescription": "Dành cho chủ nhà, chủ trọ, ban quản lý chung cư",
+      "tenantTitle": "App RRMS - Tìm trọ, căn hộ",
+      "tenantDescription": "Dành cho khách thuê, cư dân",
+      "appStoreTop": "Tải trên",
+      "appStoreBottom": "App Store",
+      "googlePlayTop": "Android trên",
+      "googlePlayBottom": "Google Play"
+    },
+    "copyright": {
+      "line1": "Copyright © RRMS - Tìm trọ, căn hộ",
+      "company": "CÔNG TY TNHH GIẢI PHÁP THÔNG MINH RRMS",
+      "line3": "Đăng ký kinh doanh số 0318272823 - do Sở Kế hoạch và Đầu tư thành phố Hồ Chí Minh cấp lần đầu ngày 19 tháng 01 năm 2024"
+    }
+  },
+  "detail": {
+    "copiedLink": "Đã sao chép liên kết tin đăng",
+    "copiedDescription": "Đã sao chép mô tả",
+    "saveForLaterSoon": "Tính năng lưu xem sau sẽ được bổ sung sau",
+    "gallery": {
+      "realImages": "{{count}} ảnh thực tế",
+      "noImages": "Chưa có hình ảnh cho tin đăng này."
+    },
+    "summary": {
+      "currentPrice": "Mức giá hiện tại",
+      "vacant": "Còn trống",
+      "occupied": "Đã có khách",
+      "approvedPost": "Tin đã kiểm duyệt",
+      "pendingPost": "Tin chưa kiểm duyệt",
+      "category": "Chuyên mục",
+      "status": "Tình trạng",
+      "hours": "Giờ giấc",
+      "startRent": "Bắt đầu cho thuê",
+      "approval": "Kiểm duyệt",
+      "maxPeople": "Tối đa người ở",
+      "updating": "Đang cập nhật",
+      "unlimited": "Không giới hạn",
+      "deposit": "Tiền cọc",
+      "area": "Diện tích",
+      "electricity": "Tiền điện",
+      "water": "Tiền nước",
+      "featuredAmenities": "Tiện ích nổi bật"
+    },
+    "contact": {
+      "ownerFallback": "Chủ tin đăng",
+      "verified": "Đã xác minh",
+      "pendingVerify": "Đang chờ xác minh",
+      "contactMissing": "Tin đăng này chưa có số điện thoại liên hệ",
+      "copiedPhone": "Đã sao chép số điện thoại",
+      "zalo": "Nhắn Zalo",
+      "phone": "Xem số điện thoại",
+      "interest": "Quan tâm tin đăng",
+      "report": "Báo cáo tin đăng",
+      "interestSoon": "Tính năng quan tâm sẽ được bổ sung sau",
+      "reportSoon": "Tính năng báo cáo sẽ được bổ sung sau",
+      "safeTitle": "Lưu ý an toàn",
+      "safeDescription": "Ưu tiên gọi trực tiếp cho chủ tin, kiểm tra thông tin phòng thực tế và chỉ thanh toán khi đã xác minh rõ."
+    },
+    "description": {
+      "title": "Thông tin mô tả",
+      "subtitle": "Nội dung được giữ nguyên từ tin đăng gốc để không ảnh hưởng dữ liệu backend.",
+      "copy": "Sao chép mô tả",
+      "empty": "Chưa có mô tả chi tiết cho tin đăng này.",
+      "shareFacebook": "Chia sẻ Facebook",
+      "sharePost": "Chia sẻ tin đăng"
+    },
+    "review": {
+      "title": "Đánh giá và nhận xét",
+      "averageTitle": "Đánh giá trung bình",
+      "reviewCount": "{{count}} lượt đánh giá",
+      "noReviews": "Chưa có đánh giá nào cho tin đăng này.",
+      "yourReview": "Đánh giá của bạn",
+      "reviewPlaceholder": "Chia sẻ cảm nhận của bạn về phòng này",
+      "sendReview": "Gửi đánh giá",
+      "reviewSuccess": "Đánh giá thành công",
+      "deleteComment": "Xóa bình luận này",
+      "deleteSuccess": "Đã xóa bình luận thành công"
+    },
+    "related": {
+      "title": "Gợi ý cùng khu vực",
+      "moreAt": "Xem thêm {{category}} tại {{province}}",
+      "verified": "Đã xác minh",
+      "unverified": "Chưa xác minh",
+      "images": "{{count}} ảnh",
+      "reviews": "{{count}} đánh giá",
+      "ownerFallback": "Chủ tin"
+    },
+    "item": {
+      "noImage": "Không có hình ảnh",
+      "locationShort": "Vị trí",
+      "locationFull": "Xem vị trí",
+      "imageIndex": "Ảnh {{current}}/{{total}}"
+    }
+  },
+  "support": {
+    "title": "Dịch vụ hỗ trợ tìm phòng trọ tại RRMS",
+    "subtitle": "Miễn phí - An toàn - An tâm - Phù hợp - Nhanh chóng có phòng",
+    "bannerTitle": "BẠN CHƯA TÌM ĐƯỢC PHÒNG?",
+    "bannerDescription": "Để lại thông tin chuyên viên RRMS sẽ hỗ trợ bạn tìm phòng nhanh chóng!",
+    "searchLabel": "Tìm kiếm Phòng trọ, nhà trọ tại Khu vực",
+    "location": "Quận 3, Hồ Chí Minh",
+    "privacyNote": "Với việc cung cấp thông tin là bạn đã chấp nhận chính sách giới thiệu thông tin của bạn tới chủ nhà và chuyên viên hỗ trợ của RRMS",
+    "privacyLinkLabel": "Chính sách bảo mật",
+    "submit": "Yêu cầu hỗ trợ",
+    "fields": {
+      "name": "Tên:",
+      "namePlaceholder": "Tên",
+      "phone": "SĐT liên hệ",
+      "phonePlaceholder": "Số điện thoại liên hệ",
+      "dateOfStay": "Ngày vào ở",
+      "priceRange": "Khoảng giá",
+      "pricePlaceholder": "Khung giá"
+    },
+    "prices": {
+      "under1m": "Dưới 1 triệu",
+      "from1to2": "1 - 2 triệu",
+      "from2to3": "2 - 3 triệu",
+      "from3to4": "3 - 4 triệu",
+      "from4to5": "4 - 5 triệu",
+      "over5m": "Trên 5 triệu"
+    },
+    "validation": {
+      "nameRequired": "Vui lòng nhập tên",
+      "phoneRequired": "Vui lòng nhập số điện thoại",
+      "dateRequired": "Vui lòng chọn ngày vào ở",
+      "priceRequired": "Vui lòng chọn khung giá"
+    },
+    "alerts": {
+      "noticeTitle": "Thông báo",
+      "successTitle": "Thành công",
+      "successText": "Gửi yêu cầu hỗ trợ thành công",
+      "errorDefault": "Chưa thể gửi yêu cầu hỗ trợ, vui lòng thử lại.",
+      "errorLater": "Đã có lỗi xảy ra, vui lòng thử lại sau."
+    }
+  },
+  "introduce": {
+    "hero": {
+      "title": "Giới thiệu RRMS",
+      "subtitle": "Tìm trọ, căn hộ, quản lý vận hành và kết nối nhu cầu thuê ở trên một nền tảng rõ ràng, hiện đại.",
+      "description": "Kênh thông tin giúp người thuê tìm phòng dễ hơn và giúp chủ nhà tiếp cận đúng khách thuê nhanh hơn."
+    },
+    "story": {
+      "title": "Câu chuyện chúng tôi",
+      "paragraphs": [
+        "Việc tìm nhà trọ chưa bao giờ là bài toán dễ với sinh viên và người đi làm xa nhà. Từ trải nghiệm thực tế của chính mình, đội ngũ RRMS hiểu rõ cảm giác phải đi xem nhiều nơi, thiếu minh bạch thông tin và mất nhiều thời gian mới tìm được chỗ ở phù hợp.",
+        "RRMS được xây dựng để giải quyết bài toán đó bằng công nghệ, giúp người thuê tìm phòng nhanh hơn, rõ ràng hơn và giúp chủ nhà tiếp cận đúng khách thuê hiệu quả hơn. Mục tiêu của chúng tôi là tạo ra một hệ sinh thái thuê trọ hiện đại, thực tế và đáng tin cậy."
+      ],
+      "imageAlt": "Sinh viên tìm phòng trọ",
+      "cardTitle": "RRMS đồng hành cùng người thuê",
+      "cardDescription": "Tối ưu hành trình tìm trọ và tăng hiệu quả tiếp cận cho chủ nhà."
+    },
+    "missionVision": {
+      "title": "Sứ mệnh - Tầm nhìn của chúng tôi",
+      "missionTitle": "Sứ mệnh",
+      "visionTitle": "Tầm nhìn",
+      "missionItems": [
+        "Cung cấp giải pháp thông minh giúp người thuê và chủ nhà kết nối nhanh, rõ ràng và an tâm hơn trong toàn bộ hành trình thuê trọ.",
+        "Tạo ra môi trường thuê và cho thuê minh bạch, tiết kiệm thời gian, giảm chi phí và nâng chuẩn trải nghiệm dịch vụ nhà trọ."
+      ],
+      "visionText": "RRMS định hướng trở thành nền tảng công nghệ dẫn đầu trong lĩnh vực tìm phòng trọ, căn hộ và quản lý vận hành cho thuê, nơi dữ liệu minh bạch và trải nghiệm người dùng luôn là trọng tâm.",
+      "quoteBody": "Tư duy sản phẩm của RRMS là tạo ra trải nghiệm thuê ở tốt hơn, minh bạch hơn và có thể mở rộng bền vững theo nhu cầu thực tế."
+    },
+    "coreValues": {
+      "title": "Giá trị cốt lõi",
+      "imageAlt": "Giá trị cốt lõi RRMS",
+      "items": [
+        "Đột phá và sáng tạo để giải quyết đúng vấn đề thực tế",
+        "Mang lại giá trị thật cho cộng đồng người thuê và chủ nhà",
+        "Hoàn thiện trọn vẹn từ trải nghiệm đến hiệu quả vận hành",
+        "Luôn minh bạch, rõ ràng và trung thực trong từng điểm chạm",
+        "Không ngừng lắng nghe để cải tiến sản phẩm theo nhu cầu thị trường",
+        "Ứng dụng công nghệ thực chiến giúp tiết kiệm thời gian và chi phí"
+      ]
+    },
+    "capability": {
+      "title": "Đội ngũ - Năng lực",
+      "items": [
+        "Kinh nghiệm 10+ năm trong phát triển phần mềm, website và ứng dụng",
+        "Đã triển khai và trải nghiệm các bài toán proptech, ecommerce và logistics",
+        "Quy trình làm việc chặt chẽ, rõ trách nhiệm và dễ mở rộng",
+        "Đội ngũ trẻ, tận tâm, thực chiến và luôn hướng đến giá trị thật cho khách hàng"
+      ]
+    },
+    "promo": {
+      "heroTitle": "Chủ nhà: Sale phòng trọ, lấp phòng trống",
+      "heroSubtitle": "Hiệu quả - Tiết kiệm - Chất lượng",
+      "heroDescription": "RRMS hỗ trợ chủ nhà tăng tốc độ lấp phòng, nâng hiệu quả đăng tin và tối ưu quy trình quản lý nhờ nền tảng công nghệ phù hợp với vận hành thực tế.",
+      "heroButton": "Lấp phòng trống ngay",
+      "heroImageAlt": "Quản lý trọ thông minh",
+      "cards": [
+        {
+          "title": "Trở thành chuyên viên kinh doanh RRMS",
+          "description": "Hỗ trợ nhiều công cụ khai thác khách tiềm năng, nâng cao hiệu quả chốt khách và mở rộng thu nhập.",
+          "buttonLabel": "Trở thành đối tác"
+        },
+        {
+          "title": "Bạn vẫn chưa thuê được phòng?",
+          "description": "Hãy để lại thông tin, chuyên viên RRMS sẽ hỗ trợ bạn tìm phòng nhanh và phù hợp hơn.",
+          "buttonLabel": "Gửi nhận thông tin"
+        }
+      ]
+    },
+    "postSteps": {
+      "title": "Các bước đăng tin tại RRMS",
+      "description": "Tiếp cận khách thuê dễ dàng với quy trình đăng tin ngắn gọn và rõ ràng.",
+      "items": [
+        {
+          "step": "1",
+          "title": "Đăng nhập/Đăng ký",
+          "description": "Tạo tài khoản và xác thực thông tin trước khi sử dụng dịch vụ"
+        },
+        {
+          "step": "2",
+          "title": "Đăng tin",
+          "description": "Đăng bài trong tài khoản cá nhân với đầy đủ hình ảnh và nội dung"
+        },
+        {
+          "step": "3",
+          "title": "Xét duyệt & tiếp cận khách thuê",
+          "description": "Chuyên viên hỗ trợ kiểm duyệt và tối ưu hiển thị nhanh chóng"
+        }
+      ]
+    },
+    "stats": {
+      "title": "RRMS có gì?",
+      "description": "Một nền tảng hướng đến việc cập nhật thông tin nhanh, minh bạch và tối ưu trải nghiệm tìm trọ cho cả người thuê lẫn chủ nhà.",
+      "footerText": "Chúng tôi tập trung xây dựng hệ thống dữ liệu có kiểm soát, hiển thị rõ ràng và vận hành bền vững để người dùng luôn có trải nghiệm tìm kiếm đáng tin cậy hơn.",
+      "items": {
+        "landlords": "Chủ nhà",
+        "rooms": "Phòng/căn hộ",
+        "tenants": "Khách thuê",
+        "brokers": "Môi giới"
+      }
+    }
+  },
+  "profile": {
+    "tabs": {
+      "profile": "Hồ sơ",
+      "billing": "Chi tiêu",
+      "security": "Bảo mật",
+      "notifications": "Thông báo"
+    },
+    "metrics": {
+      "monthsRented": "Tổng số tháng đã thuê",
+      "monthsPaid": "Tổng số tháng đã thanh toán",
+      "monthsUnpaid": "Tổng số tháng chưa thanh toán"
+    },
+    "alerts": {
+      "loadFailed": "Không thể tải hồ sơ người dùng.",
+      "imageFailed": "Không thể xử lý ảnh đại diện.",
+      "copiedLink": "Đã sao chép liên kết hồ sơ.",
+      "copyFailed": "Không thể sao chép liên kết.",
+      "savingInfo": "Đang thay đổi thông tin!",
+      "saveSuccess": "Thay đổi thông tin thành công!",
+      "saveError": "Có lỗi xảy ra khi cập nhật thông tin.",
+      "passwordMissing": "Vui lòng nhập đầy đủ thông tin mật khẩu.",
+      "passwordMismatch": "Mật khẩu xác nhận không khớp với mật khẩu mới!",
+      "passwordSuccess": "Thay đổi mật khẩu thành công!",
+      "passwordError": "Không thể đổi mật khẩu, vui lòng thử lại."
+    },
+    "validation": {
+      "emailInvalid": "Email không hợp lệ",
+      "emailRequired": "Bắt buộc nhập email",
+      "genderRequired": "Bắt buộc nhập giới tính",
+      "birthdayRequired": "Ngày sinh là bắt buộc.",
+      "birthdayMinAge": "Bạn phải trên 16 tuổi.",
+      "cccdInvalid": "CCCD phải bao gồm 12 chữ số."
+    },
+    "header": {
+      "badge": "Trung tâm quản lý hồ sơ",
+      "title": "Hồ sơ tài khoản RRMS",
+      "description": "Theo dõi thông tin cá nhân, bảo mật, lịch sử chi tiêu và tùy chọn thông báo trong một giao diện rõ ràng, dễ thao tác và dễ mở rộng về sau.",
+      "missingEmail": "Chưa cập nhật email"
+    },
+    "account": {
+      "title": "Thông tin tài khoản",
+      "description": "Quản lý những thông tin cơ bản hiển thị trong hồ sơ của bạn.",
+      "username": "Tên tài khoản",
+      "fullName": "Họ và tên",
+      "email": "Email",
+      "phone": "Số điện thoại"
+    },
+    "personal": {
+      "title": "Thông tin cá nhân",
+      "description": "Các trường này giúp RRMS hiểu và xác minh thông tin hồ sơ của bạn tốt hơn.",
+      "gender": "Giới tính",
+      "male": "Nam",
+      "female": "Nữ",
+      "other": "Khác",
+      "birthday": "Ngày tháng năm sinh",
+      "cccd": "CCCD"
+    },
+    "save": {
+      "title": "Lưu thay đổi",
+      "description": "Kiểm tra lại thông tin trước khi cập nhật để tránh sai lệch dữ liệu hồ sơ.",
+      "note": "Hệ thống sẽ giữ nguyên luồng backend hiện tại và chỉ cập nhật các trường bạn chỉnh sửa.",
+      "saving": "Đang lưu...",
+      "button": "Lưu thay đổi"
+    },
+    "sidebar": {
+      "anonymous": "Người dùng ẩn danh",
+      "viewPublicProfile": "Xem trang cá nhân công khai",
+      "profileLinkAria": "Liên kết hồ sơ",
+      "copyProfileLinkAria": "Sao chép liên kết hồ sơ",
+      "changeAvatarAria": "Đổi ảnh đại diện"
+    },
+    "notifications": {
+      "title": "Tùy chọn thông báo",
+      "description": "Quản lý các kênh nhận thông báo để không bỏ lỡ cập nhật quan trọng.",
+      "emailTitle": "Nhận thông báo qua email",
+      "emailDescription": "Dùng cho các cập nhật về hồ sơ, bảo mật và thanh toán.",
+      "systemTitle": "Thông báo hệ thống",
+      "systemDescription": "Các cảnh báo liên quan đến tài khoản và thay đổi quan trọng trong hệ thống."
+    },
+    "security": {
+      "title": "Thay đổi mật khẩu",
+      "description": "Cập nhật mật khẩu định kỳ để tăng độ an toàn cho tài khoản của bạn.",
+      "currentPassword": "Mật khẩu hiện tại",
+      "newPassword": "Mật khẩu mới",
+      "confirmPassword": "Nhập lại mật khẩu",
+      "submit": "Đổi mật khẩu",
+      "toggleVisibility": "Hiện hoặc ẩn mật khẩu"
+    },
+    "securityOptions": {
+      "twoFactorTitle": "Xác thực bằng 2 lớp",
+      "twoFactorDescription": "Bổ sung một lớp bảo vệ cho tài khoản bằng xác thực nâng cao.",
+      "twoFactorHint": "Bạn có thể chuẩn bị cấu hình SMS hoặc ứng dụng xác thực ở bước tiếp theo mà không ảnh hưởng luồng hiện tại.",
+      "enableAdvanced": "Bật xác thực bảo mật nâng cao",
+      "phoneLabel": "Số điện thoại",
+      "phonePlaceholder": "Nhập số điện thoại SMS",
+      "privacyTitle": "Tùy chọn bảo mật",
+      "privacyDescription": "Kiểm soát quyền riêng tư và cách dữ liệu tài khoản được sử dụng.",
+      "privacyHeading": "Quyền riêng tư của tài khoản",
+      "privacyHint": "Đặt tài khoản ở chế độ riêng tư hoặc công khai tùy theo nhu cầu.",
+      "public": "Công khai",
+      "private": "Riêng tư",
+      "dataSharingHeading": "Chia sẻ dữ liệu",
+      "dataSharingHint": "Chọn cách dữ liệu của bạn được chia sẻ với nhà phát triển ứng dụng.",
+      "shareYes": "Có, chia sẻ dữ liệu",
+      "shareNo": "Không, giới hạn chia sẻ dữ liệu"
+    },
+    "dangerZone": {
+      "title": "Vùng thao tác nhạy cảm",
+      "description": "Hành động bên dưới có tính phá huỷ và không thể hoàn tác.",
+      "warning": "Xóa tài khoản của bạn là hành động không thể phục hồi. Hãy chắc chắn rằng bạn đã sao lưu dữ liệu cần thiết.",
+      "button": "Tôi hiểu, xóa tài khoản của tôi"
+    }
+  },
+  "auth": {
+    "brandTitle": "PHẦN MỀM QUẢN LÝ NHÀ TRỌ",
+    "brandSubtitle": "Quản lý chuyên nghiệp!",
+    "copyright": "Copyright @ RRMS - Quản lý nhà cho thuê",
+    "sidebar": {
+      "qrAlt": "Tải ứng dụng tìm phòng qua mã QR",
+      "scanTitle": "Quét mã tải app",
+      "description": "* Để đăng nhập bạn phải có tài khoản. Vui lòng đăng ký tài khoản nếu chưa có"
+    },
+    "login": {
+      "title": "Đăng nhập tài khoản",
+      "createAccount": "Tạo tài khoản",
+      "forgotPassword": "Quên mật khẩu",
+      "phonePlaceholder": "Số điện thoại *",
+      "passwordPlaceholder": "Mật khẩu *",
+      "submit": "Đăng nhập",
+      "alerts": {
+        "errorTitle": "Lỗi",
+        "successTitle": "Đăng nhập thành công!",
+        "successText": "Chào mừng bạn quay trở lại!",
+        "genericError": "Có lỗi xảy ra, vui lòng thử lại.",
+        "captchaFailed": "Captcha xác thực không thành công!",
+        "noticeTitle": "Thông báo",
+        "missingFields": "Vui lòng nhập đầy đủ thông tin.",
+        "passwordWrong": "Sai mật khẩu. Vui lòng kiểm tra lại mật khẩu của bạn.",
+        "accountMissing": "Tài khoản không tồn tại. Vui lòng kiểm tra lại số điện thoại.",
+        "serverError": "Đã xảy ra lỗi. Vui lòng thử lại sau.",
+        "usernameMissing": "Username không tồn tại trong phản hồi từ server"
+      }
+    },
+    "register": {
+      "title": "ĐĂNG KÝ TÀI KHOẢN",
+      "host": "Tôi là Chủ nhà, Nhân viên",
+      "customer": "Tôi tìm nhà trọ, phòng trọ",
+      "username": "Tên người dùng",
+      "usernamePlaceholder": "Nhập tên người dùng",
+      "phone": "Số điện thoại",
+      "phonePlaceholder": "Nhập số điện thoại",
+      "gmail": "Gmail",
+      "gmailPlaceholder": "Nhập Gmail",
+      "password": "Mật khẩu",
+      "passwordPlaceholder": "Nhập mật khẩu",
+      "confirmPassword": "Nhập lại mật khẩu",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
+      "submit": "Đăng ký",
+      "haveAccount": "Bạn đã có tài khoản, Đăng nhập?",
+      "otpTitle": "Enter OTP",
+      "otpDescription": "Chúng tôi đã gửi 1 mã xác nhận về Gmail: <strong>{{gmail}}</strong> của bạn. Vui lòng nhập mã OTP từ Gmail để tiếp tục.",
+      "resend": "Gửi lại mã",
+      "confirmOtp": "Xác nhận mã",
+      "alerts": {
+        "errorTitle": "Lỗi",
+        "warningTitle": "Lỗi",
+        "missingFields": "Vui lòng nhập đầy đủ thông tin.",
+        "invalidPhone": "Số điện thoại không hợp lệ (phải bắt đầu với một trong các mã 03, 05, 07, 08, 09, và có đủ 10 số).",
+        "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự.",
+        "passwordMismatch": "Mật khẩu và xác nhận mật khẩu không khớp.",
+        "invalidInfo": "Thông tin không hợp lệ!",
+        "checkInfoFailed": "Đã xảy ra lỗi khi kiểm tra thông tin. Vui lòng thử lại.",
+        "invalidEmail": "Email không hợp lệ",
+        "sendOtpSuccessTitle": "Gửi mã thành công",
+        "sendOtpSuccessText": "Kiểm tra Email của bạn!",
+        "sendOtpErrorTitle": "Gửi mã thất bại",
+        "sendOtpErrorText": "Vui lòng thử lại sau!",
+        "invalidOtpTitle": "OTP không hợp lệ",
+        "invalidOtpText": "Vui lòng thử lại !",
+        "successTitle": "Thành công",
+        "successText": "Đăng ký thành công",
+        "genericError": "Có lỗi xảy ra, vui lòng thử lại."
+      }
+    },
+    "forgotPassword": {
+      "title": "Yêu cầu quên tài khoản",
+      "emailLabel": "Nhập gmail gắn với tài khoản",
+      "emailPlaceholder": "Nhập gmail gắn với tài khoản của bạn",
+      "newPasswordLabel": "Mật khẩu mới",
+      "passwordPlaceholder": "Nhập mật khẩu",
+      "confirmPasswordLabel": "Nhập lại mật khẩu mới",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
+      "description": "Chúng tôi sẽ gửi một mã xác nhận về email bạn nhập. Để xác minh tính hợp lệ trước khi yêu cầu đổi mật khẩu.",
+      "submit": "Yêu cầu thay đổi mật khẩu",
+      "backToLogin": "Về đăng nhập tài khoản",
+      "otpTitle": "Enter OTP",
+      "otpDescription": "Chúng tôi đã gửi 1 mã xác nhận về Email: <strong>{{email}}</strong> của bạn. Vui lòng nhập mã OTP từ Email để tiếp tục.",
+      "resend": "Gửi lại mã",
+      "confirmOtp": "Xác nhận mã",
+      "copyright": "Copyright @ RRMS - Tìm trọ, căn hộ, nhà ở",
+      "errors": {
+        "emailRequired": "Vui lòng điền gmail",
+        "passwordRequired": "Vui lòng điền mật khẩu",
+        "passwordMismatch": "Mật khẩu không khớp nhau",
+        "emailInvalid": "Email không hợp lệ"
+      },
+      "alerts": {
+        "sendOtpSuccessTitle": "Gửi mã thành công",
+        "sendOtpSuccessText": "Kiểm tra Email của bạn!",
+        "sendOtpErrorTitle": "Gửi mã thất bại",
+        "sendOtpErrorText": "Vui lòng thử lại sau!",
+        "changeSuccessTitle": "Thay đổi thành công",
+        "changeSuccessText": "Thay đổi mật khẩu thành công!",
+        "changeErrorTitle": "Thay đổi thất bại",
+        "changeErrorText": "Vui lòng thử lại sau!"
+      }
+    }
+  },
+  "contactPage": {
+    "title": "LIÊN HỆ",
+    "subtitle": "Các kênh liên hệ với chúng tôi",
+    "fanpage": "Fanpage phòng trọ",
+    "channels": {
+      "messenger": "Messenger",
+      "phone": "Điện thoại",
+      "email": "Email"
+    },
+    "banners": {
+      "brokerAlt": "Banner môi giới RRMS",
+      "promotionAlt": "Banner ưu đãi RRMS"
+    },
+    "stepsTitle": "Các bước đăng bài",
+    "stepsDescription": "Tiếp cận khách thuê dễ dàng với tính năng đăng tin",
+    "whyTitle": "RRMS có gì?",
+    "whyDescriptionLine1": "Tại sao bạn phải chọn chúng tôi",
+    "whyDescriptionLine2": "mà không phải một dịch vụ nào khác?",
+    "stats": {
+      "landlords": "Chủ nhà",
+      "tenants": "Khách thuê",
+      "brokers": "Môi giới",
+      "views": "Lượt truy cập/tháng"
+    },
+    "summary": "Chúng tôi tự hào là một trong những dịch vụ tìm kiếm phòng trọ đứng đầu Việt Nam, với phương châm tìm là có chúng tôi luôn cập nhật phòng nhanh nhất, chính xác nhất và ưu tiên sự tiện lợi cho người tìm trọ lên hàng đầu."
+  },
+  "ratingHistory": {
+    "title": "Lịch sử đánh giá của bạn",
+    "columns": {
+      "index": "STT",
+      "roomName": "Tên phòng",
+      "image": "Hình ảnh",
+      "roomType": "Loại phòng",
+      "address": "Địa chỉ",
+      "price": "Giá phòng",
+      "area": "Diện tích",
+      "availability": "Tình trạng",
+      "approval": "Trạng thái",
+      "comment": "Bình luận",
+      "rating": "Đánh giá",
+      "action": "Hành động"
+    },
+    "availability": {
+      "available": "Đang cho thuê",
+      "rented": "Đã cho thuê"
+    },
+    "approval": {
+      "approved": "Đã phê duyệt",
+      "pending": "Chưa phê duyệt"
+    },
+    "rowsPerPage": "Số dòng mỗi trang:",
+    "all": "Tất cả"
+  },
+  "searchPage": {
+    "filter": {
+      "title": "Tìm phòng nhanh hơn với bộ lọc thông minh",
+      "description": "Lọc theo khu vực, từ khóa, khoảng giá và diện tích để thu hẹp kết quả phù hợp mà không làm thay đổi luồng tìm kiếm hiện tại của hệ thống.",
+      "button": "Bộ lọc",
+      "areaLabel": "Khu vực",
+      "keywordPlaceholder": "Nhập khu vực, đường, trường học hoặc từ khóa",
+      "areaTitle": "Diện tích",
+      "priceTitle": "Khoảng giá",
+      "searchButton": "Tìm kiếm",
+      "underArea": "Dưới 50 m²",
+      "underPrice": "Dưới 50 triệu"
+    },
+    "list": {
+      "allAreas": "Tất cả khu vực",
+      "allPriority": "Tất cả",
+      "titlePrefix": "Thuê phòng trọ tại",
+      "fullArea": "toàn bộ khu vực",
+      "radiusLabel": "Bán kính tìm kiếm: 3 km",
+      "priorityLabel": "Khu vực ưu tiên: {{area}}",
+      "nearbyNote": "Khi tìm phòng trọ gần khu vực bạn chọn, hệ thống sẽ hiển thị các kết quả lân cận trong bán kính phù hợp để tăng khả năng tìm được phòng nhanh hơn. Vì vậy có thể xuất hiện một số phòng ở khu vực kế cận."
+    },
+    "results": {
+      "countText": "Có {{count}} phòng trọ, nhà trọ phù hợp",
+      "sortPrice": "Sắp xếp theo giá",
+      "sortArea": "Sắp xếp theo diện tích",
+      "loadingTitle": "Đang tải dữ liệu...",
+      "loadingDescription": "Hệ thống đang lấy danh sách phòng phù hợp với yêu cầu của bạn.",
+      "emptyTitle": "Chưa tìm thấy phòng phù hợp",
+      "emptyDescription": "Bạn có thể thử đổi từ khóa, khu vực hoặc bộ lọc để mở rộng kết quả.",
+      "copySuccess": "Sao chép liên kết thành công!",
+      "phoneUnavailable": "Chưa có số điện thoại",
+      "favoriteLoginTitle": "Thông báo",
+      "favoriteLoginText": "Vui lòng đăng nhập để thêm vào yêu thích.",
+      "favoriteSuccessTitle": "Thành công",
+      "favoriteSuccessText": "Đã thêm vào yêu thích",
+      "favoriteErrorTitle": "Thất bại",
+      "favoriteErrorText": "Thêm yêu thích thất bại",
+      "favoriteExistsTitle": "Thông báo",
+      "favoriteExistsText": "Phòng này đã được thêm trước đó"
+    },
+    "card": {
+      "priority": "Ưu tiên hiển thị",
+      "verified": "Tin đăng đã xác minh",
+      "unknownUser": "Người dùng không xác định",
+      "updated": "Tin đăng mới cập nhật",
+      "copyLink": "Sao chép link",
+      "viewPhone": "Xem SĐT",
+      "viewDetail": "Xem chi tiết"
+    },
+    "article": {
+      "title": "Cẩm nang tìm phòng trọ chất lượng",
+      "subtitle": "Hiện có {{count}} kết quả liên quan đến {{keyword}}. Dưới đây là một số gợi ý giúp việc chọn phòng nhanh hơn và chính xác hơn.",
+      "defaultKeyword": "nhu cầu tìm phòng của bạn",
+      "showMore": "Xem thêm nội dung",
+      "showLess": "Ẩn bớt nội dung",
+      "sections": [
+        {
+          "title": "Nhu cầu thuê phòng trọ đang thay đổi như thế nào?",
+          "description": "Người thuê ngày nay không chỉ quan tâm đến giá mà còn chú ý tới vị trí, tiện ích, an ninh, không gian sống và mức độ minh bạch của thông tin đăng tải."
+        },
+        {
+          "title": "Làm sao để lọc nhanh được phòng phù hợp?",
+          "description": "Hãy ưu tiên xác định trước khu vực, khoảng giá có thể chi trả, diện tích tối thiểu và những tiện ích bắt buộc. Khi bộ lọc rõ ràng, danh sách kết quả sẽ chính xác hơn rất nhiều."
+        },
+        {
+          "title": "Giá thuê biến động vì những yếu tố nào?",
+          "description": "Giá thuê thường thay đổi theo vị trí, chất lượng nội thất, độ mới của tòa nhà, mật độ dân cư và khoảng cách đến trường học, trung tâm việc làm hoặc tuyến giao thông chính."
+        }
+      ]
+    },
+    "insights": {
+      "popularTitle": "Các khu vực tìm kiếm phổ biến",
+      "popularDescription": "Những khu vực dưới đây đang được người thuê xem nhiều và có nhu cầu tìm phòng cao.",
+      "postTitle": "Tiếp cận khách thuê dễ dàng",
+      "postDescription": "Quy trình đăng tin đơn giản để tăng tốc độ tiếp cận người thuê thật.",
+      "nearbyTitle": "Phòng trọ gần khu vực này",
+      "nearbyDescription": "Các trường học và điểm đến phổ biến thường được người thuê quan tâm.",
+      "districtTitle": "Khu vực nổi bật",
+      "districtDescription": "Khám phá nhanh các quận, huyện đang có nhiều tin đăng."
+    },
+    "units": {
+      "month": "tháng",
+      "block": "khối",
+      "kw": "kW"
+    }
+  },
+  "rrms": {
+    "header": {
+      "titlePrefix": "Kênh tìm phòng trọ, căn hộ, ký túc xá cho thuê",
+      "titleHighlight": "TOP",
+      "titleSuffix": "Việt Nam",
+      "typewrites": [
+        "An toàn - Hỗ trợ tìm phòng - Kết nối chủ nhà.",
+        "Chất lượng - Giá tốt - Nhanh chóng.",
+        "Tìm trọ - căn hộ - nhà ở hãy nghĩ đến RRMS!"
+      ],
+      "nearbyTitle": "Tìm phòng gần khu vực Quận 1, Hồ Chí Minh",
+      "schoolLinkTitle": "phòng trọ gần {{label}}"
+    },
+    "menu": {
+      "nearMeTitle": "Tìm trọ gần tôi",
+      "nearMeDescription": "Tìm gần vị trí hiện tại của bạn",
+      "supportTitle": "Hỗ trợ tìm phòng",
+      "supportDescription": "RRMS hỗ trợ bạn tìm phòng",
+      "billTitle": "Tra cứu hóa đơn",
+      "billDescription": "Xem hóa đơn nhà đang ở",
+      "gasTitle": "Đổi gas ưu đãi",
+      "gasDescription": "Đổi gas tại RRMS nhận ưu đãi",
+      "brokerTitle": "Tuyển môi giới",
+      "brokerDescription": "Tuyển, đào tạo môi giới tại RRMS",
+      "ownerTitle": "Tôi là chủ nhà",
+      "ownerDescription": "Phần mềm quản lý, đăng tin",
+      "hot": "HOT",
+      "pro": "PRO"
+    },
+    "province": {
+      "title": "Tìm phòng trọ theo tỉnh / thành phố",
+      "roomLabel": "Phòng trọ"
+    },
+    "district": {
+      "title": "Tìm phòng trọ theo quận / huyện",
+      "cardTitle": "Tìm phòng trọ {{district}}"
+    },
+    "ward": {
+      "title": "Tìm phòng trọ theo phường / xã",
+      "viewAll": "Xem tất cả"
+    },
+    "promotion": {
+      "title": "Chương trình - RRMS",
+      "bannerAlt": "Hỗ trợ tân sinh viên tìm nhà. Hòa nhập môi trường mới"
+    },
+    "now": {
+      "title": "Phòng dọn vào ở ngay - NOW",
+      "description": "Bạn có thể thuê và vào ở ngay hôm nay"
+    },
+    "latest": {
+      "title": "Phòng trọ - mới nhất",
+      "description": "Phòng vừa được phê duyệt",
+      "moreAtDistrict": "Xem thêm phòng trọ tại {{district}}"
+    },
+    "footer": {
+      "popularKeywords": "Các từ khóa phổ biến trên RRMS",
+      "postTitle": "Các bước đăng tin bài RRMS",
+      "postDescription": "Tiếp cận khách thuê dễ dàng với tính năng đăng tin"
+    },
+    "card": {
+      "now": "NOW",
+      "month": "Tháng",
+      "dayAgo": "1 ngày trước",
+      "viewPhone": "Xem SĐT"
+    }
+  }
 }

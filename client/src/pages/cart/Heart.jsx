@@ -23,7 +23,7 @@ import Swal from 'sweetalert2'
 import PeopleIcon from '@mui/icons-material/People'
 
 const Heart = ({ setIsAdmin }) => {
-  const [isFavorited, setIsFavorited] = useState(false)
+  const [ setIsFavorited] = useState(false)
   // const [showArrows, setShowArrows] = useState(false)
   const [hearts, setHearts] = useState([])
   const getAllHeartByAccount = async () => {

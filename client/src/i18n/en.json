@@ -11,23 +11,23 @@
   "chuyen-muc": "Category",
   "tinh-trang": "Status",
   "gio-giac": "Hours",
-  "ngay-bat-dau-cho-thue": "Start date for rent",
+  "ngay-bat-dau-cho-thue": "Start rental date",
   "kiem-duyet": "Approval",
-  "toi-da-nguoi-o": "Maximum number of residents",
+  "toi-da-nguoi-o": "Maximum residents",
   "tien-coc": "Deposit",
   "dien-tich": "Area",
-  "tien-dien": "Electricity bill",
-  "tien-nuoc": "Water bill",
+  "tien-dien": "Electricity",
+  "tien-nuoc": "Water",
   "diem": "Point",
   "sao-chep": "Copy",
   "luu-xem-sau": "Save for later",
   "chia-se": "Share",
-  "phong-tro-cung-dia-chi": "Room for rent at the same address",
+  "phong-tro-cung-dia-chi": "Rooms for rent at the same address",
   "xem-them": "See more",
-  "nha-tro-tai": "Lodging at",
+  "nha-tro-tai": "lodging at",
   "bo-loc": "Filter",
   "quan-1": "District 1",
-  "noi-hoc-tap": "Enter your place of study & work...",
+  "noi-hoc-tap": "Enter your school & workplace...",
   "khoang-gia": "Price range",
   "tu": "From",
   "den": "To",
@@ -36,11 +36,11 @@
   "gia_tu": "Price from",
   "khoang-dien-tich": "Area range",
   "tieu-chi-tim-kiem": "SEARCH CRITERIA",
-  "khu-vuc-tim-kiem": "Which district/area do you want to search in?",
+  "khu-vuc-tim-kiem": "Which district or area do you want to search in?",
   "tinh-thanhpho": "Select Province/City",
-  "quan-huyen": "Select District/County",
-  "loai-hinh": "What type of search?",
-  "hien-tai-ban-dang-lam-gi": "What are you doing right now?",
+  "quan-huyen": "Select District",
+  "loai-hinh": "What are you looking for?",
+  "hien-tai-ban-dang-lam-gi": "What are you doing now?",
   "dong-bo-loc": "Close filter",
   "tim-kiem-ngay": "Search now",
   "phong-tro": "Room for rent, lodging",
@@ -49,78 +49,878 @@
   "can-ho": "Apartment",
   "kho": "Warehouse, factory",
   "ky-tuc-xa": "Dormitory, sleepbox",
-  "pass-phong": "Shared room & room pass",
+  "pass-phong": "Shared room & room transfer",
   "sinh-vien": "Student",
   "nhan-vien-van-phong": "Office worker",
   "nhan-vien-xi-nghiep": "Factory worker",
   "nganh-nghe-khac": "Other professions",
   "quay-ve": "Go back",
-  "404-xin-loi-khong-ton-tai": "Sorry, the page you are looking for does not exist. Please go back to the homepage to continue.",
-  "duoi-phong-tro": "Below are rental rooms near",
+  "404-xin-loi-khong-ton-tai": "Sorry, the page you are looking for does not exist. Please return to the homepage to continue.",
+  "duoi-phong-tro": "Below are rooms near",
   "ban-kinh-tim-kiem": "Search radius",
-  "khi-tim-phong-tro-gan": "When looking for a nearby rental room",
-  "tim-phong-tro": "Find rental rooms near",
-  "chung-toi-se-hien-thi": "we will display rental rooms and boarding houses",
-  "cach-dia-diem": "from the location",
-  "vi-the-co-the-phong-tro-khong-thuoc": "Therefore, some rental rooms may not belong to",
+  "khi-tim-phong-tro-gan": "When searching for rooms near",
+  "tim-phong-tro": "Find nearby rooms",
+  "chung-toi-se-hien-thi": "we will display rooms and boarding houses",
+  "cach-dia-diem": "from that location",
+  "vi-the-co-the-phong-tro-khong-thuoc": "Therefore some rooms may not belong to",
   "cac-quan": "the districts",
   "ban-dang-tim-kiem": "you are searching for",
-  "chu-y-ket-qua": "Note the results",
-  "mau-do": "in red",
-  "la-khong-thuoc-quan-huyen-ban-tim-kiem": "indicate they are not in the district you are searching for",
+  "chu-y-ket-qua": "Please note results in",
+  "mau-do": "red",
+  "la-khong-thuoc-quan-huyen-ban-tim-kiem": "are outside the district you searched for",
   "co": "Yes",
-  "phong-tro-nha-tro": "Rental room, boarding house",
-  "tu-thap-den-cao": "From low to high",
-  "tu-cao-den-thap": "From high to low",
+  "phong-tro-nha-tro": "Room for rent, boarding house",
+  "tu-thap-den-cao": "Low to high",
+  "tu-cao-den-thap": "High to low",
   "muc-gia": "Price range",
   "nho-den-lon": "Small to large",
   "lon-den-nho": "Large to small",
-  "phong-tro-nha-tro-gan-khu-vuc-nay": "Rental rooms, boarding houses near this area",
+  "phong-tro-nha-tro-gan-khu-vuc-nay": "Rooms for rent near this area",
   "truong-cao-dang-viet-sai-gon": "Viet Saigon College",
-  "khu-vuc": "Location",
-  "cho-thue-phong-tro-chat-luong": "Quality, affordable rental rooms in Ho Chi Minh City",
-  "noi-dung": "Ho Chi Minh City is the most densely populated area in the country with a population of over 9 million people, most of whom are from other provinces. Therefore, room rental services in Ho Chi Minh City are highly developed.",
-  "noi-dung-2": "With the reality of 'limited land and crowded people,' and the highly competitive room rental market in Ho Chi Minh City, finding the right room is not an easy task. Understanding this, DQ4T offers a quick, reliable, and quality solution for finding rental rooms in Ho Chi Minh City.",
-  "dac-diem": "Area Features",
-  "noi-dung-3": "Ho Chi Minh City currently has 16 districts, 5 suburbs, and 1 city. Room rental services",
-  "cho-thue-phong-tro-hcm": "room rentals in Ho Chi Minh City",
-  "noi-dung-4": "are available across these locations. Among them, rooms near schools, industrial zones, markets, and supermarkets are considered 'prime' locations that receive a lot of attention from renters.",
-  "noi-dung-5": "It can be seen that the target audience for this type of service",
-  "noi-dung-6": "is very diverse, coming from various ages and professions. This creates different demands for room rentals, including location, price, size, and nearby amenities.",
+  "khu-vuc": "Area",
+  "cho-thue-phong-tro-chat-luong": "Affordable quality rooms for rent in Ho Chi Minh City",
+  "noi-dung": "Ho Chi Minh City is the most densely populated area in the country with over 9 million residents, many of whom are from other provinces. Therefore, room rental services are highly developed here.",
+  "noi-dung-2": "With the reality of limited space and dense population, and a very competitive rental market, finding a room that truly fits is not easy. Understanding that pain point, DQ4T brings you a fast, trusted, and high-quality room search solution.",
+  "dac-diem": "Area characteristics",
+  "noi-dung-3": "Ho Chi Minh City currently has 16 districts, 5 rural districts, and 1 city. The service",
+  "cho-thue-phong-tro-hcm": "room rental in Ho Chi Minh City",
+  "noi-dung-4": "also spreads across these areas. Rooms near schools, industrial parks, markets, and supermarkets are prime spots and receive strong attention from renters.",
+  "noi-dung-5": "It can be seen that the audience choosing this type of service",
+  "noi-dung-6": "is very diverse across many ages and professions. That creates different rental needs in terms of location, price, area, and nearby amenities.",
   "noi-dung-7": "Not only providing information about the service,",
-  "noi-dung-8": "but also offering a quick room finding solution to users across the country, such as rooms in Hanoi,",
-  "noi-dung-9": "Rooms in Da Nang, rooms in Can Tho,",
-  "noi-dung-10": "... DQ4T will accompany you to bring you the most satisfying room.",
+  "noi-dung-8": "but also bringing fast rental search solutions to users across the country such as rooms in Hanoi,",
+  "noi-dung-9": "rooms in Da Nang, rooms in Can Tho",
+  "noi-dung-10": ",... DQ4T will accompany you to bring the most satisfying room.",
   "an-bot": "Hide",
-  "cho-thue-phong-tro": "Room Rental:",
-  "tiep-can-khach-hang-de-dang-tin": "Easily reach renters with the posting feature",
+  "cho-thue-phong-tro": "Room rental:",
+  "tiep-can-khach-hang-de-dang-tin": "Reach renters easily with the posting feature",
   "dang-nhap-dang-ky": "Login/Register",
-  "dang-ky-sau-do-dang-nhap": "Register then log in",
-  "dang-tin": "Post Ad",
-  "dang-tin-trong-tai-khoan-ca-nhan": "Post ads in your personal account",
+  "dang-ky-sau-do-dang-nhap": "register and then sign in",
+  "dang-tin": "Post listing",
+  "dang-tin-trong-tai-khoan-ca-nhan": "Post listings in your personal account",
   "xet-duyet": "Approval",
-  "tiep-can": "Reach renters",
-  "chuyen-vien-san-sang-tu-van": "Consultants ready for approval 24/7",
+  "tiep-can": "reach renters",
+  "chuyen-vien-san-sang-tu-van": "Our team is ready to review 24/7",
   "chu-nha": "Landlord",
   "khach-thue": "Tenant",
-  "moi-gioi": "Agent",
-  "luot-truy-cap": "Views",
-  "chung-toi-tu-hao": "We are proud to be one of the leading room search services in Vietnam, with the motto 'If you search, we have it.' We always update the latest, most accurate rooms and prioritize convenience for room seekers.",
-  "tai": "in",
-  "phan-mem-quan-ly-nha-cho-thue": " Rental property management software",
+  "moi-gioi": "Broker",
+  "luot-truy-cap": "Visits",
+  "chung-toi-tu-hao": "We are proud to be one of Vietnam's leading room search services. With the motto 'search and find', we keep listings updated quickly, accurately, and with convenience for renters as the top priority.",
+  "tai": "at",
+  "phan-mem-quan-ly-nha-cho-thue": "Rental property management software",
   "dt-mt": "Phone - iPad - Computer",
-  "quan-ly-nhe-nhang": "Manage as gently as a smartphone in your hand!",
-  "su-dung-don-gian": "Simple to use, optimal cost, close support & suitable for all types of rental buildings such as offices, motels - apartments, coworking spaces,...",
-  "dung-thu": "Try it for free",
-  "tu-van": "Consulting on services",
+  "quan-ly-nhe-nhang": "Manage as easily as using a smartphone in your hand!",
+  "su-dung-don-gian": "Simple to use, cost-efficient, close support, and suitable for all rental models such as offices, motels, apartments, coworking spaces, and more.",
+  "dung-thu": "Try for free",
+  "tu-van": "Service consultation",
   "lien-he": "Contact",
   "tro-giup": "Help",
-  "dong-gop": "Contribute comments",
-  "tai-ung-dung": "Download the application",
+  "dong-gop": "Feedback",
+  "tai-ung-dung": "Download app",
   "ve-chung-toi": "About us",
   "danh-cho-moi-gioi": "For brokers",
   "danh-muc": "Category",
   "muon-thue": "Want to rent",
   "nhap-thong-tin": "Enter search information",
-  "tai-khoan": "Account"
+  "tai-khoan": "Account",
+  "header": {
+    "alerts": {
+      "noticeTitle": "Notice",
+      "tokenMissing": "Token not found, please sign in again.",
+      "logoutSuccessTitle": "Success",
+      "logoutSuccessText": "Logged out successfully!",
+      "logoutFailedTitle": "Logout failed",
+      "errorTitle": "Error",
+      "logoutErrorText": "An error occurred while logging out."
+    },
+    "warningEmail": {
+      "prefix": "Please add your email",
+      "link": "here",
+      "suffix": "to use the forgot password feature"
+    },
+    "language": {
+      "vi": "Vietnamese",
+      "en": "English"
+    },
+    "search": {
+      "categoryItems": {
+        "wantRent": "Want to rent",
+        "forRent": "For rent",
+        "project": "Project"
+      },
+      "menuItems": {
+        "wantRent": "Want to rent",
+        "forRent": "For rent",
+        "project": "Project",
+        "findBroker": "Find broker",
+        "priceChart": "Price trend chart",
+        "homeLoan": "Home loan"
+      },
+      "searchButtonAria": "Search",
+      "logoAlt": "RRMS"
+    },
+    "mobileNav": {
+      "home": "Home",
+      "manage": "Manage listings",
+      "post": "Post",
+      "notify": "Notifications",
+      "account": "Account",
+      "searchPlaceholder": "Enter search information",
+      "wantRent": "Want to rent"
+    },
+    "accountMenu": {
+      "loginRegister": "Login / Register",
+      "vaBanner": "Top up flexible wallet value",
+      "sections": {
+        "orders": "Order management",
+        "utilities": "Utilities",
+        "paidServices": "Paid services",
+        "offers": "Offers & promotions",
+        "others": "Others"
+      },
+      "items": {
+        "buyOrders": "Purchase orders",
+        "sellOrders": "Sales orders",
+        "salesWallet": "Seller wallet",
+        "savedPosts": "Saved listings",
+        "savedSearches": "Saved searches",
+        "myRatings": "My ratings",
+        "proPackage": "PRO package",
+        "transactionHistory": "Transaction history",
+        "store": "Store",
+        "rrmsOffers": "RRMS offers",
+        "myOffers": "My offers",
+        "accountSettings": "Account settings",
+        "help": "Help",
+        "logout": "Log out"
+      },
+      "badges": {
+        "linkNow": "Link now",
+        "createNow": "Create now"
+      }
+    },
+    "notifications": {
+      "activity": "ACTIVITY",
+      "news": "NEWS",
+      "loginPrompt": "Please sign in to view your activity list.",
+      "registerLogin": "Register / Login",
+      "emptyActivity": "No activity found.",
+      "emptyNews": "We have no updates right now. Please check again later."
+    },
+    "postNow": "POST LISTING"
+  },
+  "footer": {
+    "linksTitle": "Links",
+    "infoTitle": "RRMS",
+    "infoDescription": "RRMS is a platform that helps users find rooms and apartments conveniently, safely, and in ways that fit real rental needs. We combine data, technology, and human support to make the room search process faster, clearer, and more time-efficient.",
+    "contactTitle": "Information & Contact",
+    "contacts": {
+      "officeRepresentative": {
+        "title": "Representative office:",
+        "content": "Verosa Park, No. 39 Street 10, Quarter 2 - Long Truong Ward - Ho Chi Minh City"
+      },
+      "officeWorking": {
+        "title": "Working office:",
+        "content": "201/15 - Le Van Viet - Tang Nhon Phu Ward - Ho Chi Minh City"
+      },
+      "email": {
+        "title": "Email:",
+        "content": "RRMS.com@gmail.com"
+      },
+      "workingHours": {
+        "title": "Working hours:",
+        "content": "From 8 AM - 6 PM, Monday to Friday, and Saturday morning"
+      },
+      "hotline": {
+        "title": "Hotline - Zalo:",
+        "content": "0919925302"
+      }
+    },
+    "supportText": "Contact us if you need support",
+    "links": {
+      "contact": "Contact",
+      "introduce": "About RRMS",
+      "privacy": "Privacy policy",
+      "terms": "Terms of use",
+      "regulation": "Operating regulations",
+      "complaints": "Complaint resolution policy"
+    },
+    "hotlines": {
+      "hcmCity": "Ho Chi Minh business",
+      "hanoi": "Hanoi business",
+      "danang": "Da Nang business",
+      "policySupport": "Policy support",
+      "postingSupport": "Posting support"
+    },
+    "social": {
+      "zalo": "ZALO channel",
+      "facebook": "Facebook channel",
+      "youtube": "Youtube channel",
+      "tiktok": "Tiktok channel"
+    },
+    "badges": {
+      "notified": "Notified",
+      "registered": "Registered",
+      "industryTrade": "Ministry of Industry and Trade"
+    },
+    "apps": {
+      "ownerTitle": "RRMS App - Landlord, manager",
+      "ownerDescription": "For landlords, boarding house owners, and apartment managers",
+      "tenantTitle": "RRMS App - Find rooms and apartments",
+      "tenantDescription": "For tenants and residents",
+      "appStoreTop": "Download on",
+      "appStoreBottom": "App Store",
+      "googlePlayTop": "Android on",
+      "googlePlayBottom": "Google Play"
+    },
+    "copyright": {
+      "line1": "Copyright © RRMS - Rooms and apartments",
+      "company": "RRMS SMART SOLUTIONS COMPANY LIMITED",
+      "line3": "Business registration no. 0318272823 - first issued by Ho Chi Minh City Department of Planning and Investment on January 19, 2024"
+    }
+  },
+  "detail": {
+    "copiedLink": "Listing link copied",
+    "copiedDescription": "Description copied",
+    "saveForLaterSoon": "Save-for-later will be added later",
+    "gallery": {
+      "realImages": "{{count}} real images",
+      "noImages": "No images are available for this listing yet."
+    },
+    "summary": {
+      "currentPrice": "Current price",
+      "vacant": "Available",
+      "occupied": "Occupied",
+      "approvedPost": "Approved listing",
+      "pendingPost": "Pending approval",
+      "category": "Category",
+      "status": "Status",
+      "hours": "Hours",
+      "startRent": "Start renting",
+      "approval": "Approval",
+      "maxPeople": "Max residents",
+      "updating": "Updating",
+      "unlimited": "Unlimited",
+      "deposit": "Deposit",
+      "area": "Area",
+      "electricity": "Electricity",
+      "water": "Water",
+      "featuredAmenities": "Featured amenities"
+    },
+    "contact": {
+      "ownerFallback": "Listing owner",
+      "verified": "Verified",
+      "pendingVerify": "Pending verification",
+      "contactMissing": "This listing has no contact phone number yet",
+      "copiedPhone": "Phone number copied",
+      "zalo": "Message on Zalo",
+      "phone": "View phone number",
+      "interest": "Interested in this listing",
+      "report": "Report listing",
+      "interestSoon": "Interest feature will be added later",
+      "reportSoon": "Report feature will be added later",
+      "safeTitle": "Safety note",
+      "safeDescription": "Prefer calling the owner directly, verify the room in person, and only pay after you are sure everything is valid."
+    },
+    "description": {
+      "title": "Description",
+      "subtitle": "The original listing content is preserved to avoid affecting backend data.",
+      "copy": "Copy description",
+      "empty": "This listing does not have a detailed description yet.",
+      "shareFacebook": "Share on Facebook",
+      "sharePost": "Share listing"
+    },
+    "review": {
+      "title": "Ratings and reviews",
+      "averageTitle": "Average rating",
+      "reviewCount": "{{count}} reviews",
+      "noReviews": "This listing has no reviews yet.",
+      "yourReview": "Your review",
+      "reviewPlaceholder": "Share your thoughts about this room",
+      "sendReview": "Submit review",
+      "reviewSuccess": "Review submitted successfully",
+      "deleteComment": "Delete this comment",
+      "deleteSuccess": "Comment deleted successfully"
+    },
+    "related": {
+      "title": "More in this area",
+      "moreAt": "See more {{category}} in {{province}}",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "images": "{{count}} images",
+      "reviews": "{{count}} reviews",
+      "ownerFallback": "Owner"
+    },
+    "item": {
+      "noImage": "No image available",
+      "locationShort": "Location",
+      "locationFull": "View location",
+      "imageIndex": "Image {{current}}/{{total}}"
+    }
+  },
+  "support": {
+    "title": "Room search support service at RRMS",
+    "subtitle": "Free - Safe - Reassuring - Suitable - Fast room matching",
+    "bannerTitle": "STILL CAN'T FIND A ROOM?",
+    "bannerDescription": "Leave your information and RRMS specialists will help you find a room faster!",
+    "searchLabel": "Searching for rooms and boarding houses in",
+    "location": "District 3, Ho Chi Minh City",
+    "privacyNote": "By providing your information, you agree to our policy of introducing your information to landlords and RRMS support staff",
+    "privacyLinkLabel": "Privacy policy",
+    "submit": "Request support",
+    "fields": {
+      "name": "Name:",
+      "namePlaceholder": "Name",
+      "phone": "Contact phone",
+      "phonePlaceholder": "Contact phone number",
+      "dateOfStay": "Move-in date",
+      "priceRange": "Price range",
+      "pricePlaceholder": "Price range"
+    },
+    "prices": {
+      "under1m": "Under 1 million",
+      "from1to2": "1 - 2 million",
+      "from2to3": "2 - 3 million",
+      "from3to4": "3 - 4 million",
+      "from4to5": "4 - 5 million",
+      "over5m": "Over 5 million"
+    },
+    "validation": {
+      "nameRequired": "Please enter your name",
+      "phoneRequired": "Please enter your phone number",
+      "dateRequired": "Please choose a move-in date",
+      "priceRequired": "Please choose a price range"
+    },
+    "alerts": {
+      "noticeTitle": "Notice",
+      "successTitle": "Success",
+      "successText": "Support request submitted successfully",
+      "errorDefault": "Unable to submit the support request. Please try again.",
+      "errorLater": "Something went wrong. Please try again later."
+    }
+  },
+  "introduce": {
+    "hero": {
+      "title": "About RRMS",
+      "subtitle": "Find rooms, apartments, manage rental operations, and connect housing demand on one modern and transparent platform.",
+      "description": "An information channel that helps tenants find rooms more easily and helps landlords reach the right renters faster."
+    },
+    "story": {
+      "title": "Our story",
+      "paragraphs": [
+        "Finding a room has never been easy for students and people working away from home. From real-life experience, the RRMS team understands how it feels to visit many places, face unclear information, and spend too much time before finding a suitable place to stay.",
+        "RRMS was built to solve that problem with technology, helping tenants find rooms faster and more clearly while helping landlords reach the right renters more efficiently. Our goal is to create a modern, practical, and trustworthy rental ecosystem."
+      ],
+      "imageAlt": "Student looking for a room",
+      "cardTitle": "RRMS accompanies renters",
+      "cardDescription": "Optimize the rental journey and improve landlord reach."
+    },
+    "missionVision": {
+      "title": "Our mission and vision",
+      "missionTitle": "Mission",
+      "visionTitle": "Vision",
+      "missionItems": [
+        "Provide smart solutions that help tenants and landlords connect faster, more clearly, and with more confidence throughout the rental journey.",
+        "Create a transparent rental environment that saves time, reduces costs, and raises the overall service experience."
+      ],
+      "visionText": "RRMS aims to become a leading technology platform in room search, apartment search, and rental operations management, where transparent data and user experience are always central.",
+      "quoteBody": "RRMS product thinking is about creating a better, clearer, and more scalable living and rental experience."
+    },
+    "coreValues": {
+      "title": "Core values",
+      "imageAlt": "RRMS core values",
+      "items": [
+        "Innovative thinking to solve real problems",
+        "Deliver real value to both tenants and landlords",
+        "Complete the full journey from experience to operational efficiency",
+        "Always stay transparent, clear, and honest at every touchpoint",
+        "Continuously listen and improve the product based on market needs",
+        "Apply practical technology to save time and costs"
+      ]
+    },
+    "capability": {
+      "title": "Team and capability",
+      "items": [
+        "10+ years of experience in software, website, and app development",
+        "Hands-on delivery experience across proptech, ecommerce, and logistics problems",
+        "A disciplined workflow with clear ownership and strong scalability",
+        "A young, dedicated, practical team focused on real customer value"
+      ]
+    },
+    "promo": {
+      "heroTitle": "For landlords: sell rooms, fill vacancies",
+      "heroSubtitle": "Efficient - Cost-saving - Quality",
+      "heroDescription": "RRMS helps landlords fill vacancies faster, improve listing performance, and streamline management processes with technology that fits real operations.",
+      "heroButton": "Fill vacancies now",
+      "heroImageAlt": "Smart rental management",
+      "cards": [
+        {
+          "title": "Become an RRMS business specialist",
+          "description": "Use more tools to reach potential customers, improve closing efficiency, and expand your income.",
+          "buttonLabel": "Become a partner"
+        },
+        {
+          "title": "Still haven't rented a room?",
+          "description": "Leave your details and RRMS specialists will help you find a faster and better match.",
+          "buttonLabel": "Submit your request"
+        }
+      ]
+    },
+    "postSteps": {
+      "title": "How to post on RRMS",
+      "description": "Reach renters more easily with a short and clear posting process.",
+      "items": [
+        {
+          "step": "1",
+          "title": "Login/Register",
+          "description": "Create an account and verify your information before using the service"
+        },
+        {
+          "step": "2",
+          "title": "Post listing",
+          "description": "Publish a listing in your personal account with complete images and details"
+        },
+        {
+          "step": "3",
+          "title": "Review & reach renters",
+          "description": "Our team helps review and optimize listing visibility quickly"
+        }
+      ]
+    },
+    "stats": {
+      "title": "What does RRMS offer?",
+      "description": "A platform built for fast updates, transparent information, and a smoother room search experience for both tenants and landlords.",
+      "footerText": "We focus on building a controlled data system, clear presentation, and sustainable operations so users always have a more trustworthy search experience.",
+      "items": {
+        "landlords": "Landlords",
+        "rooms": "Rooms/apartments",
+        "tenants": "Tenants",
+        "brokers": "Brokers"
+      }
+    }
+  },
+  "profile": {
+    "tabs": {
+      "profile": "Profile",
+      "billing": "Billing",
+      "security": "Security",
+      "notifications": "Notifications"
+    },
+    "metrics": {
+      "monthsRented": "Total rented months",
+      "monthsPaid": "Total paid months",
+      "monthsUnpaid": "Total unpaid months"
+    },
+    "alerts": {
+      "loadFailed": "Unable to load user profile.",
+      "imageFailed": "Unable to process avatar image.",
+      "copiedLink": "Profile link copied.",
+      "copyFailed": "Unable to copy profile link.",
+      "savingInfo": "Updating profile information!",
+      "saveSuccess": "Profile updated successfully!",
+      "saveError": "An error occurred while updating profile information.",
+      "passwordMissing": "Please fill in all password fields.",
+      "passwordMismatch": "Confirmation password does not match the new password!",
+      "passwordSuccess": "Password changed successfully!",
+      "passwordError": "Unable to change password. Please try again."
+    },
+    "validation": {
+      "emailInvalid": "Invalid email",
+      "emailRequired": "Email is required",
+      "genderRequired": "Gender is required",
+      "birthdayRequired": "Birthday is required.",
+      "birthdayMinAge": "You must be over 16 years old.",
+      "cccdInvalid": "Citizen ID must contain 12 digits."
+    },
+    "header": {
+      "badge": "Profile management center",
+      "title": "RRMS account profile",
+      "description": "Track personal information, security, spending history, and notification settings in one clear interface that is easy to use and easy to expand later.",
+      "missingEmail": "Email not updated"
+    },
+    "account": {
+      "title": "Account information",
+      "description": "Manage the basic information displayed in your profile.",
+      "username": "Username",
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone number"
+    },
+    "personal": {
+      "title": "Personal information",
+      "description": "These fields help RRMS understand and verify your profile more accurately.",
+      "gender": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "birthday": "Date of birth",
+      "cccd": "Citizen ID"
+    },
+    "save": {
+      "title": "Save changes",
+      "description": "Review your information before updating to avoid profile data mismatches.",
+      "note": "The system keeps the current backend flow unchanged and only updates the fields you modify.",
+      "saving": "Saving...",
+      "button": "Save changes"
+    },
+    "sidebar": {
+      "anonymous": "Anonymous user",
+      "viewPublicProfile": "View public profile",
+      "profileLinkAria": "Profile link",
+      "copyProfileLinkAria": "Copy profile link",
+      "changeAvatarAria": "Change avatar"
+    },
+    "notifications": {
+      "title": "Notification preferences",
+      "description": "Manage notification channels so you do not miss important updates.",
+      "emailTitle": "Receive email notifications",
+      "emailDescription": "Used for profile, security, and billing updates.",
+      "systemTitle": "System notifications",
+      "systemDescription": "Alerts related to your account and important system changes."
+    },
+    "security": {
+      "title": "Change password",
+      "description": "Update your password regularly to improve account safety.",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "submit": "Change password",
+      "toggleVisibility": "Show or hide password"
+    },
+    "securityOptions": {
+      "twoFactorTitle": "Two-factor authentication",
+      "twoFactorDescription": "Add an extra protection layer to your account with advanced verification.",
+      "twoFactorHint": "You can prepare SMS or authenticator app setup in the next step without affecting the current flow.",
+      "enableAdvanced": "Enable advanced security verification",
+      "phoneLabel": "Phone number",
+      "phonePlaceholder": "Enter SMS phone number",
+      "privacyTitle": "Security options",
+      "privacyDescription": "Control privacy settings and how account data is used.",
+      "privacyHeading": "Account privacy",
+      "privacyHint": "Set your account to private or public depending on your needs.",
+      "public": "Public",
+      "private": "Private",
+      "dataSharingHeading": "Data sharing",
+      "dataSharingHint": "Choose how your data is shared with app developers.",
+      "shareYes": "Yes, share data",
+      "shareNo": "No, limit data sharing"
+    },
+    "dangerZone": {
+      "title": "Danger zone",
+      "description": "The actions below are destructive and cannot be undone.",
+      "warning": "Deleting your account is irreversible. Make sure you have backed up any important data.",
+      "button": "I understand, delete my account"
+    }
+  },
+  "auth": {
+    "brandTitle": "RENTAL MANAGEMENT SOFTWARE",
+    "brandSubtitle": "Professional management!",
+    "copyright": "Copyright @ RRMS - Rental management",
+    "sidebar": {
+      "qrAlt": "Download the room-finding app via QR code",
+      "scanTitle": "Scan to download the app",
+      "description": "* You need an account to sign in. Please register an account if you do not have one yet"
+    },
+    "login": {
+      "title": "Sign in to your account",
+      "createAccount": "Create account",
+      "forgotPassword": "Forgot password",
+      "phonePlaceholder": "Phone number *",
+      "passwordPlaceholder": "Password *",
+      "submit": "Sign in",
+      "alerts": {
+        "errorTitle": "Error",
+        "successTitle": "Login successful!",
+        "successText": "Welcome back!",
+        "genericError": "Something went wrong. Please try again.",
+        "captchaFailed": "Captcha verification failed!",
+        "noticeTitle": "Notice",
+        "missingFields": "Please fill in all required information.",
+        "passwordWrong": "Incorrect password. Please check your password again.",
+        "accountMissing": "Account not found. Please check your phone number again.",
+        "serverError": "An error occurred. Please try again later.",
+        "usernameMissing": "Username was missing in the server response"
+      }
+    },
+    "register": {
+      "title": "REGISTER ACCOUNT",
+      "host": "I am a landlord or staff member",
+      "customer": "I am looking for a room or lodging",
+      "username": "Username",
+      "usernamePlaceholder": "Enter username",
+      "phone": "Phone number",
+      "phonePlaceholder": "Enter phone number",
+      "gmail": "Gmail",
+      "gmailPlaceholder": "Enter Gmail",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter password",
+      "submit": "Register",
+      "haveAccount": "Already have an account? Sign in",
+      "otpTitle": "Enter OTP",
+      "otpDescription": "We sent a verification code to your Gmail: <strong>{{gmail}}</strong>. Please enter the OTP from Gmail to continue.",
+      "resend": "Resend code",
+      "confirmOtp": "Confirm code",
+      "alerts": {
+        "errorTitle": "Error",
+        "warningTitle": "Warning",
+        "missingFields": "Please fill in all required information.",
+        "invalidPhone": "Invalid phone number (must start with 03, 05, 07, 08, or 09 and contain exactly 10 digits).",
+        "passwordTooShort": "Password must be at least 8 characters.",
+        "passwordMismatch": "Password and confirmation password do not match.",
+        "invalidInfo": "Invalid information!",
+        "checkInfoFailed": "An error occurred while checking your information. Please try again.",
+        "invalidEmail": "Invalid email",
+        "sendOtpSuccessTitle": "OTP sent successfully",
+        "sendOtpSuccessText": "Please check your email!",
+        "sendOtpErrorTitle": "Failed to send OTP",
+        "sendOtpErrorText": "Please try again later!",
+        "invalidOtpTitle": "Invalid OTP",
+        "invalidOtpText": "Please try again!",
+        "successTitle": "Success",
+        "successText": "Registration successful",
+        "genericError": "Something went wrong. Please try again."
+      }
+    },
+    "forgotPassword": {
+      "title": "Forgot account request",
+      "emailLabel": "Enter the Gmail linked to your account",
+      "emailPlaceholder": "Enter the Gmail linked to your account",
+      "newPasswordLabel": "New password",
+      "passwordPlaceholder": "Enter password",
+      "confirmPasswordLabel": "Confirm new password",
+      "confirmPasswordPlaceholder": "Re-enter password",
+      "description": "We will send a verification code to the email you entered to verify its validity before processing your password reset request.",
+      "submit": "Request password change",
+      "backToLogin": "Back to sign in",
+      "otpTitle": "Enter OTP",
+      "otpDescription": "We sent a verification code to your email: <strong>{{email}}</strong>. Please enter the OTP from email to continue.",
+      "resend": "Resend code",
+      "confirmOtp": "Confirm code",
+      "copyright": "Copyright @ RRMS - Rooms, apartments, housing",
+      "errors": {
+        "emailRequired": "Please enter Gmail",
+        "passwordRequired": "Please enter password",
+        "passwordMismatch": "Passwords do not match",
+        "emailInvalid": "Invalid email"
+      },
+      "alerts": {
+        "sendOtpSuccessTitle": "OTP sent successfully",
+        "sendOtpSuccessText": "Please check your email!",
+        "sendOtpErrorTitle": "Failed to send OTP",
+        "sendOtpErrorText": "Please try again later!",
+        "changeSuccessTitle": "Password changed",
+        "changeSuccessText": "Password changed successfully!",
+        "changeErrorTitle": "Change failed",
+        "changeErrorText": "Please try again later!"
+      }
+    }
+  },
+  "contactPage": {
+    "title": "CONTACT",
+    "subtitle": "Ways to get in touch with us",
+    "fanpage": "Room rental fanpage",
+    "channels": {
+      "messenger": "Messenger",
+      "phone": "Phone",
+      "email": "Email"
+    },
+    "banners": {
+      "brokerAlt": "RRMS broker banner",
+      "promotionAlt": "RRMS promotion banner"
+    },
+    "stepsTitle": "Posting steps",
+    "stepsDescription": "Reach renters more easily with the posting feature",
+    "whyTitle": "What does RRMS offer?",
+    "whyDescriptionLine1": "Why should you choose us",
+    "whyDescriptionLine2": "instead of another service?",
+    "stats": {
+      "landlords": "Landlords",
+      "tenants": "Tenants",
+      "brokers": "Brokers",
+      "views": "Visits/month"
+    },
+    "summary": "We are proud to be one of Vietnam's leading room search services. With the motto 'search and find', we keep listings updated quickly, accurately, and always put convenience for renters first."
+  },
+  "ratingHistory": {
+    "title": "Your rating history",
+    "columns": {
+      "index": "No.",
+      "roomName": "Room name",
+      "image": "Image",
+      "roomType": "Room type",
+      "address": "Address",
+      "price": "Price",
+      "area": "Area",
+      "availability": "Availability",
+      "approval": "Approval",
+      "comment": "Comment",
+      "rating": "Rating",
+      "action": "Action"
+    },
+    "availability": {
+      "available": "Available for rent",
+      "rented": "Already rented"
+    },
+    "approval": {
+      "approved": "Approved",
+      "pending": "Pending approval"
+    },
+    "rowsPerPage": "Rows per page:",
+    "all": "All"
+  },
+  "searchPage": {
+    "filter": {
+      "title": "Find rooms faster with smart filters",
+      "description": "Filter by area, keyword, price range, and room size to narrow down relevant results without changing the current search flow.",
+      "button": "Filters",
+      "areaLabel": "Area",
+      "keywordPlaceholder": "Enter area, street, school, or keyword",
+      "areaTitle": "Area",
+      "priceTitle": "Price range",
+      "searchButton": "Search",
+      "underArea": "Under 50 m²",
+      "underPrice": "Under 50 million"
+    },
+    "list": {
+      "allAreas": "All areas",
+      "allPriority": "All",
+      "titlePrefix": "Rent a room in",
+      "fullArea": "all areas",
+      "radiusLabel": "Search radius: 3 km",
+      "priorityLabel": "Priority area: {{area}}",
+      "nearbyNote": "When searching for rooms near your selected area, the system may show nearby results within a suitable radius to improve your chances of finding a room faster. Because of that, some listings from neighboring areas may appear."
+    },
+    "results": {
+      "countText": "There are {{count}} matching rental rooms and listings",
+      "sortPrice": "Sort by price",
+      "sortArea": "Sort by area",
+      "loadingTitle": "Loading data...",
+      "loadingDescription": "The system is fetching room listings that match your request.",
+      "emptyTitle": "No matching rooms found",
+      "emptyDescription": "Try changing your keyword, area, or filters to widen the results.",
+      "copySuccess": "Link copied successfully!",
+      "phoneUnavailable": "No phone number available",
+      "favoriteLoginTitle": "Notice",
+      "favoriteLoginText": "Please sign in to add this listing to favorites.",
+      "favoriteSuccessTitle": "Success",
+      "favoriteSuccessText": "Added to favorites",
+      "favoriteErrorTitle": "Failed",
+      "favoriteErrorText": "Failed to add to favorites",
+      "favoriteExistsTitle": "Notice",
+      "favoriteExistsText": "This room was already added earlier"
+    },
+    "card": {
+      "priority": "Priority listing",
+      "verified": "Verified listing",
+      "unknownUser": "Unknown user",
+      "updated": "Recently updated",
+      "copyLink": "Copy link",
+      "viewPhone": "View phone",
+      "viewDetail": "View details"
+    },
+    "article": {
+      "title": "Room hunting guide",
+      "subtitle": "There are currently {{count}} results related to {{keyword}}. Here are a few suggestions to help you choose rooms faster and more accurately.",
+      "defaultKeyword": "your room search needs",
+      "showMore": "Show more content",
+      "showLess": "Hide content",
+      "sections": [
+        {
+          "title": "How is room rental demand changing?",
+          "description": "Today’s renters care not only about price but also about location, amenities, safety, living space, and how transparent the listing information is."
+        },
+        {
+          "title": "How can you filter suitable rooms faster?",
+          "description": "Start by identifying your target area, affordable budget, minimum size, and must-have amenities. The clearer your filters are, the more accurate the results will be."
+        },
+        {
+          "title": "What factors affect rental prices?",
+          "description": "Rental prices usually vary based on location, furniture quality, building condition, population density, and distance to schools, workplaces, or key transport routes."
+        }
+      ]
+    },
+    "insights": {
+      "popularTitle": "Popular search areas",
+      "popularDescription": "The areas below are getting high renter interest and strong room search demand.",
+      "postTitle": "Reach renters more easily",
+      "postDescription": "A simple posting flow helps increase your speed of reaching real renters.",
+      "nearbyTitle": "Rooms near this area",
+      "nearbyDescription": "Schools and popular destinations around here usually attract renter interest.",
+      "districtTitle": "Featured areas",
+      "districtDescription": "Quickly explore districts with many active listings."
+    },
+    "units": {
+      "month": "month",
+      "block": "block",
+      "kw": "kW"
+    }
+  },
+  "rrms": {
+    "header": {
+      "titlePrefix": "Top channel to find rooms, apartments, and dorms for rent in",
+      "titleHighlight": "TOP",
+      "titleSuffix": "Vietnam",
+      "typewrites": [
+        "Safe - Room support - Connect with landlords.",
+        "Quality - Good price - Fast results.",
+        "Think of RRMS when you need rooms, apartments, or housing!"
+      ],
+      "nearbyTitle": "Find rooms near District 1, Ho Chi Minh City",
+      "schoolLinkTitle": "rooms near {{label}}"
+    },
+    "menu": {
+      "nearMeTitle": "Find rooms near me",
+      "nearMeDescription": "Search near your current location",
+      "supportTitle": "Room finding support",
+      "supportDescription": "RRMS helps you find a room",
+      "billTitle": "Check bill",
+      "billDescription": "View your current housing bill",
+      "gasTitle": "Discounted gas exchange",
+      "gasDescription": "Exchange gas with RRMS offers",
+      "brokerTitle": "Broker recruitment",
+      "brokerDescription": "Recruit and train brokers with RRMS",
+      "ownerTitle": "I am a landlord",
+      "ownerDescription": "Management software and posting tools",
+      "hot": "HOT",
+      "pro": "PRO"
+    },
+    "province": {
+      "title": "Find rooms by province / city",
+      "roomLabel": "Room"
+    },
+    "district": {
+      "title": "Find rooms by district",
+      "cardTitle": "Find rooms in {{district}}"
+    },
+    "ward": {
+      "title": "Find rooms by ward / commune",
+      "viewAll": "View all"
+    },
+    "promotion": {
+      "title": "Programs - RRMS",
+      "bannerAlt": "Support for freshmen finding housing and settling into a new environment"
+    },
+    "now": {
+      "title": "Move-in-ready rooms - NOW",
+      "description": "You can rent and move in today"
+    },
+    "latest": {
+      "title": "Latest rooms",
+      "description": "Recently approved rooms",
+      "moreAtDistrict": "See more rooms in {{district}}"
+    },
+    "footer": {
+      "popularKeywords": "Popular keywords on RRMS",
+      "postTitle": "How to post listings on RRMS",
+      "postDescription": "Reach renters more easily with the posting feature"
+    },
+    "card": {
+      "now": "NOW",
+      "month": "Month",
+      "dayAgo": "1 day ago",
+      "viewPhone": "View phone"
+    }
+  }
 }

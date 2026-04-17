@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom'
 import { Box } from '@mui/material'
 import { useState } from 'react'
-
-const TABS = [
-  { id: 'hoatdong', label: 'HOẠT ĐỘNG' },
-  { id: 'tinmoi', label: 'TIN MỚI' }
-]
+import { useTranslation } from 'react-i18next'
 
 export default function NotificationPanel() {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('hoatdong')
   const tokenExists = sessionStorage.getItem('user') !== null
+  const tabs = [
+    { id: 'hoatdong', label: t('header.notifications.activity') },
+    { id: 'tinmoi', label: t('header.notifications.news') }
+  ]
 
   return (
     <Box
@@ -25,7 +26,6 @@ export default function NotificationPanel() {
         zIndex: 1001
       }}
     >
-      {/* Tabs */}
       <Box
         component="ul"
         sx={{
@@ -36,7 +36,7 @@ export default function NotificationPanel() {
           listStyle: 'none'
         }}
       >
-        {TABS.map((tab) => (
+        {tabs.map((tab) => (
           <Box
             key={tab.id}
             component="li"
@@ -58,12 +58,11 @@ export default function NotificationPanel() {
         ))}
       </Box>
 
-      {/* Tab content */}
       {activeTab === 'hoatdong' && (
         <Box sx={{ textAlign: 'center', py: 1 }}>
           {!tokenExists ? (
             <>
-              <Box sx={{ mt: 1, mb: 1, lineHeight: '30px' }}>Vui lòng đăng nhập để xem danh sách hoạt động.</Box>
+              <Box sx={{ mt: 1, mb: 1, lineHeight: '30px' }}>{t('header.notifications.loginPrompt')}</Box>
               <Box
                 component={Link}
                 to="/login"
@@ -82,20 +81,16 @@ export default function NotificationPanel() {
                   '&:hover': { opacity: 0.8 }
                 }}
               >
-                Đăng ký / Đăng nhập
+                {t('header.notifications.registerLogin')}
               </Box>
             </>
           ) : (
-            <Box sx={{ py: 1 }}>Không có hoạt động nào.</Box>
+            <Box sx={{ py: 1 }}>{t('header.notifications.emptyActivity')}</Box>
           )}
         </Box>
       )}
 
-      {activeTab === 'tinmoi' && (
-        <Box sx={{ textAlign: 'center', py: 2 }}>
-          Chúng tôi không có cập nhật nào. Vui lòng kiểm tra lại sau
-        </Box>
-      )}
+      {activeTab === 'tinmoi' && <Box sx={{ textAlign: 'center', py: 2 }}>{t('header.notifications.emptyNews')}</Box>}
     </Box>
   )
 }

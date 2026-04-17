@@ -1,88 +1,99 @@
-import { Avatar, Box, Button, Rating, TextareaAutosize, Tooltip, Typography, useTheme } from '@mui/material'
-import { useEffect } from 'react'
-import { toast } from 'react-toastify'
+import { useEffect } from 'react';
+import { Avatar, Box, Button, Rating, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { toast } from 'react-toastify';
 import {
   getBulletinBoardReviewByBulletinBoardIdAndUsername,
-  postBulletinBoardReview
-} from '~/apis/bulletinBoardReviewsAPI'
+  postBulletinBoardReview,
+} from '~/apis/bulletinBoardReviewsAPI';
 
 const UserRating = ({ roomId, username, setReview, review, refreshBulletinBoards, account }) => {
-  const theme = useTheme()
-  const backgroundColor = theme.palette.mode === 'light' ? '#FFFFFF' : '#1E1E1E'
-
   useEffect(() => {
+    if (!roomId || !username) {
+      setReview({
+        username: '',
+        bulletinBoardId: roomId,
+        rating: 1,
+        content: '',
+      });
+      return;
+    }
+
     getBulletinBoardReviewByBulletinBoardIdAndUsername(roomId, username).then((res) => {
-      const result = res.result
-      // Khởi tạo review từ dữ liệu đã có nếu tồn tại
+      const result = res.result;
+
       if (result) {
         setReview({
-          username: username,
+          username,
           bulletinBoardId: roomId,
           rating: result.rating || 1,
-          content: result.content || ''
-        })
+          content: result.content || '',
+        });
+        return;
       }
-    })
-    setReview({ ...review, username: username })
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+      setReview({
+        username,
+        bulletinBoardId: roomId,
+        rating: 1,
+        content: '',
+      });
+    });
+  }, [roomId, setReview, username]);
 
-  const handleComment = () => {
-    setReview({ ...review, username: username })
-    postBulletinBoardReview(review)
-      .then(() => {
-        toast.success('Đánh giá thành công!')
-        refreshBulletinBoards()
-      })
-      .catch((error) => {
-        console.error('Lỗi khi đăng bình luận:', error)
-      })
-  }
+  const handleComment = async () => {
+    const payload = {
+      ...review,
+      username,
+      bulletinBoardId: roomId,
+    };
+
+    try {
+      await postBulletinBoardReview(payload);
+      toast.success('Danh gia thanh cong');
+      refreshBulletinBoards();
+    } catch (error) {
+      console.error('Loi khi dang binh luan:', error);
+    }
+  };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-      <Typography component="legend" sx={{ fontSize: '20px' }}>
-        Đánh giá của bạn:
+    <Box>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+        Đánh giá của bạn
       </Typography>
-      <Box sx={{ display: 'flex' }}>
-        <Tooltip title={account?.fullname}>
-          <Avatar sx={{ mr: 1 }} src={account?.avatar}>
-            {account?.fullname[0]}
+
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'flex-start' }}>
+        <Tooltip title={account?.fullname || ''}>
+          <Avatar src={account?.avatar} sx={{ width: 48, height: 48 }}>
+            {account?.fullname?.[0]}
           </Avatar>
         </Tooltip>
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Rating
-            sx={{ my: 'auto' }}
-            name="simple-controlled"
-            value={review.rating}
-            size="medium"
-            onChange={(event, newValue) => {
-              setReview({ ...review, rating: newValue })
-            }}
-          />
-          <TextareaAutosize
-            minRows={4}
-            style={{
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              padding: '10px',
-              overflow: 'hidden',
-              resize: 'none',
-              width: '715px',
-              backgroundColor: backgroundColor
-            }}
-            value={review.content}
-            placeholder="Vui lòng đánh giá: "
-            onChange={(e) => setReview({ ...review, content: e.target.value })}
-          />
-        </Box>
-      </Box>
-      <Button variant="contained" sx={{ mt: 2, right: 1, ml: 'auto' }} onClick={handleComment}>
-        Đánh giá
-      </Button>
-    </Box>
-  )
-}
 
-export default UserRating
+        <Stack spacing={1.5} sx={{ flex: 1 }}>
+          <Rating
+            name="user-rating"
+            value={review.rating}
+            onChange={(event, newValue) => {
+              setReview({ ...review, rating: newValue || 1 });
+            }}
+          />
+
+          <TextField
+            multiline
+            minRows={4}
+            fullWidth
+            value={review.content}
+            placeholder="Chia sẻ cảm nhận của bạn về phòng này"
+            onChange={(event) => setReview({ ...review, content: event.target.value })}
+          />
+
+          <Button variant="contained" onClick={handleComment} sx={{ alignSelf: 'flex-end', borderRadius: 3 }}>
+            Gửi đánh giá
+          </Button>
+        </Stack>
+      </Stack>
+    </Box>
+  );
+};
+
+export default UserRating;

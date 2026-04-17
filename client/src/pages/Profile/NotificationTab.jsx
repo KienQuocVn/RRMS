@@ -1,12 +1,7 @@
-import { Box, Switch, Typography } from '@mui/material'
+import NotificationPreferencesSection from './sections/NotificationPreferencesSection'
 
-const NotificationTab = () => {
-  return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <Typography>Nhận thông báo đến email</Typography>
-      <Switch />
-    </Box>
-  )
+function NotificationTab() {
+  return <NotificationPreferencesSection />
 }
 
 export default NotificationTab

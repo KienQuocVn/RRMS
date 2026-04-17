@@ -1,254 +1,293 @@
+import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded'
+import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded'
+import EmailRoundedIcon from '@mui/icons-material/EmailRounded'
+import FacebookRoundedIcon from '@mui/icons-material/FacebookRounded'
+import HandshakeRoundedIcon from '@mui/icons-material/HandshakeRounded'
+import PhoneInTalkRoundedIcon from '@mui/icons-material/PhoneInTalkRounded'
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
+import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded'
+import { Box, Button, Container, Link as MuiLink, Paper, Stack, Typography } from '@mui/material'
 import { useEffect } from 'react'
-import { Typography } from '@mui/material'
-import './Contact.css'
-import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { Link as RouterLink } from 'react-router-dom'
+
+const contactCards = [
+  {
+    key: 'fanpage',
+    href: 'https://www.facebook.com/profile.php?id=61562538557177',
+    labelKey: 'contactPage.fanpage',
+    value: 'Facebook',
+    Icon: FacebookRoundedIcon,
+    color: '#1877f2'
+  },
+  {
+    key: 'messenger',
+    href: 'https://www.facebook.com/profile.php?id=61562538557177',
+    labelKey: 'contactPage.channels.messenger',
+    value: 'Messenger',
+    Icon: ChatBubbleOutlineRoundedIcon,
+    color: '#0ea5e9'
+  },
+  {
+    key: 'phone',
+    href: 'tel:0373395604',
+    labelKey: 'contactPage.channels.phone',
+    value: '0373395604',
+    Icon: PhoneInTalkRoundedIcon,
+    color: '#16a34a'
+  },
+  {
+    key: 'email',
+    href: 'mailto:nguyentantai0118@gmail.com?Subject=Li%C3%AAn%20h%E1%BB%87%20RRSM.com',
+    labelKey: 'contactPage.channels.email',
+    value: 'RRMS.com@gmail.com',
+    Icon: EmailRoundedIcon,
+    color: '#f97316'
+  }
+]
+
+const postingSteps = [
+  {
+    step: '1',
+    titleKey: 'introduce.postSteps.items.0.title',
+    descriptionKey: 'introduce.postSteps.items.0.description',
+    color: '#16a34a'
+  },
+  {
+    step: '2',
+    titleKey: 'introduce.postSteps.items.1.title',
+    descriptionKey: 'introduce.postSteps.items.1.description',
+    color: '#2563eb'
+  },
+  {
+    step: '3',
+    titleKey: 'introduce.postSteps.items.2.title',
+    descriptionKey: 'introduce.postSteps.items.2.description',
+    color: '#f59e0b'
+  }
+]
+
+const stats = [
+  { value: '4.000+', labelKey: 'contactPage.stats.landlords', Icon: ApartmentRoundedIcon },
+  { value: '10.000+', labelKey: 'contactPage.stats.tenants', Icon: GroupsRoundedIcon },
+  { value: '10+', labelKey: 'contactPage.stats.brokers', Icon: HandshakeRoundedIcon },
+  { value: '3.000+', labelKey: 'contactPage.stats.views', Icon: TrendingUpRoundedIcon }
+]
+
 const Contact = ({ setIsAdmin }) => {
+  const { t } = useTranslation()
+
   useEffect(() => {
     setIsAdmin(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
   return (
-    <div className="container">
-      <div className="text-center">
-        <Typography sx={{ fontSize: '38px' }}>LIÊN HỆ</Typography>
-        <Typography sx={{ fontSize: '20px' }}>Các kênh liên hệ với chúng tôi</Typography>
-        <hr />
-      </div>
-      <div className="container">
-        <div id="content">
-          <div className="row">
-            <div className="col-sm-12 col-md-3 col-lg-3 mt-2">
-              <div className="iContact inner-item text-center">
-                <Link rel="nofollow, noindex" to="https://www.facebook.com/profile.php?id=61562538557177">
-                  <div className="iconContact">
-                    <img
-                      src="https://lozido.com/images/banner/fanpage.webp"
-                      style={{ width: '90px' }}
-                      alt="icon fanpage facebook"
-                    />
-                    <b style={{ color: 'black' }}>Fanpage phòng trọ</b>
-                  </div>
-                </Link>
-              </div>
-            </div>
-            <div className="col-sm-12 col-md-3 col-lg-3 mt-2">
-              <div className="iContact inner-item text-center">
-                <Link rel="nofollow, noindex" to="https://www.facebook.com/profile.php?id=61562538557177">
-                  <div className="iconContact">
-                    <img
-                      src="https://lozido.com/images/banner/messager.webp"
-                      style={{ width: '90px' }}
-                      alt="ion messager"
-                    />
-                    <b style={{ color: 'black' }}>Messenger</b>
-                  </div>
-                </Link>
-              </div>
-            </div>
-            <div className="col-sm-12 col-md-3 col-lg-3 mt-2">
-              <div className="iContact inner-item text-center">
-                <Link rel="nofollow, noindex" to="tel:0373395604">
-                  <div className="iconContact">
-                    <img src="https://lozido.com/images/banner/phone.webp" style={{ width: '90px' }} alt="icon phone" />
-                    <b style={{ color: 'black' }}>0373395604</b>
-                  </div>
-                </Link>
-              </div>
-            </div>
-            <div className="col-sm-12 col-md-3 col-lg-3 mt-2">
-              <div className="iContact inner-item text-center">
-                <Link
-                  rel="nofollow, noindex"
-                  to="mailto:nguyentantai0118@gmail.com?Subject=Liên%20hệ%20RRSM.com"
-                  target="_top">
-                  <div className="iconContact">
-                    <img src="https://lozido.com/images/banner/email.webp" style={{ width: '90px' }} alt="icon email" />
-                    <b style={{ color: 'black' }}>lozido.com@gmail.com</b>
-                  </div>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="container">
-        <div className="flex row" style={{ marginBlock: '35px' }}>
-          <div className="col-md-6 mt-2">
-            <Link to="#">
-              <img
-                src="/banner1.png"
-                className="w-full lg:rounded-md"
-                alt="banner moi gioi lozido"
-                width="100%"
-                style={{ borderRadius: '5px' }}
-              />
-            </Link>
-          </div>
-          <div className="col-md-6 mt-2">
-            <Link to="#">
-              <img
-                src="/banner2.png"
-                className="lg:rounded-md cursor-pointer"
-                alt="banner-pc"
-                width="100%"
-                style={{ borderRadius: '5px' }}
-              />
-            </Link>
-          </div>
-        </div>
+    <Box
+      component="main"
+      sx={{
+        py: { xs: 4, md: 6 },
+        background: 'linear-gradient(180deg, #f7fbff 0%, #ffffff 100%)'
+      }}
+    >
+      <Container maxWidth="lg">
+        <Stack spacing={4}>
+          <Box textAlign="center">
+            <Typography sx={{ fontSize: { xs: 30, md: 38 }, fontWeight: 900, color: '#0f172a' }}>
+              {t('contactPage.title')}
+            </Typography>
+            <Typography sx={{ mt: 1, fontSize: { xs: 16, md: 20 }, color: '#475467' }}>
+              {t('contactPage.subtitle')}
+            </Typography>
+            <Box sx={{ width: 120, height: 4, mx: 'auto', mt: 2, borderRadius: 999, background: 'linear-gradient(90deg, #38bdf8, #22c55e)' }} />
+          </Box>
 
-        <div className="text-center footer-title">
-          <Typography sx={{ fontSize: '28px' }}>Các bước đăng bài</Typography>
-          <p className="text-center footer-description">Tiếp cận khách thuê dễ dàng với tính năng đăng tin</p>
-        </div>
-        <div className="container mb-4">
-          <div className="row feature card-benefit">
-            <div className="col-md-4 item green mt-2">
-              <div className="innerRRMS">
-                <div className="icon-itemRRMS">
-                  <span>1</span>
-                </div>
-                <div className="content-item">
-                  <b>Đăng nhập/Đăng ký</b>
-                  <div>đăng ký sau đó đăng nhập</div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4 item blue mt-2">
-              <div className="innerRRMS">
-                <div className="icon-itemRRMS">
-                  <span>2</span>
-                </div>
-                <div className="content-item">
-                  <b>Đăng tin</b>
-                  <div>Đăng tin trong tài khoản cá nhân</div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4 item yellow mt-2">
-              <div className="innerRRMS">
-                <div className="icon-itemRRMS">
-                  <span>3</span>
-                </div>
-                <div className="content-item">
-                  <b>Xét duyệt &amp; tiếp cận khách thuê</b>
-                  <div>Chuyên viên sẵn sàng xét duyệt 24/7</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' },
+              gap: 2
+            }}
+          >
+            {contactCards.map((card) => {
+              const Icon = card.Icon
+              return (
+                <Paper
+                  key={card.key}
+                  component={MuiLink}
+                  href={card.href}
+                  underline="none"
+                  target={card.href.startsWith('http') ? '_blank' : undefined}
+                  rel={card.href.startsWith('http') ? 'noreferrer' : undefined}
+                  sx={{
+                    p: 2.5,
+                    borderRadius: 3,
+                    border: '1px solid rgba(148, 163, 184, 0.18)',
+                    boxShadow: '0 18px 40px rgba(15, 23, 42, 0.06)',
+                    color: 'inherit',
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 24px 50px rgba(15, 23, 42, 0.12)'
+                    }
+                  }}
+                >
+                  <Stack spacing={1.5} alignItems="center" textAlign="center">
+                    <Box
+                      sx={{
+                        width: 68,
+                        height: 68,
+                        borderRadius: '50%',
+                        display: 'grid',
+                        placeItems: 'center',
+                        backgroundColor: `${card.color}15`,
+                        color: card.color
+                      }}
+                    >
+                      <Icon sx={{ fontSize: 32 }} />
+                    </Box>
+                    <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#344054' }}>{t(card.labelKey)}</Typography>
+                    <Typography sx={{ fontSize: 16, fontWeight: 800, color: '#101828' }}>{card.value}</Typography>
+                  </Stack>
+                </Paper>
+              )
+            })}
+          </Box>
 
-        <div style={{ marginTop: '50px' }}>
-          <div className="text-center footer-title">
-            <Typography sx={{ fontSize: '28px' }}>RRMS có gì?</Typography>
-          </div>
-          <p className="text-center footer-description">
-            Tại sao bạn phải chọn chúng tôi
-            <br /> mà không phải một dịch vụ nào khác?
-          </p>
-          <div className="row footer-report">
-            <div className="report col-md-3 text-center mt-2">
-              <div className="report-item">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="70px"
-                  height="70px"
-                  fill="currentColor"
-                  className="bi bi-people"
-                  viewBox="0 0 16 16"
-                  style={{ color: 'green' }}>
-                  <path
-                    d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 
-                                    12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 
-                                    0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11
-                                    7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 
-                                    1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 
-                                    5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 
-                                    0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"
-                  />
-                </svg>
-                <Typography sx={{ fontSize: '20px', fontWeight: 'bold' }}>4.000+</Typography>
-                <Typography sx={{ fontSize: '14px' }}>Chủ nhà</Typography>
-              </div>
-            </div>
-            <div className="report col-md-3 text-center mt-2">
-              <div className="report-item">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="70px"
-                  height="70px"
-                  fill="currentColor"
-                  className="bi bi-people"
-                  viewBox="0 0 16 16"
-                  style={{ color: 'green' }}>
-                  <path
-                    d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 
-                                    12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 
-                                    0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11
-                                    7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 
-                                    1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 
-                                    5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 
-                                    0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4"
-                  />
-                </svg>
-                <Typography sx={{ fontSize: '20px', fontWeight: 'bold' }}>10.000+</Typography>
-                <Typography sx={{ fontSize: '14px' }}>Khách thuê</Typography>
-              </div>
-            </div>
-            <div className="report col-md-3 text-center mt-2">
-              <div className="report-item">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="70px"
-                  height="70px"
-                  fill="currentColor"
-                  className="bi bi-people"
-                  viewBox="0 0 16 16"
-                  style={{ color: 'green' }}>
-                  <path
-                    d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zM11 3.5a.5.5 0 0 1 
-                                    .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5m.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 
-                                    0-1zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1z"
-                  />
-                </svg>
-                <Typography sx={{ fontSize: '20px', fontWeight: 'bold' }}>10+</Typography>
-                <Typography sx={{ fontSize: '14px' }}>Môi giới</Typography>
-              </div>
-            </div>
-            <div className="report col-md-3 text-center mt-2">
-              <div className="report-item">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="70px"
-                  height="70px"
-                  fill="currentColor"
-                  className="bi bi-people"
-                  viewBox="0 0 16 16"
-                  style={{ color: 'green' }}>
-                  <path
-                    fillRule="evenodd"
-                    d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5
-                                    0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 
-                                    0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 
-                                    3.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 
-                                    0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 
-                                    1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0"
-                  />
-                </svg>
-                <Typography sx={{ fontSize: '20px', fontWeight: 'bold' }}>3.000+</Typography>
-                <Typography sx={{ fontSize: '14px' }}>Lượt truy cập/tháng</Typography>
-              </div>
-            </div>
-          </div>
-        </div>
-        <p className="text-center footer-content mt-4">
-          Chúng tôi tự hào là một trong những dịch vụ tìm kiếm phòng trọ đứng đầu Việt Nam, với phương châm tìm là có
-          chúng tôi luôn cập nhật phòng nhanh nhất, chính xác nhất và ưu tiên sự tiện lợi cho người tìm trọ lên hàng
-          đầu.
-        </p>
-      </div>
-    </div>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
+              gap: 2
+            }}
+          >
+            <Paper
+              component="a"
+              href="#"
+              sx={{
+                overflow: 'hidden',
+                borderRadius: 3,
+                display: 'block',
+                boxShadow: '0 18px 40px rgba(15, 23, 42, 0.06)'
+              }}
+            >
+              <Box component="img" src="/banner1.png" alt={t('contactPage.banners.brokerAlt')} sx={{ width: '100%', display: 'block' }} />
+            </Paper>
+            <Paper
+              component="a"
+              href="#"
+              sx={{
+                overflow: 'hidden',
+                borderRadius: 3,
+                display: 'block',
+                boxShadow: '0 18px 40px rgba(15, 23, 42, 0.06)'
+              }}
+            >
+              <Box component="img" src="/banner2.png" alt={t('contactPage.banners.promotionAlt')} sx={{ width: '100%', display: 'block' }} />
+            </Paper>
+          </Box>
+
+          <Paper sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, boxShadow: '0 22px 48px rgba(15, 23, 42, 0.06)' }}>
+            <Box textAlign="center">
+              <Typography sx={{ fontSize: { xs: 24, md: 28 }, fontWeight: 900, color: '#0f172a' }}>
+                {t('contactPage.stepsTitle')}
+              </Typography>
+              <Typography sx={{ mt: 1, color: '#475467' }}>{t('contactPage.stepsDescription')}</Typography>
+            </Box>
+
+            <Box
+              sx={{
+                mt: 3,
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
+                gap: 2
+              }}
+            >
+              {postingSteps.map((item) => (
+                <Paper
+                  key={item.step}
+                  variant="outlined"
+                  sx={{
+                    p: 2.25,
+                    borderRadius: 3,
+                    borderColor: `${item.color}55`,
+                    background: `linear-gradient(180deg, ${item.color}10 0%, #ffffff 100%)`
+                  }}
+                >
+                  <Stack spacing={1.25}>
+                    <Box
+                      sx={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: '50%',
+                        display: 'grid',
+                        placeItems: 'center',
+                        backgroundColor: item.color,
+                        color: '#fff',
+                        fontWeight: 900
+                      }}
+                    >
+                      {item.step}
+                    </Box>
+                    <Typography sx={{ fontSize: 18, fontWeight: 800, color: '#101828' }}>{t(item.titleKey)}</Typography>
+                    <Typography sx={{ color: '#475467', lineHeight: 1.7 }}>{t(item.descriptionKey)}</Typography>
+                  </Stack>
+                </Paper>
+              ))}
+            </Box>
+          </Paper>
+
+          <Paper sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, boxShadow: '0 22px 48px rgba(15, 23, 42, 0.06)' }}>
+            <Box textAlign="center">
+              <Typography sx={{ fontSize: { xs: 24, md: 28 }, fontWeight: 900, color: '#0f172a' }}>
+                {t('contactPage.whyTitle')}
+              </Typography>
+              <Typography sx={{ mt: 1, color: '#475467' }}>{t('contactPage.whyDescriptionLine1')}</Typography>
+              <Typography sx={{ color: '#475467' }}>{t('contactPage.whyDescriptionLine2')}</Typography>
+            </Box>
+
+            <Box
+              sx={{
+                mt: 3,
+                display: 'grid',
+                gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
+                gap: 2
+              }}
+            >
+              {stats.map((item) => {
+                const Icon = item.Icon
+                return (
+                  <Paper
+                    key={item.labelKey}
+                    variant="outlined"
+                    sx={{
+                      p: 2.25,
+                      borderRadius: 3,
+                      textAlign: 'center',
+                      borderColor: 'rgba(34, 197, 94, 0.18)',
+                      background: 'linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%)'
+                    }}
+                  >
+                    <Icon sx={{ fontSize: 42, color: '#16a34a' }} />
+                    <Typography sx={{ mt: 1.25, fontSize: 24, fontWeight: 900, color: '#101828' }}>{item.value}</Typography>
+                    <Typography sx={{ mt: 0.5, color: '#475467' }}>{t(item.labelKey)}</Typography>
+                  </Paper>
+                )
+              })}
+            </Box>
+
+            <Typography sx={{ mt: 3, textAlign: 'center', color: '#475467', lineHeight: 1.9 }}>{t('contactPage.summary')}</Typography>
+
+            <Box sx={{ mt: 3, textAlign: 'center' }}>
+              <Button component={RouterLink} to="/register" variant="contained" sx={{ borderRadius: 999, px: 3, py: 1.2, fontWeight: 700 }}>
+                {t('auth.register.submit')}
+              </Button>
+            </Box>
+          </Paper>
+        </Stack>
+      </Container>
+    </Box>
   )
 }
+
 export default Contact

@@ -1,13 +1,10 @@
 import { Link } from 'react-router-dom'
 import { Box } from '@mui/material'
-import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const HomeIcon = ({ active }) => (
   <svg width="29" height="28" viewBox="0 0 29 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M14.7343 2.5C14.9171 2.5 15.0938 2.56527 15.2327 2.68405L25.966 11.884C26.1359 12.0297 26.2343 12.2429 26.2343 12.4667V23.2C26.2343 23.81 25.992 24.395 25.5607 24.8263C25.1293 25.2577 24.5443 25.5 23.9343 25.5H17.801C17.5977 25.5 17.4027 25.4192 17.2589 25.2754C17.1151 25.1317 17.0343 24.9367 17.0343 24.7333V20.1333C17.0343 19.5233 16.792 18.9383 16.3607 18.507C15.9294 18.0757 15.3443 17.8333 14.7343 17.8333C14.1244 17.8333 13.5393 18.0757 13.108 18.507C12.6767 18.9383 12.4344 19.5233 12.4344 20.1333V24.7333C12.4344 24.9367 12.3536 25.1317 12.2098 25.2754C12.066 25.4192 11.871 25.5 11.6677 25.5H5.53437C4.92437 25.5 4.33936 25.2577 3.90803 24.8263C3.4767 24.395 3.23438 23.81 3.23438 23.2V12.4667C3.23438 12.2429 3.33276 12.0297 3.50271 11.884L14.236 2.68405C14.3749 2.56527 14.5516 2.5 14.7343 2.5Z"
-      fill={active ? '#4bcffa' : '#8C8C8C'}
-    />
+    <path d="M14.7343 2.5C14.9171 2.5 15.0938 2.56527 15.2327 2.68405L25.966 11.884C26.1359 12.0297 26.2343 12.2429 26.2343 12.4667V23.2C26.2343 23.81 25.992 24.395 25.5607 24.8263C25.1293 25.2577 24.5443 25.5 23.9343 25.5H17.801C17.5977 25.5 17.4027 25.4192 17.2589 25.2754C17.1151 25.1317 17.0343 24.9367 17.0343 24.7333V20.1333C17.0343 19.5233 16.792 18.9383 16.3607 18.507C15.9294 18.0757 15.3443 17.8333 14.7343 17.8333C14.1244 17.8333 13.5393 18.0757 13.108 18.507C12.6767 18.9383 12.4344 19.5233 12.4344 20.1333V24.7333C12.4344 24.9367 12.3536 25.1317 12.2098 25.2754C12.066 25.4192 11.871 25.5 11.6677 25.5H5.53437C4.92437 25.5 4.33936 25.2577 3.90803 24.8263C3.4767 24.395 3.23438 23.81 3.23438 23.2V12.4667C3.23438 12.2429 3.33276 12.0297 3.50271 11.884L14.236 2.68405C14.3749 2.56527 14.5516 2.5 14.7343 2.5Z" fill={active ? '#4bcffa' : '#8C8C8C'} />
   </svg>
 )
 
@@ -42,18 +39,20 @@ const UserIcon = () => (
   </svg>
 )
 
-const NAV_ITEMS = [
-  { id: 'home', label: 'Trang chủ', to: '/' },
-  { id: 'manage', label: 'Quản lý tin', to: '#' },
-  { id: 'post', label: 'Đăng tin', to: '#', special: true },
-  { id: 'notify', label: 'Thông báo', to: '#' },
-  { id: 'account', label: 'Tài khoản', to: '#' }
+const navItems = (t) => [
+  { id: 'home', label: t('header.mobileNav.home'), to: '/' },
+  { id: 'manage', label: t('header.mobileNav.manage'), to: '#' },
+  { id: 'post', label: t('header.mobileNav.post'), to: '#', special: true },
+  { id: 'notify', label: t('header.mobileNav.notify'), to: '#' },
+  { id: 'account', label: t('header.mobileNav.account'), to: '#' }
 ]
 
 export default function MobileNav({ isNotifyOpen, setIsNotifyOpen, isMobileAccountOpen, setIsMobileAccountOpen }) {
+  const { t } = useTranslation()
+  const items = navItems(t)
+
   return (
     <>
-      {/* Mobile search bar */}
       <Box
         sx={{
           display: { xs: 'flex', md: 'none' },
@@ -73,7 +72,7 @@ export default function MobileNav({ isNotifyOpen, setIsNotifyOpen, isMobileAccou
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', ml: 1, width: 110, cursor: 'pointer', flexShrink: 0 }}>
-              <Box sx={{ flex: 1, textAlign: 'center', fontSize: '0.875rem', color: '#222' }}>Muốn thuê</Box>
+              <Box sx={{ flex: 1, textAlign: 'center', fontSize: '0.875rem', color: '#222' }}>{t('header.mobileNav.wantRent')}</Box>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="16" viewBox="0 0 12 16">
                 <path fill="#000" d="M6 6L11 11.5 1 11.5z" opacity=".8" transform="matrix(1 0 0 -1 0 17.5)" />
               </svg>
@@ -83,7 +82,7 @@ export default function MobileNav({ isNotifyOpen, setIsNotifyOpen, isMobileAccou
               component="input"
               type="text"
               autoComplete="off"
-              placeholder="Nhập thông tin tìm kiếm"
+              placeholder={t('header.mobileNav.searchPlaceholder')}
               sx={{
                 flex: 1,
                 border: 'none',
@@ -98,7 +97,6 @@ export default function MobileNav({ isNotifyOpen, setIsNotifyOpen, isMobileAccou
         </Box>
       </Box>
 
-      {/* Bottom nav bar */}
       <Box
         component="ul"
         sx={{
@@ -116,7 +114,7 @@ export default function MobileNav({ isNotifyOpen, setIsNotifyOpen, isMobileAccou
           zIndex: 3
         }}
       >
-        {NAV_ITEMS.map((item) => (
+        {items.map((item) => (
           <Box
             key={item.id}
             component="li"
@@ -124,7 +122,6 @@ export default function MobileNav({ isNotifyOpen, setIsNotifyOpen, isMobileAccou
           >
             {item.special ? (
               <>
-                {/* Special post button with circle */}
                 <Box
                   sx={{
                     position: 'absolute',

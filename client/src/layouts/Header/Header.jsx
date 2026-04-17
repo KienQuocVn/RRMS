@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { Box } from '@mui/material'
 import { useState } from 'react'
 import { useTheme } from '@emotion/react'
+import { useTranslation } from 'react-i18next'
 import Swal from 'sweetalert2'
 import { env } from '~/configs/environment'
 import TopBar from './sections/TopBar'
@@ -22,6 +23,7 @@ const Header = ({
   motelId,
   account
 }) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const theme = useTheme()
   const [isNotifyOpen, setIsNotifyOpen] = useState(false)
@@ -35,7 +37,7 @@ const Header = ({
       : null
 
     if (!token) {
-      Swal.fire({ icon: 'warning', title: 'Thông báo', text: 'Không tìm thấy token, vui lòng đăng nhập lại.' })
+      Swal.fire({ icon: 'warning', title: t('header.alerts.noticeTitle'), text: t('header.alerts.tokenMissing') })
       return
     }
 
@@ -52,26 +54,24 @@ const Header = ({
         setUsername('')
         setAvatar('')
         navigate('/login')
-        Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đăng xuất thành công!' })
+        Swal.fire({ icon: 'success', title: t('header.alerts.logoutSuccessTitle'), text: t('header.alerts.logoutSuccessText') })
       } else {
         const errorData = await response.json()
-        Swal.fire({ icon: 'error', title: 'Đăng xuất thất bại', text: `Lỗi: ${errorData.message}` })
+        Swal.fire({ icon: 'error', title: t('header.alerts.logoutFailedTitle'), text: `Error: ${errorData.message}` })
       }
-        } catch {
-      Swal.fire({ 
-        icon: 'error', 
-        title: 'Lỗi', 
-        text: 'Đã xảy ra lỗi khi thực hiện đăng xuất.' 
+    } catch {
+      Swal.fire({
+        icon: 'error',
+        title: t('header.alerts.errorTitle'),
+        text: t('header.alerts.logoutErrorText')
       })
     }
   }
 
   return (
     <Box component="header" sx={{ fontFamily: 'Helvetica, Arial, Roboto, sans-serif' }}>
-      {/* 1. Top info bar (desktop only) */}
       <TopBar />
 
-      {/* 2. Main header bar */}
       <Box
         sx={{
           bgcolor: theme.palette.mode === 'light' ? '#fff' : '#1f1f1f',
@@ -98,10 +98,8 @@ const Header = ({
             gap: { md: 2 }
           }}
         >
-          {/* Logo + Search */}
           <SearchBarDesktop />
 
-          {/* Desktop right-side actions */}
           <DesktopActionsDesktop
             username={username}
             avatar={avatar}
@@ -114,15 +112,10 @@ const Header = ({
         </Box>
       </Box>
 
-      {/* 3. Email warning */}
       {account?.email || !account ? null : <WarningEmailNotExits />}
 
-      {/* 4. Notification panel */}
-      {isNotifyOpen && (
-        <NotificationPanel />
-      )}
+      {isNotifyOpen && <NotificationPanel />}
 
-      {/* 5. Mobile: search bar + bottom nav */}
       <MobileNav
         isNotifyOpen={isNotifyOpen}
         setIsNotifyOpen={setIsNotifyOpen}

@@ -1,414 +1,361 @@
-import { useEffect, useState } from 'react';
-import { Box, Typography, Select, MenuItem, Slider } from '@mui/material';
-import { useDebounce } from '@uidotdev/usehooks';
-import ModalSearch from './ModalSearch';
-import MicIcon from '@mui/icons-material/Mic';
-import './SearchWHome.css';
-import AudioRecorderModal from '../AI/Audio';
-import { searchByName } from '~/apis/searchAPI';
-import { useTranslation } from 'react-i18next';
-import ListSearch from './ListSearch';
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
+import MicRoundedIcon from '@mui/icons-material/MicRounded'
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  MenuItem,
+  Paper,
+  Select,
+  Slider,
+  Stack,
+  TextField,
+  Typography
+} from '@mui/material'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useDebounce } from '@uidotdev/usehooks'
+import AudioRecorderModal from '../AI/Audio'
+import { searchByName } from '~/apis/searchAPI'
+import ModalSearch from './ModalSearch'
+import SearchSurfaceCard from './sections/SearchSurfaceCard'
 
 function FilterSearch({ setSearchData, searchKeyWord, setKeyword, keyword, setTotalRooms }) {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const [openAudio, setOpenAudio] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const handleOpenAudio = () => setOpenAudio(true);
-  const handleCloseAudio = () => setOpenAudio(false);
-  const [range, setRange] = useState([0, 50]); // Mặc định là 0-50
-  const [selectedValue, setSelectedValue] = useState('0-50'); // Khớp với MenuItem
-  const [area, setArea] = useState([0, 50]); // Mặc định là 0-50
-  const [selectedValueArea, setSelectedValueArea] = useState('0-50'); // Khớp với MenuItem
-  const [isRecording, setIsRecording] = useState(false);
-  const [cityValue, setCityValue] = useState('Hồ Chí Minh');
-  const [districtValue, setDistrictValue] = useState('Quận 1');
-  const [isFirstSelection, setIsFirstSelection] = useState(true);
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const [openAudio, setOpenAudio] = useState(false)
+  const [range, setRange] = useState([0, 50])
+  const [selectedValue, setSelectedValue] = useState('0-50')
+  const [area, setArea] = useState([0, 50])
+  const [selectedValueArea, setSelectedValueArea] = useState('0-50')
+  const [isRecording, setIsRecording] = useState(false)
+  const [cityValue, setCityValue] = useState('Hồ Chí Minh')
+  const [districtValue, setDistrictValue] = useState('Quận 1')
+  const [isFirstSelection, setIsFirstSelection] = useState(true)
 
-  const debouncedKeyword = useDebounce(keyword, 300);
+  const debouncedKeyword = useDebounce(keyword, 300)
+
+  const runSearch = async (value) => {
+    if (!value) return
+
+    try {
+      const searchResult = await searchByName(value)
+      const result = searchResult.data.result || []
+      setSearchData(result)
+      setTotalRooms(result.length)
+    } catch (error) {
+      console.error('Error fetching search data:', error)
+      setSearchData([])
+      setTotalRooms(0)
+    }
+  }
 
   const filterSearchFunc = (tinhThanh, quanHuyen) => {
     if (tinhThanh && !quanHuyen) {
-      setCityValue(tinhThanh);
-      setDistrictValue('');
-      setKeyword(tinhThanh);
-      setIsFirstSelection(false);
-    } else if (!tinhThanh && quanHuyen) {
-      setDistrictValue(quanHuyen);
-      setKeyword(quanHuyen);
-      setIsFirstSelection(false);
-    } else if (tinhThanh && quanHuyen) {
+      setCityValue(tinhThanh)
+      setDistrictValue('')
+      setKeyword(tinhThanh)
+      setIsFirstSelection(false)
+      return
+    }
+
+    if (!tinhThanh && quanHuyen) {
+      setDistrictValue(quanHuyen)
+      setKeyword(quanHuyen)
+      setIsFirstSelection(false)
+      return
+    }
+
+    if (tinhThanh && quanHuyen) {
       if (isFirstSelection) {
-        setCityValue(tinhThanh);
-        setDistrictValue(quanHuyen);
-        setKeyword(quanHuyen);
-        setIsFirstSelection(false);
+        setCityValue(tinhThanh)
+        setDistrictValue(quanHuyen)
+        setKeyword(quanHuyen)
+        setIsFirstSelection(false)
       } else if (tinhThanh !== cityValue) {
-        setCityValue(tinhThanh);
-        setDistrictValue('');
-        setKeyword(tinhThanh);
+        setCityValue(tinhThanh)
+        setDistrictValue('')
+        setKeyword(tinhThanh)
       } else {
-        setCityValue(tinhThanh);
-        setDistrictValue(quanHuyen);
-        setKeyword(quanHuyen);
+        setCityValue(tinhThanh)
+        setDistrictValue(quanHuyen)
+        setKeyword(quanHuyen)
       }
     }
-  };
+  }
 
   useEffect(() => {
-    if (!searchKeyWord && debouncedKeyword) { // Chỉ gọi khi có keyword
-      searchByName(debouncedKeyword)
-        .then((searchResult) => {
-          setSearchData(searchResult.data.result || []);
-          setTotalRooms(searchResult.data.result?.length || 0);
-        })
-        .catch((error) => {
-          console.error('Error fetching search data:', error);
-          setSearchData([]);
-          setTotalRooms(0);
-        });
+    if (!searchKeyWord && debouncedKeyword) {
+      runSearch(debouncedKeyword)
     }
-  }, [debouncedKeyword, setSearchData, setTotalRooms, searchKeyWord]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedKeyword, searchKeyWord])
 
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setKeyword(value);
-    if (value) {
-      searchByName(value)
-        .then((searchResult) => {
-          setSearchData(searchResult.data.result || []);
-          setTotalRooms(searchResult.data.result?.length || 0);
-        })
-        .catch((error) => {
-          console.error('Error fetching search data:', error);
-          setSearchData([]);
-          setTotalRooms(0);
-        });
-    }
-  };
+  const handleSearchChange = (event) => {
+    setKeyword(event.target.value)
+  }
+
+  const handleSearchSubmit = () => {
+    runSearch(keyword)
+  }
 
   const handleAreaChange = (event) => {
-    const selectedValueArea = event.target.value;
-    switch (selectedValueArea) {
+    const nextValue = event.target.value
+    setSelectedValueArea(nextValue)
+
+    switch (nextValue) {
       case '1-5':
-        setArea([1, 5]);
-        break;
+        setArea([1, 5])
+        break
       case '5-10':
-        setArea([5, 10]);
-        break;
+        setArea([5, 10])
+        break
       case '10-15':
-        setArea([10, 15]);
-        break;
-      case '0-50':
-        setArea([0, 50]);
-        break;
-      case 'Dưới 50 m2':
-        setArea([0, 50]);
-        break;
+        setArea([10, 15])
+        break
       default:
-        setArea([0, 50]);
+        setArea([0, 50])
     }
-    setSelectedValueArea(selectedValueArea);
-  };
+  }
 
   const handleSliderChangeArea = (event, newValue) => {
-    setArea(newValue);
-    const [min, max] = newValue;
-    if (min === 0 && max === 50) {
-      setSelectedValueArea('Dưới 50 m2');
-    } else if (min === 1 && max === 5) {
-      setSelectedValueArea('1-5');
-    } else if (min === 5 && max === 10) {
-      setSelectedValueArea('5-10');
-    } else if (min === 10 && max === 15) {
-      setSelectedValueArea('10-15');
-    } else {
-      setSelectedValueArea(`Giá từ ${min} m2 đến ${max} m2`);
-    }
-  };
+    setArea(newValue)
+    const [min, max] = newValue
 
-  const handleGiaChange = (event) => {
-    const selectedValue = event.target.value;
-    switch (selectedValue) {
+    if (min === 1 && max === 5) setSelectedValueArea('1-5')
+    else if (min === 5 && max === 10) setSelectedValueArea('5-10')
+    else if (min === 10 && max === 15) setSelectedValueArea('10-15')
+    else setSelectedValueArea('0-50')
+  }
+
+  const handlePriceChange = (event) => {
+    const nextValue = event.target.value
+    setSelectedValue(nextValue)
+
+    switch (nextValue) {
       case '1-5':
-        setRange([1, 5]);
-        break;
+        setRange([1, 5])
+        break
       case '5-10':
-        setRange([5, 10]);
-        break;
+        setRange([5, 10])
+        break
       case '10-15':
-        setRange([10, 15]);
-        break;
-      case '0-50':
-        setRange([0, 50]);
-        break;
-      case 'Dưới 50 triệu':
-        setRange([0, 50]);
-        break;
+        setRange([10, 15])
+        break
       default:
-        setRange([0, 50]);
+        setRange([0, 50])
     }
-    setSelectedValue(selectedValue);
-  };
+  }
 
   const handleSliderChange = (event, newValue) => {
-    setRange(newValue);
-    const [min, max] = newValue;
-    if (min === 0 && max === 50) {
-      setSelectedValue('Dưới 50 triệu');
-    } else if (min === 1 && max === 5) {
-      setSelectedValue('1-5');
-    } else if (min === 5 && max === 10) {
-      setSelectedValue('5-10');
-    } else if (min === 10 && max === 15) {
-      setSelectedValue('10-15');
-    } else {
-      setSelectedValue(`Giá từ ${min} triệu đến ${max} triệu`);
-    }
-  };
+    setRange(newValue)
+    const [min, max] = newValue
+
+    if (min === 1 && max === 5) setSelectedValue('1-5')
+    else if (min === 5 && max === 10) setSelectedValue('5-10')
+    else if (min === 10 && max === 15) setSelectedValue('10-15')
+    else setSelectedValue('0-50')
+  }
 
   return (
-    <section id="search-home">
-      <div className="row check-availabilty" id="next">
-        <div className="block-32 aos-init aos-animate" data-aos="fade-up" data-aos-offset="-200">
-          <form action="#">
-            <div className="row" style={{ backgroundColor: '#ffffff1f' }}>
-              <div className="col-md-2 mb-3 mb-lg-0 col-lg-1 mt-2 d-none d-md-block">
-                <ul id="search-bar" className="BoLoc">
-                  <li
-                    className="small"
-                    data-toggle="modal"
-                    data-target="#get-filter-data-user"
-                    onClick={handleOpen}
-                    style={{ alignItems: 'center', display: 'flex', marginRight: '7px' }}>
-                    <div
-                      style={{
-                        minWidth: '75px',
-                        height: '100%',
-                        backgroundColor: '#fff',
-                        borderRadius: '5px',
-                        padding: '6px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                      <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="css-i6dzq1">
-                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                      </svg>
-                      <span style={{ fontSize: '13px' }}>{t('bo-loc')}</span>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-              <div className="col-md-10 mb-3 mb-lg-0 col-lg-2 mt-2">
-                <ul id="search-bar">
-                  <li
-                    className="location-home"
-                    data-toggle="modal"
-                    data-target="#get-filter-data-user"
-                    onClick={handleOpen}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <div style={{ marginRight: '5px' }}>
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="17"
-                          height="17"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="css-i6dzq1">
-                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                          <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
-                      </div>
-                      <div>
-                        <b className="province-location-show">{cityValue}</b>
-                        <br />
-                        <span className="district-location-show">{districtValue}</span>
-                      </div>
-                    </div>
-                    <div
-                      style={{ display: 'flex', alignItems: 'center', color: '#666' }}>
-                      <svg
-                        viewBox="0 0 24 24"
-                        width="24"
-                        height="24"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="css-i6dzq1">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                      </svg>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-              <div className="col-md-12 mb-3 mb-lg-0 col-lg-5 mt-2">
-                <ul id="search-bar">
-                  <li className="keyword" style={{ position: 'relative' }}>
-                    <input
-                      type="text"
-                      className="form-control w-100"
-                      placeholder={t('noi-hoc-tap')}
-                      autoComplete="off"
-                      value={keyword}
-                      onChange={handleSearch}
-                    />
-                    <MicIcon
-                      onClick={handleOpenAudio}
-                      style={{
-                        position: 'absolute',
-                        cursor: 'pointer',
-                        marginRight: '10px',
-                        fontSize: '28px',
-                        color: '#555',
-                        top: '9',
-                        right: '0',
-                      }}
-                    />
-                    <div className="guid-search id-1727803392186 dropdown" style={{ display: 'none' }}>
-                      Suggest search...
-                    </div>
-                  </li>
-                </ul>
-              </div>
+    <SearchSurfaceCard
+      sx={{
+        p: { xs: 2, md: 2.5 },
+        background: 'linear-gradient(135deg, #0f172a 0%, #1453d1 58%, #35b0ff 100%)',
+        color: '#fff',
+        boxShadow: '0 28px 70px rgba(20, 83, 209, 0.18)'
+      }}
+    >
+      <Stack spacing={2.2}>
+        <Stack spacing={0.8}>
+          <Typography sx={{ fontSize: { xs: 26, md: 34 }, fontWeight: 900, lineHeight: 1.15 }}>
+            {t('searchPage.filter.title')}
+          </Typography>
+          <Typography sx={{ fontSize: 15, color: 'rgba(255,255,255,0.84)', maxWidth: 760 }}>{t('searchPage.filter.description')}</Typography>
+        </Stack>
 
-              <div className="col-md-12 mb-3 mb-md-0 col-lg-3">
-                <div className="row">
-                  <div className="col-md-6 mb-3 mb-md-0 mt-2">
-                    <Select
-                      style={{
-                        marginBottom: '10px',
-                        height: '45px',
-                        display: 'block',
-                        width: '100%',
-                        fontSize: '1rem',
-                        fontWeight: '400',
-                        lineHeight: '1.5',
-                        color: 'var(--bs-body-color)',
-                        backgroundColor: 'var(--bs-body-bg)',
-                        backgroundClip: 'padding-box',
-                        border: 'var(--bs-border-width) solid var(--bs-border-color)',
-                        appearance: 'none',
-                        borderRadius: 'var(--bs-border-radius)',
-                        transition: 'border-color .15s ease-in-out, box-shadow .15s ease-in-out',
-                      }}
-                      value={selectedValueArea}
-                      onChange={handleAreaChange}
-                      displayEmpty>
-                      <Typography gutterBottom sx={{ mt: 2, mx: 1.5 }}>
-                        {t('khoang-dien-tich')} ({t('dien-tich')})
-                      </Typography>
-                      <Box sx={{ mx: 1.5, my: 2 }}>
-                        <Slider
-                          value={area}
-                          onChange={handleSliderChangeArea}
-                          max={50}
-                          sx={{ width: '100%' }}
-                          valueLabelDisplay="auto"
-                        />
-                      </Box>
-                      <Typography sx={{ mx: 1.5 }}>{`Giá từ: ${area[0]} m2 đến ${area[1]} m2`}</Typography>
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      <MenuItem value="1-5">{t('tu')} 1 - 5 m2</MenuItem>
-                      <MenuItem value="5-10">{t('tu')} 5 - 10 m2</MenuItem>
-                      <MenuItem value="10-15">{t('tu')} 10 - 15 m2</MenuItem>
-                      <MenuItem value="0-50">{t('duoi')} 50 m2</MenuItem>
-                      <MenuItem value="Dưới 50 m2">{t('duoi')} 50 m2</MenuItem>
-                    </Select>
-                  </div>
-                  <div className="col-md-6 mb-3 mb-md-0 mt-2">
-                    <Select
-                      style={{
-                        display: 'block',
-                        height: '45px',
-                        marginBottom: '10px',
-                        width: '100%',
-                        fontSize: '1rem',
-                        fontWeight: '400',
-                        lineHeight: '1.5',
-                        color: 'var(--bs-body-color)',
-                        backgroundColor: 'var(--bs-body-bg)',
-                        backgroundClip: 'padding-box',
-                        border: 'var(--bs-border-width) solid var(--bs-border-color)',
-                        appearance: 'none',
-                        borderRadius: 'var(--bs-border-radius)',
-                        transition: 'border-color .15s ease-in-out, box-shadow .15s ease-in-out',
-                      }}
-                      value={selectedValue}
-                      onChange={handleGiaChange}
-                      displayEmpty>
-                      <Typography gutterBottom sx={{ mt: 2, mx: 1.5 }}>
-                        {t('khoang-gia')} ({t('trieu')})
-                      </Typography>
-                      <Box sx={{ mx: 1.5, my: 2 }}>
-                        <Slider
-                          value={range}
-                          onChange={handleSliderChange}
-                          max={50}
-                          sx={{ width: '100%' }}
-                          valueLabelDisplay="auto"
-                        />
-                      </Box>
-                      <Typography sx={{ mx: 1.5 }}>
-                        {t('gia_tu')} :{` ${range[0]} triệu đến ${range[1]} triệu`}
-                      </Typography>
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      <MenuItem value="1-5">{t('tu')} 1 - 5 {t('trieu')}</MenuItem>
-                      <MenuItem value="5-10">{t('tu')} 5 {t('trieu')} - 10 {t('trieu')}</MenuItem>
-                      <MenuItem value="10-15">{t('tu')} 10 {t('trieu')} - 15 {t('trieu')}</MenuItem>
-                      <MenuItem value="0-50">{t('duoi')} 50 {t('trieu')}</MenuItem>
-                      <MenuItem value="Dưới 50 triệu">{t('duoi')} 50 {t('trieu')}</MenuItem>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-6 col-lg-1 align-self-end mt-2 mb-3">
-                <button
-                  id="btn-s-h"
-                  className="before-background"
-                  aria-label="Tìm kiếm"
-                  title="Tìm kiếm"
-                  onClick={handleSearch}>
-                  {t('tim-kiem')}
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-      <ListSearch cityValue={cityValue} districtValue={districtValue} keyword={keyword} />
+        <Box
+          sx={{
+            p: { xs: 1.5, md: 2 },
+            borderRadius: 3,
+            backgroundColor: 'rgba(255,255,255,0.12)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            backdropFilter: 'blur(8px)'
+          }}
+        >
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: '160px 220px minmax(0, 1fr) 200px 200px 120px' },
+              gap: 1.5
+            }}
+          >
+            <Button
+              variant="contained"
+              startIcon={<TuneRoundedIcon />}
+              endIcon={<KeyboardArrowDownRoundedIcon />}
+              onClick={() => setOpen(true)}
+              sx={{
+                height: 56,
+                borderRadius: 2.5,
+                fontWeight: 800,
+                color: '#0f172a',
+                backgroundColor: '#fff',
+                '&:hover': {
+                  backgroundColor: '#f8fafc'
+                }
+              }}
+            >
+              {t('searchPage.filter.button')}
+            </Button>
 
-      <ModalSearch filterSearch={filterSearchFunc} open={open} handleClose={handleClose} />
-      <AudioRecorderModal
-        open={openAudio}
-        setRecordedText={setKeyword}
-        handleClose={handleCloseAudio}
-        setIsRecording={setIsRecording}
-        isRecording={isRecording}
-        handleSearch={handleSearch}
-      />
-      <hr />
-    </section>
-  );
+            <Button
+              variant="outlined"
+              onClick={() => setOpen(true)}
+              sx={{
+                height: 56,
+                justifyContent: 'space-between',
+                borderRadius: 2.5,
+                px: 1.5,
+                color: '#fff',
+                borderColor: 'rgba(255,255,255,0.24)',
+                '&:hover': {
+                  borderColor: '#fff',
+                  backgroundColor: 'rgba(255,255,255,0.08)'
+                }
+              }}
+            >
+              <Box sx={{ textAlign: 'left' }}>
+                <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,0.72)' }}>{t('searchPage.filter.areaLabel')}</Typography>
+                <Typography sx={{ fontSize: 14, fontWeight: 700 }}>
+                  {cityValue} {districtValue ? `- ${districtValue}` : ''}
+                </Typography>
+              </Box>
+              <KeyboardArrowDownRoundedIcon />
+            </Button>
+
+            <TextField
+              value={keyword}
+              onChange={handleSearchChange}
+              placeholder={t('searchPage.filter.keywordPlaceholder')}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  handleSearchSubmit()
+                }
+              }}
+              fullWidth
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={{ color: '#667085' }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setOpenAudio(true)} sx={{ color: '#667085' }}>
+                      <MicRoundedIcon />
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  height: 56,
+                  borderRadius: 2.5,
+                  backgroundColor: '#fff'
+                }
+              }}
+            />
+
+            <Paper
+              variant="outlined"
+              sx={{
+                px: 1.5,
+                py: 1.1,
+                borderRadius: 2.5,
+                borderColor: 'rgba(255,255,255,0.16)',
+                backgroundColor: '#fff'
+              }}
+            >
+              <Typography sx={{ fontSize: 12, color: '#667085' }}>{t('searchPage.filter.areaTitle')}</Typography>
+              <Select
+                variant="standard"
+                disableUnderline
+                fullWidth
+                value={selectedValueArea}
+                onChange={handleAreaChange}
+                sx={{ mt: 0.3, fontWeight: 700 }}
+              >
+                <MenuItem value="1-5">1 - 5 m²</MenuItem>
+                <MenuItem value="5-10">5 - 10 m²</MenuItem>
+                <MenuItem value="10-15">10 - 15 m²</MenuItem>
+                <MenuItem value="0-50">{t('searchPage.filter.underArea')}</MenuItem>
+              </Select>
+              <Slider value={area} onChange={handleSliderChangeArea} max={50} size="small" sx={{ mt: 1 }} />
+            </Paper>
+
+            <Paper
+              variant="outlined"
+              sx={{
+                px: 1.5,
+                py: 1.1,
+                borderRadius: 2.5,
+                borderColor: 'rgba(255,255,255,0.16)',
+                backgroundColor: '#fff'
+              }}
+            >
+              <Typography sx={{ fontSize: 12, color: '#667085' }}>{t('searchPage.filter.priceTitle')}</Typography>
+              <Select
+                variant="standard"
+                disableUnderline
+                fullWidth
+                value={selectedValue}
+                onChange={handlePriceChange}
+                sx={{ mt: 0.3, fontWeight: 700 }}
+              >
+                <MenuItem value="1-5">1 - 5 triệu</MenuItem>
+                <MenuItem value="5-10">5 - 10 triệu</MenuItem>
+                <MenuItem value="10-15">10 - 15 triệu</MenuItem>
+                <MenuItem value="0-50">{t('searchPage.filter.underPrice')}</MenuItem>
+              </Select>
+              <Slider value={range} onChange={handleSliderChange} max={50} size="small" sx={{ mt: 1 }} />
+            </Paper>
+
+            <Button
+              variant="contained"
+              onClick={handleSearchSubmit}
+              sx={{
+                height: 56,
+                borderRadius: 2.5,
+                fontWeight: 800,
+                background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                color: '#111827',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+                }
+              }}
+            >
+              {t('searchPage.filter.searchButton')}
+            </Button>
+          </Box>
+        </Box>
+
+        <ModalSearch filterSearch={filterSearchFunc} open={open} handleClose={() => setOpen(false)} />
+        <AudioRecorderModal
+          open={openAudio}
+          setRecordedText={setKeyword}
+          handleClose={() => setOpenAudio(false)}
+          setIsRecording={setIsRecording}
+          isRecording={isRecording}
+          handleSearch={handleSearchSubmit}
+        />
+      </Stack>
+    </SearchSurfaceCard>
+  )
 }
 
-export default FilterSearch;
+export default FilterSearch

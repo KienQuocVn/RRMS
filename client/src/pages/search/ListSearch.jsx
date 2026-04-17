@@ -1,53 +1,40 @@
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded'
+import PlaceRoundedIcon from '@mui/icons-material/PlaceRounded'
+import { Breadcrumbs, Chip, Link as MuiLink, Stack, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import SearchSurfaceCard from './sections/SearchSurfaceCard'
 
-const ListSearch = ({ cityValue, keyword, districvalue }) => {
+function ListSearch({ cityValue, keyword, districtValue }) {
   const { t } = useTranslation()
+  const resolvedArea = districtValue || keyword || cityValue || t('searchPage.list.allPriority')
+
   return (
-    <div className="container mt-3" style={{ maxWidth: '1180px' }}>
-      <ol className="breadcrumb-container breadcrumb">
-        <li className="breadcrumb-item">
-          <Link to="/">
-            <span>{t('trang-chu')}</span>
-          </Link>
-        </li>
-        <li className="breadcrumb-item">
-          <Link to="/thue-phong-tro-ho-chi-minh-id-79">
-            <span>{keyword || 'Tất cả'}</span>
-          </Link>
-        </li>
-        <li className="breadcrumb-item breadcrumb-color">
-          <span>{districvalue || 'Tất cả'}</span>
-        </li>
-      </ol>
-      <h1
-        style={{
-          color: '#444',
-          fontFamily: 'harmonia, Helvetica, Arial, sans-serif',
-          fontWeight: '500',
-          lineHeight: '125%',
-          marginBottom: '10px',
-          fontSize: '25px'
-        }}>
-        <b>
-          {t('duoi-phong-tro')} {keyword || 'Tất cả'}
-        </b>
-      </h1>
-      <p>
-        <span className="item-filter">{t('ban-kinh-tim-kiem')}: 3 km</span>
-      </p>
-      <div className="warning">
-        {t('khi-tim-phong-tro-gan')}{' '}
-        <strong>
-          {' '}
-          {t('tim-phong-tro')} {cityValue || 'Tất cả'}{' '}
-        </strong>{' '}
-        {t('chung-toi-se-hien-thi')}
-        <b> {t('cach-dia-diem')} 3km</b>. {t('vi-the-co-the-phong-tro-khong-thuoc')} <b>{t('cac-quan')}</b>{' '}
-        {t('ban-dang-tim-kiem')}. {t('chu-y-ket-qua')}
-        <b> {t('mau-do')}</b> {t('la-khong-thuoc-quan-huyen-ban-tim-kiem')}
-      </div>
-    </div>
+    <SearchSurfaceCard sx={{ p: { xs: 2, md: 2.25 } }}>
+      <Stack spacing={1.35}>
+        <Breadcrumbs aria-label="breadcrumb" separator="›">
+          <MuiLink component={Link} to="/" underline="hover" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+            <HomeRoundedIcon sx={{ fontSize: 16 }} />
+            {t('trang-chu')}
+          </MuiLink>
+          <MuiLink component={Link} to="/search" underline="hover">
+            {t('tim-kiem')}
+          </MuiLink>
+          <Typography color="text.primary">{keyword || t('searchPage.list.allAreas')}</Typography>
+        </Breadcrumbs>
+
+        <Typography sx={{ fontSize: { xs: 24, md: 30 }, fontWeight: 900, lineHeight: 1.2, color: '#101828' }}>
+          {t('searchPage.list.titlePrefix')} {keyword || cityValue || t('searchPage.list.fullArea')}
+        </Typography>
+
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} useFlexGap flexWrap="wrap">
+          <Chip icon={<PlaceRoundedIcon />} label={t('searchPage.list.radiusLabel')} color="primary" variant="outlined" />
+          <Chip label={t('searchPage.list.priorityLabel', { area: resolvedArea })} variant="outlined" />
+        </Stack>
+
+        <Typography sx={{ fontSize: 14, lineHeight: 1.7, color: '#667085' }}>{t('searchPage.list.nearbyNote')}</Typography>
+      </Stack>
+    </SearchSurfaceCard>
   )
 }
 

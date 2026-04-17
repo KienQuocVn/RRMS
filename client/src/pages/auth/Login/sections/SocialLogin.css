@@ -1,0 +1,5 @@
+/* Override font-size của Facebook button vì thư viện không expose prop này */
+.facebook-login-btn {
+  margin: 0 !important;
+  font-size: 12px !important;
+}

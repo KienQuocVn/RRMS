@@ -1,6 +1,9 @@
 import { Box } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 
 const LanguageSelectDesktop = ({ toggleLanguage, currentLanguage }) => {
+  const { t } = useTranslation()
+
   return (
     <Box
       onClick={toggleLanguage}
@@ -35,7 +38,7 @@ const LanguageSelectDesktop = ({ toggleLanguage, currentLanguage }) => {
         />
       )}
       <Box component="span" sx={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>
-        {currentLanguage === 'vi' ? 'Tiếng Việt' : 'English'}
+        {currentLanguage === 'vi' ? t('header.language.vi') : t('header.language.en')}
       </Box>
     </Box>
   )
