@@ -15,7 +15,7 @@
 | Code Quality | 6/10 | TypeScript có nhưng chưa strict, coding standards tốt |
 | Design System | 8/10 | Theme constants được define rõ ràng |
 | Performance | 5/10 | Chưa có optimization patterns |
-| API Integration | 2/10 | Services folder trống, chưa kết nối backend |
+| API Integration | 4/10 | Đã setup Axios client/endpoints, chờ gắn vào component |
 | State Management | 3/10 | Chưa có solution, dùng local state |
 | Testing | 1/10 | Không có tests |
 | Documentation | 8/10 | CODING_STANDARDS.md rất tốt |
@@ -73,24 +73,26 @@ export const Shadows = { sm: {...}, md: {...}, lg: {...} };
 
 ## 🚨 VẤN ĐỀ NGHIÊM TRỌNG
 
-### 1. Services Layer hoàn toàn trống - Không có API Integration
+### 1. Thiếu Data Fetching Layer (Đã setup base)
 
-> [!CAUTION]
-> **Mức độ: CRITICAL** - App chỉ có UI shell, không kết nối backend
+> [!WARNING]
+> **Mức độ: HIGH** - App hiện tại chỉ có UI shell và mock data, nhưng đã thiết lập sẵn cấu trúc gọi API.
 
+**Cấu trúc đã thiết lập:**
 ```
-services/     ← FOLDER TRỐNG!
-  api/        ← Chưa tồn tại
-  storage/    ← Chưa tồn tại
+services/
+  api/
+    client.ts      ← Axios instance + Interceptors
+    endpoints.ts   ← Các URL endpoints
 ```
 
-**Toàn bộ data trong các screens là hardcoded/mock:**
+**Toàn bộ data trong các screens vẫn là hardcoded/mock:**
 - Home screen: mock data cho menu, notifications
-- Deposit screen: mock form, không submit
+- Deposit screen: mock data
 - Contract screen: mock data
 - Invoice screen: mock data
 
-**Giải pháp ngay lập tức**:
+**Giải pháp tiếp theo**: Khởi tạo các services cụ thể (như auth.service) thay vì file code mẫu, và kết nối với màn hình:
 ```typescript
 // services/api/client.ts
 import axios from 'axios';
@@ -243,32 +245,28 @@ npx expo install zod              # Schema validation
 
 ## ⚠️ VẤN ĐỀ KIẾN TRÚC
 
-### 4. Screen Files quá dài, chứa cả UI + Logic + Styles
+### 4. Screen Files quá dài (✅ ĐÃ GIẢI QUYẾT)
 
-**Ví dụ**: `add-building.tsx` (18,576 bytes), `deposit.tsx` (12,420 bytes), `edit-building.tsx` (16,729 bytes)
+Vấn đề các file màn hình như `add-building.tsx`, `deposit.tsx`, `edit-building.tsx` quá dài đã được tái cấu trúc thành công theo Single Responsibility Principle.
 
-Các file này đang chứa:
-- Toàn bộ form logic
-- Toàn bộ UI rendering
-- Toàn bộ StyleSheet
-- Mock data
-- Validation logic
-
-**Giải pháp - Tách theo Single Responsibility**:
+**Cấu trúc mới đã áp dụng:**
 ```
 app/
-  deposit.tsx          ← Chỉ chứa layout + navigation logic (< 50 dòng)
+  deposit.tsx          ← Chỉ chứa layout + navigation logic (< 60 dòng)
 components/
   deposit/
     index.ts           ← Barrel export
-    deposit-form.tsx   ← Form component
-    deposit-info.tsx   ← Info section
-    room-selector.tsx  ← Room selection
+    deposit-header.tsx ← Header component
+    deposit-form.tsx   ← Form/Sections component
+    room-card.tsx      ← Child UI
 hooks/
-  use-deposit.ts       ← Custom hook cho deposit logic
+  use-deposit.ts       ← Custom hook chứa logic và state
 types/
   deposit.types.ts     ← TypeScript types
 ```
+
+> [!NOTE]
+> Cách tiếp cận này giúp các file trong `app/` rất gọn nhẹ và tái sử dụng code UI dễ dàng hơn. Cần tiếp tục duy trì pattern này cho các màn hình khác như `contract.tsx`.
 
 ---
 
@@ -384,9 +382,11 @@ export class ErrorBoundary extends Component<Props, State> {
 
 ## 📋 DANH SÁCH CẦN CẢI THIỆN
 
-### API & Backend Integration (LÀM ĐẦU TIÊN)
-- [ ] Cài đặt `axios` + `@react-native-async-storage/async-storage`
-- [ ] Tạo `services/api/client.ts` (HTTP client + interceptors)
+### API & Backend Integration (Đang tiến hành)
+- [x] Cài đặt `axios` + cấu trúc thư mục
+- [x] Tạo `services/api/client.ts` (HTTP client + interceptors)
+- [x] Tạo `services/api/endpoints.ts` (API routes)
+- [ ] Cài đặt `@react-native-async-storage/async-storage`
 - [ ] Tạo `services/api/auth.service.ts` (Login, Register, Forgot Password)
 - [ ] Tạo `services/api/motel.service.ts` (CRUD Motel)
 - [ ] Tạo `services/api/room.service.ts` (CRUD Room)
@@ -415,9 +415,9 @@ export class ErrorBoundary extends Component<Props, State> {
 - [ ] Xóa tất cả `any` types
 
 ### Screen Optimization
-- [ ] Tách `add-building.tsx` thành sub-components
-- [ ] Tách `deposit.tsx` thành sub-components
-- [ ] Tách `edit-building.tsx` thành sub-components
+- [x] Tách `add-building.tsx` thành sub-components
+- [x] Tách `deposit.tsx` thành sub-components
+- [x] Tách `edit-building.tsx` thành sub-components
 - [ ] Tách `contract.tsx` thành sub-components
 - [ ] Implement proper form validation (react-hook-form + zod)
 
