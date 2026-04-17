@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import com.nimbusds.jose.JOSEException;
+import com.rrms.rrms.annotations.RateLimited;
 import com.rrms.rrms.dto.request.*;
 import com.rrms.rrms.dto.response.*;
 import com.rrms.rrms.dto.response.ApiResponse;
@@ -51,6 +52,9 @@ public class AuthenController {
 
     @Autowired
     AccountRepository accountRepository;
+
+    @Autowired
+    private org.springframework.data.redis.core.StringRedisTemplate redisTemplate;
 
     @GetMapping("/error")
     public ResponseEntity<String> loginFailure() {
@@ -96,6 +100,7 @@ public class AuthenController {
     }
 
     @PostMapping("/login")
+    @RateLimited(key = "login", maxAttempts = 5, windowSeconds = 300)
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         Map<String, Object> response = new HashMap<>();
         try {
@@ -164,6 +169,7 @@ public class AuthenController {
     }
 
     @PostMapping("/register")
+    @RateLimited(key = "register", maxAttempts = 5, windowSeconds = 300)
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
         try {
             // Đăng ký tài khoản mới
@@ -228,9 +234,6 @@ public class AuthenController {
         }
     }
 
-    private static int randomNumber = 0;
-    private static int randomNumberRegister = 0;
-
     @GetMapping("/checkMail")
     public ApiResponse<Boolean> forget(@RequestParam("email") String email) {
         boolean result = accountService.existsByEmail(email);
@@ -250,6 +253,7 @@ public class AuthenController {
     }
 
     @PostMapping("/forgetpassword")
+    @RateLimited(key = "forgot_password", maxAttempts = 3, windowSeconds = 300)
     public ApiResponse<Boolean> forget(@RequestBody ChangePasswordByEmail changePasswordByEmail) {
         if (changePasswordByEmail == null) {
             return ApiResponse.<Boolean>builder()
@@ -258,10 +262,19 @@ public class AuthenController {
                     .result(false)
                     .build();
         }
-        randomNumber = (int) (Math.random() * 90000) + 10000;
+        int randomOtp = (int) (Math.random() * 90000) + 10000;
         try {
             boolean result = mailService.Send_ForgetPassword(
-                    changePasswordByEmail.getEmail(), "Yêu cầu thay đổi mật khẩu", String.valueOf(randomNumber));
+                    changePasswordByEmail.getEmail(), "Yêu cầu thay đổi mật khẩu", String.valueOf(randomOtp));
+            if (result) {
+                redisTemplate
+                        .opsForValue()
+                        .set(
+                                "otp:forgot:" + changePasswordByEmail.getEmail(),
+                                String.valueOf(randomOtp),
+                                5,
+                                java.util.concurrent.TimeUnit.MINUTES);
+            }
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.OK.value())
                     .message("success")
@@ -277,6 +290,7 @@ public class AuthenController {
     }
 
     @PostMapping("/authenticationRegister")
+    @RateLimited(key = "auth_register", maxAttempts = 3, windowSeconds = 300)
     public ApiResponse<Boolean> authenticationRegister(@RequestBody AuthenticationRegister authenticationRegister) {
         System.out.println(authenticationRegister);
         if (authenticationRegister == null) {
@@ -286,10 +300,19 @@ public class AuthenController {
                     .result(false)
                     .build();
         }
-        randomNumberRegister = (int) (Math.random() * 90000) + 10000;
+        int randomOtp = (int) (Math.random() * 90000) + 10000;
         try {
             boolean result = mailService.Send_ForgetPassword(
-                    authenticationRegister.getGmail(), "Xác thực tài khoản", String.valueOf(randomNumberRegister));
+                    authenticationRegister.getGmail(), "Xác thực tài khoản", String.valueOf(randomOtp));
+            if (result) {
+                redisTemplate
+                        .opsForValue()
+                        .set(
+                                "otp:register:" + authenticationRegister.getGmail(),
+                                String.valueOf(randomOtp),
+                                5,
+                                java.util.concurrent.TimeUnit.MINUTES);
+            }
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.OK.value())
                     .message("success")
@@ -306,10 +329,11 @@ public class AuthenController {
 
     @PostMapping("/acceptChangePassword")
     public ApiResponse<Boolean> acceptChangePassword(@RequestBody ChangePasswordByEmail changePasswordByEmail) {
-        if (!changePasswordByEmail.getCode().equals(String.valueOf(randomNumber))) {
+        String storedOtp = redisTemplate.opsForValue().get("otp:forgot:" + changePasswordByEmail.getEmail());
+        if (storedOtp == null || !changePasswordByEmail.getCode().equals(storedOtp)) {
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
-                    .message("error")
+                    .message("Mã OTP không đúng hoặc đã hết hạn")
                     .result(false)
                     .build();
         }
@@ -321,7 +345,7 @@ public class AuthenController {
                     .build();
         }
         boolean result = accountService.changePasswordByEmail(changePasswordByEmail);
-        randomNumber = 0;
+        redisTemplate.delete("otp:forgot:" + changePasswordByEmail.getEmail());
         if (result) {
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.OK.value())
@@ -340,14 +364,15 @@ public class AuthenController {
     @PostMapping("/acceptAuthenticationRegister")
     public ApiResponse<Boolean> acceptAuthenticationRegister(
             @RequestBody AuthenticationRegister authenticationRegister) {
-        if (!authenticationRegister.getCode().equals(String.valueOf(randomNumberRegister))) {
+        String storedOtp = redisTemplate.opsForValue().get("otp:register:" + authenticationRegister.getGmail());
+        if (storedOtp == null || !authenticationRegister.getCode().equals(storedOtp)) {
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
-                    .message("error")
+                    .message("Mã OTP không đúng hoặc đã hết hạn")
                     .result(false)
                     .build();
         } else {
-            randomNumberRegister = 0;
+            redisTemplate.delete("otp:register:" + authenticationRegister.getGmail());
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.OK.value())
                     .message("success")

@@ -14,15 +14,22 @@ import com.rrms.rrms.enums.PaymentStatus;
 import com.rrms.rrms.services.servicesImp.YearMonthAttributeConverter;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "invoices")
-public class Invoice {
+@Table(
+        name = "invoices",
+        indexes = {
+            @Index(name = "idx_invoice_contract_id", columnList = "contract_id"),
+            @Index(name = "idx_invoice_payment_status", columnList = "paymentStatus")
+        })
+public class Invoice extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

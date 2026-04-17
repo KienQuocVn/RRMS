@@ -23,7 +23,10 @@ import com.rrms.rrms.models.*;
 import com.rrms.rrms.repositories.*;
 import com.rrms.rrms.services.IContractService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class ContractService implements IContractService {
 
     @Autowired
@@ -70,10 +73,12 @@ public class ContractService implements IContractService {
 
     @Override
     public ContractResponse createContract(ContractRequest request) {
-        System.out.println("username o day: " + request.getUsername());
-        System.out.println("room o day: " + request.getRoomId());
-        System.out.println("tenant o day: " + request.getTenantId());
-        System.out.println("contractempalte o day: " + request.getContracttemplateId());
+        log.debug(
+                "Create contract payload - username: {}, roomId: {}, tenantId: {}, contractTemplateId: {}",
+                request.getUsername(),
+                request.getRoomId(),
+                request.getTenantId(),
+                request.getContracttemplateId());
         // Fetch related entities from the database using UUIDs
         Account username = accountRepository
                 .findByUsername(request.getUsername())
@@ -96,7 +101,7 @@ public class ContractService implements IContractService {
         contract.setAccount(username); // Set the fetched account entity
         contract.setRoom(room); // Set the fetched Room entity
         contract.setTenant(tenant); // Set the fetched Tenant entity
-        contract.setContract_template(contractTemplate); // Set the fetched ContractTemplate entity
+        contract.setContractTemplate(contractTemplate); // Set the fetched ContractTemplate entity
 
         // Save the contract
         contract = contractRepository.save(contract);
@@ -190,9 +195,11 @@ public class ContractService implements IContractService {
 
     @Override
     public int updateContractStatus(UUID roomId, ContractStatus newStatus, Date reportCloseDate) {
-        System.out.println(roomId);
-        System.out.println(newStatus);
-        System.out.println(reportCloseDate);
+        log.debug(
+                "Update contract status by room - roomId: {}, newStatus: {}, reportCloseDate: {}",
+                roomId,
+                newStatus,
+                reportCloseDate);
         return contractRepository.updateContractStatusByRoomId(roomId, newStatus, reportCloseDate);
     }
 

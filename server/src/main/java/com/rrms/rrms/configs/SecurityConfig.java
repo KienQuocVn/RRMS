@@ -47,7 +47,6 @@ public class SecurityConfig {
         "/detail/*",
         "/detail",
         "/bulletin-board/*",
-        "/api-accounts/**",
         "/motels/get-motel-id",
         "/payment/**",
         "/payment/paymentSuccess/*",

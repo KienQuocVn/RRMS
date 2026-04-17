@@ -10,16 +10,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "bulletin_boards")
+@Table(
+        name = "bulletin_boards",
+        indexes = {
+            @Index(name = "idx_bb_username", columnList = "username"),
+            @Index(name = "idx_bb_status", columnList = "status")
+        })
 @Builder
-public class BulletinBoard {
+public class BulletinBoard extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

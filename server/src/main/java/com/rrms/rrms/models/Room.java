@@ -11,16 +11,23 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "rooms")
+@Table(
+        name = "rooms",
+        indexes = {
+            @Index(name = "idx_room_motel_id", columnList = "motel_id"),
+            @Index(name = "idx_room_status", columnList = "status")
+        })
 @Builder
-public class Room {
+public class Room extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -54,15 +61,15 @@ public class Room {
     private Double debt;
 
     // cai nay thuong nam o hop dong
-    @Column(name = "count_tenant", columnDefinition = "TEXT")
+    @Column(name = "count_tenant", columnDefinition = "INT")
     private Integer countTenant;
 
-    @Column(name = "invoice_date", columnDefinition = "TEXT")
+    @Column(name = "invoice_date", columnDefinition = "INT")
     private Integer invoiceDate;
 
     // chu ky thu
-    @Column(columnDefinition = "TEXT")
-    private String collection_cycle;
+    @Column(name = "collection_cycle", columnDefinition = "TEXT")
+    private String collectionCycle;
 
     @Column(name = "move_in_date", columnDefinition = "DATE")
     private Date moveInDate;
@@ -79,15 +86,15 @@ public class Room {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference(value = "Room-Contract") // Đặt tên cho tham chiếu quản lý
     private List<Contract> contracts;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference(value = "Room-Tenant") // Đặt tên cho tham chiếu quản lý
     private List<Tenant> tenants;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference(value = "Room-ReserveAPlace") // Đặt tên cho tham chiếu quản lý
     private List<Reserve_a_place> reserveAPlaces;
 }

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.request.RoomServiceRequest;
 import com.rrms.rrms.dto.response.ApiResponse;
-import com.rrms.rrms.dto.response.RoomServiceRespone2;
+import com.rrms.rrms.dto.response.RoomServiceDetailResponse;
 import com.rrms.rrms.dto.response.RoomServiceResponse;
 import com.rrms.rrms.services.IRoomService;
 
@@ -45,9 +45,11 @@ public class RoomServiceController {
     @Operation(summary = "Create room service")
     @PostMapping("/create")
     public ResponseEntity<RoomServiceResponse> createRoomService2(@RequestBody RoomServiceRequest roomServiceRequest) {
-        System.out.println("roomId: " + roomServiceRequest.getRoomId());
-        System.out.println("serviceId: " + roomServiceRequest.getServiceId());
-        System.out.println("quantity: " + roomServiceRequest.getQuantity());
+        log.debug(
+                "Create room service payload - roomId: {}, serviceId: {}, quantity: {}",
+                roomServiceRequest.getRoomId(),
+                roomServiceRequest.getServiceId(),
+                roomServiceRequest.getQuantity());
         RoomServiceResponse roomServiceResponse = roomServiceService.createRoomService2(roomServiceRequest);
         return new ResponseEntity<>(roomServiceResponse, HttpStatus.CREATED);
     }
@@ -83,8 +85,8 @@ public class RoomServiceController {
 
     // Endpoint để lấy RoomService theo Room ID
     @GetMapping("/room/{roomId}")
-    public ResponseEntity<List<RoomServiceRespone2>> findByRoomId(@PathVariable UUID roomId) {
-        List<RoomServiceRespone2> response = roomServiceService.findByRoomId(roomId);
+    public ResponseEntity<List<RoomServiceDetailResponse>> findByRoomId(@PathVariable UUID roomId) {
+        List<RoomServiceDetailResponse> response = roomServiceService.findByRoomId(roomId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

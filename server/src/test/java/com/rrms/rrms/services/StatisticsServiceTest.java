@@ -148,7 +148,7 @@ public class StatisticsServiceTest {
             Motel motel = mock(Motel.class);
             // Giáº£ láº­p phÆ°Æ¡ng thá»©c getCreatedDate Ä‘á»ƒ tráº£ vá» LocalDateTime
             LocalDateTime createdDate = LocalDateTime.of(2023, i, 1, 0, 0);
-            when(motel.getCreatedDate()).thenReturn(createdDate);
+            when(motel.getCreatedAt()).thenReturn(createdDate);
             motels.add(motel);
         }
 

@@ -10,7 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.request.ContractTemplateRequest;
-import com.rrms.rrms.dto.response.ContractTemplateRespone;
+import com.rrms.rrms.dto.response.ContractTemplateResponse;
 import com.rrms.rrms.services.IContractTemplateService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,16 +33,16 @@ public class ContractTemplateController {
 
     // Tạo mới một Contract Template
     @PostMapping
-    public ResponseEntity<ContractTemplateRespone> createContractTemplate(
+    public ResponseEntity<ContractTemplateResponse> createContractTemplate(
             @RequestBody ContractTemplateRequest request) {
-        ContractTemplateRespone response = contractTemplateService.createContractTemplate(request);
+        ContractTemplateResponse response = contractTemplateService.createContractTemplate(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     // Lấy thông tin của một Contract Template theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<ContractTemplateRespone> getContractTemplateById(@PathVariable UUID id) {
-        ContractTemplateRespone response = contractTemplateService.getContractTemplateById(id);
+    public ResponseEntity<ContractTemplateResponse> getContractTemplateById(@PathVariable UUID id) {
+        ContractTemplateResponse response = contractTemplateService.getContractTemplateById(id);
         return response != null
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.notFound().build();
@@ -50,23 +50,23 @@ public class ContractTemplateController {
 
     // Lấy danh sách tất cả Contract Templates
     @GetMapping
-    public ResponseEntity<List<ContractTemplateRespone>> getAllContractTemplates() {
-        List<ContractTemplateRespone> responses = contractTemplateService.getAllContractTemplates();
+    public ResponseEntity<List<ContractTemplateResponse>> getAllContractTemplates() {
+        List<ContractTemplateResponse> responses = contractTemplateService.getAllContractTemplates();
         return ResponseEntity.ok(responses);
     }
 
     // Lấy danh sách Contract Templates theo Motel ID
     @GetMapping("/motel/{motelId}")
-    public ResponseEntity<List<ContractTemplateRespone>> getContractTemplatesByMotelId(@PathVariable UUID motelId) {
-        List<ContractTemplateRespone> responses = contractTemplateService.getContractTemplatesByMotelId(motelId);
+    public ResponseEntity<List<ContractTemplateResponse>> getContractTemplatesByMotelId(@PathVariable UUID motelId) {
+        List<ContractTemplateResponse> responses = contractTemplateService.getContractTemplatesByMotelId(motelId);
         return ResponseEntity.ok(responses);
     }
 
     // Cập nhật thông tin của một Contract Template
     @PutMapping("/{id}")
-    public ResponseEntity<ContractTemplateRespone> updateContractTemplate(
+    public ResponseEntity<ContractTemplateResponse> updateContractTemplate(
             @PathVariable UUID id, @RequestBody ContractTemplateRequest request) {
-        ContractTemplateRespone response = contractTemplateService.updateContractTemplate(id, request);
+        ContractTemplateResponse response = contractTemplateService.updateContractTemplate(id, request);
         return response != null
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.notFound().build();

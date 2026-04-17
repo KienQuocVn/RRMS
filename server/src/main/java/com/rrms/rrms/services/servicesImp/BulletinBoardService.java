@@ -23,11 +23,13 @@ import com.rrms.rrms.services.IBulletinBoard;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @Transactional(propagation = Propagation.REQUIRED)
+@Slf4j
 public class BulletinBoardService implements IBulletinBoard {
 
     BulletinBoardRepository bulletinBoardRepository;
@@ -123,7 +125,7 @@ public class BulletinBoardService implements IBulletinBoard {
         BulletinBoard bulletinBoard = bulletinBoardRepository
                 .findById(bulletinBoardId)
                 .orElseThrow(() -> new ResourceNotFoundException("BulletinBoard not found"));
-        System.out.println("bulletinBoard id " + bulletinBoard.getBulletinBoardId());
+        log.debug("Updating bulletin board id: {}", bulletinBoard.getBulletinBoardId());
 
         // Cập nhật các trường cơ bản
         bulletinBoardMapper.updateBulletinBoardFromRequest(bulletinBoardRequest, bulletinBoard);

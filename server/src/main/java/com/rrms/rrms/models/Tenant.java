@@ -12,16 +12,23 @@ import com.rrms.rrms.enums.Gender;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "tenant")
-public class Tenant {
+@Table(
+        name = "tenant",
+        indexes = {
+            @Index(name = "idx_tenant_room_id", columnList = "roomId"),
+            @Index(name = "idx_tenant_cccd", columnList = "CCCD", unique = true)
+        })
+public class Tenant extends BaseEntity {
     @Id
     @GeneratedValue(generator = "UUID")
     private UUID tenantId;
@@ -86,7 +93,7 @@ public class Tenant {
     @JsonBackReference(value = "Room-Tenant") // Đặt tên cho tham chiếu ngược
     private Room room;
 
-    @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference(value = "Tenant-Contract") // Đặt tên cho tham chiếu quản lý
     private List<Contract> contracts; // Một người thuê có nhiều hợp đồng
 }

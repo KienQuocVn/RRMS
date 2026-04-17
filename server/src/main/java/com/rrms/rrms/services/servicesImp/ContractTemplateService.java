@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.ContractTemplateRequest;
-import com.rrms.rrms.dto.response.ContractTemplateRespone;
+import com.rrms.rrms.dto.response.ContractTemplateResponse;
 import com.rrms.rrms.models.ContractTemplate;
 import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.repositories.ContractTemplateRepository;
@@ -25,7 +25,7 @@ public class ContractTemplateService implements IContractTemplateService {
     private MotelRepository motelRepository;
 
     @Override
-    public ContractTemplateRespone createContractTemplate(ContractTemplateRequest request) {
+    public ContractTemplateResponse createContractTemplate(ContractTemplateRequest request) {
         Motel motel = motelRepository.findById(request.getMotelId()).orElse(null);
 
         ContractTemplate contractTemplate = new ContractTemplate();
@@ -40,26 +40,26 @@ public class ContractTemplateService implements IContractTemplateService {
     }
 
     @Override
-    public ContractTemplateRespone getContractTemplateById(UUID contractTemplateId) {
+    public ContractTemplateResponse getContractTemplateById(UUID contractTemplateId) {
         ContractTemplate contractTemplate =
                 contractTemplateRepository.findById(contractTemplateId).orElse(null);
         return contractTemplate != null ? toResponse(contractTemplate) : null;
     }
 
     @Override
-    public List<ContractTemplateRespone> getAllContractTemplates() {
+    public List<ContractTemplateResponse> getAllContractTemplates() {
         List<ContractTemplate> templates = contractTemplateRepository.findAll();
         return templates.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<ContractTemplateRespone> getContractTemplatesByMotelId(UUID motelid) {
+    public List<ContractTemplateResponse> getContractTemplatesByMotelId(UUID motelid) {
         List<ContractTemplate> templates = contractTemplateRepository.findContractTemplateByMotel_MotelId(motelid);
         return templates.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public ContractTemplateRespone updateContractTemplate(UUID contractTemplateId, ContractTemplateRequest request) {
+    public ContractTemplateResponse updateContractTemplate(UUID contractTemplateId, ContractTemplateRequest request) {
         ContractTemplate contractTemplate =
                 contractTemplateRepository.findById(contractTemplateId).orElse(null);
         if (contractTemplate == null) {
@@ -82,8 +82,8 @@ public class ContractTemplateService implements IContractTemplateService {
         contractTemplateRepository.deleteById(contractTemplateId);
     }
 
-    private ContractTemplateRespone toResponse(ContractTemplate contractTemplate) {
-        ContractTemplateRespone response = new ContractTemplateRespone();
+    private ContractTemplateResponse toResponse(ContractTemplate contractTemplate) {
+        ContractTemplateResponse response = new ContractTemplateResponse();
         response.setContractTemplateId(contractTemplate.getContracttemplateId());
         response.setMotelId(contractTemplate.getMotel().getMotelId());
         response.setNamecontract(contractTemplate.getNamecontract());

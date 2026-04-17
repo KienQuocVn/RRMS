@@ -20,7 +20,7 @@ public class ContractResponse {
     private RoomResponse2 room; // Room ID
     private TenantResponse tenant; // Tenant ID
     private AccountResponse username; // Landlord's username
-    private ContractTemplateRespone contracttemplate;
+    private ContractTemplateResponse contracttemplate;
     private UUID brokerId; // Broker ID (if any)
     private Date moveinDate; // Move-in date
     private String leaseTerm; // Lease term (in months or years)

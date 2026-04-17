@@ -1,0 +1,2 @@
+-- Dữ liệu schema mặc định hoặc table đã có sẵn
+-- Do spring.flyway.baseline-on-migrate=true, Flyway sẽ tự động lập schema version baseline với các table hiện có

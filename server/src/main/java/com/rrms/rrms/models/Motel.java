@@ -1,6 +1,5 @@
 package com.rrms.rrms.models;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,16 +10,20 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "motels")
-public class Motel {
+@Table(
+        name = "motels",
+        indexes = {@Index(name = "idx_motel_username", columnList = "username")})
+public class Motel extends BaseEntity {
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -59,21 +62,16 @@ public class Motel {
     @JoinColumn(name = "type_room_id", nullable = false)
     private TypeRoom typeRoom;
 
-    // them trường ngày tạo phoing
-    @Column(name = "created_date", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    @Builder.Default
-    private LocalDateTime createdDate = LocalDateTime.now();
-
     // de xoa motell xoa luon dich vu
-    @OneToMany(mappedBy = "motel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "motel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference(value = "motel-service") // Đặt tên cho tham chiếu quản lý
     private List<MotelService> motelServices;
 
-    @OneToMany(mappedBy = "motel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "motel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference(value = "motel-Room") // Đặt tên cho tham chiếu quản lý
     private List<Room> rooms;
 
-    @OneToMany(mappedBy = "motel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "motel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference(value = "motel-ContractTemplate") // Đặt tên cho tham chiếu quản lý
     private List<ContractTemplate> contractTemplates;
 

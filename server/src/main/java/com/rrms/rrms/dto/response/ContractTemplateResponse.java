@@ -10,7 +10,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ContractTemplateRespone {
+public class ContractTemplateResponse {
     private UUID contractTemplateId;
     private UUID motelId;
     private String namecontract;

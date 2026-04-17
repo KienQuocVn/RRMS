@@ -15,12 +15,12 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
-public class RoomServiceRespone2 implements Serializable {
+public class RoomServiceDetailResponse implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
     private UUID roomServiceId;
-    private Room room; // Thay vì đối tượng Room, chỉ trả về ID
-    private MotelService service; // Thay vì đối tượng Service, chỉ trả về ID
+    private Room room; // Thay vi doi tuong Room, chi tra ve ID
+    private MotelService service; // Thay vi doi tuong Service, chi tra ve ID
     private Integer quantity;
 }

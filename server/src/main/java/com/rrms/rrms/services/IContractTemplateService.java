@@ -4,18 +4,18 @@ import java.util.List;
 import java.util.UUID;
 
 import com.rrms.rrms.dto.request.ContractTemplateRequest;
-import com.rrms.rrms.dto.response.ContractTemplateRespone;
+import com.rrms.rrms.dto.response.ContractTemplateResponse;
 
 public interface IContractTemplateService {
-    ContractTemplateRespone createContractTemplate(ContractTemplateRequest request);
+    ContractTemplateResponse createContractTemplate(ContractTemplateRequest request);
 
-    ContractTemplateRespone getContractTemplateById(UUID contractTemplateId);
+    ContractTemplateResponse getContractTemplateById(UUID contractTemplateId);
 
-    List<ContractTemplateRespone> getAllContractTemplates();
+    List<ContractTemplateResponse> getAllContractTemplates();
 
-    List<ContractTemplateRespone> getContractTemplatesByMotelId(UUID motelid);
+    List<ContractTemplateResponse> getContractTemplatesByMotelId(UUID motelid);
 
-    ContractTemplateRespone updateContractTemplate(UUID contractTemplateId, ContractTemplateRequest request);
+    ContractTemplateResponse updateContractTemplate(UUID contractTemplateId, ContractTemplateRequest request);
 
     void deleteContractTemplate(UUID contractTemplateId);
 }

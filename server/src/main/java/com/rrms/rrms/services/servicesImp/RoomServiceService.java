@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.RoomServiceRequest;
-import com.rrms.rrms.dto.response.RoomServiceRespone2;
+import com.rrms.rrms.dto.response.RoomServiceDetailResponse;
 import com.rrms.rrms.dto.response.RoomServiceResponse;
 import com.rrms.rrms.enums.ErrorCode;
 import com.rrms.rrms.exceptions.AppException;
@@ -23,10 +23,12 @@ import com.rrms.rrms.services.IRoomService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@Slf4j
 public class RoomServiceService implements IRoomService {
 
     RoomServiceRepository roomServiceRepository;
@@ -102,7 +104,10 @@ public class RoomServiceService implements IRoomService {
         MotelService service = serviceRepository
                 .findById(roomServiceRequest.getServiceId())
                 .orElseThrow(() -> new AppException(ErrorCode.SERVICE_NOT_FOUND));
-        System.out.println("Room: " + room.getRoomId() + ", Service: " + service.getMotelServiceId());
+        log.debug(
+                "Create room service detail - roomId: {}, serviceId: {}",
+                room.getRoomId(),
+                service.getMotelServiceId());
         RoomService roomService = RoomService.builder()
                 .room(room)
                 .service(service)
@@ -122,7 +127,7 @@ public class RoomServiceService implements IRoomService {
     }
 
     @Override
-    public List<RoomServiceRespone2> findByRoomId(UUID roomId) {
+    public List<RoomServiceDetailResponse> findByRoomId(UUID roomId) {
         return roomServiceRepository.findByRoom_RoomId(roomId).stream()
                 .map(this::toRoomServiceResponse2)
                 .collect(Collectors.toList());
@@ -143,8 +148,8 @@ public class RoomServiceService implements IRoomService {
                 .build();
     }
 
-    public RoomServiceRespone2 toRoomServiceResponse2(RoomService roomService) {
-        return RoomServiceRespone2.builder()
+    public RoomServiceDetailResponse toRoomServiceResponse2(RoomService roomService) {
+        return RoomServiceDetailResponse.builder()
                 .roomServiceId(roomService.getRoomServiceId())
                 .room(roomService.getRoom()) // Kiểm tra nếu room không null
                 .service(roomService.getService()) // Kiểm tra nếu service không null

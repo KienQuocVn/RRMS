@@ -100,7 +100,7 @@ public class StatisticsService implements IStatistics {
 
         // Tính tổng số nhà trọ cho từng tháng
         for (Motel motel : motels) {
-            int month = motel.getCreatedDate().getMonthValue();
+            int month = motel.getCreatedAt().getMonthValue();
             totalsByMonth.put(month, totalsByMonth.get(month) + 1);
         }
 

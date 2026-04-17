@@ -17,6 +17,6 @@ public interface ContractMapper {
     @Mapping(source = "room", target = "room") // Ánh xạ Room đối tượng đầy đủ
     @Mapping(source = "tenant", target = "tenant") // Ánh xạ Tenant đối tượng đầy đủ
     @Mapping(source = "account", target = "username") // Ánh xạ Account đối tượng đầy đủ
-    @Mapping(source = "contract_template", target = "contracttemplate") // Ánh xạ ContractTemplate đối tượng đầy đủ
+    @Mapping(source = "contractTemplate", target = "contracttemplate") // Ánh xạ ContractTemplate đối tượng đầy đủ
     ContractResponse toResponse(Contract contract);
 }

@@ -1,6 +1,7 @@
 package com.rrms.rrms.models;
 
-// @Data
+// @Getter
+// @Setter
 // @NoArgsConstructor
 // @AllArgsConstructor
 // @Entity

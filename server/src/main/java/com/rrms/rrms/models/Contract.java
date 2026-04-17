@@ -10,15 +10,23 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.rrms.rrms.enums.ContractStatus;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "contracts")
-public class Contract {
+@Table(
+        name = "contracts",
+        indexes = {
+            @Index(name = "idx_contract_room_id", columnList = "room_id"),
+            @Index(name = "idx_contract_username", columnList = "username"),
+            @Index(name = "idx_contract_status", columnList = "status")
+        })
+public class Contract extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -42,7 +50,7 @@ public class Contract {
     @ManyToOne
     @JoinColumn(name = "contracttemplate_id")
     @JsonBackReference(value = "ContractTemplate-Contract") // Đặt tên cho tham chiếu ngược
-    private ContractTemplate contract_template;
+    private ContractTemplate contractTemplate;
 
     @ManyToOne
     @JoinColumn(name = "broker_id")
@@ -93,7 +101,7 @@ public class Contract {
     private String language;
 
     // so luong nguoi thue
-    @Column(name = "count_tenant", columnDefinition = "TEXT")
+    @Column(name = "count_tenant", columnDefinition = "INT")
     private Integer countTenant;
 
     // trang thai hop dong

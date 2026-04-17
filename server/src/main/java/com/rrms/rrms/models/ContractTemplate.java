@@ -9,15 +9,17 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "contracttemplates")
-public class ContractTemplate {
+public class ContractTemplate extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID contracttemplateId;
@@ -39,7 +41,7 @@ public class ContractTemplate {
     @Column(columnDefinition = "TEXT") // Để lưu nội dung lớn
     private String content;
 
-    @OneToMany(mappedBy = "contract_template", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "contractTemplate", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference(value = "ContractTemplate-Contract") // Đặt tên cho tham chiếu quản lý
     private List<Contract> contracts;
 }
