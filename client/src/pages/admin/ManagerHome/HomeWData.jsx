@@ -1435,7 +1435,7 @@ const HomeWData = ({ Motel }) => {
         throw new Error('Thiếu thông tin hợp đồng, dịch vụ hoặc thiết bị.')
       }
 
-      const response = await axios.post('http://localhost:8080/invoices/create', updatedInvoiceData, {
+      const response = await axios.post(`${env.API_URL}/invoices/create`, updatedInvoiceData, {
         headers: {
           Authorization: `Bearer ${token}`
         }

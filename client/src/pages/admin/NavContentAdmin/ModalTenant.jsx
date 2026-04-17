@@ -32,7 +32,7 @@ import { v4 } from 'uuid'
 import { toast } from 'react-toastify'
 import { getByIdTenant, updateTenant } from '~/apis/tenantAPI'
 import { env } from '~/configs/environment'
-import { getRoomById } from '~/apis/apiClient'
+import { getRoomById } from '~/apis/roomAPI'
 import { getRoomByMotelIdWContract, getRoomByMotelIdYContract } from '~/apis/roomAPI'
 import { useParams } from 'react-router-dom'
 

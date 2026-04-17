@@ -1,49 +1,23 @@
-import axios from 'axios'
-import { env } from '~/configs/environment'
+import httpClient from './httpClient'
 
 export const postBulletinBoardReview = async (data) => {
-  const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
-  const response = await axios.post(`${env.API_URL}/bulletin-board-reviews`, data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'ngrok-skip-browser-warning': '69420'
-    }
-  })
+  const response = await httpClient.post('/bulletin-board-reviews', data)
   return response.data
 }
 
 export const getBulletinBoardReviewByBulletinBoardIdAndUsername = async (bulletinBoardId, username) => {
-  const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
-  const response = await axios.get(
-    `${env.API_URL}/bulletin-board-reviews?bulletinBoardId=${bulletinBoardId}&username=${username}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'ngrok-skip-browser-warning': '69420'
-      }
-    }
+  const response = await httpClient.get(
+    `/bulletin-board-reviews?bulletinBoardId=${bulletinBoardId}&username=${username}`
   )
   return response.data
 }
 
 export const getRatingHistory = async (username) => {
-  const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
-  const response = await axios.get(`${env.API_URL}/bulletin-board-reviews/rating-history?username=${username}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'ngrok-skip-browser-warning': '69420'
-    }
-  })
+  const response = await httpClient.get(`/bulletin-board-reviews/rating-history?username=${username}`)
   return response.data
 }
 
 export const deleteBulletinBoardReview = async (id) => {
-  const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
-  const response = await axios.delete(`${env.API_URL}/bulletin-board-reviews/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'ngrok-skip-browser-warning': '69420'
-    }
-  })
+  const response = await httpClient.delete(`/bulletin-board-reviews/${id}`)
   return response.data
 }

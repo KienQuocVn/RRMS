@@ -1,9 +1,7 @@
 import { Grid, Card, CardContent, Typography, Stack, Box } from '@mui/material'
 import { ReactTabulator } from 'react-tabulator'
-import { Line } from 'react-chartjs-2'
 import { BarChart } from '@mui/x-charts/BarChart'
 import { LineChart } from '@mui/x-charts/LineChart'
-import 'chart.js/auto'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { env } from '~/configs/environment'
@@ -158,29 +156,8 @@ const DashboardHome = () => {
   // ];
 
   const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  const data = {
-    labels: labels,
-    datasets: [
-      {
-        label: 'Tài Khoản Năm Này',
-        data: labels.map((_, index) => monthlyDataThisYear[index] || 0), // Sử dụng dữ liệu cho năm nay
-        fill: true,
-        backgroundColor: 'rgba(75,192,192,0.2)',
-        borderColor: 'rgba(75,192,192,1)',
-        borderWidth: 2,
-        tension: 0.4
-      },
-      {
-        label: 'Tài Khoản Năm Trước',
-        data: labels.map((_, index) => monthlyDataLastYear[index] || 0), // Sử dụng dữ liệu cho năm trước
-        fill: true,
-        backgroundColor: 'rgba(255,99,132,0.2)',
-        borderColor: 'rgba(255,99,132,1)',
-        borderWidth: 2,
-        tension: 0.4
-      }
-    ]
-  }
+  const seriesThisYear = labels.map((_, index) => monthlyDataThisYear[index] || 0)
+  const seriesLastYear = labels.map((_, index) => monthlyDataLastYear[index] || 0)
 
   return (
     <div>
@@ -227,9 +204,15 @@ const DashboardHome = () => {
             </Typography>
             <Card>
               <CardContent style={{ height: '300px' }}>
-                {' '}
-                {/* Chiều cao cố định */}
-                <Line data={data} />
+                <LineChart
+                  xAxis={[{ scaleType: 'point', data: labels }]}
+                  series={[
+                    { data: seriesThisYear, label: 'Tài Khoản Năm Này', area: true, color: 'rgba(75,192,192,1)' },
+                    { data: seriesLastYear, label: 'Tài Khoản Năm Trước', area: true, color: 'rgba(255,99,132,1)' }
+                  ]}
+                  height={260}
+                  margin={{ top: 20, right: 20, bottom: 30, left: 45 }}
+                />
               </CardContent>
             </Card>
           </Box>

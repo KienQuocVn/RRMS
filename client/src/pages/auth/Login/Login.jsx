@@ -1,6 +1,8 @@
 import { Box, Container, Paper, Grid, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import Swal from 'sweetalert2'
 import { useLogin } from './hooks/useLogin'
 import LoginHeader from './sections/LoginHeader'
 import LoginForm from './sections/LoginForm'
@@ -9,8 +11,24 @@ import LoginSidebar from './sections/LoginSidebar'
 
 const Login = ({ setUsername, setAvatar }) => {
   const { t } = useTranslation()
+  const location = useLocation()
+  const navigate = useNavigate()
   const { phone, setPhone, password, setPassword, validCaptcha, setValidCaptcha, handleSubmit, loginWithGoogle, loginWithFacebook } =
     useLogin({ setUsername, setAvatar })
+
+  useEffect(() => {
+    const message = location.state?.message
+
+    if (!message) return
+
+    Swal.fire({
+      icon: 'warning',
+      title: t('auth.login.alerts.noticeTitle'),
+      text: message
+    })
+
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.pathname, location.state, navigate, t])
 
   return (
     <Box

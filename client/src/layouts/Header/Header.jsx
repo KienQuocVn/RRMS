@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Box } from '@mui/material'
-import { useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { useTheme } from '@emotion/react'
 import { useTranslation } from 'react-i18next'
 import Swal from 'sweetalert2'
@@ -29,9 +29,9 @@ const Header = ({
   const [isNotifyOpen, setIsNotifyOpen] = useState(false)
   const [isMobileAccountOpen, setIsMobileAccountOpen] = useState(false)
 
-  const tokenExists = sessionStorage.getItem('user') !== null
+  const tokenExists = useMemo(() => sessionStorage.getItem('user') !== null, [])
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     const token = sessionStorage.getItem('user')
       ? JSON.parse(sessionStorage.getItem('user')).token
       : null
@@ -66,7 +66,7 @@ const Header = ({
         text: t('header.alerts.logoutErrorText')
       })
     }
-  }
+  }, [navigate, setAvatar, setToken, setUsername, t])
 
   return (
     <Box component="header" sx={{ fontFamily: 'Helvetica, Arial, Roboto, sans-serif' }}>
@@ -126,4 +126,4 @@ const Header = ({
   )
 }
 
-export default Header
+export default memo(Header)

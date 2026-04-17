@@ -1,5 +1,5 @@
-export const redirectUri = 'http://localhost:5173/oauth2/redirect'
-export const apiBaseUrl = 'http://localhost:8080'
+export const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/oauth2/redirect'
+export const apiBaseUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:8080'
 
 export const env = {
   API_URL: import.meta.env.VITE_APP_API_URL,
