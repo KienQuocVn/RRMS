@@ -1,4 +1,4 @@
-import { Box, IconButton, useColorScheme } from '@mui/material'
+import { IconButton, useColorScheme } from '@mui/material'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 
@@ -10,23 +10,22 @@ const ModeSelect = () => {
   }
 
   const toggleMode = () => {
-    const newMode = mode === 'light' ? 'dark' : 'light'
-    setMode(newMode)
+    setMode(mode === 'light' ? 'dark' : 'light')
   }
 
   return (
-    <Box
+    <IconButton
       onClick={toggleMode}
+      aria-label="toggle color mode"
+      color="inherit"
       sx={{
-        display: 'flex',
-        alignItems: 'center',
-        cursor: 'pointer',
-        gap: 1
-      }}>
-      <IconButton color="inherit">
-        {mode === 'light' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
-      </IconButton>
-    </Box>
+        p: 0.5,
+        color: 'inherit',
+        flexShrink: 0
+      }}
+    >
+      {mode === 'light' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+    </IconButton>
   )
 }
 

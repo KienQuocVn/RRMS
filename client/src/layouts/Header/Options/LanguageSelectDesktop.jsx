@@ -1,6 +1,6 @@
 import { Box } from '@mui/material'
 
-const LanguageSelect = ({ toggleLanguage, currentLanguage }) => {
+const LanguageSelectDesktop = ({ toggleLanguage, currentLanguage }) => {
   return (
     <Box
       onClick={toggleLanguage}
@@ -17,7 +17,8 @@ const LanguageSelect = ({ toggleLanguage, currentLanguage }) => {
         '& img': {
           display: 'block'
         }
-      }}>
+      }}
+    >
       {currentLanguage === 'vi' ? (
         <img
           src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Fvietnam.png?alt=media&token=9e4a0137-2346-4190-b71b-147842b01ff7"
@@ -33,9 +34,11 @@ const LanguageSelect = ({ toggleLanguage, currentLanguage }) => {
           height={24}
         />
       )}
-      <span>{currentLanguage === 'vi' ? 'Tiếng Việt' : 'English'}</span>
+      <Box component="span" sx={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>
+        {currentLanguage === 'vi' ? 'Tiếng Việt' : 'English'}
+      </Box>
     </Box>
   )
 }
 
-export default LanguageSelect
+export default LanguageSelectDesktop

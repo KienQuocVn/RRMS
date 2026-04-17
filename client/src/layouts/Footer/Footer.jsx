@@ -1,11 +1,11 @@
 import { Box, Container, Divider } from '@mui/material';
-import { FooterInfo } from './FooterInfo';
-import { FooterLinks } from './FooterLinks';
-import { FooterContact } from './FooterContact';
-import { FooterHotlines } from './FooterHotlines';
-import { FooterSocial } from './FooterSocial';
-import { FooterApps } from './FooterApps';
-import { FooterCopyright } from './FooterCopyright';
+import { FooterInfo } from './sections/FooterInfo';
+import { FooterLinks } from './sections/FooterLinks';
+import { FooterContact } from './sections/FooterContact';
+import { FooterHotlines } from './sections/FooterHotlines';
+import { FooterSocial } from './sections/FooterSocial';
+import { FooterApps } from './sections/FooterApps';
+import { FooterCopyright } from './sections/FooterCopyright';
 
 export default function Footer() {
   return (

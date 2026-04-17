@@ -1,61 +1,48 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Box } from '@mui/material'
+import { useState } from 'react'
 import { useTheme } from '@emotion/react'
-import { useTranslation } from 'react-i18next'
 import Swal from 'sweetalert2'
 import { env } from '~/configs/environment'
+import TopBar from './sections/TopBar'
+import SearchBarDesktop from './sections/SearchBarDesktop'
+import DesktopActionsDesktop from './sections/DesktopActionsDesktop'
+import MobileNav from './sections/MobileNav'
+import NotificationPanel from './sections/NotificationPanel'
 import WarningEmailNotExits from './WarningEmailNotExits'
-import './Header.css'
-import HeaderCategoryMenu from './components/HeaderCategoryMenu'
-import HeaderDesktopAccountMenu from './components/HeaderDesktopAccountMenu'
-import HeaderDesktopActions from './components/HeaderDesktopActions'
-import HeaderDesktopBrand from './components/HeaderDesktopBrand'
-import HeaderManageButton from './components/HeaderManageButton'
-import HeaderMobileAccountMenu from './components/HeaderMobileAccountMenu'
-import HeaderMobileBottomNav from './components/HeaderMobileBottomNav'
-import HeaderMobileSearch from './components/HeaderMobileSearch'
-import HeaderNotificationPanel from './components/HeaderNotificationPanel'
-import HeaderSearchBar from './components/HeaderSearchBar'
-import HeaderTopStrip from './components/HeaderTopStrip'
 
-const Header = ({ username, avatar, setUsername, setAvatar, setToken, toggleLanguage, currentLanguage, motelId, account }) => {
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false)
-  const [isSearchTypeOpen, setIsSearchTypeOpen] = useState(false)
-  const [isAccountOpen, setIsAccountOpen] = useState(false)
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false)
-  const [isMobileAccountOpen, setIsMobileAccountOpen] = useState(false)
-  const [searchKeyword, setSearchKeyword] = useState()
+const Header = ({
+  username,
+  avatar,
+  setUsername,
+  setAvatar,
+  setToken,
+  toggleLanguage,
+  currentLanguage,
+  motelId,
+  account
+}) => {
   const navigate = useNavigate()
   const theme = useTheme()
-  const { t } = useTranslation()
-  const themeMode = theme.palette.mode
+  const [isNotifyOpen, setIsNotifyOpen] = useState(false)
+  const [isMobileAccountOpen, setIsMobileAccountOpen] = useState(false)
+
   const tokenExists = sessionStorage.getItem('user') !== null
 
-  const closeMenus = () => {
-    setIsAccountOpen(false)
-    setIsMobileAccountOpen(false)
-  }
-
   const handleLogout = async () => {
-    closeMenus()
-    const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
+    const token = sessionStorage.getItem('user')
+      ? JSON.parse(sessionStorage.getItem('user')).token
+      : null
 
     if (!token) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Thông báo',
-        text: 'Không tìm thấy token, vui lòng đăng nhập lại.'
-      })
+      Swal.fire({ icon: 'warning', title: 'Thông báo', text: 'Không tìm thấy token, vui lòng đăng nhập lại.' })
       return
     }
 
     try {
       const response = await fetch(`${env.API_URL}/authen/logout`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ token })
       })
 
@@ -65,118 +52,84 @@ const Header = ({ username, avatar, setUsername, setAvatar, setToken, toggleLang
         setUsername('')
         setAvatar('')
         navigate('/login')
-        Swal.fire({
-          icon: 'success',
-          title: 'Thành công',
-          text: 'Đăng xuất thành công!'
-        })
-        return
+        Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đăng xuất thành công!' })
+      } else {
+        const errorData = await response.json()
+        Swal.fire({ icon: 'error', title: 'Đăng xuất thất bại', text: `Lỗi: ${errorData.message}` })
       }
-
-      const errorData = await response.json()
-      Swal.fire({
-        icon: 'error',
-        title: 'Đăng xuất thất bại',
-        text: `Lỗi: ${errorData.message}`
-      })
-    } catch (error) {
-      console.error('Đã xảy ra lỗi khi đăng xuất:', error)
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi',
-        text: 'Đã xảy ra lỗi khi thực hiện đăng xuất.'
+        } catch {
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Lỗi', 
+        text: 'Đã xảy ra lỗi khi thực hiện đăng xuất.' 
       })
     }
   }
 
-  const handleSearch = () => {
-    navigate('/search', { state: { searchKeyWord: searchKeyword } })
-  }
-
-  const handleSearchChange = (event) => {
-    setSearchKeyword(event.target.value)
-  }
-
   return (
-    <header>
-      <HeaderTopStrip t={t} themeMode={themeMode} />
+    <Box component="header" sx={{ fontFamily: 'Helvetica, Arial, Roboto, sans-serif' }}>
+      {/* 1. Top info bar (desktop only) */}
+      <TopBar />
 
-      <header
-        className="ct-appwrapper aw__h5101fz"
-        style={{
-          '--h5101fz-0': '#fff',
-          '--h5101fz-2': 'calc(40px + var(--app-wrapper-extra-height,   0px))',
-          '--h5101fz-5': '100'
-        }}>
-        <div className="aw__co22znp">
-          <HeaderDesktopBrand onToggleCategory={() => setIsCategoryOpen((prev) => !prev)} themeMode={themeMode} t={t} />
+      {/* 2. Main header bar */}
+      <Box
+        sx={{
+          bgcolor: theme.palette.mode === 'light' ? '#fff' : '#1f1f1f',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          position: 'sticky',
+          top: { xs: 0, md: 40 },
+          zIndex: 100
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            maxWidth: 1440,
+            minWidth: 320,
+            minHeight: { xs: 56, md: 76 },
+            px: { xs: 1, sm: 2, md: 3, lg: 4 },
+            py: { xs: 0.75, md: 1.25 },
+            gap: { md: 2 }
+          }}
+        >
+          {/* Logo + Search */}
+          <SearchBarDesktop />
 
-          <div className="aw__c1fkdta0">
-            <div className="aw__s1wdsl35">
-              <div>
-                <HeaderSearchBar
-                  isOpen={isSearchTypeOpen}
-                  onToggle={() => setIsSearchTypeOpen((prev) => !prev)}
-                  onSearch={handleSearch}
-                  onSearchChange={handleSearchChange}
-                  themeMode={themeMode}
-                  t={t}
-                />
-              </div>
-            </div>
-          </div>
-
-          <HeaderDesktopActions
-            currentLanguage={currentLanguage}
-            onToggleAccount={() => setIsAccountOpen((prev) => !prev)}
-            themeMode={themeMode}
-            toggleLanguage={toggleLanguage}
+          {/* Desktop right-side actions */}
+          <DesktopActionsDesktop
             username={username}
-            t={t}>
-            {isAccountOpen ? (
-              <HeaderDesktopAccountMenu
-                avatar={avatar}
-                onClose={closeMenus}
-                onLogout={handleLogout}
-                tokenExists={tokenExists}
-                username={username}
-              />
-            ) : null}
-          </HeaderDesktopActions>
-
-          {tokenExists ? <HeaderManageButton motelId={motelId} /> : null}
-        </div>
-
-        {account?.email || !account ? null : <WarningEmailNotExits />}
-
-        <HeaderMobileBottomNav
-          onToggleAccount={() => setIsMobileAccountOpen((prev) => !prev)}
-          onToggleNotification={() => setIsNotificationOpen((prev) => !prev)}
-          t={t}
-        />
-
-        {isNotificationOpen ? <HeaderNotificationPanel /> : null}
-
-        {isMobileAccountOpen ? (
-          <HeaderMobileAccountMenu
             avatar={avatar}
-            onClose={closeMenus}
-            onLogout={handleLogout}
+            motelId={motelId}
             tokenExists={tokenExists}
-            username={username}
+            onLogout={handleLogout}
+            toggleLanguage={toggleLanguage}
+            currentLanguage={currentLanguage}
           />
-        ) : null}
-      </header>
+        </Box>
+      </Box>
 
-      <HeaderMobileSearch
-        isSearchTypeOpen={isSearchTypeOpen}
-        onSearchChange={handleSearchChange}
-        onToggleSearchType={() => setIsSearchTypeOpen((prev) => !prev)}
-        t={t}
+      {/* 3. Email warning */}
+      {account?.email || !account ? null : <WarningEmailNotExits />}
+
+      {/* 4. Notification panel */}
+      {isNotifyOpen && (
+        <NotificationPanel />
+      )}
+
+      {/* 5. Mobile: search bar + bottom nav */}
+      <MobileNav
+        isNotifyOpen={isNotifyOpen}
+        setIsNotifyOpen={setIsNotifyOpen}
+        isMobileAccountOpen={isMobileAccountOpen}
+        setIsMobileAccountOpen={setIsMobileAccountOpen}
       />
-
-      {isCategoryOpen ? <HeaderCategoryMenu /> : null}
-    </header>
+    </Box>
   )
 }
 
