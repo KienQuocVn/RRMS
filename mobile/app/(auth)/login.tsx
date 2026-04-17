@@ -1,0 +1,157 @@
+/**
+ * Login Screen - Màn hình đăng nhập
+ * Layout: ScrollView > KeyboardAvoidingView
+ * Components: AuthLogo, AuthInput, PasswordHints, AuthButton, SupportFooter
+ */
+
+import React, { useState } from 'react';
+import {
+  View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+} from 'react-native';
+import { Link, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import {
+  AuthLogo,
+  AuthInput,
+  AuthButton,
+  PasswordHints,
+  SupportFooter,
+} from '@/components/auth';
+import { Colors, Spacing, FontSizes, FontWeights } from '@/constants/theme';
+
+export default function LoginScreen() {
+  const router = useRouter();
+
+  // ── State ──
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // ── Handlers ──
+  const handleLogin = async () => {
+    setLoading(true);
+    // TODO: Gọi API đăng nhập
+    setTimeout(() => {
+      setLoading(false);
+      // router.replace('/(tabs)');
+    }, 1500);
+  };
+
+  const handleLoginZalo = () => {
+    // TODO: Đăng nhập Zalo SDK
+  };
+
+  const handleLoginApple = () => {
+    // TODO: Apple Sign In
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Logo ── */}
+        <AuthLogo size="normal" />
+
+        {/* ── Form ── */}
+        <View style={styles.form}>
+          <AuthInput
+            label="Số điện thoại"
+            required
+            placeholder="Nhập số điện thoại"
+            keyboardType="phone-pad"
+            value={phone}
+            onChangeText={setPhone}
+          />
+
+          <AuthInput
+            label="Mật khẩu"
+            required
+            placeholder="Nhập mật khẩu"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+
+          {/* Password hints */}
+          <PasswordHints password={password} />
+
+          {/* Nút đăng nhập chính */}
+          <AuthButton
+            title="Đăng nhập tài khoản"
+            variant="primary"
+            onPress={handleLogin}
+            loading={loading}
+          />
+
+          {/* Social login */}
+          <AuthButton
+            title="Đăng nhập với ZALO"
+            variant="social-zalo"
+            icon="chatbubble-ellipses"
+            onPress={handleLoginZalo}
+          />
+
+          <AuthButton
+            title="Đăng nhập bằng Apple"
+            variant="social-apple"
+            icon="logo-apple"
+            onPress={handleLoginApple}
+          />
+
+          {/* Links */}
+          <View style={styles.linksRow}>
+            <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
+              <Text style={styles.linkText}>Tạo tài khoản</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
+              <Text style={styles.linkText}>Quên tài khoản ?</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ── Footer hỗ trợ ── */}
+        <SupportFooter showSupportDetails />
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing['3xl'],
+  },
+  form: {
+    flex: 1,
+  },
+  linksRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  linkText: {
+    fontSize: FontSizes.md,
+    color: Colors.primary,
+    fontWeight: FontWeights.medium,
+  },
+});
