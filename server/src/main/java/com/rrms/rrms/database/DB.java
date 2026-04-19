@@ -6,6 +6,7 @@ import java.util.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import net.datafaker.Faker;
 @Configuration
 @Slf4j
 @Transactional
+@Profile("dev")
 public class DB {
     private final BulletinBoardRuleRepository bulletinBoardRuleRepository;
 
@@ -54,7 +56,8 @@ public class DB {
             BulletinBoardImageRepository bulletinBoardImageRepository,
             BulletinBoards_RentalAmRepository bulletinBoards_rentalAmRepository,
             ContractTemplateRepository contractTemplateRepository,
-            TenantRepository tenantRepository) {
+            TenantRepository tenantRepository,
+            BrokerRepository brokerRepository) {
         return args -> {
             int roomsLength = 50;
             int bulletinBoardsLength = 50;
@@ -153,8 +156,15 @@ public class DB {
                 // Tạo dữ liệu mẫu cho thanh toán
                 createSamplePayments(new Faker(new Locale("vi")), paymentsRepository);
             }
-            Tenant tenant = generateFakeTenant();
-            tenantRepository.save(tenant);
+            if (brokerRepository.count() == 0) {
+                List<Motel> existingMotels = motelRepository.findAll();
+                if (!existingMotels.isEmpty()) {
+                    createSampleBrokers(new Faker(new Locale("vi")), brokerRepository, existingMotels);
+                }
+            }
+            if (tenantRepository.count() == 0) {
+                tenantRepository.save(generateFakeTenant());
+            }
             log.info("All data created");
         };
     }
@@ -179,6 +189,28 @@ public class DB {
         // Lưu tất cả giao dịch vào cơ sở dữ liệu
         paymentRepository.saveAll(payments);
     }
+
+    /** Dữ liệu mẫu cho bảng brokers (Broker.java), gắn với nhà trọ đã có. */
+    private void createSampleBrokers(Faker faker, BrokerRepository brokerRepository, List<Motel> motels) {
+        int n = Math.min(5, motels.size());
+        List<Broker> list = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            Motel m = motels.get(i);
+            Broker b = new Broker();
+            b.setName(faker.name().fullName());
+            String phone = faker.phoneNumber().cellPhone();
+            if (phone != null && phone.length() > 20) {
+                phone = phone.substring(0, 20);
+            }
+            b.setPhone(phone);
+            b.setMotelId(m.getMotelId());
+            b.setCommissionRate(5 + faker.number().numberBetween(0, 15));
+            list.add(b);
+        }
+        brokerRepository.saveAll(list);
+        log.info("Created {} sample brokers.", list.size());
+    }
+
     // Phương thức để tạo dữ liệu mẫu cho roles
     private void createSampleRolesAndPermissions(
             RoleRepository roleRepository, PermissionRepository permissionRepository) {
@@ -252,6 +284,13 @@ public class DB {
                     roleRepository, "EMPLOYEE", "Employee role with limited access.", employeePermissions);
             createRoleWithPermissions(roleRepository, "CUSTOMER", "Regular customer role.", customerPermissions);
             createRoleWithPermissions(roleRepository, "GUEST", "Guest user without account.", guestPermissions);
+            Set<Permission> brokerRolePermissions = new HashSet<>();
+            brokerRolePermissions.add(
+                    createPermission("VIEW_ASSIGNED_MOTEL", "View assigned motel/broker scope", permissionRepository));
+            brokerRolePermissions.add(
+                    createPermission("BROKER_REPORT", "Broker reporting access", permissionRepository));
+            createRoleWithPermissions(
+                    roleRepository, "BROKER", "Broker / intermediary for rentals.", brokerRolePermissions);
             log.info("Sample roles and permissions created.");
         }
     }

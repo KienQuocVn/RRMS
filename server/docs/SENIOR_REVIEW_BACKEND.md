@@ -299,13 +299,13 @@ Tuy nhiên, codebase hiện vẫn đang ở trạng thái **“đủ để phát
 
 ### Priority 1 - Bắt buộc trước khi coi là production candidate
 
-1. Xóa toàn bộ secret thật khỏi repo, rotate toàn bộ credential đang lộ
-2. Tách `DB.java` sample seed sang profile `dev` hoặc module seed riêng
-3. Sửa test infrastructure:
-   - thêm `src/test/resources/test.properties`
-   - tách test unit và test context
-   - đưa build test về trạng thái xanh
-4. Hoàn thiện payment callback verification cho VNPay/MoMo/PayPal
+1. [x] Xóa toàn bộ secret thật khỏi repo, rotate toàn bộ credential đang lộ
+2. [x] Tách `DB.java` sample seed sang profile `dev` hoặc module seed riêng
+3. [/] Sửa test infrastructure:
+   - [x] thêm `src/test/resources/application-test.properties` (sử dụng H2)
+   - [ ] tách test unit và test context
+   - [/] đưa build test về trạng thái xanh (đang rà soát)
+4. [ ] Hoàn thiện payment callback verification cho VNPay/MoMo/PayPal (Đang rà soát logic chữ ký)
 
 ### Priority 2 - Nâng chất lượng lõi
 

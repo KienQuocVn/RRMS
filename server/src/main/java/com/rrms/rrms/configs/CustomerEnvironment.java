@@ -45,12 +45,10 @@ public class CustomerEnvironment {
     public static CustomerEnvironment selectEnv(EnvTarget target) {
         switch (target) {
             case DEV:
-                MoMoEndpoint devEndpoint = new MoMoEndpoint("https://test-payment.momo.vn/v2/gateway/api", "/create");
-                PartnerInfo devInfo =
-                        new PartnerInfo("MOMOLRJZ20181206", "mTCKt9W3eU1m39TW", "SetA5RDnLHvt51AULf51DyauxUo3kDU6");
-                CustomerEnvironment devEn = new CustomerEnvironment(devEndpoint, devInfo, target);
-
-                return devEn;
+                // Hardcoded values removed for security.
+                // Please use constructor directly with values from environment variables.
+                throw new IllegalStateException(
+                        "Hardcoded environment values removed. Please use CustomerEnvironment constructor with values from application.properties.");
 
             default:
                 throw new IllegalArgumentException("MoMo doesnt provide other environment: dev and prod");

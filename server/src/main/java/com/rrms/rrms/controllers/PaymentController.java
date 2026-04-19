@@ -20,6 +20,8 @@ import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
 import com.rrms.rrms.configs.CustomerEnvironment;
+import com.rrms.rrms.configs.MoMoEndpoint;
+import com.rrms.rrms.configs.PartnerInfo;
 import com.rrms.rrms.configs.VNPayConfig;
 import com.rrms.rrms.dto.PaymentRestDTO;
 import com.rrms.rrms.dto.request.StripeRequest;
@@ -45,10 +47,22 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/payment")
 public class PaymentController {
     @Value("${stripe.api.publicKey}")
-    private String publicKey;
+    String publicKey;
 
     @Value("${vnpay.api.secretKey}")
-    public String secretKey;
+    String secretKey;
+
+    @Value("${momo.partnerCode}")
+    String momoPartnerCode;
+
+    @Value("${momo.accessKey}")
+    String momoAccessKey;
+
+    @Value("${momo.secretKey}")
+    String momoSecretKey;
+
+    @Value("${momo.endpoint}")
+    String momoEndpoint;
 
     IPayment paymentService;
 
@@ -229,7 +243,10 @@ public class PaymentController {
         String notifyURL = "http://google.com.vn";
 
         // Chọn môi trường và thanh toán bằng momo
-        CustomerEnvironment environment = CustomerEnvironment.selectEnv("dev");
+        MoMoEndpoint momoEndpointConfig = new MoMoEndpoint(momoEndpoint, "/create");
+        PartnerInfo momoPartnerInfo = new PartnerInfo(momoPartnerCode, momoAccessKey, momoSecretKey);
+        CustomerEnvironment environment =
+                new CustomerEnvironment(momoEndpointConfig, momoPartnerInfo, CustomerEnvironment.EnvTarget.DEV);
         PaymentResponse captureWalletMoMoResponse = CreateOrderMoMo.process(
                 environment,
                 orderId,
