@@ -19,7 +19,10 @@ import com.rrms.rrms.repositories.MotelRepository;
 import com.rrms.rrms.repositories.RoomDeviceRepository;
 import com.rrms.rrms.services.IMotelDeviceService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class MotelDeviceService implements IMotelDeviceService {
     @Autowired
     private MotelDeviceRepository motelDeviceRepository;
@@ -47,8 +50,7 @@ public class MotelDeviceService implements IMotelDeviceService {
                 .findById(motelDeviceRequest.getMotel().getMotelId())
                 .orElse(null);
         if (find != null) {
-            // Logging thông tin để kiểm tra
-            System.out.println("Found motel: " + find.getMotelId());
+            log.debug("Insert motel device for motelId={}", find.getMotelId());
 
             MotelDevice motelDevice = new MotelDevice();
             motelDevice.setMotel(find);
@@ -61,36 +63,35 @@ public class MotelDeviceService implements IMotelDeviceService {
             motelDevice.setTotalNull(motelDeviceRequest.getTotalQuantity());
             motelDevice.setSupplier(motelDeviceRequest.getSupplier());
 
-            // Logging thông tin cho từng thuộc tính
-            System.out.println("Setting device name: " + motelDeviceRequest.getDeviceName());
-            System.out.println("Setting value: " + motelDeviceRequest.getValue());
+            log.debug(
+                    "Motel device payload deviceName={}, value={}, unit={}",
+                    motelDeviceRequest.getDeviceName(),
+                    motelDeviceRequest.getValue(),
+                    motelDeviceRequest.getUnit());
 
             switch (motelDeviceRequest.getUnit()) {
                 case "cai" -> {
                     motelDevice.setUnit(Unit.CAI);
-                    System.out.println("Setting unit: CAI");
                 }
                 case "chiec" -> {
                     motelDevice.setUnit(Unit.CHIEC);
-                    System.out.println("Setting unit: CHIEC");
                 }
                 case "bo" -> {
                     motelDevice.setUnit(Unit.BO);
-                    System.out.println("Setting unit: BO");
                 }
                 case "cap" -> {
                     motelDevice.setUnit(Unit.CAP);
-                    System.out.println("Setting unit: CAP");
                 }
                 default -> {
                     motelDevice.setUnit(Unit.CAI);
-                    System.out.println("Setting unit: default (CAI)");
                 }
             }
 
-            // Lưu đối tượng và kiểm tra kết quả
             MotelDevice savedMotelDevice = motelDeviceRepository.save(motelDevice);
-            System.out.println("Saved MotelDevice: " + savedMotelDevice.getDeviceName());
+            log.info(
+                    "Inserted motel device motelDeviceId={}, deviceName={}",
+                    savedMotelDevice.getMotel_device_id(),
+                    savedMotelDevice.getDeviceName());
 
             return mapper.motelDeviceToMotelDeviceResponse(savedMotelDevice);
         }

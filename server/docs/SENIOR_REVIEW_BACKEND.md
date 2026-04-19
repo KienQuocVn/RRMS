@@ -2,29 +2,65 @@
 
 > **Người đánh giá**: Senior Backend Review
 > **Ngày đánh giá**: 2026-04-19
-> **Phiên bản đánh giá**: 2.0.0
+> **Phiên bản đánh giá**: 2.1.0
 > **Phạm vi**: Toàn bộ backend `server/` gồm `src/main`, `src/test`, `resources`, migration SQL và build config
 > **Stack**: Spring Boot 3.3.3 + Java 17 + MySQL + Redis + Elasticsearch
-> **Cơ sở đánh giá**: đọc code hiện trạng, rà soát cấu trúc package/file, và chạy `./mvnw.cmd test`
+> **Cơ sở đánh giá**: đọc code hiện trạng, rà soát cấu trúc package/file, `pom.xml`, Flyway `V1`–`V4`, và chạy **`.\mvnw.cmd test`** (Maven CLI có thể không có trên PATH môi trường build)
+
+---
+
+## 🛠️ Những cải thiện đã thực hiện (trong session này)
+
+Tập trung theo thứ tự **dễ → khó** (testing làm cuối), ưu tiên thay đổi **ít rủi ro** nhưng nâng chất lượng ngay.
+
+### 1) Dọn debug output, chuẩn hóa logging (đã làm)
+
+- Loại bỏ `System.out.println(...)` và `printStackTrace()` khỏi các điểm nóng:
+  - `TenantController` (log `debug` theo `roomId`)
+  - `AuthenController` (không log object request; chỉ log `gmail` ở mức `debug` để tránh PII)
+  - `AccountController` (log lỗi `searchAccounts` thay vì `printStackTrace`)
+  - `ReserveAPlaceService` (log `debug` trạng thái mapping)
+  - `MailService` (log `error` khi gửi mail fail, kèm `to/subject`)
+  - `MotelDeviceService` (thêm `@Slf4j`, log `debug/info`, bỏ toàn bộ `System.out`)
+- Build sanity-check: **`.\\mvnw.cmd -DskipTests package` đã PASS** sau khi cập nhật log cho `MotelDevice` (field id là `motel_device_id`).
+
+Trạng thái sau cải thiện: còn lại chỉ có các `System.out` đã comment trong `RedisConfig` và `CreateOrderMoMo` (không ảnh hưởng runtime).
+
+### 2) Error handling/validation chuẩn hóa (đang làm)
+
+- Mục tiêu: mở rộng `GlobalExceptionHandler` để cover validation, parse error, missing param… nhằm giảm `try/catch` thủ công trong controller/service và chuẩn hóa response về `ApiResponse`.
+
+---
+
+## 📂 Snapshot cấu trúc (hiện trạng rà soát)
+
+| Khối | Quy mô / ghi chú ngắn |
+|------|------------------------|
+| **Compile main** | ~**384** file Java dưới `com.rrms.rrms` |
+| **Controller** | **40** class REST (domain tách file rõ) |
+| **Service** | **~82** file (interface + `servicesImp/`) |
+| **Test** | **33** file `*Test.java`; **119** test method (Surefire) |
+| **Flyway** | `V1` baseline, `V2` schema restructure, `V3` transactions↔invoices, **`V4` brokers** |
+| **Cấu hình** | `application.properties` + profile `dev` / import optional `.env`; test có `application-test.properties` (H2, Flyway tắt) |
 
 ---
 
 ## 📊 TỔNG QUAN ĐÁNH GIÁ
 
-| Tiêu chí           | Điểm (1-10) | Ghi chú                                                                 |
-| ------------------ | ----------- | ----------------------------------------------------------------------- |
-| Kiến trúc tổng thể | 6/10        | Layered architecture rõ hơn trước, có DTO/Mapper/Repository/Flyway      |
-| Bảo mật            | 4/10        | OTP + rate limit đã tốt hơn, nhưng vẫn còn lộ secrets và payment flow yếu |
-| Code Quality       | 5/10        | Data layer sạch hơn, nhưng vẫn còn class lớn, debug code, naming rối    |
-| Error Handling     | 4/10        | Có `AppException` + `GlobalExceptionHandler`, nhưng coverage còn mỏng   |
-| Testing            | 4/10        | Có 33 file test, nhưng `mvn test` đang fail 35 lỗi / 119 tests          |
-| Performance        | 5/10        | Đã bỏ EAGER phổ biến và thêm index, nhưng N+1 vẫn còn ở các luồng chính |
-| Scalability        | 5/10        | Có Redis/Elasticsearch/rate limit, nhưng mức tận dụng vẫn còn cục bộ    |
-| Documentation      | 3/10        | Có springdoc dependency, nhưng tài liệu backend vẫn rất mỏng            |
-| Database Design    | 7/10        | Cải thiện rõ rệt: Flyway, audit fields, schema tách bảng hợp lý hơn     |
-| API Design         | 4/10        | Một phần đã dùng `ApiResponse`, nhưng response và naming vẫn thiếu chuẩn |
+| Tiêu chí           | Điểm (1-10) | Ghi chú |
+| ------------------ | ----------- | ------- |
+| Kiến trúc tổng thể | **6/10**    | Layered rõ: Controller → Service → Repository; DTO/MapStruct; Flyway + `ddl-auto=validate` (mặc định). Vẫn còn controller/service quá dày, tên legacy (`TemporaryR_contract`, `SupportControlller`, `INameMotelServiceService`). |
+| Bảo mật            | **5/10**    | **Tiến bộ:** secret tách biến môi trường trong `application.properties`, `application-dev.properties` gọn; `CustomerEnvironment.selectEnv` không còn hardcode MoMo. **Vẫn yếu:** callback VNPay không verify chữ ký; MoMo `notifyURL` giả / `localhost`; default `DB_PASSWORD:12345`; CSRF tắt toàn cục; rủi ro lộ qua file `.env` nếu commit nhầm. |
+| Code Quality       | **5/10**    | Entity/DTO/Mapper ổn định hơn; Spotless trên codebase. **Đã dọn** `System.out.println` / `printStackTrace` ở các điểm nóng runtime (Tenant/Authen/Account, Mail/ReserveAPlace/MotelDevice); MapStruct cảnh báo unmapped nhiều; `OpenAPIConfig` vẫn comment toàn bộ. |
+| Error Handling     | **4/10**    | `AppException` + `GlobalExceptionHandler` chỉ xử lý `AppException` và `AccessDeniedException` — chưa có validation binding, `EntityNotFound`, payment/parse; nhiều nơi vẫn `catch (Exception)` thủ công. |
+| Testing            | **4/10**    | Đã có `src/test/resources/application-test.properties` (H2, JWT test). **`.\mvnw.cmd test`: 119 tests, 0 failure, 37 errors** — build đỏ; một phần lỗi do refactor bảo mật (vd. `CustomerEnvironmentTest` gọi `selectEnv` cũ), phần khác do `@WebMvcTest`/Redis/context thiếu mock bean. |
+| Performance        | **5/10**    | LAZY + index đã giúp; `spring.jpa.show-sql=true` mặc định không hợp prod. Luồng invoice/report vẫn dễ N+1 nếu không fetch có chủ đích. |
+| Scalability        | **5/10**    | Redis (OTP, rate limit), ES trong stack; cache chỉ điểm rời (`RolesController`). Chưa có **Actuator** health/readiness; chưa có job/async/outbox rõ ràng. |
+| Documentation      | **3/10**    | springdoc trên dependency + `@Operation` rải rác; `server/docs/` chủ yếu review này; thiếu README vận hành backend. |
+| Database Design    | **7/10**    | Flyway versioned, audit `BaseEntity`, bảng phụ (occupants, handovers, meter readings, brokers). Hạn chế: business key `Account.username`, naming lẫn legacy/typo, constraint nghiệp vụ chưa đầy đủ. |
+| API Design         | **4/10**    | Một phần `ApiResponse<T>`; vẫn lẫn `ResponseEntity<?>`, `Map`, entity thô; route chưa RESTful thống nhất; thiếu pagination/versioning cho nhiều list lớn. |
 
-**Điểm trung bình: 4.7/10** - Backend đã tiến bộ rõ ở tầng dữ liệu, nhưng vẫn chưa đạt mức production-ready.
+**Điểm trung bình: 4.8/10** — Tầng dữ liệu và hygiene cấu hình (env, seed theo profile) đã tốt hơn một bậc; **payment callback + test suite xanh + API/error chuẩn hóa** vẫn là các điểm chưa đạt mức production-ready.
 
 ---
 
@@ -32,7 +68,7 @@
 
 ### 1. Data layer đã trưởng thành hơn đáng kể
 
-- Đã có Flyway migration với `V1__baseline.sql`, `V2__sync_restructured_schema.sql`, `V3__link_transactions_to_invoices.sql`
+- Đã có Flyway migration với `V1__baseline.sql`, `V2__sync_restructured_schema.sql`, `V3__link_transactions_to_invoices.sql`, `V4__create_brokers_table.sql`
 - `spring.jpa.hibernate.ddl-auto=validate` là bước tiến đúng hướng so với kiểu chạy phụ thuộc ORM tự sửa schema
 - Có `BaseEntity` + JPA auditing cho `created_at` và `updated_at`
 - Nhiều entity chính đã chuyển sang `@Getter/@Setter` thay vì `@Data`
@@ -51,34 +87,27 @@
 - OTP đã chuyển sang Redis key theo user/email và có TTL 5 phút
 - Đã có `@RateLimited` cho login/register/forgot-password
 
-Kết luận ngắn: phần database và auth flow hiện tại tốt hơn bản review cũ một khoảng đáng kể. Đây là lý do điểm `Database Design`, `Performance`, `Scalability` và `Testing` không còn ở mức rất thấp như trước.
+Kết luận ngắn: phần database, auth flow (OTP Redis + rate limit) và hygiene cấu hình (env, seed `@Profile("dev")`) tốt hơn bản review cũ một khoảng đáng kể. Điểm `Database Design` và `Bảo mật` được kéo nhẹ lên so với 2.0.0; `Testing` vẫn giữ mức 4 vì **số error Surefire tăng nhẹ (37)** do refactor và slice test chưa theo kịp.
 
 ---
 
 ## 🚨 Các vấn đề nghiêm trọng còn tồn tại
 
-### 1. Secrets vẫn đang lộ trong codebase
+### 1. Secrets và cấu hình nhạy cảm — đã giảm lộ trực tiếp, rủi ro còn ở vận hành
 
-**Mức độ: CRITICAL**
+**Mức độ: HIGH** (trước đây review 2.0.0 xếp CRITICAL khi secret nằm thẳng trong file)
 
-Các giá trị thật vẫn xuất hiện trong:
+**Hiện trạng tốt hơn:**
 
-- `server/application-dev.properties`
-- `server/src/main/java/com/rrms/rrms/configs/CustomerEnvironment.java`
-- `server/src/main/resources/application.properties` vẫn còn một số config nhạy cảm/public key hardcoded
+- `application.properties` dùng `${...}` cho JWT, mail, PayPal, Stripe, MoMo, VNPay, captcha, Redis, v.v.; có `spring.config.import` optional `.env`.
+- `application-dev.properties` chỉ còn ghi chú profile + `ddl-auto=update` (không còn chuỗi secret trong file này).
+- `CustomerEnvironment.selectEnv(...)` không còn hardcode partner key; ném `IllegalStateException` nếu gọi nhánh cũ — **đúng hướng**, nhưng cần cập nhật test gọi constructor thay vì `selectEnv`.
 
-Những secret hiện còn lộ gồm:
+**Rủi ro còn lại:**
 
-- Redis password
-- JWT signer
-- Gmail app password
-- PayPal secret
-- Stripe secret key
-- MoMo secret
-- VNPay secret
-- Cloudflare captcha secret
-
-Điểm cộng là `application.properties` đã dùng placeholder env cho nhiều trường, nhưng việc giữ secret thật trong repo vẫn khiến điểm bảo mật chưa thể lên cao.
+- Default fallback ví dụ `DB_PASSWORD:12345` nếu quên set env trên môi trường thật.
+- File `.env` / `server/.env` nếu commit nhầm vẫn tương đương lộ secret.
+- Payment và callback vẫn chưa đủ chặt (mục 2 dưới đây).
 
 ### 2. Payment flow vẫn chưa đủ an toàn cho production
 
@@ -97,30 +126,25 @@ Các dấu hiệu chính:
 
 **Mức độ: HIGH**
 
-Kết quả chạy thực tế:
+Kết quả chạy thực tế (`.\mvnw.cmd test`):
 
-- `mvn test`: **119 tests**
-- **35 errors**
-- build fail
+- **119 tests**, **0 failures**, **37 errors** → build fail
 
 Các nguyên nhân nổi bật:
 
-- Thiếu `src/test/resources/test.properties`
-- Nhiều test load full Spring context nhưng cấu hình test chưa đủ
-- Một số test bị lỗi thật, ví dụ `MotelDeviceServiceTest` gặp `NullPointerException`
-- Nhiều test class tồn tại nhưng nội dung test bị comment gần như toàn bộ, ví dụ `AuthenControllerTest`, `InvoiceServiceTest`
+- Đã có `application-test.properties` (H2, JWT/captcha/PayPal/… giả) — **không còn thiếu file test config như giai đoạn cũ**.
+- `CustomerEnvironmentTest` vẫn expect hành vi `selectEnv(DEV)` cũ → fail sau khi remove hardcode (cần sửa test theo constructor/env).
+- `RedisConfigTest` và nhiều `@WebMvcTest` thiếu bean (`RedisTemplate`, security filter, v.v.) → lỗi khởi tạo context.
+- Một số service test còn lỗi runtime (vd. `MotelDeviceServiceTest`).
+- Một số test class vẫn gần như rỗng hoặc comment nhiều (`AuthenControllerTest`, `InvoiceServiceTest`, …).
 
-### 4. Sample data bootstrap đang nằm trong runtime path chính
+### 4. Sample data bootstrap — đã có guard profile
 
-**Mức độ: HIGH**
+**Mức độ: MEDIUM** (đã xử lý phần lớn rủi ro “chạy seed mọi profile”)
 
-`server/src/main/java/com/rrms/rrms/database/DB.java` là một `@Configuration` chứa `CommandLineRunner` seed dữ liệu lớn, không thấy guard bằng profile riêng như `dev` hay `local`.
+`DB.java` vẫn là `@Configuration` + `CommandLineRunner` seed lớn, nhưng đã có **`@Profile("dev")`** — chỉ chạy khi bật profile dev, phù hợp local/demo.
 
-Rủi ro:
-
-- Làm bẩn môi trường ngoài ý muốn
-- Khó kiểm soát dữ liệu khởi tạo
-- Tăng độ phức tạp khi chạy test/staging/prod
+Việc cần làm thêm (không chặn như trước): tách module seed hoặc bật bằng property `app.seed.enabled` nếu muốn kiểm soát tinh hơn giữa các máy dev.
 
 ---
 
@@ -130,31 +154,32 @@ Rủi ro:
 
 Điểm tốt:
 
-- Có tách lớp controller/service/repository/dto/mapper tương đối rõ
+- Có tách lớp controller/service/repository/dto/mapper tương đối rõ (~40 controller, ~80+ file service layer)
 - Data layer có hướng đi đúng hơn nhờ Flyway + auditing + schema evolution
 - Có aspect riêng cho rate limiting
+- Seed mẫu `DB` giới hạn `@Profile("dev")`, giảm rủi ro chạy nhầm trên profile khác
 
 Điểm trừ:
 
-- Nhiều class quá lớn: `AuthenController`, `AccountService`, `InvoiceService`, `DB`
+- Nhiều class quá lớn: `AuthenController`, `AccountService`, `InvoiceService`, `DB` (dù seed đã an toàn hơn về profile)
 - Business logic vẫn còn nằm ở controller
 - Vẫn còn nhiều “legacy slice” và naming khó bảo trì như `TemporaryR_contract`, `SupportControlller`, `INameMotelServiceService`
 
-### Bảo mật - 4/10
+### Bảo mật - 5/10
 
 Điểm tốt:
 
 - OTP qua Redis là cải tiến đáng ghi nhận
 - Có rate limit cho auth endpoints
 - `PUBLIC_ENDPOINTS` không còn mở quá rộng kiểu `/api-accounts/**`
+- Cấu hình nhạy cảm chuyển sang biến môi trường / `.env`; `CustomerEnvironment` không còn hardcode MoMo trong `selectEnv`
 
 Điểm trừ:
 
-- Secret thật còn trong repo
+- Rủi ro nếu `.env` chứa secret bị đưa vào git; default password trong placeholder
 - `csrf().disable()` toàn cục
 - Input validation gần như chưa được triển khai hệ thống
-- Payment callback verification còn yếu
-- `CustomerEnvironment` vẫn hardcode thông tin MoMo
+- Payment callback verification còn yếu (VNPay chỉ đọc `vnp_ResponseCode`)
 
 ### Code Quality - 5/10
 
@@ -166,7 +191,7 @@ Rủi ro:
 
 Điểm trừ:
 
-- Vẫn còn `System.out.println()` và `printStackTrace()`
+- Đã dọn `System.out.println()` và `printStackTrace()` ở các điểm nóng runtime (Tenant/Authen/Account, Mail/ReserveAPlace/MotelDevice). Còn lại chủ yếu là dòng **đã comment** trong config/utility.
 - `OpenAPIConfig.java` đang bị comment toàn bộ
 - Có nhiều bug “nhỏ nhưng thật”:
   - `SearchController` nhận `DESC` nhưng vẫn gọi hàm sort tăng dần
@@ -192,12 +217,12 @@ Rủi ro:
 
 - Số lượng test file đã tăng đáng kể so với review cũ
 - Có test cho service, controller và config
-- Có đưa H2 vào dependency test
+- Có H2 + `application-test.properties` (Flyway tắt trong test, JWT và secret giả)
 
 Điểm trừ:
 
-- Build test hiện không xanh
-- Test resources/config thiếu
+- Build test hiện không xanh (**37 errors / 119 tests**)
+- Slice test chưa đủ mock cho Redis/security
 - Có khá nhiều test “tồn tại trên danh nghĩa” nhưng bị comment
 - Chưa thấy chiến lược integration test/database test rõ ràng
 
@@ -250,7 +275,7 @@ Rủi ro:
 
 Điểm tốt:
 
-- Có migration versioned
+- Có migration versioned (tới `V4` brokers)
 - Bổ sung bảng trung gian/phụ trợ đúng hướng domain hơn
 - Nhiều bảng có index hợp lý
 - Sử dụng UUID cho phần lớn entity mới/chính
@@ -289,9 +314,9 @@ So với lần review trước, backend này **đã cải thiện thật** ở p
 
 Tuy nhiên, codebase hiện vẫn đang ở trạng thái **“đủ để phát triển tiếp và demo nội bộ, nhưng chưa đủ an toàn để tin cậy như production backend”**. Ba điểm đang kéo chất lượng chung xuống mạnh nhất là:
 
-1. **Security hygiene chưa đạt** vì secrets thật vẫn còn trong repo và payment callback chưa đủ chặt.
-2. **Testing chưa đáng tin** vì test suite đỏ ngay khi chạy thực tế.
-3. **API/controller quality còn phân mảnh** vì response contract, naming, validation và error handling chưa được chuẩn hóa.
+1. **Payment và webhook** chưa verify đủ (VNPay/MoMo), URL vẫn kiểu dev — rủi ro gian lận và sai mapping giao dịch.
+2. **Testing chưa đáng tin** — suite đỏ (**37 errors / 119**), gồm cả hậu quả refactor config và thiếu mock slice test.
+3. **API/controller quality còn phân mảnh** — response contract, naming, validation và global error handling chưa thống nhất.
 
 ---
 
@@ -299,13 +324,13 @@ Tuy nhiên, codebase hiện vẫn đang ở trạng thái **“đủ để phát
 
 ### Priority 1 - Bắt buộc trước khi coi là production candidate
 
-1. [x] Xóa toàn bộ secret thật khỏi repo, rotate toàn bộ credential đang lộ
-2. [x] Tách `DB.java` sample seed sang profile `dev` hoặc module seed riêng
-3. [/] Sửa test infrastructure:
-   - [x] thêm `src/test/resources/application-test.properties` (sử dụng H2)
-   - [ ] tách test unit và test context
-   - [/] đưa build test về trạng thái xanh (đang rà soát)
-4. [ ] Hoàn thiện payment callback verification cho VNPay/MoMo/PayPal (Đang rà soát logic chữ ký)
+1. [/] **Secret & vận hành**: đã chuyển sang env trong `application.properties`; cần đảm bảo không commit `.env`, bỏ default mật khẩu yếu trên môi trường thật, rotate credential từng lộ (nếu có trong lịch sử git).
+2. [x] **`DB.java`**: đã `@Profile("dev")` — seed không chạy trên profile mặc định.
+3. [/] **Test infrastructure**:
+   - [x] `src/test/resources/application-test.properties` (H2, secret giả)
+   - [ ] Tách rõ unit vs slice (`@WebMvcTest` + `@ImportMock`) vs integration; bổ sung `@MockBean` Redis/security nơi cần
+   - [ ] Đưa `.\mvnw.cmd test` về **0 errors** (hiện **37 errors / 119 tests**); sửa `CustomerEnvironmentTest` theo API mới
+4. [ ] **Payment**: verify chữ ký / IPN VNPay & MoMo, URL return/notify theo env, bỏ `notifyURL` placeholder
 
 ### Priority 2 - Nâng chất lượng lõi
 
@@ -325,4 +350,4 @@ Tuy nhiên, codebase hiện vẫn đang ở trạng thái **“đủ để phát
 
 ## ✅ Chốt lại
 
-Nếu chỉ xét riêng phần database, dự án đã đi từ mức “cần sửa nền móng” lên mức “có nền tảng tương đối tốt để phát triển tiếp”. Nhưng nếu xét toàn bộ backend theo chuẩn senior engineer cho production, hệ thống hiện tại vẫn mới ở **mức trung bình thấp** do security hygiene, testing reliability và API consistency chưa theo kịp phần data layer.
+Nếu chỉ xét riêng phần database, dự án đã đi từ mức “cần sửa nền móng” lên mức “có nền tảng tương đối tốt để phát triển tiếp”. Nếu xét toàn bộ backend theo chuẩn senior cho production, hệ thống hiện tại ở **~4.8/10** — **trung bình thấp đến trung bình**: tầng dữ liệu và cách cấu hình secret đã bắt kịp thực hành tốt hơn, nhưng **payment hardening**, **test xanh** và **API/error thống nhất** vẫn là các lỗ hổng lớn so với môi trường production.

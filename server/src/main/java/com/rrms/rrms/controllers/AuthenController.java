@@ -292,7 +292,10 @@ public class AuthenController {
     @PostMapping("/authenticationRegister")
     @RateLimited(key = "auth_register", maxAttempts = 3, windowSeconds = 300)
     public ApiResponse<Boolean> authenticationRegister(@RequestBody AuthenticationRegister authenticationRegister) {
-        System.out.println(authenticationRegister);
+        // Avoid logging full request (may include PII); log only stable identifier.
+        if (authenticationRegister != null) {
+            log.debug("Authentication register OTP requested for gmail={}", authenticationRegister.getGmail());
+        }
         if (authenticationRegister == null) {
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.BAD_REQUEST.value())

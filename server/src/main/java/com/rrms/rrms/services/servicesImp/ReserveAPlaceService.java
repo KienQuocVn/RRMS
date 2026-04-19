@@ -127,7 +127,10 @@ public class ReserveAPlaceService implements IReserveAPlaceService {
                 .name(reserveAPlace.getRoom().getName()) // Ví dụ trường roomName
                 .price(reserveAPlace.getRoom().getPrice()) // Ví dụ trường roomPrice
                 .build();
-        System.out.println("Status po day" + " " + reserveAPlace.getStatus());
+        log.debug(
+                "Map reserve_a_place reserveAPlaceId={} status={}",
+                reserveAPlace.getReserveaplaceId(),
+                reserveAPlace.getStatus());
         return ReserveAPlaceResponse.builder()
                 .reserveAPlaceId(reserveAPlace.getReserveaplaceId())
                 .createDate(reserveAPlace.getCreatedate())

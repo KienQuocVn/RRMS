@@ -269,7 +269,7 @@ public class AccountController {
             response.put("status", false);
             response.put("message", "Search operation failed");
             response.put("data", null);
-            ex.printStackTrace();
+            log.error("Search accounts failed search={}", search, ex);
         }
         return ResponseEntity.ok(response);
     }

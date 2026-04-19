@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.services.IMailService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class MailService implements IMailService {
 
     private final JavaMailSender sender;
@@ -28,7 +31,7 @@ public class MailService implements IMailService {
             sender.send(mimeMessage);
             return true;
         } catch (MessagingException e) {
-            e.printStackTrace();
+            log.error("Failed to send email to={} subject={}", to, subject, e);
             return false;
         }
     }
@@ -60,7 +63,7 @@ public class MailService implements IMailService {
         try {
             return sendMail(to, subject, content);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Unexpected error while building/sending mail to={} subject={}", to, subject, e);
             return false;
         }
     }
