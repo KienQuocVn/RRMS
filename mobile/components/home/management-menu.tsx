@@ -6,7 +6,22 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+
+/** Map menu id → route path */
+const MENU_ROUTES: Record<string, string> = {
+  rooms: '/rooms-list',
+  invoices: '/invoices-list',
+  services: '/services-settings',
+  contracts: '/contracts-list',
+  tenants: '/tenants-list',
+  assets: '/assets-list',
+  vehicles: '/vehicles-list',
+  'tenant-app': '/tenant-app-settings',
+  'invoice-settings': '/invoice-settings',
+  'motel-settings': '/motel-settings',
+};
 
 interface MenuGridItem {
   id: string;
@@ -34,6 +49,17 @@ interface ManagementMenuProps {
 }
 
 export default function ManagementMenu({ onItemPress }: ManagementMenuProps) {
+  const router = useRouter();
+
+  const handleItemPress = (id: string) => {
+    const route = MENU_ROUTES[id];
+    if (route) {
+      router.push(route as any);
+    } else {
+      onItemPress?.(id);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Menu quản lý nhà trọ</Text>
@@ -46,8 +72,10 @@ export default function ManagementMenu({ onItemPress }: ManagementMenuProps) {
           <TouchableOpacity
             key={item.id}
             style={styles.gridItem}
-            onPress={() => onItemPress?.(item.id)}
+            onPress={() => handleItemPress(item.id)}
             activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel={item.label.replace('\n', ' ')}
           >
             <View style={[styles.iconWrap, { backgroundColor: `${item.iconColor}15` }]}>
               <Ionicons name={item.icon} size={28} color={item.iconColor} />

@@ -14,30 +14,34 @@ interface MoreMenuItem {
   rightText?: string;
   rightSubText?: string;
   hideChevron?: boolean;
+  route?: string;
 }
 
 const MORE_ITEMS: MoreMenuItem[] = [
-  { id: 'company', icon: 'globe-outline', label: 'Công ty, nhóm - Q.lý thành viên', subLabel: 'Thêm tài khoản cùng sử dụng phần mềm' },
+  { id: 'company', icon: 'globe-outline', label: 'Công ty, nhóm - Q.lý thành viên', subLabel: 'Thêm tài khoản cùng sử dụng phần mềm', route: '/company-management' },
   { id: 'rrms-plus', icon: 'gift-outline', label: 'RRMS Plus+', badge: { text: 'PRO', bg: '#E67E22' } },
-  { id: 'brand', icon: 'bookmark-outline', label: 'Cài đặt thương hiệu tòa nhà', subLabel: 'Cài đặt logo thương hiệu, website...' },
-  { id: 'owner-info', icon: 'person-outline', label: 'Thông tin đại diện chủ tòa nhà', subLabel: 'Thông tin dùng làm mẫu hợp đồng, tạm trú cho khách thuê.' },
-  { id: 'digital-signature', icon: 'pencil-outline', label: 'Cài đặt chữ ký số', subLabel: 'Dùng để thiết lập chữ ký hợp đồng, tạm trú cho khách thuê.', badge: { text: 'Mới', bg: '#27AE60' } },
-  { id: 'change-password', icon: 'key-outline', label: 'Đổi mật khẩu' },
-  { id: 'link-phone', icon: 'person-add-outline', label: 'Liên kết số điện thoại', subLabel: 'Bạn đang đăng nhập bằng normal', badge: { text: 'Gấp', bg: '#E74C3C' } },
-  { id: 'permissions', icon: 'shield-outline', label: 'Cài đặt quyền phần mềm', subLabel: 'Cung cấp quyền giúp phần mềm hoạt động' },
-  { id: 'notifications', icon: 'settings-outline', label: 'Cài đặt thông báo' },
-  { id: 'help-center', icon: 'chatbubble-outline', label: 'Trung tâm trợ giúp' },
+  { id: 'brand', icon: 'bookmark-outline', label: 'Cài đặt thương hiệu tòa nhà', subLabel: 'Cài đặt logo thương hiệu, website...', route: '/brand-settings' },
+  { id: 'owner-info', icon: 'person-outline', label: 'Thông tin đại diện chủ tòa nhà', subLabel: 'Thông tin dùng làm mẫu hợp đồng, tạm trú cho khách thuê.', route: '/representative-info' },
+  { id: 'digital-signature', icon: 'pencil-outline', label: 'Cài đặt chữ ký số', subLabel: 'Dùng để thiết lập chữ ký hợp đồng, tạm trú cho khách thuê.', badge: { text: 'Mới', bg: '#27AE60' }, route: '/digital-signature' },
+  { id: 'change-password', icon: 'key-outline', label: 'Đổi mật khẩu', route: '/change-password' },
+  { id: 'link-phone', icon: 'person-add-outline', label: 'Liên kết số điện thoại', subLabel: 'Bạn đang đăng nhập bằng normal', badge: { text: 'Gấp', bg: '#E74C3C' }, route: '/link-phone' },
+  { id: 'permissions', icon: 'shield-outline', label: 'Cài đặt quyền phần mềm', subLabel: 'Cung cấp quyền giúp phần mềm hoạt động', route: '/permissions' },
+  { id: 'notifications', icon: 'settings-outline', label: 'Cài đặt thông báo', route: '/notification-settings' },
+  { id: 'help-center', icon: 'chatbubble-outline', label: 'Trung tâm trợ giúp', route: '/help-center' },
   { id: 'share-app', icon: 'share-social-outline', label: 'Chia sẻ APP khách thuê', subLabel: 'Khách kết nối với bạn, nhận hóa đơn tự động & nhiều tiện ích khác' },
   { id: 'rate-app', icon: 'cube-outline', label: 'Đánh giá phần mềm', subLabel: 'Một đánh giá tốt giúp RRMS thêm động lực hoàn thiện', stars: true },
-  { id: 'app-info', icon: 'information-circle-outline', label: 'Thông tin phần mềm' },
-  { id: 'privacy', icon: 'shield-checkmark-outline', label: 'Chính sách bảo mật' },
-  { id: 'terms', icon: 'document-text-outline', label: 'Điều khoản sử dụng' },
+  { id: 'app-info', icon: 'information-circle-outline', label: 'Thông tin phần mềm', route: '/app-info' },
+  { id: 'privacy', icon: 'shield-checkmark-outline', label: 'Chính sách bảo mật', route: '/privacy-policy' },
+  { id: 'terms', icon: 'document-text-outline', label: 'Điều khoản sử dụng', route: '/terms-of-use' },
   { id: 'version', icon: 'layers-outline', label: 'Phiên bản phần mềm', rightText: 'Version: 3.0.6 / 6', rightSubText: 'production', hideChevron: true },
   { id: 'os', icon: 'phone-portrait-outline', label: 'Hệ điều hành', rightText: 'IOS 18', rightSubText: 'iPhone', hideChevron: true },
 ];
 
+import { useRouter } from 'expo-router';
+
 export default function MoreScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   return (
     <View style={[styles.container, { paddingTop: Platform.OS === 'ios' ? insets.top : Spacing.xl }]}>
@@ -48,7 +52,7 @@ export default function MoreScreen() {
       >
         {/* Profile Card */}
         <View style={styles.profileCard}>
-          <View style={styles.profileTop}>
+          <TouchableOpacity style={styles.profileTop} activeOpacity={0.7} onPress={() => router.push('/profile')}>
             <Image
               source={{ uri: 'https://avatar.iran.liara.run/public/boy' }}
               style={styles.avatar}
@@ -64,7 +68,7 @@ export default function MoreScreen() {
             <TouchableOpacity>
               <Ionicons name="chevron-forward" size={20} color={Colors.primary} />
             </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
           <View style={styles.profileDivider} />
           <View style={styles.profileBottom}>
              <View>
@@ -85,6 +89,7 @@ export default function MoreScreen() {
               <TouchableOpacity
                 style={styles.menuItem}
                 activeOpacity={0.7}
+                onPress={() => item.route && router.push(item.route as any)}
               >
                 <View style={styles.menuIconContainer}>
                   <Ionicons name={item.icon} size={24} color={Colors.gray700} />

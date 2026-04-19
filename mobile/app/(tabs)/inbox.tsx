@@ -6,17 +6,19 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Platform, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Colors, FontSizes, FontWeights, Spacing, BorderRadius } from '@/constants/theme';
 
 export default function InboxScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'messages' | 'notifications'>('messages');
 
   return (
     <View style={[styles.container, { paddingTop: Platform.OS === 'ios' ? insets.top : 0 }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/new-chat')}>
           <Ionicons name="add" size={24} color={Colors.success} />
         </TouchableOpacity>
 
@@ -62,7 +64,7 @@ export default function InboxScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/notification-settings')}>
           <Ionicons name="settings-outline" size={22} color={Colors.textPrimary} />
         </TouchableOpacity>
       </View>
@@ -110,8 +112,39 @@ export default function InboxScreen() {
             />
           </>
         ) : (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>Chưa có thông báo nào</Text>
+          <View style={styles.notificationsContainer}>
+            <Text style={styles.dateHeader}>18/4/2026</Text>
+            
+            <NotificationItem 
+              title="💰 Nhà trọ Quoc lập hóa đơn nhanh"
+              subtitle="Kiến Quốc: lập hóa đơn nhanh"
+              time="4 phút trước"
+            />
+            <NotificationItem 
+              title="🎉 Phòng 1, Nhà trọ Quoc lập hợp đồng"
+              subtitle="Kiến Quốc: ghi nhận khách mới vào thuê"
+              time="9 phút trước"
+            />
+            <NotificationItem 
+              title="📌 Phòng 1, Nhà trọ Quoc cọc giữ chỗ"
+              subtitle="Kiến Quốc: cọc giữ chỗ với số tiền 3.000.000đ"
+              time="9 phút trước"
+            />
+            <NotificationItem 
+              title="📌 Phòng 1, Nhà trọ Quoc kết thúc hợp đồng"
+              subtitle="Kiến Quốc: kết thúc hợp đồng"
+              time="10 phút trước"
+            />
+            <NotificationItem 
+              title="📌 Phòng 1, Nhà trọ Quoc xóa 1 khách"
+              subtitle="Kiến Quốc: xóa khách thuê cho Phòng 1"
+              time="10 phút trước"
+            />
+            <NotificationItem 
+              title="💵 Phòng 1, Nhà trọ Quoc thanh toán 🎉 xong hóa đơn T.4/2026"
+              subtitle="Kiến Quốc: thanh toán xong hóa đơn T.4/2026, với số tiền: 3.000.000đ, phương thức: Tiền mặt"
+              time="10 phút trước"
+            />
           </View>
         )}
       </ScrollView>
@@ -149,6 +182,24 @@ function MessageItem({ avatarColor, icon, iconColor, name, badge, badgeColor, me
             </View>
           )}
         </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function NotificationItem({ title, subtitle, time }: any) {
+  return (
+    <TouchableOpacity style={styles.notificationItem}>
+      <View style={styles.notifAvatarContainer}>
+        <View style={styles.notifAvatar}>
+          <MaterialCommunityIcons name="storefront-outline" size={24} color="#8BC34A" />
+        </View>
+        <View style={styles.notifDot} />
+      </View>
+      <View style={styles.notifInfo}>
+        <Text style={styles.notifTitle}>{title}</Text>
+        <Text style={styles.notifSubtitle}>{subtitle}</Text>
+        <Text style={styles.notifTime}>{time}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -338,5 +389,67 @@ const styles = StyleSheet.create({
   emptyText: {
     color: Colors.textSecondary,
     fontSize: FontSizes.md,
+  },
+  notificationsContainer: {
+    padding: Spacing.base,
+    backgroundColor: '#F3F4F6',
+    minHeight: '100%',
+  },
+  dateHeader: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  notificationItem: {
+    flexDirection: 'row',
+    backgroundColor: Colors.white,
+    padding: Spacing.base,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.sm,
+  },
+  notifAvatarContainer: {
+    marginRight: Spacing.base,
+    position: 'relative',
+  },
+  notifAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notifDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: Colors.success,
+    borderWidth: 2,
+    borderColor: Colors.white,
+    position: 'absolute',
+    top: 2,
+    right: 2,
+  },
+  notifInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  notifTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+    marginBottom: 4,
+    lineHeight: 20,
+  },
+  notifSubtitle: {
+    fontSize: 13,
+    color: Colors.textPrimary,
+    marginBottom: 6,
+    lineHeight: 18,
+  },
+  notifTime: {
+    fontSize: 11,
+    color: Colors.textSecondary,
   },
 });

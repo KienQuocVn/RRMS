@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.white,
     margin: Spacing.base,
-    marginTop: -Spacing.sm,
+    marginTop: Spacing.sm,
     borderRadius: BorderRadius.xl,
     padding: Spacing.base,
     ...Shadows.md,
@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     fontWeight: FontWeights.bold,
     color: Colors.textPrimary,
+    marginTop:10,
     marginBottom: 4,
   },
   description: {

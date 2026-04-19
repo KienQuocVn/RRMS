@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Colors, FontSizes, FontWeights, Spacing, BorderRadius } from '@/constants/theme';
 
 export default function OverviewTab() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       {/* Thống kê hiện trạng */}
@@ -33,14 +35,14 @@ export default function OverviewTab() {
       </View>
 
       <View style={styles.grid}>
-        <RoomStatCard icon="cart" iconColor={Colors.error} title="Số phòng có thể cho thuê" count={0} percent={0} percentColor={Colors.error} />
-        <RoomStatCard icon="cube" iconColor={Colors.error} title="Số phòng đang trống" count={5} percent={100} percentColor={Colors.error} />
-        <RoomStatCard icon="cube-outline" iconColor={Colors.primary} title="Số phòng đang thuê" count={0} percent={0} percentColor={Colors.success} />
-        <RoomStatCard icon="warning" iconColor={Colors.warning} title="Số phòng sắp kết thúc hợp đồng" count={0} percent={0} percentColor={Colors.error} />
-        <RoomStatCard icon="clipboard-list" iconColor={Colors.warning} title="Số phòng báo kết thúc hợp đồng" count={0} percent={0} percentColor={Colors.error} iconType="material" />
-        <RoomStatCard icon="time" iconColor={Colors.textPrimary} title="Số phòng quá hạn hợp đồng" count={0} percent={0} percentColor={Colors.error} />
-        <RoomStatCard icon="logo-usd" iconColor={Colors.success} title="Số phòng đang nợ tiền" count={0} percent={0} percentColor={Colors.error} />
-        <RoomStatCard icon="anchor" iconColor="#5B7E91" title="Số phòng đang cọc giữ chỗ" count={0} percent={0} percentColor={Colors.success} iconType="material" />
+        <RoomStatCard icon="cart" iconColor={Colors.error} title="Số phòng có thể cho thuê" count={0} percent={0} percentColor={Colors.error} onPress={() => router.push({ pathname: '/room-stats', params: { type: 'available' } })} />
+        <RoomStatCard icon="cube" iconColor={Colors.error} title="Số phòng đang trống" count={5} percent={100} percentColor={Colors.error} onPress={() => router.push({ pathname: '/room-stats', params: { type: 'empty' } })} />
+        <RoomStatCard icon="cube-outline" iconColor={Colors.primary} title="Số phòng đang thuê" count={0} percent={0} percentColor={Colors.success} onPress={() => router.push({ pathname: '/room-stats', params: { type: 'renting' } })} />
+        <RoomStatCard icon="warning" iconColor={Colors.warning} title="Số phòng sắp kết thúc hợp đồng" count={0} percent={0} percentColor={Colors.error} onPress={() => router.push({ pathname: '/room-stats', params: { type: 'expiring' } })} />
+        <RoomStatCard icon="clipboard-list" iconColor={Colors.warning} title="Số phòng báo kết thúc hợp đồng" count={0} percent={0} percentColor={Colors.error} iconType="material" onPress={() => router.push({ pathname: '/room-stats', params: { type: 'reported_leaving' } })} />
+        <RoomStatCard icon="time" iconColor={Colors.textPrimary} title="Số phòng quá hạn hợp đồng" count={0} percent={0} percentColor={Colors.error} onPress={() => router.push({ pathname: '/room-stats', params: { type: 'overdue' } })} />
+        <RoomStatCard icon="logo-usd" iconColor={Colors.success} title="Số phòng đang nợ tiền" count={0} percent={0} percentColor={Colors.error} onPress={() => router.push({ pathname: '/room-stats', params: { type: 'debt' } })} />
+        <RoomStatCard icon="anchor" iconColor="#5B7E91" title="Số phòng đang cọc giữ chỗ" count={0} percent={0} percentColor={Colors.success} iconType="material" onPress={() => router.push({ pathname: '/room-stats', params: { type: 'deposited' } })} />
       </View>
 
       {/* Banner */}
@@ -69,17 +71,17 @@ export default function OverviewTab() {
       </View>
 
       <View style={styles.financeList}>
-        <FinanceCard icon="logo-usd" iconColor={Colors.error} title="Số tiền khách nợ" subtitle="Tổng tiền khách thuê đang nợ" amount="0 đ" />
-        <FinanceCard icon="logo-usd" iconColor={Colors.gray400} title="Số tiền cọc" subtitle="Tổng tiền khách thuê đặt cọc khi ở" amount="0 đ" />
-        <FinanceCard icon="logo-usd" iconColor={Colors.success} title="Số tiền khách cọc giữ chỗ" subtitle="Tổng tiền khách thuê đang cọc giữ chỗ" amount="0 đ" />
+        <FinanceCard icon="logo-usd" iconColor={Colors.error} title="Số tiền khách nợ" subtitle="Tổng tiền khách thuê đang nợ" amount="0 đ" onPress={() => router.push({ pathname: '/finance-stats', params: { type: 'debt' } })} />
+        <FinanceCard icon="logo-usd" iconColor={Colors.gray400} title="Số tiền cọc" subtitle="Tổng tiền khách thuê đặt cọc khi ở" amount="0 đ" onPress={() => router.push({ pathname: '/finance-stats', params: { type: 'deposit' } })} />
+        <FinanceCard icon="logo-usd" iconColor={Colors.success} title="Số tiền khách cọc giữ chỗ" subtitle="Tổng tiền khách thuê đang cọc giữ chỗ" amount="0 đ" onPress={() => router.push({ pathname: '/finance-stats', params: { type: 'deposit_holding' } })} />
       </View>
     </View>
   );
 }
 
-function RoomStatCard({ icon, iconColor, title, count, percent, percentColor, iconType = 'ionicon' }: any) {
+function RoomStatCard({ icon, iconColor, title, count, percent, percentColor, iconType = 'ionicon', onPress }: any) {
   return (
-    <TouchableOpacity style={styles.statCard}>
+    <TouchableOpacity style={styles.statCard} onPress={onPress}>
       <View style={styles.statTop}>
         <View style={styles.statDetail}>
           <View style={[styles.iconWrap, { backgroundColor: iconColor }]}>
@@ -101,9 +103,9 @@ function RoomStatCard({ icon, iconColor, title, count, percent, percentColor, ic
   );
 }
 
-function FinanceCard({ icon, iconColor, title, subtitle, amount }: any) {
+function FinanceCard({ icon, iconColor, title, subtitle, amount, onPress }: any) {
   return (
-    <TouchableOpacity style={styles.financeCard}>
+    <TouchableOpacity style={styles.financeCard} onPress={onPress}>
       <View style={[styles.financeIconWrap, { backgroundColor: iconColor }]}>
         <Ionicons name={icon} size={24} color={Colors.white} />
       </View>

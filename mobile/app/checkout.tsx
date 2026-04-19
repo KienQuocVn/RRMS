@@ -139,9 +139,11 @@ const styles = StyleSheet.create({
   filterTabs: {
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
+    paddingTop: 12,
     flexDirection: 'row',
     gap: Spacing.sm,
     backgroundColor: Colors.white,
+    zIndex: 1,
   },
   filterTab: {
     flexDirection: 'row',
@@ -151,6 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.full,
     position: 'relative',
     height: 36,
+    overflow: 'visible',
   },
   filterTabActive: {
     backgroundColor: '#8BC34A', // Light green
