@@ -14,8 +14,7 @@ import {
   TouchableOpacity,
   Text,
 } from 'react-native';
-import { Link, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import {
   AuthLogo,
   AuthInput,
@@ -24,23 +23,20 @@ import {
   SupportFooter,
 } from '@/components/auth';
 import { Colors, Spacing, FontSizes, FontWeights } from '@/constants/theme';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login, isLoading, error: authError } = useAuth();
 
   // ── State ──
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
 
   // ── Handlers ──
   const handleLogin = async () => {
-    setLoading(true);
-    // TODO: Gọi API đăng nhập
-    setTimeout(() => {
-      setLoading(false);
-      // router.replace('/(tabs)');
-    }, 1500);
+    if (!phone || !password) return;
+    await login({ phone, password });
   };
 
   const handleLoginZalo = () => {
@@ -88,12 +84,19 @@ export default function LoginScreen() {
           {/* Password hints */}
           <PasswordHints password={password} />
 
+          {/* Error Message */}
+          {authError && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{authError}</Text>
+            </View>
+          )}
+
           {/* Nút đăng nhập chính */}
           <AuthButton
             title="Đăng nhập tài khoản"
             variant="primary"
             onPress={handleLogin}
-            loading={loading}
+            loading={isLoading}
           />
 
           {/* Social login */}
@@ -142,6 +145,19 @@ const styles = StyleSheet.create({
   },
   form: {
     flex: 1,
+  },
+  errorContainer: {
+    backgroundColor: '#FFE5E5',
+    padding: Spacing.sm,
+    borderRadius: 8,
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: '#FFB2B2',
+  },
+  errorText: {
+    color: '#D32F2F',
+    fontSize: FontSizes.sm,
+    textAlign: 'center',
   },
   linksRow: {
     flexDirection: 'row',

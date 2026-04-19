@@ -1,41 +1,47 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
+import { authStorage } from '../storage/auth.storage';
 
-// Use standard local IP for Android emulator or localhost for iOS simulator
-// Adjust this according to your actual Java Backend IP
+// Cấu hình Base URL linh hoạt cho Android/iOS
+// IP 10.0.2.2 là địa chỉ của máy host trong Android Emulator
 const BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Interceptor for request (e.g. inject token)
+/**
+ * Request Interceptor: Tự động chèn Bearer Token vào Header
+ */
 apiClient.interceptors.request.use(
   async (config) => {
-    // const token = await AsyncStorage.getItem('userToken');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    const token = await authStorage.getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Interceptor for response (e.g. handle 401 unauthorized globally)
+/**
+ * Response Interceptor: Xử lý dữ liệu trả về và lỗi hệ thống
+ */
 apiClient.interceptors.response.use(
   (response) => {
+    // Trả về dữ liệu trực tiếp từ backend
     return response.data;
   },
-  (error) => {
-    // if (error.response?.status === 401) {
-    //   // Handle unauthorized
-    // }
+  async (error) => {
+    // Xử lý lỗi 401 Unauthorized toàn cục
+    if (error.response?.status === 401) {
+      await authStorage.clearAll();
+      // Quá trình điều hướng sẽ được store xử lý khi nhận thấy token biến mất
+    }
     return Promise.reject(error);
   }
 );
