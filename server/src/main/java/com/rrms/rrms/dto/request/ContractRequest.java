@@ -22,11 +22,13 @@ public class ContractRequest {
     private String description; // Description of the contract
     private Double debt; // Debt amount
     private Double price; // Price of the contract
+    private Double actualPrice; // Actual negotiated price
     private Double deposit; // Deposit amount
     private String collectioncycle; // Collection cycle (e.g., monthly, quarterly)
     private LocalDate createdate; // Contract creation date
     private String signcontract; // Sign contract status
     private String language; // Language of the contract
     private Integer countTenant; // Number of tenants
-    private ContractStatus status; // Status of the contract (ACTIVE, ENDED, etc.)
+    private ContractStatus status;
+    private Date reportcloseContract; // New field from model
 }

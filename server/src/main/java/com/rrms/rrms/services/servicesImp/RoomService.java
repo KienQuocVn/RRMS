@@ -252,11 +252,6 @@ public class RoomService implements IRoom {
         response.setArea(room.getArea());
         response.setPrice(room.getPrice());
         response.setDeposit(room.getDeposit());
-        response.setDebt(room.getDebt());
-        response.setCountTenant(room.getCountTenant());
-        response.setInvoiceDate(room.getInvoiceDate());
-        response.setMoveInDate(room.getMoveInDate());
-        response.setContractDuration(room.getContractduration());
         response.setStatus(room.getStatus());
         response.setFinance(room.getFinance());
         response.setDescription(room.getDescription());
@@ -317,11 +312,6 @@ public class RoomService implements IRoom {
         room.setPrioritize(roomRequest.getPrioritize());
         room.setArea(roomRequest.getArea());
         room.setDeposit(roomRequest.getDeposit());
-        room.setDebt(roomRequest.getDebt());
-        room.setCountTenant(roomRequest.getCountTenant());
-        room.setInvoiceDate(roomRequest.getInvoiceDate());
-        room.setMoveInDate(roomRequest.getMoveInDate());
-        room.setContractduration(roomRequest.getContractDuration());
         room.setStatus(roomRequest.getStatus());
         room.setFinance(roomRequest.getFinance());
         room.setDescription(roomRequest.getDescription());
@@ -336,11 +326,6 @@ public class RoomService implements IRoom {
         if (roomRequest.getPrioritize() != null) room.setPrioritize(roomRequest.getPrioritize());
         if (roomRequest.getArea() != null) room.setArea(roomRequest.getArea());
         if (roomRequest.getDeposit() != null) room.setDeposit(roomRequest.getDeposit());
-        if (roomRequest.getDebt() != null) room.setDebt(roomRequest.getDebt());
-        if (roomRequest.getCountTenant() != null) room.setCountTenant(roomRequest.getCountTenant());
-        if (roomRequest.getInvoiceDate() != null) room.setInvoiceDate(roomRequest.getInvoiceDate());
-        if (roomRequest.getMoveInDate() != null) room.setMoveInDate(roomRequest.getMoveInDate());
-        if (roomRequest.getContractDuration() != null) room.setContractduration(roomRequest.getContractDuration());
         if (roomRequest.getStatus() != null) room.setStatus(roomRequest.getStatus());
         if (roomRequest.getFinance() != null) room.setFinance(roomRequest.getFinance());
         if (roomRequest.getDescription() != null) room.setDescription(roomRequest.getDescription());

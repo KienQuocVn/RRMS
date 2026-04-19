@@ -47,6 +47,9 @@ public class ContractService implements IContractService {
     @Autowired
     private ContractTemplateRepository contractTemplateRepository;
 
+    @Autowired
+    private ContractMapper contractMapper;
+
     @Override
     public Integer getTotalActiveContractsByLandlord(Account usernameLandlord) {
         return contractRepository.countActiveContractsByLandlord(usernameLandlord);
@@ -97,7 +100,7 @@ public class ContractService implements IContractService {
                 .orElseThrow(() -> new EntityNotFoundException("ContractTemplate not found"));
 
         // Create Contract entity from the request and set related entities
-        Contract contract = ContractMapper.INSTANCE.toEntity(request);
+        Contract contract = contractMapper.toEntity(request);
         contract.setAccount(username); // Set the fetched account entity
         contract.setRoom(room); // Set the fetched Room entity
         contract.setTenant(tenant); // Set the fetched Tenant entity
@@ -107,7 +110,7 @@ public class ContractService implements IContractService {
         contract = contractRepository.save(contract);
 
         // Return the response after saving the contract
-        return ContractMapper.INSTANCE.toResponse(contract);
+        return contractMapper.toResponse(contract);
     }
 
     @Override
@@ -115,7 +118,7 @@ public class ContractService implements IContractService {
         Contract contract = contractRepository
                 .findById(contractId)
                 .orElseThrow(() -> new ResourceNotFoundException("Contract not found with id " + contractId));
-        return ContractMapper.INSTANCE.toResponse(contract);
+        return contractMapper.toResponse(contract);
     }
 
     @Override
@@ -125,11 +128,11 @@ public class ContractService implements IContractService {
                 .orElseThrow(() -> new ResourceNotFoundException("Contract not found with id " + contractId));
 
         // Cập nhật các trường của hợp đồng dựa trên request
-        Contract updatedContract = ContractMapper.INSTANCE.toEntity(request);
+        Contract updatedContract = contractMapper.toEntity(request);
         updatedContract.setContractId(existingContract.getContractId());
 
         updatedContract = contractRepository.save(updatedContract);
-        return ContractMapper.INSTANCE.toResponse(updatedContract);
+        return contractMapper.toResponse(updatedContract);
     }
 
     @Override
@@ -157,7 +160,7 @@ public class ContractService implements IContractService {
 
         return contracts.stream()
                 .map(contract -> {
-                    return ContractMapper.INSTANCE.toResponse(contract);
+                    return contractMapper.toResponse(contract);
                 })
                 .toList();
     }
@@ -228,6 +231,6 @@ public class ContractService implements IContractService {
         if (contract == null) {
             throw new ResourceNotFoundException("Contract not found for room with id " + roomId);
         }
-        return ContractMapper.INSTANCE.toResponse(contract);
+        return contractMapper.toResponse(contract);
     }
 }

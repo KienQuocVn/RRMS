@@ -27,9 +27,10 @@ public class Transaction extends BaseEntity {
     @Column(name = "amount", nullable = false, columnDefinition = "DECIMAL(10, 2)")
     private BigDecimal amount; // Số tiền thu
 
-    @ManyToOne
-    @JoinColumn(name = "payment_id")
-    private Payment payment;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "invoice_id")
+    @JsonIgnore // Tránh vòng lặp vô tận khi serialize
+    private Invoice invoice;
 
     @Column(name = "payer_name", nullable = false, length = 100)
     private String payerName; // Tên người thanh toán

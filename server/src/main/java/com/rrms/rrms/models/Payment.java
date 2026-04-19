@@ -1,12 +1,14 @@
 package com.rrms.rrms.models;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
-import jakarta.persistence.*;
-
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,8 +35,4 @@ public class Payment extends BaseEntity {
 
     @Column(name = "payment_date", nullable = false)
     private LocalDate paymentDate;
-
-    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonManagedReference(value = "Payment-Invoice") // Quản lý liên kết tới Invoice
-    private List<Invoice> invoices;
 }

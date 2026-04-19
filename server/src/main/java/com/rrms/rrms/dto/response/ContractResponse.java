@@ -28,6 +28,7 @@ public class ContractResponse {
     private String description; // Description of the contract
     private Double debt; // Debt amount
     private Double price; // Price of the contract
+    private Double actualPrice; // Actual negotiated price
     private Double deposit; // Deposit amount
     private String collectioncycle; // Collection cycle
     private LocalDate createdate; // Contract creation date

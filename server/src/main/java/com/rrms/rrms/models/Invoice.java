@@ -63,10 +63,9 @@ public class Invoice extends BaseEntity {
     @JoinColumn(name = "tenant_id")
     private Tenant tenant;
 
-    @ManyToOne
-    @JoinColumn(name = "payment_id")
-    @JsonBackReference(value = "Payment-Invoice") // Tham chiếu ngược từ Invoice về Payment
-    private Payment payment;
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "Invoice-Transaction")
+    private List<Transaction> transactions = new ArrayList<>();
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference(value = "detail-Invoice") // Quản lý liên kết tới Invoice

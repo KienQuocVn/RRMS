@@ -1,5 +1,6 @@
 package com.rrms.rrms.services.servicesImp;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -44,7 +45,7 @@ public class InvoiceService implements IInvoices {
     private RoomRepository roomRepository;
 
     @Autowired
-    private PaymentRepository paymentRepository;
+    private TransactionRepository transactionRepository;
 
     @Autowired
     private InvoiceAdditionItemRepository additionItemRepository;
@@ -213,7 +214,10 @@ public class InvoiceService implements IInvoices {
         if (room != null) {
             response.setRoomId(room.getRoomId());
             response.setRoomName(room.getName());
-            response.setRoomPrice(room.getPrice());
+            response.setRoomPrice(
+                    invoice.getContract().getActualPrice() != null
+                            ? invoice.getContract().getActualPrice()
+                            : room.getPrice());
         }
 
         double totalAddition = invoice.getAdditionItems() != null
@@ -222,7 +226,10 @@ public class InvoiceService implements IInvoices {
                         .sum()
                 : 0;
 
-        double totalInvoice = invoice.getContract().getPrice() + totalServiceAmount + totalAddition;
+        double basePrice = invoice.getContract().getActualPrice() != null
+                ? invoice.getContract().getActualPrice()
+                : invoice.getContract().getPrice();
+        double totalInvoice = basePrice + totalServiceAmount + totalAddition;
 
         response.setTotalAmount(totalInvoice);
 
@@ -275,11 +282,18 @@ public class InvoiceService implements IInvoices {
                 .collect(Collectors.toList());
         response.setAdditionItems(additionItemResponses);
 
-        // Thiết lập thông tin thanh toán
-        if (invoice.getPayment() != null) {
-            Payment payment = invoice.getPayment();
-            response.setPaymentDetails(new PaymentDetailsResponse(
-                    payment.getPaymentName(), payment.getDescription(), payment.getPaymentDate()));
+        // Thiết lập danh sách giao dịch
+        if (invoice.getTransactions() != null) {
+            response.setTransactions(invoice.getTransactions().stream()
+                    .map(t -> new TransactionResponse(
+                            t.getTransactionId(),
+                            t.getAmount(),
+                            t.getPayerName(),
+                            t.getPaymentDescription(),
+                            t.getCategory(),
+                            t.getTransactionDate(),
+                            t.isTransactionType()))
+                    .collect(Collectors.toList()));
         }
 
         return response;
@@ -433,11 +447,6 @@ public class InvoiceService implements IInvoices {
                 .toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate();
-        Payment payment = invoice.getPayment();
-        if (payment != null) {
-            response.setPaymentDetails(new PaymentDetailsResponse(
-                    payment.getPaymentName(), payment.getDescription(), payment.getPaymentDate()));
-        }
         LocalDate dueDateOfMoveInDate = moveInDate.plusDays(30);
         double totalServiceAmount = details.stream()
                 .filter(detail -> detail.getRoomService() != null)
@@ -458,38 +467,20 @@ public class InvoiceService implements IInvoices {
             throw new RuntimeException("Hóa đơn đã được thanh toán trước đó.");
         }
 
-        // Tính toán tổng số tiền hóa đơn (totalAmount)
-        double totalServiceAmount = invoice.getDetailInvoices().stream()
-                .filter(detail -> detail.getRoomService() != null)
-                .mapToDouble(
-                        detail -> detail.getRoomService().getService().getPrice() * detail.getRoomServiceQuantity())
-                .sum();
+        // Tạo đối tượng Transaction thay vì Payment
+        Transaction transaction = new Transaction();
+        transaction.setAmount(BigDecimal.valueOf(request.getTotalAmount()));
+        transaction.setPayerName(request.getPaymentName());
+        transaction.setPaymentDescription(request.getDescription());
+        transaction.setTransactionDate(request.getPaymentDate() != null ? request.getPaymentDate() : LocalDate.now());
+        transaction.setTransactionType(true); // Thu vào
+        transaction.setInvoice(invoice);
 
-        double totalAddition = invoice.getAdditionItems() != null
-                ? invoice.getAdditionItems().stream()
-                        .mapToDouble(charge -> charge.getIsAddition() ? charge.getAmount() : -charge.getAmount())
-                        .sum()
-                : 0;
+        transactionRepository.save(transaction);
 
-        double totalAmount = invoice.getContract().getPrice() + totalServiceAmount + totalAddition;
-
-        // Kiểm tra nếu số tiền từ request không khớp
-        if (!(totalAmount == request.getTotalAmount())) {
-            throw new RuntimeException("Số tiền thanh toán không khớp với hóa đơn.");
-        }
-
-        // Tạo đối tượng Payment
-        Payment payment = new Payment();
-        payment.setPaymentName(request.getPaymentName());
-        payment.setDescription(request.getDescription());
-        payment.setPaymentDate(request.getPaymentDate());
-        paymentRepository.save(payment); // Lưu payment trước
-
-        // Cập nhật Payment vào Invoice
-        invoice.setPayment(payment);
+        // Cập nhật trạng thái hóa đơn (Logic sẽ được cải thiện sau ở TransactionService)
+        // Hiện tại tạm thời marked là PAID nếu collect qua API này
         invoice.setPaymentStatus(PaymentStatus.PAID);
-
-        // Lưu hóa đơn
         invoiceRepository.save(invoice);
     }
 }

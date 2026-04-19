@@ -9,11 +9,12 @@ import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.TransactionRequest;
 import com.rrms.rrms.dto.response.TransactionResponse;
+import com.rrms.rrms.enums.PaymentStatus;
 import com.rrms.rrms.models.Account;
-import com.rrms.rrms.models.Payment;
+import com.rrms.rrms.models.Invoice;
 import com.rrms.rrms.models.Transaction;
 import com.rrms.rrms.repositories.AccountRepository;
-import com.rrms.rrms.repositories.PaymentRepository;
+import com.rrms.rrms.repositories.InvoiceRepository;
 import com.rrms.rrms.repositories.TransactionRepository;
 
 @Service
@@ -22,7 +23,7 @@ public class TransactionService {
     private TransactionRepository transactionRepository;
 
     @Autowired
-    private PaymentRepository paymentRepository; // Thêm repository cho Payment
+    private InvoiceRepository invoiceRepository;
 
     @Autowired
     private AccountRepository accountRepository;
@@ -45,12 +46,13 @@ public class TransactionService {
         transaction.setTransactionDate(transactionDTO.getTransactionDate());
         transaction.setTransactionType(transactionDTO.isTransactionType());
 
-        // Lấy Payment từ paymentId
-        Payment payment = paymentRepository
-                .findById(transactionDTO.getPaymentId())
-                .orElseThrow(() -> new RuntimeException("Payment not found"));
-
-        transaction.setPayment(payment);
+        // Lấy Invoice từ invoiceId (nếu request có truyền)
+        if (transactionDTO.getInvoiceId() != null) {
+            Invoice invoice = invoiceRepository
+                    .findById(transactionDTO.getInvoiceId())
+                    .orElseThrow(() -> new RuntimeException("Invoice not found"));
+            transaction.setInvoice(invoice);
+        }
 
         // Tìm tài khoản dựa trên username
         Account account =
@@ -61,6 +63,11 @@ public class TransactionService {
 
         // Lưu giao dịch vào cơ sở dữ liệu
         Transaction savedTransaction = transactionRepository.save(transaction);
+
+        // Tự động kiểm tra và cập nhật trạng thái hóa đơn
+        if (transaction.getInvoice() != null) {
+            updateInvoiceStatus(transaction.getInvoice().getInvoiceId());
+        }
 
         // Chuyển đổi sang DTO phản hồi
         return new TransactionResponse(
@@ -111,5 +118,42 @@ public class TransactionService {
 
     public BigDecimal getProfit(String username) {
         return getTotalIncome(username).subtract(getTotalExpense(username));
+    }
+
+    private void updateInvoiceStatus(UUID invoiceId) {
+        Invoice invoice =
+                invoiceRepository.findById(invoiceId).orElseThrow(() -> new RuntimeException("Invoice not found"));
+
+        // Tính tổng tiền cần thanh toán của hóa đơn
+        double totalServiceAmount = invoice.getDetailInvoices().stream()
+                .filter(detail -> detail.getRoomService() != null)
+                .mapToDouble(
+                        detail -> detail.getRoomService().getService().getPrice() * detail.getRoomServiceQuantity())
+                .sum();
+
+        double totalAddition = invoice.getAdditionItems() != null
+                ? invoice.getAdditionItems().stream()
+                        .mapToDouble(charge -> charge.getIsAddition() ? charge.getAmount() : -charge.getAmount())
+                        .sum()
+                : 0;
+
+        double totalInvoiceAmount = invoice.getContract().getPrice() + totalServiceAmount + totalAddition;
+
+        // Tính tổng tiền đã thanh toán (tổng transactions loại thu vào)
+        BigDecimal totalPaid = transactionRepository.findByInvoice(invoice).stream()
+                .filter(Transaction::isTransactionType)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Cập nhật trạng thái
+        if (totalPaid.compareTo(BigDecimal.valueOf(totalInvoiceAmount)) >= 0) {
+            invoice.setPaymentStatus(PaymentStatus.PAID);
+        } else if (totalPaid.compareTo(BigDecimal.ZERO) > 0) {
+            invoice.setPaymentStatus(PaymentStatus.PARTIAL);
+        } else {
+            invoice.setPaymentStatus(PaymentStatus.UNPAID);
+        }
+
+        invoiceRepository.save(invoice);
     }
 }

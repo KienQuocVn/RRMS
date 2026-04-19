@@ -3,6 +3,7 @@ package com.rrms.rrms.mapper;
 import java.util.List;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import com.rrms.rrms.dto.request.RoomImageRequest;
@@ -36,6 +37,10 @@ public interface RoomMapper {
                 })
                 .toList();
     }
+
+    @Mapping(target = "latestContract", ignore = true) // Break circular dependency
+    @Mapping(source = "motel.motelId", target = "motelId")
+    RoomResponse2 toRoomResponse2(Room room);
 
     PostRoomTableResponse toPostRoomTableResponse(Room room);
 

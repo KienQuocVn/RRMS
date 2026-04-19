@@ -1,5 +1,6 @@
 package com.rrms.rrms.services.servicesImp;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -12,11 +13,14 @@ import org.springframework.stereotype.Service;
 import com.rrms.rrms.dto.request.TenantRequest;
 import com.rrms.rrms.dto.response.TenantResponse;
 import com.rrms.rrms.dto.response.TenantSummaryDTO;
+import com.rrms.rrms.enums.ContractStatus;
 import com.rrms.rrms.mapper.TenantMapper;
 import com.rrms.rrms.models.Contract;
+import com.rrms.rrms.models.ContractOccupant;
 import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.models.Room;
 import com.rrms.rrms.models.Tenant;
+import com.rrms.rrms.repositories.ContractOccupantRepository;
 import com.rrms.rrms.repositories.ContractRepository;
 import com.rrms.rrms.repositories.MotelRepository;
 import com.rrms.rrms.repositories.RoomRepository;
@@ -40,16 +44,31 @@ public class TenantService implements ITenantService {
     @Autowired
     private ContractRepository contractRepository;
 
+    @Autowired
+    private ContractOccupantRepository contractOccupantRepository;
+
     @Override
     public TenantResponse insert(UUID roomId, TenantRequest tenant) {
-        Room find = roomRepository.findById(roomId).orElse(null);
-        if (find != null) {
+        List<Contract> contracts = contractRepository.findByRoomRoomId(roomId);
+        Contract activeContract = contracts.stream()
+                .filter(c -> c.getStatus() == ContractStatus.ACTIVE)
+                .findFirst()
+                .orElse(null);
+
+        if (activeContract != null) {
             Tenant newt = tenantMapper.tenantRequestToTenant(tenant);
-            newt.setRoom(find);
-            return tenantMapper.toTenantResponse(tenantRepository.save(newt));
-        } else {
-            return null;
+            Tenant savedTenant = tenantRepository.save(newt);
+
+            ContractOccupant occupant = new ContractOccupant();
+            occupant.setContract(activeContract);
+            occupant.setTenant(savedTenant);
+            occupant.setMoveInDate(LocalDate.now());
+            occupant.setIsActive(true);
+            contractOccupantRepository.save(occupant);
+
+            return tenantMapper.toTenantResponse(savedTenant);
         }
+        return null;
     }
 
     @Override
@@ -98,14 +117,14 @@ public class TenantService implements ITenantService {
     public void deleteByRoomId(UUID roomId) {
         Optional<Room> Room = roomRepository.findById(roomId);
         if (Room.isPresent()) {
-            tenantRepository.deleteByRoomId(roomId);
+            contractOccupantRepository.deleteByContract_Room_RoomId(roomId);
         }
     }
 
     @Override
     public List<TenantResponse> getAllTenantsRoomId(UUID roomId) {
-        return tenantRepository.findByRoomRoomId(roomId).stream()
-                .map(tenantMapper::toTenantResponse)
+        return contractOccupantRepository.findByContract_Room_RoomId(roomId).stream()
+                .map(occupant -> tenantMapper.toTenantResponse(occupant.getTenant()))
                 .collect(Collectors.toList());
     }
 

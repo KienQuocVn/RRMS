@@ -1,6 +1,5 @@
 package com.rrms.rrms.dto.response;
 
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,12 +20,6 @@ public class RoomResponse2 {
     private String prioritize;
     private Integer area;
     private Double deposit;
-    private Double debt;
-    private Integer countTenant;
-    private Integer invoiceDate;
-    private Integer paymentCircle;
-    private Date moveInDate;
-    private Date contractDuration;
     private Boolean status;
     private String finance;
     private String description;

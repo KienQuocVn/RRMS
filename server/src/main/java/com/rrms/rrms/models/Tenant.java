@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import jakarta.persistence.*;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.rrms.rrms.enums.Gender;
 
@@ -24,11 +23,9 @@ import lombok.Setter;
 @Builder
 @Table(
         name = "tenant",
-        indexes = {
-            @Index(name = "idx_tenant_room_id", columnList = "roomId"),
-            @Index(name = "idx_tenant_cccd", columnList = "CCCD", unique = true)
-        })
+        indexes = {@Index(name = "idx_tenant_cccd", columnList = "CCCD", unique = true)})
 public class Tenant extends BaseEntity {
+
     @Id
     @GeneratedValue(generator = "UUID")
     private UUID tenantId;
@@ -88,12 +85,11 @@ public class Tenant extends BaseEntity {
     @Column(name = "information_verify", columnDefinition = "BOOLEAN")
     private Boolean informationVerify;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "roomId")
-    @JsonBackReference(value = "Room-Tenant") // Đặt tên cho tham chiếu ngược
-    private Room room;
+    @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference(value = "Tenant-Contract")
+    private List<Contract> contracts;
 
     @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonManagedReference(value = "Tenant-Contract") // Đặt tên cho tham chiếu quản lý
-    private List<Contract> contracts; // Một người thuê có nhiều hợp đồng
+    @JsonManagedReference(value = "Tenant-Occupants")
+    private List<ContractOccupant> contractOccupants;
 }

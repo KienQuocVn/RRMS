@@ -1,0 +1,257 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------------< com.rrms:rrms >----------------------------
+[INFO] Building rrms 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.3.2:clean (default-clean) @ rrms ---
+[INFO] Deleting D:\RRMS\server\target
+[INFO] 
+[INFO] --- jacoco:0.8.12:prepare-agent (default) @ rrms ---
+[INFO] argLine set to -javaagent:C:\\Users\\PC\\.m2\\repository\\org\\jacoco\\org.jacoco.agent\\0.8.12\\org.jacoco.agent-0.8.12-runtime.jar=destfile=D:\\RRMS\\server\\target\\jacoco.exec,excludes=com/rrms/rrms:com/rrms/rrms/models/**:com/rrms/rrms/mapper/**:com/rrms/rrms/dto/**:com/rrms/rrms/runner/**:com/rrms/rrms/database/**:com/rrms/rrms/exceptions/**
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ rrms ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ rrms ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 371 source files with javac [debug parameters release 17] to target\classes
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/BrokerMapper.java:[12,20] Unmapped target property: "status".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/BrokerMapper.java:[14,12] Unmapped target property: "brokerId".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/TemporaryR_contractMapper.java:[11,32] Unmapped target properties: "motelId, tenantUsername".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/TemporaryR_contractMapper.java:[13,25] Unmapped target properties: "createdAt, updatedAt, temporaryrcontractId, motel, tenant".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/TypeRoomMapper.java:[11,14] Unmapped target property: "typeRoomId".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/HeartMapper.java:[10,19] Unmapped target properties: "role, permissions". Mapping from property "Account account" to "AccountResponse account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/HeartMapper.java:[10,19] Unmapped target properties: "role, permissions". Mapping from property "Account bulletinBoards[].account" to "AccountResponse bulletinBoards[].account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/HeartMapper.java:[10,19] Unmapped target properties: "role, permissions". Mapping from property "Account bulletinBoards[].bulletinBoardReviews[].account" to "AccountResponse bulletinBoards[].bulletinBoardReviews[].account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/BulletinBoardReviewMapper.java:[14,34] Unmapped target properties: "role, permissions". Mapping from property "Account account" to "AccountResponse account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/BulletinBoardReviewMapper.java:[16,26] Unmapped target properties: "bulletinBoardReviewsId, bulletinBoard, account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/MotelMapper.java:[19,19] Unmapped target properties: "role, permissions". Mapping from property "Account account" to "AccountResponse account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/MotelMapper.java:[21,11] Unmapped target properties: "commissionRate, authorities, heart, contracts, motels". Mapping from property "AccountRequest account" to "Account account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/MotelMapper.java:[21,11] Unmapped target property: "motel". Mapping from Collection element "MotelServiceResponse motelServices" to "MotelService motelServices".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/MotelMapper.java:[21,11] Unmapped target properties: "motelId, rooms, contractTemplates".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/TenantMapper.java:[14,12] Unmapped target properties: "tenantId, contracts, contractOccupants".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/TenantMapper.java:[16,10] Unmapped target properties: "createdAt, updatedAt, tenantId, contracts, contractOccupants".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/AccountMapper.java:[49,10] Unmapped target property: "updatedAt".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/BulletinBoardMapper.java:[16,27] Unmapped target properties: "role, permissions". Mapping from property "Account account" to "AccountResponse account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/BulletinBoardMapper.java:[16,27] Unmapped target properties: "role, permissions". Mapping from property "Account bulletinBoardReviews[].account" to "AccountResponse bulletinBoardReviews[].account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/BulletinBoardMapper.java:[18,19] Unmapped target properties: "bulletinBoardId, account, createdDate, bulletinBoardReviews".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/BulletinBoardMapper.java:[22,33] Unmapped target properties: "role, permissions". Mapping from property "Account account" to "AccountResponse account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/BulletinBoardMapper.java:[22,33] Unmapped target properties: "role, permissions". Mapping from property "Account bulletinBoardReviews[].account" to "AccountResponse bulletinBoardReviews[].account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/BulletinBoardMapper.java:[27,10] Unmapped target properties: "createdAt, updatedAt, createdDate, bulletinBoardReviews".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomReviewMapper.java:[10,24] Unmapped target properties: "role, permissions". Mapping from property "Account account" to "AccountResponse account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/ContractMapper.java:[15,14] Unmapped target properties: "createdAt, updatedAt, contractId, room, tenant, account, contractTemplate, broker, reportcloseContract, contractOccupants, deviceHandovers".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/ContractMapper.java:[21,22] Unmapped target properties: "motelId, services, latestContract, reserveAPlace". Mapping from property "Room room" to "RoomResponse2 room".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/ContractMapper.java:[21,22] Unmapped target properties: "role, permissions". Mapping from property "Account account" to "AccountResponse username".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/ContractMapper.java:[21,22] Unmapped target properties: "contractTemplateId, motelId, sortOrder". Mapping from property "ContractTemplate contractTemplate" to "ContractTemplateResponse contracttemplate".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/ContractMapper.java:[21,22] Unmapped target property: "brokerId".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomMapper.java:[18,24] Unmapped target properties: "role, permissions". Mapping from property "Account motel.account" to "AccountResponse motel.account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomMapper.java:[18,24] Unmapped target property: "motelId". Mapping from Collection element "MotelService motel.motelServices" to "MotelServiceResponse motel.motelServices".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomMapper.java:[18,24] Unmapped target properties: "censor, nameRoom, roomArea, available, maxPerson, rentalStartTime, hours, roomServices, roomReviews, roomImages".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomMapper.java:[20,10] Unmapped target properties: "roomId, motel, group, name, prioritize, area, status, finance, contracts, reserveAPlaces, meterReadings".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomMapper.java:[24,24] Unmapped target properties: "role, permissions". Mapping from property "Account account" to "AccountResponse account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomMapper.java:[26,23] Unmapped target property: "roomImageId".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomMapper.java:[28,15] Unmapped target properties: "roomImageId, room".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomMapper.java:[40,27] Unmapped target properties: "typeRoom, nameRoom, roomArea, available".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomMapper.java:[42,24] Unmapped target properties: "role, permissions". Mapping from property "Account motel.account" to "AccountResponse motel.account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomMapper.java:[42,24] Unmapped target property: "motelId". Mapping from Collection element "MotelService motel.motelServices" to "MotelServiceResponse motel.motelServices".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomMapper.java:[42,24] Unmapped target properties: "nameRoom, chargetype".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomDeviceMapper.java:[11,24] Unmapped target properties: "motelId, services, latestContract, reserveAPlace". Mapping from property "Room room" to "RoomResponse2 room".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomDeviceMapper.java:[11,24] Unmapped target properties: "role, permissions". Mapping from property "Account motelDevice.motel.account" to "AccountResponse motelDevice.motel.account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomDeviceMapper.java:[11,24] Unmapped target property: "motelId". Mapping from Collection element "MotelService motelDevice.motel.motelServices" to "MotelServiceResponse motelDevice.motel.motelServices".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomDeviceMapper.java:[13,16] Unmapped target properties: "motel, contracts, reserveAPlaces, meterReadings". Mapping from property "RoomResponse2 room" to "Room room".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomDeviceMapper.java:[13,16] Unmapped target properties: "commissionRate, authorities, heart, contracts, motels". Mapping from property "AccountResponse motelDevice.motel.account" to "Account motelDevice.motel.account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomDeviceMapper.java:[13,16] Unmapped target property: "motel". Mapping from Collection element "MotelServiceResponse motelDevice.motel.motelServices" to "MotelService motelDevice.motel.motelServices".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomDeviceMapper.java:[13,16] Unmapped target properties: "rooms, contractTemplates". Mapping from property "MotelResponse motelDevice.motel" to "Motel motelDevice.motel".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomDeviceMapper.java:[13,16] Unmapped target property: "roomDeviceId".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/MotelDeviceMapper.java:[11,17] Unmapped target properties: "commissionRate, authorities, heart, contracts, motels". Mapping from property "AccountResponse motel.account" to "Account motel.account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/MotelDeviceMapper.java:[11,17] Unmapped target property: "motel". Mapping from Collection element "MotelServiceResponse motel.motelServices" to "MotelService motel.motelServices".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/MotelDeviceMapper.java:[11,17] Unmapped target properties: "rooms, contractTemplates". Mapping from property "MotelResponse motel" to "Motel motel".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/MotelDeviceMapper.java:[11,17] Unmapped target property: "motel_device_id".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/MotelDeviceMapper.java:[13,25] Unmapped target properties: "role, permissions". Mapping from property "Account motel.account" to "AccountResponse motel.account".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/MotelDeviceMapper.java:[13,25] Unmapped target property: "motelId". Mapping from Collection element "MotelService motel.motelServices" to "MotelServiceResponse motel.motelServices".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/ServiceMapper.java:[11,13] Unmapped target property: "serviceId".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomServiceMapper.java:[11,17] Unmapped target properties: "roomServiceId, room, service".
+[WARNING] /D:/RRMS/server/src/main/java/com/rrms/rrms/mapper/RoomServiceMapper.java:[13,25] Unmapped target properties: "roomId, serviceId".
+[INFO] 57 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/TransactionService.java:[53,20] cannot find symbol
+  symbol:   method setPayment(com.rrms.rrms.models.Payment)
+  location: variable transaction of type com.rrms.rrms.models.Transaction
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/InvoiceService.java:[279,20] cannot find symbol
+  symbol:   method getPayment()
+  location: variable invoice of type com.rrms.rrms.models.Invoice
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/InvoiceService.java:[280,38] cannot find symbol
+  symbol:   method getPayment()
+  location: variable invoice of type com.rrms.rrms.models.Invoice
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/InvoiceService.java:[436,34] cannot find symbol
+  symbol:   method getPayment()
+  location: variable invoice of type com.rrms.rrms.models.Invoice
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/InvoiceService.java:[489,16] cannot find symbol
+  symbol:   method setPayment(com.rrms.rrms.models.Payment)
+  location: variable invoice of type com.rrms.rrms.models.Invoice
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[255,30] cannot find symbol
+  symbol:   method getDebt()
+  location: variable room of type com.rrms.rrms.models.Room
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[256,37] cannot find symbol
+  symbol:   method getCountTenant()
+  location: variable room of type com.rrms.rrms.models.Room
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[257,37] cannot find symbol
+  symbol:   method getInvoiceDate()
+  location: variable room of type com.rrms.rrms.models.Room
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[258,36] cannot find symbol
+  symbol:   method getMoveInDate()
+  location: variable room of type com.rrms.rrms.models.Room
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[259,42] cannot find symbol
+  symbol:   method getContractduration()
+  location: variable room of type com.rrms.rrms.models.Room
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[320,33] cannot find symbol
+  symbol:   method getDebt()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[321,40] cannot find symbol
+  symbol:   method getCountTenant()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[322,40] cannot find symbol
+  symbol:   method getInvoiceDate()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[323,39] cannot find symbol
+  symbol:   method getMoveInDate()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[324,45] cannot find symbol
+  symbol:   method getContractDuration()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[339,24] cannot find symbol
+  symbol:   method getDebt()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[339,68] cannot find symbol
+  symbol:   method getDebt()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[340,24] cannot find symbol
+  symbol:   method getCountTenant()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[340,82] cannot find symbol
+  symbol:   method getCountTenant()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[341,24] cannot find symbol
+  symbol:   method getInvoiceDate()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[341,82] cannot find symbol
+  symbol:   method getInvoiceDate()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[342,24] cannot find symbol
+  symbol:   method getMoveInDate()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[342,80] cannot find symbol
+  symbol:   method getMoveInDate()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[343,24] cannot find symbol
+  symbol:   method getContractDuration()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[343,92] cannot find symbol
+  symbol:   method getContractDuration()
+  location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/TenantService.java:[48,17] cannot find symbol
+  symbol:   method setRoom(com.rrms.rrms.models.Room)
+  location: variable newt of type com.rrms.rrms.models.Tenant
+[INFO] 26 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.737 s
+[INFO] Finished at: 2026-04-19T12:00:13+07:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project rrms: Compilation failure: Compilation failure: 
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/TransactionService.java:[53,20] cannot find symbol
+[ERROR]   symbol:   method setPayment(com.rrms.rrms.models.Payment)
+[ERROR]   location: variable transaction of type com.rrms.rrms.models.Transaction
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/InvoiceService.java:[279,20] cannot find symbol
+[ERROR]   symbol:   method getPayment()
+[ERROR]   location: variable invoice of type com.rrms.rrms.models.Invoice
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/InvoiceService.java:[280,38] cannot find symbol
+[ERROR]   symbol:   method getPayment()
+[ERROR]   location: variable invoice of type com.rrms.rrms.models.Invoice
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/InvoiceService.java:[436,34] cannot find symbol
+[ERROR]   symbol:   method getPayment()
+[ERROR]   location: variable invoice of type com.rrms.rrms.models.Invoice
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/InvoiceService.java:[489,16] cannot find symbol
+[ERROR]   symbol:   method setPayment(com.rrms.rrms.models.Payment)
+[ERROR]   location: variable invoice of type com.rrms.rrms.models.Invoice
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[255,30] cannot find symbol
+[ERROR]   symbol:   method getDebt()
+[ERROR]   location: variable room of type com.rrms.rrms.models.Room
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[256,37] cannot find symbol
+[ERROR]   symbol:   method getCountTenant()
+[ERROR]   location: variable room of type com.rrms.rrms.models.Room
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[257,37] cannot find symbol
+[ERROR]   symbol:   method getInvoiceDate()
+[ERROR]   location: variable room of type com.rrms.rrms.models.Room
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[258,36] cannot find symbol
+[ERROR]   symbol:   method getMoveInDate()
+[ERROR]   location: variable room of type com.rrms.rrms.models.Room
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[259,42] cannot find symbol
+[ERROR]   symbol:   method getContractduration()
+[ERROR]   location: variable room of type com.rrms.rrms.models.Room
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[320,33] cannot find symbol
+[ERROR]   symbol:   method getDebt()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[321,40] cannot find symbol
+[ERROR]   symbol:   method getCountTenant()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[322,40] cannot find symbol
+[ERROR]   symbol:   method getInvoiceDate()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[323,39] cannot find symbol
+[ERROR]   symbol:   method getMoveInDate()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[324,45] cannot find symbol
+[ERROR]   symbol:   method getContractDuration()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[339,24] cannot find symbol
+[ERROR]   symbol:   method getDebt()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[339,68] cannot find symbol
+[ERROR]   symbol:   method getDebt()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[340,24] cannot find symbol
+[ERROR]   symbol:   method getCountTenant()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[340,82] cannot find symbol
+[ERROR]   symbol:   method getCountTenant()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[341,24] cannot find symbol
+[ERROR]   symbol:   method getInvoiceDate()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[341,82] cannot find symbol
+[ERROR]   symbol:   method getInvoiceDate()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[342,24] cannot find symbol
+[ERROR]   symbol:   method getMoveInDate()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[342,80] cannot find symbol
+[ERROR]   symbol:   method getMoveInDate()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[343,24] cannot find symbol
+[ERROR]   symbol:   method getContractDuration()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/RoomService.java:[343,92] cannot find symbol
+[ERROR]   symbol:   method getContractDuration()
+[ERROR]   location: variable roomRequest of type com.rrms.rrms.dto.request.RoomRequest2
+[ERROR] /D:/RRMS/server/src/main/java/com/rrms/rrms/services/servicesImp/TenantService.java:[48,17] cannot find symbol
+[ERROR]   symbol:   method setRoom(com.rrms.rrms.models.Room)
+[ERROR]   location: variable newt of type com.rrms.rrms.models.Tenant
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

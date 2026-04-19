@@ -2,11 +2,13 @@ package com.rrms.rrms.models;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.rrms.rrms.enums.ContractStatus;
 
 import lombok.AllArgsConstructor;
@@ -80,6 +82,10 @@ public class Contract extends BaseEntity {
     @Column(columnDefinition = "DECIMAL(10, 2)")
     private Double price = 0.0;
 
+    // gia thuc te (sau thuong luong/giam gia)
+    @Column(name = "actual_price", columnDefinition = "DECIMAL(10, 2)")
+    private Double actualPrice;
+
     // tien coc
     @Column(columnDefinition = "DECIMAL(10, 2)")
     private Double deposit;
@@ -112,4 +118,12 @@ public class Contract extends BaseEntity {
     // Ngay ket thuc hop dong
     @Column(columnDefinition = "DATE")
     private Date reportcloseContract;
+
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference(value = "Contract-Occupants")
+    private List<ContractOccupant> contractOccupants;
+
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference(value = "Contract-Handover")
+    private List<ContractDeviceHandover> deviceHandovers;
 }

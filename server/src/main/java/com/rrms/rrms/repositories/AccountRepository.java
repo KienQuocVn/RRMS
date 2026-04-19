@@ -40,13 +40,13 @@ public interface AccountRepository extends JpaRepository<Account, String> {
             nativeQuery = true)
     Long countNonAdminAccounts();
 
-    @Query("SELECT a FROM Account a WHERE a.createdDate >= :startDate AND a.createdDate < :endDate")
+    @Query("SELECT a FROM Account a WHERE a.createdAt >= :startDate AND a.createdAt < :endDate")
     List<Account> findAccountsCreatedBetween(LocalDateTime startDate, LocalDateTime endDate);
 
-    @Query("SELECT COUNT(a) FROM Account a WHERE YEAR(a.createdDate) = ?1 AND MONTH(a.createdDate) = ?2")
+    @Query("SELECT COUNT(a) FROM Account a WHERE YEAR(a.createdAt) = ?1 AND MONTH(a.createdAt) = ?2")
     long countAccountsCreatedByMonth(int year, int month);
 
     @Query(
-            "SELECT a FROM Account a JOIN a.authorities auth WHERE auth.role.roleName = 'HOST' AND a.createdDate >= :startDate")
+            "SELECT a FROM Account a JOIN a.authorities auth WHERE auth.role.roleName = 'HOST' AND a.createdAt >= :startDate")
     List<Account> findRecentHosts(@Param("startDate") LocalDateTime startDate);
 }

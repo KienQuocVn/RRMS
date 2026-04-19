@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TransactionRequest {
     private BigDecimal amount;
-    private UUID paymentId;
+    private UUID invoiceId;
     private String payerName;
     private String paymentDescription;
     private String category;

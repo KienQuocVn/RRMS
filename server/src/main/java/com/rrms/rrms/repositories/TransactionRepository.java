@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.rrms.rrms.models.Account;
+import com.rrms.rrms.models.Invoice;
 import com.rrms.rrms.models.Transaction;
 
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
@@ -14,4 +15,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     List<Transaction> findByAccount(Account account);
 
     List<Transaction> findByTransactionTypeAndAccount(boolean transactionType, Account account);
+
+    List<Transaction> findByInvoice(Invoice invoice);
 }

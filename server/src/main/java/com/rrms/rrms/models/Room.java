@@ -1,6 +1,5 @@
 package com.rrms.rrms.models;
 
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -56,27 +55,6 @@ public class Room extends BaseEntity {
     @Column(name = "area", columnDefinition = "INT")
     private Integer area;
 
-    // cai nay thuong nam o hop dong
-    @Column(columnDefinition = "DECIMAL(10, 2)")
-    private Double debt;
-
-    // cai nay thuong nam o hop dong
-    @Column(name = "count_tenant", columnDefinition = "INT")
-    private Integer countTenant;
-
-    @Column(name = "invoice_date", columnDefinition = "INT")
-    private Integer invoiceDate;
-
-    // chu ky thu
-    @Column(name = "collection_cycle", columnDefinition = "TEXT")
-    private String collectionCycle;
-
-    @Column(name = "move_in_date", columnDefinition = "DATE")
-    private Date moveInDate;
-
-    @Column(name = "contract_duration", columnDefinition = "DATE")
-    private Date contractduration;
-
     @Column(name = "status", columnDefinition = "BOOLEAN")
     private Boolean status;
 
@@ -91,10 +69,10 @@ public class Room extends BaseEntity {
     private List<Contract> contracts;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonManagedReference(value = "Room-Tenant") // Đặt tên cho tham chiếu quản lý
-    private List<Tenant> tenants;
-
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference(value = "Room-ReserveAPlace") // Đặt tên cho tham chiếu quản lý
     private List<Reserve_a_place> reserveAPlaces;
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference(value = "Room-MeterReading")
+    private List<MeterReading> meterReadings;
 }
