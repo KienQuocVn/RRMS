@@ -40,7 +40,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
 @Slf4j
 @RestController
@@ -64,7 +64,20 @@ public class PaymentController {
     @Value("${momo.endpoint}")
     String momoEndpoint;
 
-    IPayment paymentService;
+    @Value("${momo.notifyUrl}")
+    String momoNotifyUrl;
+
+    @Value("${momo.returnUrl}")
+    String momoReturnUrl;
+
+    @Value("${paypal.successUrl}")
+    String paypalSuccessUrl;
+
+    @Value("${paypal.cancelUrl}")
+    String paypalCancelUrl;
+
+    final IPayment paymentService;
+    final VNPayConfig vnpayConfig;
 
     // Paypal payment
     // sb-fo7f331992187@personal.example.com
@@ -74,10 +87,8 @@ public class PaymentController {
             @RequestParam("totalPrice") double totalPrice, @RequestParam("userName") String userName) {
         Map<String, String> response = new HashMap<>();
         try {
-            String cancelUrl = "http://localhost:8080/payment/paypal/cancel";
-            String successUrl = "http://localhost:8080/payment/paypal/success";
             Payment payment = paymentService.createPayment(
-                    totalPrice, "USD", "PAYPAL", "sale", userName + " Thanh toán", cancelUrl, successUrl);
+                    totalPrice, "USD", "PAYPAL", "sale", userName + " Thanh toán", paypalCancelUrl, paypalSuccessUrl);
             for (Links links : payment.getLinks()) {
                 if (links.getRel().equals("approval_url")) {
                     response.put("redirectUrl", links.getHref());
@@ -124,18 +135,19 @@ public class PaymentController {
         String username = (String) requestData.get("userName");
         session.setAttribute("userName", username);
 
-        String vnp_Version = "2.1.0";
-        String vnp_Command = "pay";
+        String vnp_Version = vnpayConfig.getVnp_Version();
+        String vnp_Command = vnpayConfig.getVnp_Command();
         String orderType = "other";
         double totalPrice = Double.valueOf(requestData.get("totalPrice").toString());
         int amount = (int) (totalPrice * 100);
-        String bankCode = "NCB";
+        String bankCode = (String) requestData.get("bankCode");
+        if (bankCode == null) bankCode = "NCB";
 
         String vnp_TxnRef = VNPayConfig.getRandomNumber(6);
-        String vnp_IpAddr = "127.0.0.1";
+        String vnp_IpAddr = VNPayConfig.getIpAddress(request);
 
         // cấu hình của vnpay
-        String vnp_TmnCode = VNPayConfig.vnp_TmnCode;
+        String vnp_TmnCode = vnpayConfig.getVnp_TmnCode();
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
@@ -150,7 +162,7 @@ public class PaymentController {
         vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
         vnp_Params.put("vnp_OrderType", orderType);
         vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_ReturnUrl);
+        vnp_Params.put("vnp_ReturnUrl", vnpayConfig.getVnp_ReturnUrl());
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
         // xử lý thời gian ngày giờ thanh toán
@@ -191,7 +203,7 @@ public class PaymentController {
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash; // mã hóa
 
         // Tạo đường dẫn cho thanh toán
-        String paymentUrl = VNPayConfig.vnp_PayUrl + "?" + queryUrl;
+        String paymentUrl = vnpayConfig.getVnp_PayUrl() + "?" + queryUrl;
 
         // Trả kết quả về cho client
         PaymentRestDTO paymentRestDTO = new PaymentRestDTO();
@@ -201,8 +213,26 @@ public class PaymentController {
 
     @GetMapping("/vnpay-callback")
     public ResponseEntity<Void> paymentCallback(HttpServletRequest request) {
-        String status = request.getParameter("vnp_ResponseCode");
+        Map<String, String> fields = new HashMap<>();
+        for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements(); ) {
+            String fieldName = params.nextElement();
+            String fieldValue = request.getParameter(fieldName);
+            if ((fieldValue != null) && (fieldValue.length() > 0)) {
+                fields.put(fieldName, fieldValue);
+            }
+        }
 
+        String vnp_SecureHash = request.getParameter("vnp_SecureHash");
+        boolean isValidSignature = vnpayConfig.verifySignature(fields, vnp_SecureHash);
+
+        if (!isValidSignature) {
+            log.error("VNPay payment verification failed: Invalid Signature");
+            return ResponseEntity.status(302)
+                    .header("Location", "/payment/paymentFailed?error=invalid_signature")
+                    .build();
+        }
+
+        String status = request.getParameter("vnp_ResponseCode");
         if ("00".equals(status)) {
             return ResponseEntity.status(302)
                     .header("Location", "/payment/paymentSuccess")
@@ -239,8 +269,8 @@ public class PaymentController {
         double totalPrice = Double.valueOf(requestData.get("totalPrice").toString());
         long amount = (long) (totalPrice * 100);
         String orderInfo = "Pay With MoMo";
-        String returnUrl = "http://localhost:8080/payment/paymentMoMoSuccess";
-        String notifyURL = "http://google.com.vn";
+        String returnUrl = momoReturnUrl;
+        String notifyURL = momoNotifyUrl;
 
         // Chọn môi trường và thanh toán bằng momo
         MoMoEndpoint momoEndpointConfig = new MoMoEndpoint(momoEndpoint, "/create");

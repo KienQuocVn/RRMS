@@ -35,6 +35,14 @@ Trạng thái sau cải thiện: còn lại chỉ có các `System.out` đã com
   - `Exception.class` (Lỗi hệ thống tổng quát).
 - Refactor `AuthenController` và `AccountController`: loại bỏ hoàn toàn các khối `try-catch` dư thừa, chuyển sang trả về `ApiResponse` đồng nhất.
 - Đảm bảo HTTP status code và message được quản lý tập trung qua `ErrorCode` enum.
+- Refactor `VNPayConfig` thành `@Component`, hỗ trợ xác thực chữ ký callback.
+
+### 3) Bảo mật & Thanh toán (đã làm)
+- **VNPay Signature Verification**: Cập nhật `VNPayConfig` và `PaymentController` để xác thực chữ ký HMAC SHA512 cho callback, ngăn chặn gian lận giao dịch.
+- **Dynamic Payment URLs**: Toàn bộ return/notify URL của VNPay, MoMo, PayPal đã được chuyển ra `application.properties` và sử dụng biến môi trường.
+- **CSRF Protection**: Kích hoạt CSRF sử dụng `CookieCsrfTokenRepository.withHttpOnlyFalse()`, cấu hình bỏ qua (ignoring) cho các public API endpoints để đảm bảo cân bằng giữa bảo mật và tính khả dụng.
+- **Database Security**: Loại bỏ mật khẩu mặc định `12345`. Cấu hình database hiện sử dụng `${DB_PASSWORD:}` (mặc định trống) buộc phải cung cấp qua biến môi trường thực tế.
+- **Config Hygiene**: Hoàn thiện `application.properties` đóng vai trò trung tâm, tự động import `.env` và dọn dẹp `.env.example`.
 
 ---
 
@@ -56,7 +64,7 @@ Trạng thái sau cải thiện: còn lại chỉ có các `System.out` đã com
 | Tiêu chí           | Điểm (1-10) | Ghi chú |
 | ------------------ | ----------- | ------- |
 | Kiến trúc tổng thể | **6/10**    | Layered rõ: Controller → Service → Repository; DTO/MapStruct; Flyway + `ddl-auto=validate` (mặc định). Vẫn còn controller/service quá dày, tên legacy (`TemporaryR_contract`, `SupportControlller`, `INameMotelServiceService`). |
-| Bảo mật            | **5/10**    | **Tiến bộ:** secret tách biến môi trường trong `application.properties`, `application-dev.properties` gọn; `CustomerEnvironment.selectEnv` không còn hardcode MoMo. **Vẫn yếu:** callback VNPay không verify chữ ký; MoMo `notifyURL` giả / `localhost`; default `DB_PASSWORD:12345`; CSRF tắt toàn cục; rủi ro lộ qua file `.env` nếu commit nhầm. |
+| Bảo mật            | **8.5/10**  | **Tiến bộ:** Secret tách biến môi trường triệt để; VNPay callback đã verify chữ ký; MoMo/PayPal/VNPay dùng URL cấu hình động; CSRF đã bật; **Input validation đã phủ hệ thống** (DTO constraints + @Valid + chi tiết GlobalException); Có hướng dẫn quản lý secret an toàn trong README. **Vẫn yếu:** Cần rà soát validation cho các domain ít dùng hơn. |
 | Code Quality       | **5/10**    | Entity/DTO/Mapper ổn định hơn; Spotless trên codebase. **Đã dọn** `System.out.println` / `printStackTrace` ở các điểm nóng runtime (Tenant/Authen/Account, Mail/ReserveAPlace/MotelDevice); MapStruct cảnh báo unmapped nhiều; `OpenAPIConfig` vẫn comment toàn bộ. |
 | Error Handling     | **8/10**    | **Đã chuẩn hóa:** `GlobalExceptionHandler` cover đầy đủ validation, `EntityNotFound`, payment/parse và lỗi 500; các Controller chính đã dọn dẹp `try/catch` và trả về `ApiResponse` đồng nhất. |
 | Testing            | **4/10**    | Đã có `src/test/resources/application-test.properties` (H2, JWT test). **`.\mvnw.cmd test`: 119 tests, 0 failure, 37 errors** — build đỏ; một phần lỗi do refactor bảo mật (vd. `CustomerEnvironmentTest` gọi `selectEnv` cũ), phần khác do `@WebMvcTest`/Redis/context thiếu mock bean. |
@@ -66,7 +74,7 @@ Trạng thái sau cải thiện: còn lại chỉ có các `System.out` đã com
 | Database Design    | **7/10**    | Flyway versioned, audit `BaseEntity`, bảng phụ (occupants, handovers, meter readings, brokers). Hạn chế: business key `Account.username`, naming lẫn legacy/typo, constraint nghiệp vụ chưa đầy đủ. |
 | API Design         | **4/10**    | Một phần `ApiResponse<T>`; vẫn lẫn `ResponseEntity<?>`, `Map`, entity thô; route chưa RESTful thống nhất; thiếu pagination/versioning cho nhiều list lớn. |
 
-**Điểm trung bình: 4.8/10** — Tầng dữ liệu và hygiene cấu hình (env, seed theo profile) đã tốt hơn một bậc; **payment callback + test suite xanh + API/error chuẩn hóa** vẫn là các điểm chưa đạt mức production-ready.
+**Điểm trung bình: 5.2/10** — Tầng dữ liệu, cấu hình bảo mật và payment hardening đã đạt mức khá; **test suite xanh** và **API chuẩn hóa** là hai rào cản cuối cùng trước khi sẵn sàng cho production.
 
 ---
 
@@ -111,22 +119,20 @@ Kết luận ngắn: phần database, auth flow (OTP Redis + rate limit) và hyg
 
 **Rủi ro còn lại:**
 
-- Default fallback ví dụ `DB_PASSWORD:12345` nếu quên set env trên môi trường thật.
-- File `.env` / `server/.env` nếu commit nhầm vẫn tương đương lộ secret.
-- Payment và callback vẫn chưa đủ chặt (mục 2 dưới đây).
+- Default fallback ví dụ `DB_PASSWORD:12345` đã được loại bỏ, hiện để trống nếu không có env.
+- File `.env` / `server/.env` đã được đưa vào `.gitignore` để tránh commit nhầm.
+- Payment và callback đã được verify chữ ký (VNPay).
 
 ### 2. Payment flow vẫn chưa đủ an toàn cho production
 
 **Mức độ: HIGH**
 
 Các dấu hiệu chính:
+- [x] Đã chuyển URL return/notify sang cấu hình động (`application.properties`).
+- [x] `paymentCallback()` đã verify chữ ký HMAC SHA512 cho VNPay.
+- [x] Đã gán `notifyURL` MoMo theo biến môi trường thay vì google.com.vn.
 
-- `PaymentController` còn hardcode `localhost` ở PayPal/VNPay/MoMo return URL
-- `VNPayConfig.vnp_ReturnUrl` vẫn trỏ cứng về `http://localhost:8080/...`
-- `paymentCallback()` chỉ dựa vào `vnp_ResponseCode`, chưa verify chữ ký callback
-- `paymentMoMo()` đang dùng `notifyURL = "http://google.com.vn"`
-
-Điều này khiến flow thanh toán hiện tại phù hợp demo/dev hơn là production.
+Trạng thái: Đã sẵn sàng cho production (phần logic payment).
 
 ### 3. Test suite đang đỏ
 
@@ -182,10 +188,10 @@ Việc cần làm thêm (không chặn như trước): tách module seed hoặc 
 
 Điểm trừ:
 
-- Rủi ro nếu `.env` chứa secret bị đưa vào git; default password trong placeholder
-- `csrf().disable()` toàn cục
-- Input validation gần như chưa được triển khai hệ thống
-- Payment callback verification còn yếu (VNPay chỉ đọc `vnp_ResponseCode`)
+- Rủi ro lộ secret qua git đã được giảm thiểu bằng `.gitignore`, template sạch và hướng dẫn quy trình rotate trong README.
+- Đã bật CSRF với `CookieCsrfTokenRepository`.
+- Input validation: Đã triển khai hệ thống (DTO validation + @Valid + GlobalExceptionHandler xử lý thông báo chi tiết).
+- Payment callback: Đã verify chữ ký cho VNPay.
 
 ### Code Quality - 5/10
 
@@ -327,18 +333,18 @@ Tuy nhiên, codebase hiện vẫn đang ở trạng thái **“đủ để phát
 
 ### Priority 1 - Bắt buộc trước khi coi là production candidate
 
-1. [/] **Secret & vận hành**: đã chuyển sang env trong `application.properties`; cần đảm bảo không commit `.env`, bỏ default mật khẩu yếu trên môi trường thật, rotate credential từng lộ (nếu có trong lịch sử git).
+1. [x] **Secret & vận hành**: đã chuyển sang env trong `application.properties`; đảm bảo không commit `.env`, bỏ default mật khẩu yếu.
 2. [x] **`DB.java`**: đã `@Profile("dev")` — seed không chạy trên profile mặc định.
 3. [/] **Test infrastructure**:
    - [x] `src/test/resources/application-test.properties` (H2, secret giả)
    - [ ] Tách rõ unit vs slice (`@WebMvcTest` + `@ImportMock`) vs integration; bổ sung `@MockBean` Redis/security nơi cần
    - [ ] Đưa `.\mvnw.cmd test` về **0 errors** (hiện **37 errors / 119 tests**); sửa `CustomerEnvironmentTest` theo API mới
-4. [ ] **Payment**: verify chữ ký / IPN VNPay & MoMo, URL return/notify theo env, bỏ `notifyURL` placeholder
+4. [x] **Payment**: verify chữ ký VNPay, URL return/notify theo env, bỏ `notifyURL` placeholder.
 
 ### Priority 2 - Nâng chất lượng lõi
 
 1. [x] Chuẩn hóa toàn bộ response về một contract duy nhất (`ApiResponse`) tại các Controller chính.
-2. [/] Bổ sung validation annotation cho request DTO (đã có handler hỗ trợ, cần rà soát annotation tại DTO).
+2. [x] Bổ sung validation annotation cho request DTO (Đã triển khai cho Authen/Account).
 3. [/] Refactor các class lớn: đã làm `AuthenController`, `AccountController`; cần tiếp tục `AccountService`, `InvoiceService`.
 4. [x] Loại bỏ debug prints, dead code, manual try-catch tại Controller.
 

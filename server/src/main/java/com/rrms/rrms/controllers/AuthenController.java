@@ -7,6 +7,7 @@ import java.util.UUID;
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -99,7 +100,7 @@ public class AuthenController {
 
     @PostMapping("/login")
     @RateLimited(key = "login", maxAttempts = 5, windowSeconds = 300)
-    public ApiResponse<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
         Account account = accountService
                 .findByPhone(loginRequest.getPhone())
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
@@ -127,7 +128,7 @@ public class AuthenController {
 
     @PostMapping("/register")
     @RateLimited(key = "register", maxAttempts = 5, windowSeconds = 300)
-    public ApiResponse<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
+    public ApiResponse<RegisterResponse> register(@RequestBody @Valid RegisterRequest registerRequest) {
         Account account = accountService.register(registerRequest);
 
         RegisterResponse response = new RegisterResponse();
@@ -300,7 +301,7 @@ public class AuthenController {
 
     @PostMapping("/checkregister")
     @PermitAll
-    public ApiResponse<Boolean> checkRegister(@RequestBody RegisterRequest request) {
+    public ApiResponse<Boolean> checkRegister(@RequestBody @Valid RegisterRequest request) {
         // Kiểm tra tên đăng nhập đã tồn tại chưa
         if (accountRepository.existsByUsername(request.getUsername())) {
             return ApiResponse.<Boolean>builder()

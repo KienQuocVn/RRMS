@@ -65,7 +65,14 @@ Trong chế độ mặc định (không có profile `dev`), database sẽ không
 ./mvnw.cmd test
 ```
 
-## 🔍 Lưu ý về Database
-- Dự án sử dụng **Flyway** để quản lý version database.
-- Schema sẽ được tự động đồng bộ hóa thông qua các file trong `src/main/resources/db/migration`.
-- Tránh sửa trực tiếp database trong MySQL client, hãy dùng Flyway script.
+## 🔒 Bảo mật (Security)
+
+### 1. Quản lý Secret
+- **TUYỆT ĐỐI KHÔNG** commit file `.env` lên Git. File này đã được đưa vào `.gitignore`.
+- Nếu lỡ commit nhầm, hãy thực hiện **rotate** (thay đổi) toàn bộ các secret ngay lập tức.
+- Sử dụng `.env.example` để chia sẻ cấu trúc file môi trường cho team mà không kèm giá trị thật.
+
+### 2. Validation
+- Luôn sử dụng `@Valid` tại Controller cho mọi `@RequestBody`.
+- Các DTO phải có các ràng buộc dữ liệu (`@NotBlank`, `@Size`, `@Email`, v.v.).
+- Lỗi validation sẽ được `GlobalExceptionHandler` xử lý và trả về thông báo chi tiết cho client.

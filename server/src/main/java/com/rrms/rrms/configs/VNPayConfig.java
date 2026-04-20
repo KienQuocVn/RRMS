@@ -1,5 +1,6 @@
 package com.rrms.rrms.configs;
 
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -10,18 +11,47 @@ import javax.crypto.spec.SecretKeySpec;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
 public class VNPayConfig {
-    public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    public static String vnp_ReturnUrl = "http://localhost:8080/payment/vnpay-callback";
-    public static String vnp_TmnCode = "XKE8UEHS";
-    public static String vnp_Version = "2.1.0";
-    public static String vnp_Command = "pay";
+    @Value("${vnpay.api.payUrl:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}")
+    private String vnp_PayUrl;
+
+    @Value("${vnpay.api.returnUrl:http://localhost:8080/payment/vnpay-callback}")
+    private String vnp_ReturnUrl;
+
+    @Value("${vnpay.api.tmnCode:XKE8UEHS}")
+    private String vnp_TmnCode;
+
+    @Value("${vnpay.api.version:2.1.0}")
+    private String vnp_Version;
+
+    @Value("${vnpay.api.command:pay}")
+    private String vnp_Command;
 
     @Value("${vnpay.api.secretKey}")
-    public String secretKey;
+    private String secretKey;
 
-    public static String vnp_ApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
+    public String getVnp_PayUrl() {
+        return vnp_PayUrl;
+    }
+
+    public String getVnp_ReturnUrl() {
+        return vnp_ReturnUrl;
+    }
+
+    public String getVnp_TmnCode() {
+        return vnp_TmnCode;
+    }
+
+    public String getVnp_Version() {
+        return vnp_Version;
+    }
+
+    public String getVnp_Command() {
+        return vnp_Command;
+    }
 
     public static String md5(String message) {
         String digest = null;
@@ -67,7 +97,11 @@ public class VNPayConfig {
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
                 sb.append(fieldName);
                 sb.append("=");
-                sb.append(fieldValue);
+                try {
+                    sb.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                } catch (Exception e) {
+                    sb.append(fieldValue);
+                }
             }
             if (itr.hasNext()) {
                 sb.append("&");
@@ -78,14 +112,13 @@ public class VNPayConfig {
 
     public static String hmacSHA512(final String key, final String data) {
         try {
-
             if (key == null || data == null) {
                 throw new NullPointerException();
             }
             final Mac hmac512 = Mac.getInstance("HmacSHA512");
             byte[] hmacKeyBytes = key.getBytes();
-            final SecretKeySpec secretKey = new SecretKeySpec(hmacKeyBytes, "HmacSHA512");
-            hmac512.init(secretKey);
+            final SecretKeySpec secretKeySpec = new SecretKeySpec(hmacKeyBytes, "HmacSHA512");
+            hmac512.init(secretKeySpec);
             byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
             byte[] result = hmac512.doFinal(dataBytes);
             StringBuilder sb = new StringBuilder(2 * result.length);
@@ -93,10 +126,37 @@ public class VNPayConfig {
                 sb.append(String.format("%02x", b & 0xff));
             }
             return sb.toString();
-
         } catch (Exception ex) {
             return "";
         }
+    }
+
+    public boolean verifySignature(Map<String, String> fields, String secureHash) {
+        List<String> fieldNames = new ArrayList<>(fields.keySet());
+        fieldNames.remove("vnp_SecureHash");
+        fieldNames.remove("vnp_SecureHashType");
+        Collections.sort(fieldNames);
+        StringBuilder sb = new StringBuilder();
+        Iterator<String> itr = fieldNames.iterator();
+        while (itr.hasNext()) {
+            String fieldName = itr.next();
+            String fieldValue = fields.get(fieldName);
+            if ((fieldValue != null) && (fieldValue.length() > 0)) {
+                sb.append(fieldName);
+                sb.append("=");
+                try {
+                    // VNPay requires parameters to be URL encoded in the hash data
+                    sb.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                } catch (Exception e) {
+                    sb.append(fieldValue);
+                }
+            }
+            if (itr.hasNext()) {
+                sb.append("&");
+            }
+        }
+        String calculatedHash = hmacSHA512(secretKey, sb.toString());
+        return calculatedHash.equalsIgnoreCase(secureHash);
     }
 
     public static String getIpAddress(HttpServletRequest request) {

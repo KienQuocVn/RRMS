@@ -50,6 +50,7 @@ public enum ErrorCode {
     INVOICE_ALREADY_PAID(HttpStatus.NOT_FOUND.value(), "Hóa đơn này đã bị hủy trước đó.", HttpStatus.NOT_FOUND),
     INVOICE_CANNOT_BE_DELETED(
             HttpStatus.NOT_FOUND.value(), "Không thể xóa hóa đơn đã được thanh toán.", HttpStatus.NOT_FOUND),
+    INVALID_INPUT(1006, "Dữ liệu đầu vào không hợp lệ", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

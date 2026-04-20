@@ -2,6 +2,8 @@ package com.rrms.rrms.controllers;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -70,7 +72,7 @@ public class AccountController {
 
     @PostMapping("/createAccount")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ApiResponse<AccountResponse> createAccount(@RequestBody AccountRequest accountRequest) {
+    public ApiResponse<AccountResponse> createAccount(@RequestBody @Valid AccountRequest accountRequest) {
         AccountResponse accountResponse = accountService.createAccount(accountRequest);
         return ApiResponse.<AccountResponse>builder()
                 .message("Account created successfully")
@@ -82,7 +84,7 @@ public class AccountController {
     @PutMapping("/updateAccount/{username}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public ApiResponse<AccountResponse> updateAccount(
-            @PathVariable String username, @RequestBody AccountRequest accountRequest) {
+            @PathVariable String username, @RequestBody @Valid AccountRequest accountRequest) {
         AccountResponse accountResponse = accountService.updateAccount(username, accountRequest);
         return ApiResponse.<AccountResponse>builder()
                 .message("Account updated successfully")
@@ -124,7 +126,7 @@ public class AccountController {
 
     @Operation(summary = "Update profile by username")
     @PutMapping("/profile")
-    public ApiResponse<AccountResponse> updateProfile(@RequestBody AccountRequest accountRequest) {
+    public ApiResponse<AccountResponse> updateProfile(@RequestBody @Valid AccountRequest accountRequest) {
         AccountResponse accountResponse = accountService.update(accountRequest);
         log.info("Update profile successfully");
         return ApiResponse.<AccountResponse>builder()
