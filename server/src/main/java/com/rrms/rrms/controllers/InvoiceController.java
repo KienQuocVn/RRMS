@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,11 +40,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/invoices")
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class InvoiceController {
-    @Autowired
-    private IInvoices invoices;
+    private final IInvoices invoices;
 
-    @Autowired
-    private QRCodeService qrCodeService;
+    private final QRCodeService qrCodeService;
 
     @PostMapping("/create")
     public ResponseEntity<InvoiceResponse> createInvoice(@RequestBody InvoiceRequest request) {
@@ -56,13 +53,13 @@ public class InvoiceController {
     @PutMapping("/{invoiceId}/cancel")
     public ResponseEntity<String> cancelInvoice(@PathVariable UUID invoiceId) {
         invoices.cancelInvoice(invoiceId);
-        return ResponseEntity.ok("Hóa đơn đã được hủy thành công");
+        return ResponseEntity.ok("HÃ³a Ä‘Æ¡n Ä‘Ã£ Ä‘Æ°á»£c há»§y thÃ nh cÃ´ng");
     }
 
     @DeleteMapping("/delete/{invoiceId}")
     public ResponseEntity<?> deleteInvoice(@PathVariable("invoiceId") UUID invoiceId) {
         invoices.deleteInvoice(invoiceId);
-        return ResponseEntity.ok("Xóa hóa đơn thành công.");
+        return ResponseEntity.ok("XÃ³a hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng.");
     }
 
     @PutMapping("/update/{invoiceId}")
@@ -89,22 +86,22 @@ public class InvoiceController {
         return ResponseEntity.ok(response);
     }
 
-    // Endpoint mới để tạo mã QR
+    // Endpoint má»›i Ä‘á»ƒ táº¡o mÃ£ QR
     @GetMapping("/{invoiceId}/generate-qr")
     public ResponseEntity<QRCodeResponse> generateQrCode(@PathVariable UUID invoiceId) {
         try {
             Invoice invoice = invoices.findInvoiceById(invoiceId);
 
-            double totalAmount = calculateTotalAmount(invoice); // Tính tổng tiền
-            String bankAccount = "0919925302"; // Số tài khoản ngân hàng
-            String bankName = "MB Bank"; // Tên ngân hàng
-            String description = "Thanh toán hóa đơn: " + invoiceId.toString();
+            double totalAmount = calculateTotalAmount(invoice); // TÃ­nh tá»•ng tiá»n
+            String bankAccount = "0919925302"; // Sá»‘ tÃ i khoáº£n ngÃ¢n hÃ ng
+            String bankName = "MB Bank"; // TÃªn ngÃ¢n hÃ ng
+            String description = "Thanh toÃ¡n hÃ³a Ä‘Æ¡n: " + invoiceId.toString();
 
-            // Tạo nội dung QR
+            // Táº¡o ná»™i dung QR
             String qrContent =
                     String.format("STK:%s\nNH:%s\nSoTien:%.2f\nND:%s", bankAccount, bankName, totalAmount, description);
 
-            // Tạo mã QR
+            // Táº¡o mÃ£ QR
             String qrCodeImage = qrCodeService.generateQRCodeImage(qrContent, 200, 200);
 
             QRCodeResponse response = new QRCodeResponse(qrCodeImage, qrContent);

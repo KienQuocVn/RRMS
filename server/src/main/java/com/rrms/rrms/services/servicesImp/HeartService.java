@@ -3,7 +3,6 @@ package com.rrms.rrms.services.servicesImp;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.response.HeartResponse;
@@ -14,16 +13,16 @@ import com.rrms.rrms.repositories.BulletinBoardRepository;
 import com.rrms.rrms.repositories.HeartRepository;
 import com.rrms.rrms.services.IHeartService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class HeartService implements IHeartService {
-    @Autowired
-    private HeartRepository heartRepository;
+    private final HeartRepository heartRepository;
 
-    @Autowired
-    private BulletinBoardRepository bulletinBoardRepository;
+    private final BulletinBoardRepository bulletinBoardRepository;
 
-    @Autowired
-    private HeartMapper heartMapper;
+    private final HeartMapper heartMapper;
 
     @Override
     public HeartResponse getHeartByUsername(String username) {

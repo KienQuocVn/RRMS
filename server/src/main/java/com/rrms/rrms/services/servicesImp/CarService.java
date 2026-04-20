@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.CarRequest;
@@ -15,20 +14,21 @@ import com.rrms.rrms.repositories.CarRepository;
 import com.rrms.rrms.repositories.RoomRepository;
 import com.rrms.rrms.services.ICarService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class CarService implements ICarService {
 
-    @Autowired
-    private CarRepository carRepository;
+    private final CarRepository carRepository;
 
-    @Autowired
-    private RoomRepository roomRepository;
+    private final RoomRepository roomRepository;
 
     @Override
     public CarResponse createCar(CarRequest carRequest) {
         Room room = roomRepository
                 .findById(carRequest.getRoomId())
-                .orElseThrow(() -> new IllegalArgumentException("Room không tồn tại"));
+                .orElseThrow(() -> new IllegalArgumentException("Room khÃ´ng tá»“n táº¡i"));
 
         Car car = new Car();
         car.setName(carRequest.getName());
@@ -43,7 +43,8 @@ public class CarService implements ICarService {
 
     @Override
     public CarResponse getCarById(UUID carId) {
-        Car car = carRepository.findById(carId).orElseThrow(() -> new IllegalArgumentException("Car không tồn tại"));
+        Car car =
+                carRepository.findById(carId).orElseThrow(() -> new IllegalArgumentException("Car khÃ´ng tá»“n táº¡i"));
 
         return mapToResponse(car);
     }
@@ -55,11 +56,12 @@ public class CarService implements ICarService {
 
     @Override
     public CarResponse updateCar(UUID carId, CarRequest carRequest) {
-        Car car = carRepository.findById(carId).orElseThrow(() -> new IllegalArgumentException("Car không tồn tại"));
+        Car car =
+                carRepository.findById(carId).orElseThrow(() -> new IllegalArgumentException("Car khÃ´ng tá»“n táº¡i"));
 
         Room room = roomRepository
                 .findById(carRequest.getRoomId())
-                .orElseThrow(() -> new IllegalArgumentException("Room không tồn tại"));
+                .orElseThrow(() -> new IllegalArgumentException("Room khÃ´ng tá»“n táº¡i"));
 
         car.setName(carRequest.getName());
         car.setNumber(carRequest.getNumber());
@@ -74,7 +76,7 @@ public class CarService implements ICarService {
     @Override
     public void deleteCar(UUID carId) {
         if (!carRepository.existsById(carId)) {
-            throw new IllegalArgumentException("Car không tồn tại");
+            throw new IllegalArgumentException("Car khÃ´ng tá»“n táº¡i");
         }
 
         carRepository.deleteById(carId);
@@ -82,9 +84,9 @@ public class CarService implements ICarService {
 
     @Override
     public List<CarResponse> getCarsByRoomId(UUID roomId) {
-        List<Car> cars = carRepository.findByRoom_RoomId(roomId); // Sử dụng phương thức từ repository
+        List<Car> cars = carRepository.findByRoom_RoomId(roomId); // Sá»­ dá»¥ng phÆ°Æ¡ng thá»©c tá»« repository
         if (cars.isEmpty()) {
-            throw new IllegalArgumentException("Không có xe nào trong phòng này");
+            throw new IllegalArgumentException("KhÃ´ng cÃ³ xe nÃ o trong phÃ²ng nÃ y");
         }
         return cars.stream().map(this::mapToResponse).collect(Collectors.toList());
     }

@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,24 +30,23 @@ import lombok.extern.slf4j.Slf4j;
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class ContractController {
 
-    @Autowired
-    private IContractService contractService;
+    private final IContractService contractService;
 
-    // Tạo mới hợp đồng
+    // Táº¡o má»›i há»£p Ä‘á»“ng
     @PostMapping
     public ResponseEntity<ContractResponse> createContract(@RequestBody ContractRequest request) {
         ContractResponse response = contractService.createContract(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // Lấy hợp đồng theo ID
+    // Láº¥y há»£p Ä‘á»“ng theo ID
     @GetMapping("/{contractId}")
     public ResponseEntity<ContractResponse> getContractById(@PathVariable UUID contractId) {
         ContractResponse response = contractService.getContractById(contractId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // Cập nhật hợp đồng
+    // Cáº­p nháº­t há»£p Ä‘á»“ng
     @PutMapping("/{contractId}")
     public ResponseEntity<ContractResponse> updateContract(
             @PathVariable UUID contractId, @RequestBody ContractRequest request) {
@@ -56,14 +54,14 @@ public class ContractController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // Xóa hợp đồng
+    // XÃ³a há»£p Ä‘á»“ng
     @DeleteMapping("/{contractId}")
     public ResponseEntity<Void> deleteContract(@PathVariable UUID contractId) {
         contractService.deleteContract(contractId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    // Xóa hợp đồng theo room Id
+    // XÃ³a há»£p Ä‘á»“ng theo room Id
     @DeleteMapping("/room/{roomId}")
     public ResponseEntity<Void> deleteContractByRoomId(@PathVariable UUID roomId) {
         contractService.deleteContractByRoomId(roomId);
@@ -76,7 +74,7 @@ public class ContractController {
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
-    // Lấy hợp đồng theo ID
+    // Láº¥y há»£p Ä‘á»“ng theo ID
     @GetMapping("room/{roomId}")
     public ResponseEntity<ContractResponse> getContractByRoomId(@PathVariable UUID roomId) {
         ContractResponse response = contractService.getAllContractsByRoomId(roomId);
@@ -90,7 +88,7 @@ public class ContractController {
             @RequestParam(name = "reportCloseDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy")
                     Date reportCloseDate) {
 
-        // Thực hiện cập nhật trạng thái hợp đồng
+        // Thá»±c hiá»‡n cáº­p nháº­t tráº¡ng thÃ¡i há»£p Ä‘á»“ng
         int updatedRows = contractService.updateContractStatus(roomId, newStatus, reportCloseDate);
 
         if (updatedRows > 0) {
@@ -108,7 +106,7 @@ public class ContractController {
             @RequestParam Double price,
             @RequestParam Double debt) {
 
-        // Thực hiện cập nhật trạng thái hợp đồng
+        // Thá»±c hiá»‡n cáº­p nháº­t tráº¡ng thÃ¡i há»£p Ä‘á»“ng
         contractService.updateContractDetailsByContractId(ContractId, roomId, deposit, price, debt);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -141,12 +139,13 @@ public class ContractController {
             @RequestParam(name = "newCloseContract", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy")
                     Date newCloseContract) {
         if (newCloseContract == null) {
-            return ResponseEntity.badRequest().body("Ngày kết thúc hợp đồng không hợp lệ hoặc không được cung cấp!");
+            return ResponseEntity.badRequest()
+                    .body("NgÃ y káº¿t thÃºc há»£p Ä‘á»“ng khÃ´ng há»£p lá»‡ hoáº·c khÃ´ng Ä‘Æ°á»£c cung cáº¥p!");
         }
 
         try {
             contractService.updateCloseContract(contractId, newCloseContract);
-            return ResponseEntity.ok("Cập nhật ngày kết thúc hợp đồng thành công!");
+            return ResponseEntity.ok("Cáº­p nháº­t ngÃ y káº¿t thÃºc há»£p Ä‘á»“ng thÃ nh cÃ´ng!");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

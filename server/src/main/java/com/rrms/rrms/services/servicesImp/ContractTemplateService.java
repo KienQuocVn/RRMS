@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.ContractTemplateRequest;
@@ -15,14 +14,15 @@ import com.rrms.rrms.repositories.ContractTemplateRepository;
 import com.rrms.rrms.repositories.MotelRepository;
 import com.rrms.rrms.services.IContractTemplateService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ContractTemplateService implements IContractTemplateService {
 
-    @Autowired
-    private ContractTemplateRepository contractTemplateRepository;
+    private final ContractTemplateRepository contractTemplateRepository;
 
-    @Autowired
-    private MotelRepository motelRepository;
+    private final MotelRepository motelRepository;
 
     @Override
     public ContractTemplateResponse createContractTemplate(ContractTemplateRequest request) {

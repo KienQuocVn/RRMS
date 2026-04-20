@@ -2,13 +2,14 @@ package com.rrms.rrms.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import com.rrms.rrms.dto.request.BulletinBoardReviewsRequest;
 import com.rrms.rrms.dto.response.BulletinBoardReviewsResponse;
 import com.rrms.rrms.dto.response.RatingHistoryResponse;
 import com.rrms.rrms.models.BulletinBoardReviews;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface BulletinBoardReviewMapper {
 
     BulletinBoardReviewsResponse toBulletinBoardReviewsResponse(BulletinBoardReviews review);

@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.TemporaryR_contractRequest;
@@ -19,26 +18,25 @@ import com.rrms.rrms.repositories.MotelRepository;
 import com.rrms.rrms.repositories.TemporaryR_contractRepository;
 import com.rrms.rrms.services.ITemporaryR_contract;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class TemporaryR_contractService implements ITemporaryR_contract {
 
-    @Autowired
-    TemporaryR_contractRepository temporaryR_contractRepository;
+    final TemporaryR_contractRepository temporaryR_contractRepository;
 
-    @Autowired
-    private MotelRepository motelRepository;
+    private final MotelRepository motelRepository;
 
-    @Autowired
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
 
-    @Autowired
-    TemporaryR_contractMapper temporaryRContractMapper;
+    final TemporaryR_contractMapper temporaryRContractMapper;
 
     @Override
     public TemporaryR_contractRespone insert(TemporaryR_contractRequest request) {
         TemporaryR_contract contract = new TemporaryR_contract();
 
-        // Thiết lập các trường từ request
+        // Thiáº¿t láº­p cÃ¡c trÆ°á»ng tá»« request
         contract.setHouseholdhead(request.getHouseholdhead());
         contract.setRepresentativename(request.getRepresentativename());
         contract.setPhone(request.getPhone());
@@ -49,7 +47,7 @@ public class TemporaryR_contractService implements ITemporaryR_contract {
         contract.setPlaceofissue(request.getPlaceofissue());
         contract.setDateofissue(request.getDateofissue());
 
-        // Tìm kiếm Motel và Account dựa vào motelId và tenantUsername
+        // TÃ¬m kiáº¿m Motel vÃ  Account dá»±a vÃ o motelId vÃ  tenantUsername
         Motel motel = motelRepository
                 .findById(UUID.fromString(request.getMotelId()))
                 .orElseThrow(() -> new RuntimeException("Motel not found"));
@@ -60,11 +58,11 @@ public class TemporaryR_contractService implements ITemporaryR_contract {
                 .orElseThrow(() -> new RuntimeException("Account not found"));
         contract.setTenant(tenant);
 
-        // Lưu TemporaryR_contract và trả về response
+        // LÆ°u TemporaryR_contract vÃ  tráº£ vá» response
         temporaryR_contractRepository.save(contract);
 
-        // Trả về TemporaryR_contractRespone
-        return new TemporaryR_contractRespone(/* truyền các tham số từ đối tượng contract */ );
+        // Tráº£ vá» TemporaryR_contractRespone
+        return new TemporaryR_contractRespone(/* truyá»n cÃ¡c tham sá»‘ tá»« Ä‘á»‘i tÆ°á»£ng contract */ );
     }
 
     @Override

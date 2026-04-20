@@ -3,7 +3,6 @@ package com.rrms.rrms.controllers;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,10 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class ContractTemplateController {
 
-    @Autowired
-    private IContractTemplateService contractTemplateService;
+    private final IContractTemplateService contractTemplateService;
 
-    // Tạo mới một Contract Template
+    // Táº¡o má»›i má»™t Contract Template
     @PostMapping
     public ResponseEntity<ContractTemplateResponse> createContractTemplate(
             @RequestBody ContractTemplateRequest request) {
@@ -39,7 +37,7 @@ public class ContractTemplateController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // Lấy thông tin của một Contract Template theo ID
+    // Láº¥y thÃ´ng tin cá»§a má»™t Contract Template theo ID
     @GetMapping("/{id}")
     public ResponseEntity<ContractTemplateResponse> getContractTemplateById(@PathVariable UUID id) {
         ContractTemplateResponse response = contractTemplateService.getContractTemplateById(id);
@@ -48,21 +46,21 @@ public class ContractTemplateController {
                 : ResponseEntity.notFound().build();
     }
 
-    // Lấy danh sách tất cả Contract Templates
+    // Láº¥y danh sÃ¡ch táº¥t cáº£ Contract Templates
     @GetMapping
     public ResponseEntity<List<ContractTemplateResponse>> getAllContractTemplates() {
         List<ContractTemplateResponse> responses = contractTemplateService.getAllContractTemplates();
         return ResponseEntity.ok(responses);
     }
 
-    // Lấy danh sách Contract Templates theo Motel ID
+    // Láº¥y danh sÃ¡ch Contract Templates theo Motel ID
     @GetMapping("/motel/{motelId}")
     public ResponseEntity<List<ContractTemplateResponse>> getContractTemplatesByMotelId(@PathVariable UUID motelId) {
         List<ContractTemplateResponse> responses = contractTemplateService.getContractTemplatesByMotelId(motelId);
         return ResponseEntity.ok(responses);
     }
 
-    // Cập nhật thông tin của một Contract Template
+    // Cáº­p nháº­t thÃ´ng tin cá»§a má»™t Contract Template
     @PutMapping("/{id}")
     public ResponseEntity<ContractTemplateResponse> updateContractTemplate(
             @PathVariable UUID id, @RequestBody ContractTemplateRequest request) {
@@ -72,7 +70,7 @@ public class ContractTemplateController {
                 : ResponseEntity.notFound().build();
     }
 
-    // Xóa một Contract Template theo ID
+    // XÃ³a má»™t Contract Template theo ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteContractTemplate(@PathVariable UUID id) {
         contractTemplateService.deleteContractTemplate(id);

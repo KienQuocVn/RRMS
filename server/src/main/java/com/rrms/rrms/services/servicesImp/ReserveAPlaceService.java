@@ -6,7 +6,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.codec.binary.Hex;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.ReserveAPlaceRequest;
@@ -29,11 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ReserveAPlaceService implements IReserveAPlaceService {
 
-    @Autowired
-    private ReserveAPlaceRepository reserveAPlaceRepository;
+    private final ReserveAPlaceRepository reserveAPlaceRepository;
 
-    @Autowired
-    private RoomRepository roomRepository;
+    private final RoomRepository roomRepository;
 
     @Override
     public ReserveAPlaceResponse createReserveAPlace(ReserveAPlaceRequest request) {
@@ -92,19 +89,19 @@ public class ReserveAPlaceService implements IReserveAPlaceService {
 
     @Override
     public void deleteReserveAPlace(UUID id) {
-        // Chuyển UUID thành HEX (chuỗi HEX)
+        // Chuyá»ƒn UUID thÃ nh HEX (chuá»—i HEX)
         String hexId = Hex.encodeHexString(toBytes(id));
 
-        // Kiểm tra sự tồn tại của ReserveAPlace
+        // Kiá»ƒm tra sá»± tá»“n táº¡i cá»§a ReserveAPlace
         if (!reserveAPlaceRepository.existsById(id)) {
             throw new RuntimeException("ReserveAPlace not found");
         }
 
-        // Thực hiện xóa bằng cách gọi custom query
+        // Thá»±c hiá»‡n xÃ³a báº±ng cÃ¡ch gá»i custom query
         reserveAPlaceRepository.deleteByIdInHex(hexId);
     }
 
-    // Hàm chuyển UUID thành mảng byte
+    // HÃ m chuyá»ƒn UUID thÃ nh máº£ng byte
     private byte[] toBytes(UUID uuid) {
         ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
         buffer.putLong(uuid.getMostSignificantBits());
@@ -117,15 +114,15 @@ public class ReserveAPlaceService implements IReserveAPlaceService {
         List<Reserve_a_place> reserveAPlaces = reserveAPlaceRepository.findByRoom_RoomId(roomId);
 
         return reserveAPlaces.stream()
-                .map(this::mapToResponse) // Chuyển đổi thành DTO
+                .map(this::mapToResponse) // Chuyá»ƒn Ä‘á»•i thÃ nh DTO
                 .collect(Collectors.toList());
     }
 
     private ReserveAPlaceResponse mapToResponse(Reserve_a_place reserveAPlace) {
         RoomResponse2 roomResponse = RoomResponse2.builder()
                 .roomId(reserveAPlace.getRoom().getRoomId())
-                .name(reserveAPlace.getRoom().getName()) // Ví dụ trường roomName
-                .price(reserveAPlace.getRoom().getPrice()) // Ví dụ trường roomPrice
+                .name(reserveAPlace.getRoom().getName()) // VÃ­ dá»¥ trÆ°á»ng roomName
+                .price(reserveAPlace.getRoom().getPrice()) // VÃ­ dá»¥ trÆ°á»ng roomPrice
                 .build();
         log.debug(
                 "Map reserve_a_place reserveAPlaceId={} status={}",
@@ -140,7 +137,7 @@ public class ReserveAPlaceService implements IReserveAPlaceService {
                 .deposit(reserveAPlace.getDeposit())
                 .note(reserveAPlace.getNote())
                 .status(reserveAPlace.getStatus())
-                .room(roomResponse) // Trả về RoomResponse
+                .room(roomResponse) // Tráº£ vá» RoomResponse
                 .build();
     }
 }

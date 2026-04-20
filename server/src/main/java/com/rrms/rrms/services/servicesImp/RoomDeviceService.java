@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.RoomDeviceRequest;
@@ -18,19 +17,18 @@ import com.rrms.rrms.repositories.RoomDeviceRepository;
 import com.rrms.rrms.repositories.RoomRepository;
 import com.rrms.rrms.services.IRoomDeviceService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class RoomDeviceService implements IRoomDeviceService {
-    @Autowired
-    private RoomDeviceRepository roomDeviceRepository;
+    private final RoomDeviceRepository roomDeviceRepository;
 
-    @Autowired
-    private RoomRepository roomRepository;
+    private final RoomRepository roomRepository;
 
-    @Autowired
-    private MotelDeviceRepository motelDeviceRepository;
+    private final MotelDeviceRepository motelDeviceRepository;
 
-    @Autowired
-    private RoomDeviceMapper mapper;
+    private final RoomDeviceMapper mapper;
 
     @Override
     public RoomDeviceResponse insertRoomDevice(RoomDeviceRequest roomDeviceRequest) {

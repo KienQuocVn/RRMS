@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,52 +20,48 @@ import com.rrms.rrms.models.*;
 import com.rrms.rrms.repositories.*;
 import com.rrms.rrms.services.IMotelService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class MotelService implements IMotelService {
-    @Autowired
-    private MotelRepository motelRepository;
+    private final MotelRepository motelRepository;
 
-    @Autowired
-    private MotelMapper motelMapper;
+    private final MotelMapper motelMapper;
 
-    @Autowired
-    private AccountMapper accountMapper;
+    private final AccountMapper accountMapper;
 
-    @Autowired
-    private ContractTemplateRepository contractTemplateRepository;
+    private final ContractTemplateRepository contractTemplateRepository;
 
-    @Autowired
-    private ContractRepository contractRepository;
+    private final ContractRepository contractRepository;
 
-    @Autowired
-    private RoomRepository roomRepository;
+    private final RoomRepository roomRepository;
 
-    @Autowired
-    private ReserveAPlaceRepository reserveAPlaceRepository;
+    private final ReserveAPlaceRepository reserveAPlaceRepository;
 
     @Override
     public Optional<Integer> getTotalRooms(UUID motelId, String username) {
         Optional<Motel> motel = motelRepository.findByMotelNameAndUsername(motelId, username);
-        return motel.map(m -> m.getRooms().size()); // Trả về số lượng phòng
+        return motel.map(m -> m.getRooms().size()); // Tráº£ vá» sá»‘ lÆ°á»£ng phÃ²ng
     }
 
     @Override
     public MotelResponse insert(MotelRequest motel) {
-        // Lưu motel và lấy entity đã lưu cùng với ID được tạo
+        // LÆ°u motel vÃ  láº¥y entity Ä‘Ã£ lÆ°u cÃ¹ng vá»›i ID Ä‘Æ°á»£c táº¡o
         Motel savedMotel = motelRepository.save(motelMapper.motelRequestToMotel(motel));
 
-        // Tạo ContractTemplateRequest với ID của Motel vừa lưu
+        // Táº¡o ContractTemplateRequest vá»›i ID cá»§a Motel vá»«a lÆ°u
         ContractTemplate contractTemplate = new ContractTemplate();
-        contractTemplate.setMotel(savedMotel); // Sử dụng ID từ entity đã lưu
-        contractTemplate.setTemplatename("Mẫu mặc định");
-        contractTemplate.setNamecontract("Mẫu mặc định");
+        contractTemplate.setMotel(savedMotel); // Sá»­ dá»¥ng ID tá»« entity Ä‘Ã£ lÆ°u
+        contractTemplate.setTemplatename("Máº«u máº·c Ä‘á»‹nh");
+        contractTemplate.setNamecontract("Máº«u máº·c Ä‘á»‹nh");
         contractTemplate.setSortorder(1);
-        contractTemplate.setContent("Mẫu mặc định");
+        contractTemplate.setContent("Máº«u máº·c Ä‘á»‹nh");
 
-        // Lưu contract template
+        // LÆ°u contract template
         contractTemplateRepository.save(contractTemplate);
 
-        // Trả về response
+        // Tráº£ vá» response
         return motelMapper.motelToMotelResponse(savedMotel);
     }
 
@@ -152,10 +147,10 @@ public class MotelService implements IMotelService {
                     .findContractsByMotelIdAndStatus(motel.getMotelId(), ContractStatus.ReportEnd)
                     .size();
 
-            // Đếm số phòng không có hợp đồng và số phòng đã đặt cọc
+            // Äáº¿m sá»‘ phÃ²ng khÃ´ng cÃ³ há»£p Ä‘á»“ng vÃ  sá»‘ phÃ²ng Ä‘Ã£ Ä‘áº·t cá»c
             List<Room> rooms = roomRepository.findByMotelMotelId(motel.getMotelId());
             int noContractCount = 0;
-            int reservedCount = 0; // Biến để đếm số phòng đã đặt cọc
+            int reservedCount = 0; // Biáº¿n Ä‘á»ƒ Ä‘áº¿m sá»‘ phÃ²ng Ä‘Ã£ Ä‘áº·t cá»c
 
             for (Room room : rooms) {
                 boolean hasContract = contractRepository
@@ -165,9 +160,9 @@ public class MotelService implements IMotelService {
                 if (!hasContract) {
                     noContractCount++;
                 }
-                // Kiểm tra phòng có đặt cọc
+                // Kiá»ƒm tra phÃ²ng cÃ³ Ä‘áº·t cá»c
                 List<Reserve_a_place> reserves = reserveAPlaceRepository.findByRoom_RoomId(room.getRoomId());
-                reservedCount += reserves.size(); // Tổng số phòng đã đặt cọc
+                reservedCount += reserves.size(); // Tá»•ng sá»‘ phÃ²ng Ä‘Ã£ Ä‘áº·t cá»c
             }
 
             MotelRoomCountResponse response = new MotelRoomCountResponse(
@@ -179,7 +174,7 @@ public class MotelService implements IMotelService {
                     stakeCount,
                     reportEndCount,
                     noContractCount,
-                    reservedCount // Thêm số phòng đã đặt cọc
+                    reservedCount // ThÃªm sá»‘ phÃ²ng Ä‘Ã£ Ä‘áº·t cá»c
                     );
 
             responseList.add(response);
@@ -203,24 +198,25 @@ public class MotelService implements IMotelService {
         List<Object[]> results = motelRepository.getTotalPaidInvoicesByMotelId(motelId);
 
         if (!results.isEmpty() && results.get(0)[2] != null) {
-            Object value = results.get(0)[2]; // Cột "Total_Paid_Amount" trong stored procedure
+            Object value = results.get(0)[2]; // Cá»™t "Total_Paid_Amount" trong stored procedure
 
-            // Kiểm tra kiểu dữ liệu trả về
+            // Kiá»ƒm tra kiá»ƒu dá»¯ liá»‡u tráº£ vá»
             if (value instanceof BigDecimal) {
-                return (BigDecimal) value; // Nếu là BigDecimal, trả về trực tiếp
+                return (BigDecimal) value; // Náº¿u lÃ  BigDecimal, tráº£ vá» trá»±c tiáº¿p
             }
             if (value instanceof String) {
                 try {
-                    return new BigDecimal((String) value); // Chuyển đổi từ String
+                    return new BigDecimal((String) value); // Chuyá»ƒn Ä‘á»•i tá»« String
                 } catch (NumberFormatException e) {
-                    throw new IllegalStateException("Giá trị trả về không hợp lệ: " + value, e);
+                    throw new IllegalStateException("GiÃ¡ trá»‹ tráº£ vá» khÃ´ng há»£p lá»‡: " + value, e);
                 }
             }
             if (value instanceof Number) {
-                return BigDecimal.valueOf(((Number) value).doubleValue()); // Chuyển đổi từ các kiểu số khác
+                return BigDecimal.valueOf(
+                        ((Number) value).doubleValue()); // Chuyá»ƒn Ä‘á»•i tá»« cÃ¡c kiá»ƒu sá»‘ khÃ¡c
             }
         }
-        return BigDecimal.ZERO; // Trả về 0 nếu không có kết quả
+        return BigDecimal.ZERO; // Tráº£ vá» 0 náº¿u khÃ´ng cÃ³ káº¿t quáº£
     }
 
     @Override
@@ -229,18 +225,18 @@ public class MotelService implements IMotelService {
         if (!results.isEmpty() && results.get(0)[1] != null) {
             Object value = results.get(0)[1];
 
-            // Xử lý kết quả trả về
+            // Xá»­ lÃ½ káº¿t quáº£ tráº£ vá»
             if (value instanceof String) {
                 try {
-                    return new BigDecimal((String) value); // Chuyển từ String sang BigDecimal
+                    return new BigDecimal((String) value); // Chuyá»ƒn tá»« String sang BigDecimal
                 } catch (NumberFormatException e) {
-                    return BigDecimal.ZERO; // Trả về 0 nếu không chuyển được
+                    return BigDecimal.ZERO; // Tráº£ vá» 0 náº¿u khÃ´ng chuyá»ƒn Ä‘Æ°á»£c
                 }
             }
             if (value instanceof BigDecimal) {
-                return (BigDecimal) value; // Nếu là BigDecimal, trả về trực tiếp
+                return (BigDecimal) value; // Náº¿u lÃ  BigDecimal, tráº£ vá» trá»±c tiáº¿p
             }
         }
-        return BigDecimal.ZERO; // Trả về 0 nếu không có kết quả
+        return BigDecimal.ZERO; // Tráº£ vá» 0 náº¿u khÃ´ng cÃ³ káº¿t quáº£
     }
 }

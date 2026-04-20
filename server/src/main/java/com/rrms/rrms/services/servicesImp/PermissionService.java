@@ -3,7 +3,6 @@ package com.rrms.rrms.services.servicesImp;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.PermissionRequest;
@@ -24,11 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PermissionService implements IPermissionService {
 
-    @Autowired
-    PermissionRepository permissionRepository;
+    final PermissionRepository permissionRepository;
 
-    @Autowired
-    PermissionMapper permissionMapper;
+    final PermissionMapper permissionMapper;
 
     @Override
     public List<PermissionResponse> getAllPermissions() {

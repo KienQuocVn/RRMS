@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.models.Account;
@@ -13,19 +12,18 @@ import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.repositories.*;
 import com.rrms.rrms.services.IStatistics;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class StatisticsService implements IStatistics {
-    @Autowired
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
 
-    @Autowired
-    private AuthRepository authRepository;
+    private final AuthRepository authRepository;
 
-    @Autowired
-    private TenantRepository tenantRepository;
+    private final TenantRepository tenantRepository;
 
-    @Autowired
-    private MotelRepository motelRepository;
+    private final MotelRepository motelRepository;
 
     @Override
     public Long getTotalAccounts() {
@@ -90,15 +88,15 @@ public class StatisticsService implements IStatistics {
     public Map<Integer, Long> getTotalMotelsByMonth() {
         List<Motel> motels = motelRepository.findAll();
 
-        // Khởi tạo Map để chứa tổng số nhà trọ cho từng tháng
+        // Khá»Ÿi táº¡o Map Ä‘á»ƒ chá»©a tá»•ng sá»‘ nhÃ  trá» cho tá»«ng thÃ¡ng
         Map<Integer, Long> totalsByMonth = new HashMap<>();
 
-        // Đặt giá trị mặc định cho từng tháng là 0
+        // Äáº·t giÃ¡ trá»‹ máº·c Ä‘á»‹nh cho tá»«ng thÃ¡ng lÃ  0
         for (int i = 1; i <= 12; i++) {
             totalsByMonth.put(i, 0L);
         }
 
-        // Tính tổng số nhà trọ cho từng tháng
+        // TÃ­nh tá»•ng sá»‘ nhÃ  trá» cho tá»«ng thÃ¡ng
         for (Motel motel : motels) {
             int month = motel.getCreatedAt().getMonthValue();
             totalsByMonth.put(month, totalsByMonth.get(month) + 1);

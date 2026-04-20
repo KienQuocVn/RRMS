@@ -3,7 +3,6 @@ package com.rrms.rrms.controllers;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,10 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class NameMotelServiceController {
 
-    @Autowired
-    private INameMotelServiceService nameMotelServiceService;
+    private final INameMotelServiceService nameMotelServiceService;
 
-    // Tạo mới một NameMotelService
+    // Táº¡o má»›i má»™t NameMotelService
     @PostMapping
     public ResponseEntity<NameMotelServiceResponse> createNameMotelService(
             @RequestBody NameMotelServiceRequest request) {
@@ -38,7 +36,7 @@ public class NameMotelServiceController {
         return ResponseEntity.ok(response);
     }
 
-    // Cập nhật một NameMotelService
+    // Cáº­p nháº­t má»™t NameMotelService
     @PutMapping("/{id}")
     public ResponseEntity<NameMotelServiceResponse> updateNameMotelService(
             @PathVariable UUID id, @RequestBody NameMotelServiceRequest request) {
@@ -46,21 +44,21 @@ public class NameMotelServiceController {
         return ResponseEntity.ok(response);
     }
 
-    // Lấy tất cả các NameMotelService
+    // Láº¥y táº¥t cáº£ cÃ¡c NameMotelService
     @GetMapping
     public ResponseEntity<List<NameMotelServiceResponse>> getAllNameMotelServices() {
         List<NameMotelServiceResponse> responses = nameMotelServiceService.getAllNameMotelServices();
         return ResponseEntity.ok(responses);
     }
 
-    // Lấy một NameMotelService theo ID
+    // Láº¥y má»™t NameMotelService theo ID
     @GetMapping("/{id}")
     public ResponseEntity<NameMotelServiceResponse> getNameMotelServiceById(@PathVariable UUID id) {
         NameMotelServiceResponse response = nameMotelServiceService.getNameMotelServiceById(id);
         return ResponseEntity.ok(response);
     }
 
-    // Xóa một NameMotelService theo ID
+    // XÃ³a má»™t NameMotelService theo ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNameMotelService(@PathVariable UUID id) {
         nameMotelServiceService.deleteNameMotelService(id);

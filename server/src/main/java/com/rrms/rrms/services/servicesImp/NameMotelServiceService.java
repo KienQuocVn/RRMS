@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.NameMotelServiceRequest;
@@ -13,13 +12,15 @@ import com.rrms.rrms.models.NameMotelService;
 import com.rrms.rrms.repositories.NameMotelServiceRepository;
 import com.rrms.rrms.services.INameMotelServiceService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class NameMotelServiceService implements INameMotelServiceService {
 
-    @Autowired
-    private NameMotelServiceRepository nameMotelServiceRepository;
+    private final NameMotelServiceRepository nameMotelServiceRepository;
 
-    // Chuyển đổi từ Request thành Entity
+    // Chuyá»ƒn Ä‘á»•i tá»« Request thÃ nh Entity
     private NameMotelService toNameMotelService(NameMotelServiceRequest request) {
         NameMotelService nameMotelService = new NameMotelService();
         nameMotelService.setTypeService(request.getTypeService());
@@ -28,7 +29,7 @@ public class NameMotelServiceService implements INameMotelServiceService {
         return nameMotelService;
     }
 
-    // Chuyển đổi từ Entity thành Response
+    // Chuyá»ƒn Ä‘á»•i tá»« Entity thÃ nh Response
     private NameMotelServiceResponse toNameMotelServiceResponse(NameMotelService nameMotelService) {
         return new NameMotelServiceResponse(
                 nameMotelService.getNameMotelServicesId(),

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.*;
@@ -23,32 +22,27 @@ import com.rrms.rrms.models.RoomService;
 import com.rrms.rrms.repositories.*;
 import com.rrms.rrms.services.IInvoices;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class InvoiceService implements IInvoices {
 
-    @Autowired
-    private InvoiceRepository invoiceRepository;
+    private final InvoiceRepository invoiceRepository;
 
-    @Autowired
-    private ContractRepository contractRepository;
+    private final ContractRepository contractRepository;
 
-    @Autowired
-    private DetailInvoiceRepository detailInvoiceRepository;
+    private final DetailInvoiceRepository detailInvoiceRepository;
 
-    @Autowired
-    private RoomDeviceRepository roomDeviceRepository;
+    private final RoomDeviceRepository roomDeviceRepository;
 
-    @Autowired
-    private RoomServiceRepository roomServiceRepository;
+    private final RoomServiceRepository roomServiceRepository;
 
-    @Autowired
-    private RoomRepository roomRepository;
+    private final RoomRepository roomRepository;
 
-    @Autowired
-    private TransactionRepository transactionRepository;
+    private final TransactionRepository transactionRepository;
 
-    @Autowired
-    private InvoiceAdditionItemRepository additionItemRepository;
+    private final InvoiceAdditionItemRepository additionItemRepository;
 
     @Override
     public List<InvoiceResponse> getInvoicesByMotelId(UUID motelId) {
@@ -92,11 +86,11 @@ public class InvoiceService implements IInvoices {
 
     @Override
     public void cancelInvoice(UUID invoiceId) {
-        // Tìm hóa đơn theo ID
+        // TÃ¬m hÃ³a Ä‘Æ¡n theo ID
         Invoice invoice =
                 invoiceRepository.findById(invoiceId).orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
 
-        // Kiểm tra trạng thái hóa đơn
+        // Kiá»ƒm tra tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n
         if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
             throw new AppException(ErrorCode.INVOICE_ALREADY_CANCELED);
         }
@@ -105,10 +99,10 @@ public class InvoiceService implements IInvoices {
             throw new AppException(ErrorCode.INVOICE_ALREADY_PAID);
         }
 
-        // Cập nhật trạng thái hóa đơn
+        // Cáº­p nháº­t tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n
         invoice.setPaymentStatus(PaymentStatus.CANCELED);
 
-        // Lưu hóa đơn vào cơ sở dữ liệu
+        // LÆ°u hÃ³a Ä‘Æ¡n vÃ o cÆ¡ sá»Ÿ dá»¯ liá»‡u
         invoiceRepository.save(invoice);
     }
 
@@ -143,7 +137,7 @@ public class InvoiceService implements IInvoices {
             List<InvoiceAdditionItem> additionalCharges = new ArrayList<>();
             for (InvoiceAdditionItemRequest addRequest : request.getAdditionItems()) {
                 InvoiceAdditionItem charge = new InvoiceAdditionItem();
-                charge.setInvoice(invoice); // Gán invoice
+                charge.setInvoice(invoice); // GÃ¡n invoice
                 charge.setReason(addRequest.getReason());
                 charge.setAmount(addRequest.getAmount());
                 charge.setIsAddition(addRequest.getIsAddition());
@@ -157,11 +151,11 @@ public class InvoiceService implements IInvoices {
                 InvoiceDetail detail = new InvoiceDetail();
                 RoomService roomService = roomServiceRepository
                         .findById(serviceDetailRequest.getRoomServiceId())
-                        .orElseThrow(() -> new RuntimeException("RoomService không tồn tại"));
+                        .orElseThrow(() -> new RuntimeException("RoomService khÃ´ng tá»“n táº¡i"));
 
                 MotelService service = roomService.getService();
                 if (service == null) {
-                    throw new RuntimeException("MotelService không tồn tại");
+                    throw new RuntimeException("MotelService khÃ´ng tá»“n táº¡i");
                 }
 
                 int quantity = serviceDetailRequest.getQuantity() != null ? serviceDetailRequest.getQuantity() : 1;
@@ -180,7 +174,7 @@ public class InvoiceService implements IInvoices {
                 InvoiceDetail detail = new InvoiceDetail();
                 RoomDevice roomDevice = roomDeviceRepository
                         .findById(deviceDetailRequest.getRoomDeviceId())
-                        .orElseThrow(() -> new RuntimeException("RoomDevice không tồn tại"));
+                        .orElseThrow(() -> new RuntimeException("RoomDevice khÃ´ng tá»“n táº¡i"));
 
                 detail.setInvoice(invoice);
                 detail.setRoomDevice(roomDevice);
@@ -282,7 +276,7 @@ public class InvoiceService implements IInvoices {
                 .collect(Collectors.toList());
         response.setAdditionItems(additionItemResponses);
 
-        // Thiết lập danh sách giao dịch
+        // Thiáº¿t láº­p danh sÃ¡ch giao dá»‹ch
         if (invoice.getTransactions() != null) {
             response.setTransactions(invoice.getTransactions().stream()
                     .map(t -> new TransactionResponse(
@@ -301,21 +295,21 @@ public class InvoiceService implements IInvoices {
 
     @Override
     public void deleteInvoice(UUID invoiceId) {
-        // 1. Tìm kiếm hóa đơn theo ID
+        // 1. TÃ¬m kiáº¿m hÃ³a Ä‘Æ¡n theo ID
         Invoice invoice =
                 invoiceRepository.findById(invoiceId).orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
 
-        // 2. Kiểm tra trạng thái thanh toán
+        // 2. Kiá»ƒm tra tráº¡ng thÃ¡i thanh toÃ¡n
         if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
             throw new AppException(ErrorCode.INVOICE_CANNOT_BE_DELETED);
         }
 
-        // Xóa InvoiceDetail
+        // XÃ³a InvoiceDetail
         if (invoice.getDetailInvoices() != null) {
             detailInvoiceRepository.deleteAll(invoice.getDetailInvoices());
         }
 
-        // Xóa InvoiceAdditionItem
+        // XÃ³a InvoiceAdditionItem
         if (invoice.getAdditionItems() != null) {
             additionItemRepository.deleteAll(invoice.getAdditionItems());
         }
@@ -325,8 +319,9 @@ public class InvoiceService implements IInvoices {
 
     @Override
     public InvoiceResponse updateInvoice(UUID invoiceId, UpdateInvoiceRequest request) {
-        Invoice invoice =
-                invoiceRepository.findById(invoiceId).orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
+        Invoice invoice = invoiceRepository
+                .findById(invoiceId)
+                .orElseThrow(() -> new RuntimeException("HÃ³a Ä‘Æ¡n khÃ´ng tá»“n táº¡i"));
 
         if (request.getInvoiceReason() != null) {
             invoice.setInvoiceReason(request.getInvoiceReason());
@@ -356,11 +351,11 @@ public class InvoiceService implements IInvoices {
 
                 RoomService roomService = roomServiceRepository
                         .findById(serviceRequest.getRoomServiceId())
-                        .orElseThrow(() -> new RuntimeException("RoomService không tồn tại"));
+                        .orElseThrow(() -> new RuntimeException("RoomService khÃ´ng tá»“n táº¡i"));
 
                 MotelService service = roomService.getService();
                 if (service == null) {
-                    throw new RuntimeException("MotelService không tồn tại");
+                    throw new RuntimeException("MotelService khÃ´ng tá»“n táº¡i");
                 }
 
                 int quantity = serviceRequest.getQuantity() != null ? serviceRequest.getQuantity() : 1;
@@ -382,7 +377,7 @@ public class InvoiceService implements IInvoices {
 
                 RoomDevice roomDevice = roomDeviceRepository
                         .findById(deviceRequest.getRoomDeviceId())
-                        .orElseThrow(() -> new RuntimeException("RoomDevice không tồn tại"));
+                        .orElseThrow(() -> new RuntimeException("RoomDevice khÃ´ng tá»“n táº¡i"));
 
                 detail.setInvoice(invoice);
                 detail.setRoomDevice(roomDevice);
@@ -435,7 +430,9 @@ public class InvoiceService implements IInvoices {
 
     @Override
     public Invoice findInvoiceById(UUID invoiceId) {
-        return invoiceRepository.findById(invoiceId).orElseThrow(() -> new RuntimeException("Invoice không tồn tại"));
+        return invoiceRepository
+                .findById(invoiceId)
+                .orElseThrow(() -> new RuntimeException("Invoice khÃ´ng tá»“n táº¡i"));
     }
 
     @Override
@@ -458,28 +455,29 @@ public class InvoiceService implements IInvoices {
 
     @Override
     public void collectPayment(UUID invoiceId, CollectPaymentRequest request) {
-        // Tìm hóa đơn
-        Invoice invoice =
-                invoiceRepository.findById(invoiceId).orElseThrow(() -> new RuntimeException("Invoice không tồn tại"));
+        // TÃ¬m hÃ³a Ä‘Æ¡n
+        Invoice invoice = invoiceRepository
+                .findById(invoiceId)
+                .orElseThrow(() -> new RuntimeException("Invoice khÃ´ng tá»“n táº¡i"));
 
-        // Kiểm tra trạng thái thanh toán
+        // Kiá»ƒm tra tráº¡ng thÃ¡i thanh toÃ¡n
         if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new RuntimeException("Hóa đơn đã được thanh toán trước đó.");
+            throw new RuntimeException("HÃ³a Ä‘Æ¡n Ä‘Ã£ Ä‘Æ°á»£c thanh toÃ¡n trÆ°á»›c Ä‘Ã³.");
         }
 
-        // Tạo đối tượng Transaction thay vì Payment
+        // Táº¡o Ä‘á»‘i tÆ°á»£ng Transaction thay vÃ¬ Payment
         Transaction transaction = new Transaction();
         transaction.setAmount(BigDecimal.valueOf(request.getTotalAmount()));
         transaction.setPayerName(request.getPaymentName());
         transaction.setPaymentDescription(request.getDescription());
         transaction.setTransactionDate(request.getPaymentDate() != null ? request.getPaymentDate() : LocalDate.now());
-        transaction.setTransactionType(true); // Thu vào
+        transaction.setTransactionType(true); // Thu vÃ o
         transaction.setInvoice(invoice);
 
         transactionRepository.save(transaction);
 
-        // Cập nhật trạng thái hóa đơn (Logic sẽ được cải thiện sau ở TransactionService)
-        // Hiện tại tạm thời marked là PAID nếu collect qua API này
+        // Cáº­p nháº­t tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n (Logic sáº½ Ä‘Æ°á»£c cáº£i thiá»‡n sau á»Ÿ TransactionService)
+        // Hiá»‡n táº¡i táº¡m thá»i marked lÃ  PAID náº¿u collect qua API nÃ y
         invoice.setPaymentStatus(PaymentStatus.PAID);
         invoiceRepository.save(invoice);
     }

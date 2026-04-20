@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.RoleRequest;
@@ -28,14 +27,11 @@ import lombok.experimental.FieldDefaults;
 @RequiredArgsConstructor
 public class RoleServiceImp implements IRoleService {
 
-    @Autowired
-    RoleRepository roleRepository;
+    final RoleRepository roleRepository;
 
-    @Autowired
-    PermissionRepository permissionRepository;
+    final PermissionRepository permissionRepository;
 
-    @Autowired
-    RoleMapper roleMapper;
+    final RoleMapper roleMapper;
 
     @Override
     public List<RoleResponse> GetAllRoles() {
@@ -46,7 +42,7 @@ public class RoleServiceImp implements IRoleService {
     public RoleResponse createRole(RoleRequest roleRequest) {
         var role = roleMapper.toRole(roleRequest);
 
-        // Tìm các permission bằng tên thay vì UUID
+        // TÃ¬m cÃ¡c permission báº±ng tÃªn thay vÃ¬ UUID
         Set<Permission> permissions = roleRequest.getPermissions().stream()
                 .map(permissionName -> permissionRepository
                         .findByName(permissionName)
@@ -62,7 +58,7 @@ public class RoleServiceImp implements IRoleService {
 
     @Override
     public RoleResponse updateRole(RoleRequest roleRequest) {
-        // Tìm Role theo ID
+        // TÃ¬m Role theo ID
         Role existingRole = roleRepository
                 .findById(roleRequest.getRoleId())
                 .orElseThrow(() -> new RuntimeException("Role not found"));
@@ -72,7 +68,7 @@ public class RoleServiceImp implements IRoleService {
         existingRole.setRoleName(roleEnum);
         existingRole.setDescription(roleRequest.getRoleDescription());
 
-        // Lưu lại role đã cập nhật
+        // LÆ°u láº¡i role Ä‘Ã£ cáº­p nháº­t
         existingRole = roleRepository.save(existingRole);
         return roleMapper.toRoleResponse(existingRole);
     }

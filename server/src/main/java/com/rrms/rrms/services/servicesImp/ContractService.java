@@ -11,7 +11,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -23,32 +22,27 @@ import com.rrms.rrms.models.*;
 import com.rrms.rrms.repositories.*;
 import com.rrms.rrms.services.IContractService;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ContractService implements IContractService {
 
-    @Autowired
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
-    @Autowired
-    private ContractRepository contractRepository;
+    private final ContractRepository contractRepository;
 
-    @Autowired
-    private RoomRepository roomRepository;
+    private final RoomRepository roomRepository;
 
-    @Autowired
-    private TenantRepository tenantRepository;
+    private final TenantRepository tenantRepository;
 
-    @Autowired
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
 
-    @Autowired
-    private ContractTemplateRepository contractTemplateRepository;
+    private final ContractTemplateRepository contractTemplateRepository;
 
-    @Autowired
-    private ContractMapper contractMapper;
+    private final ContractMapper contractMapper;
 
     @Override
     public Integer getTotalActiveContractsByLandlord(Account usernameLandlord) {
@@ -127,7 +121,7 @@ public class ContractService implements IContractService {
                 .findById(contractId)
                 .orElseThrow(() -> new ResourceNotFoundException("Contract not found with id " + contractId));
 
-        // Cập nhật các trường của hợp đồng dựa trên request
+        // Cáº­p nháº­t cÃ¡c trÆ°á»ng cá»§a há»£p Ä‘á»“ng dá»±a trÃªn request
         Contract updatedContract = contractMapper.toEntity(request);
         updatedContract.setContractId(existingContract.getContractId());
 
@@ -187,7 +181,7 @@ public class ContractService implements IContractService {
     public void updateCloseContract(UUID contractId, Date newCloseContract) {
         int rowsUpdated = contractRepository.updateCloseContractByContractId(newCloseContract, contractId);
         if (rowsUpdated == 0) {
-            throw new RuntimeException("Không tìm thấy hợp đồng với contractId: " + contractId);
+            throw new RuntimeException("KhÃ´ng tÃ¬m tháº¥y há»£p Ä‘á»“ng vá»›i contractId: " + contractId);
         }
     }
 
@@ -209,19 +203,19 @@ public class ContractService implements IContractService {
     @Override
     public void updateContractDetailsByContractId(
             UUID contractId, UUID roomId, Double deposit, Double price, Double debt) {
-        // Tìm Room mới
+        // TÃ¬m Room má»›i
         Room newRoom = roomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room not found"));
 
-        // Tìm Contract và cập nhật
+        // TÃ¬m Contract vÃ  cáº­p nháº­t
         Contract contract = contractRepository
                 .findById(contractId)
                 .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
-        contract.setRoom(newRoom); // Cập nhật Room
+        contract.setRoom(newRoom); // Cáº­p nháº­t Room
         contract.setDeposit(deposit);
         contract.setPrice(price);
         contract.setDebt(debt);
 
-        // Lưu lại
+        // LÆ°u láº¡i
         contractRepository.save(contract);
     }
 

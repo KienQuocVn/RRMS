@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,10 +32,9 @@ import lombok.extern.slf4j.Slf4j;
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class MotelServiceController {
 
-    @Autowired
-    private IMotelServiceService motelServiceService;
+    private final IMotelServiceService motelServiceService;
 
-    // Tạo mới một MotelService
+    // Táº¡o má»›i má»™t MotelService
     @PostMapping("/create")
     public ResponseEntity<MotelServiceResponse> createMotelService(@RequestBody MotelServiceRequest request) {
         MotelServiceResponse response = motelServiceService.createMotelService(request);
@@ -50,7 +48,7 @@ public class MotelServiceController {
         return ResponseEntity.ok(updatedService);
     }
 
-    // Cập nhật một MotelService
+    // Cáº­p nháº­t má»™t MotelService
     @PutMapping("/update/{id}")
     public ResponseEntity<MotelServiceResponse> updateMotelService(
             @PathVariable UUID id, @RequestBody MotelServiceUpdateRequest request) {
@@ -58,21 +56,21 @@ public class MotelServiceController {
         return ResponseEntity.ok(response);
     }
 
-    // Lấy tất cả các MotelService
+    // Láº¥y táº¥t cáº£ cÃ¡c MotelService
     @GetMapping
     public ResponseEntity<List<MotelServiceResponse>> getAllMotelServices() {
         List<MotelServiceResponse> responses = motelServiceService.getAllMotelServices();
         return ResponseEntity.ok(responses);
     }
 
-    // Lấy một MotelService theo ID
+    // Láº¥y má»™t MotelService theo ID
     @GetMapping("/{id}")
     public ResponseEntity<MotelServiceResponse> getMotelServiceById(@PathVariable UUID id) {
         MotelServiceResponse response = motelServiceService.getMotelServiceById(id);
         return ResponseEntity.ok(response);
     }
 
-    // Xóa một MotelService theo ID
+    // XÃ³a má»™t MotelService theo ID
     @Operation(summary = "Delete an existing motelservice")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Map<String, Object>> deleteMotelService(@PathVariable UUID id) {

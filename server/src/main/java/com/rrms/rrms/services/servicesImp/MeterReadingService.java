@@ -3,18 +3,19 @@ package com.rrms.rrms.services.servicesImp;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.models.MeterReading;
 import com.rrms.rrms.repositories.MeterReadingRepository;
 import com.rrms.rrms.services.IMeterReadingService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class MeterReadingService implements IMeterReadingService {
 
-    @Autowired
-    private MeterReadingRepository meterReadingRepository;
+    private final MeterReadingRepository meterReadingRepository;
 
     @Override
     public List<MeterReading> getAllByMotel(UUID motelId) {

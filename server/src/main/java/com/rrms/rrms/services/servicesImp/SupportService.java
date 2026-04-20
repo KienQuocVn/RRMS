@@ -3,7 +3,6 @@ package com.rrms.rrms.services.servicesImp;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.SupportRequest;
@@ -15,16 +14,16 @@ import com.rrms.rrms.repositories.AccountRepository;
 import com.rrms.rrms.repositories.SupportRepository;
 import com.rrms.rrms.services.ISupportService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class SupportService implements ISupportService {
-    @Autowired
-    private SupportRepository supportRepository;
+    private final SupportRepository supportRepository;
 
-    @Autowired
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
 
-    @Autowired
-    private AccountMapper accountMapper;
+    private final AccountMapper accountMapper;
 
     Support toSupport(SupportRequest request) {
         Account account = accountRepository

@@ -8,13 +8,14 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
+import org.mapstruct.ReportingPolicy;
 
 import com.rrms.rrms.dto.request.AccountRequest;
 import com.rrms.rrms.dto.response.AccountResponse;
 import com.rrms.rrms.dto.response.BrokerResponse;
 import com.rrms.rrms.models.Account;
 
-@Mapper(componentModel = "spring") // Mapper sử dụng MapStruct,Spring tự động phát hiện và quản lý mapper này như
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 // một Bean
 public interface AccountMapper {
 

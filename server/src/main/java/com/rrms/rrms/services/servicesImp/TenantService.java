@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.TenantRequest;
@@ -27,25 +26,22 @@ import com.rrms.rrms.repositories.RoomRepository;
 import com.rrms.rrms.repositories.TenantRepository;
 import com.rrms.rrms.services.ITenantService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class TenantService implements ITenantService {
-    @Autowired
-    private TenantRepository tenantRepository;
+    private final TenantRepository tenantRepository;
 
-    @Autowired
-    private TenantMapper tenantMapper;
+    private final TenantMapper tenantMapper;
 
-    @Autowired
-    RoomRepository roomRepository;
+    final RoomRepository roomRepository;
 
-    @Autowired
-    private MotelRepository motelRepository;
+    private final MotelRepository motelRepository;
 
-    @Autowired
-    private ContractRepository contractRepository;
+    private final ContractRepository contractRepository;
 
-    @Autowired
-    private ContractOccupantRepository contractOccupantRepository;
+    private final ContractOccupantRepository contractOccupantRepository;
 
     @Override
     public TenantResponse insert(UUID roomId, TenantRequest tenant) {
@@ -91,15 +87,15 @@ public class TenantService implements ITenantService {
 
     @Override
     public TenantResponse update(UUID id, TenantRequest tenantRequest) {
-        // Tìm tenant theo id
+        // TÃ¬m tenant theo id
         Optional<Tenant> tenantFind = tenantRepository.findById(id);
         if (tenantFind.isPresent()) {
             Tenant tenant = tenantFind.get();
 
-            // Cập nhật các trường từ tenantRequest vào tenant hiện có
+            // Cáº­p nháº­t cÃ¡c trÆ°á»ng tá»« tenantRequest vÃ o tenant hiá»‡n cÃ³
             tenantMapper.updateTenantFromRequest(tenantRequest, tenant);
 
-            // Lưu bản ghi sau khi cập nhật
+            // LÆ°u báº£n ghi sau khi cáº­p nháº­t
             return tenantMapper.toTenantResponse(tenantRepository.save(tenant));
         }
         return null;
@@ -136,12 +132,12 @@ public class TenantService implements ITenantService {
         for (Motel motel : motels) {
             long notRegisteredCount = contractRepository.findByRoom_Motel(motel).stream()
                     .map(Contract::getTenant)
-                    .filter(tenant -> !tenant.getTemporaryResidence()) // Chưa đăng ký tạm trú
+                    .filter(tenant -> !tenant.getTemporaryResidence()) // ChÆ°a Ä‘Äƒng kÃ½ táº¡m trÃº
                     .count();
 
             long notProvidedInfoCount = contractRepository.findByRoom_Motel(motel).stream()
                     .map(Contract::getTenant)
-                    .filter(tenant -> !tenant.getInformationVerify()) // Chưa cung cấp thông tin
+                    .filter(tenant -> !tenant.getInformationVerify()) // ChÆ°a cung cáº¥p thÃ´ng tin
                     .count();
 
             summaries.add(new TenantSummaryDTO(

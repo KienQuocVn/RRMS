@@ -10,7 +10,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -20,12 +19,14 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.rrms.rrms.annotations.RateLimited;
 import com.rrms.rrms.configs.RedisRateLimiter;
 
+import lombok.RequiredArgsConstructor;
+
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class RateLimitAspect {
 
-    @Autowired
-    private RedisRateLimiter rateLimiter;
+    private final RedisRateLimiter rateLimiter;
 
     @Around("@annotation(com.rrms.rrms.annotations.RateLimited)")
     public Object rateLimit(ProceedingJoinPoint joinPoint) throws Throwable {

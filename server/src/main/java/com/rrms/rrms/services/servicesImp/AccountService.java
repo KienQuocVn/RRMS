@@ -3,7 +3,6 @@ package com.rrms.rrms.services.servicesImp;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,17 +31,13 @@ import lombok.experimental.FieldDefaults;
 @RequiredArgsConstructor
 public class AccountService implements IAccountService {
 
-    @Autowired
-    AccountRepository accountRepository;
+    final AccountRepository accountRepository;
 
-    @Autowired
-    AuthRepository authRepository;
+    final AuthRepository authRepository;
 
-    @Autowired
-    RoleRepository roleRepository;
+    final RoleRepository roleRepository;
 
-    @Autowired
-    AccountMapper accountMapper;
+    final AccountMapper accountMapper;
 
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -80,7 +75,7 @@ public class AccountService implements IAccountService {
 
     @Override
     public Account register(RegisterRequest request) {
-        // Kiểm tra xem username hoặc phone đã tồn tại chưa
+        // Kiá»ƒm tra xem username hoáº·c phone Ä‘Ã£ tá»“n táº¡i chÆ°a
         if (accountRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.INVALID_USERNAME);
         }
@@ -93,20 +88,20 @@ public class AccountService implements IAccountService {
         //            throw new AppException(ErrorCode.INVALID_EMAIL);
         //        }
 
-        // Kiểm tra độ dài mật khẩu (ít nhất 8 ký tự)
+        // Kiá»ƒm tra Ä‘á»™ dÃ i máº­t kháº©u (Ã­t nháº¥t 8 kÃ½ tá»±)
         if (request.getPassword().length() < 8) {
             throw new AppException(ErrorCode.INVALID_PASSWORD);
         }
 
-        // Kiểm tra số điện thoại (đủ 10 số)
+        // Kiá»ƒm tra sá»‘ Ä‘iá»‡n thoáº¡i (Ä‘á»§ 10 sá»‘)
         // if (!request.getPhone().matches("\\d{10}")) {
         //     throw new AppException(ErrorCode.INVALID_PHONE2);
         // }
 
-        // Mã hóa mật khẩu trước khi lưu vào cơ sở dữ liệu
+        // MÃ£ hÃ³a máº­t kháº©u trÆ°á»›c khi lÆ°u vÃ o cÆ¡ sá»Ÿ dá»¯ liá»‡u
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        // Tạo đối tượng Account mới
+        // Táº¡o Ä‘á»‘i tÆ°á»£ng Account má»›i
         Account account = new Account();
         Heart heart = new Heart();
         account.setUsername(request.getUsername());
@@ -116,10 +111,10 @@ public class AccountService implements IAccountService {
         account.setEmail(request.getEmail());
         account.setHeart(heart);
         heart.setAccount(account);
-        // Lưu tài khoản vào cơ sở dữ liệu
+        // LÆ°u tÃ i khoáº£n vÃ o cÆ¡ sá»Ÿ dá»¯ liá»‡u
         Account savedAccount = accountRepository.save(account);
 
-        // Lấy role CUSTOMER từ cơ sở dữ liệu
+        // Láº¥y role CUSTOMER tá»« cÆ¡ sá»Ÿ dá»¯ liá»‡u
         Role customerRole;
         if ("CUSTOMER".equals(request.getUserType())) {
             customerRole = roleRepository
@@ -131,7 +126,7 @@ public class AccountService implements IAccountService {
                     .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
         }
 
-        // Tạo đối tượng Auth và gán role CUSTOMER cho tài khoản
+        // Táº¡o Ä‘á»‘i tÆ°á»£ng Auth vÃ  gÃ¡n role CUSTOMER cho tÃ i khoáº£n
         Auth auth = new Auth();
         auth.setAccount(savedAccount);
         auth.setRole(customerRole);
@@ -146,10 +141,10 @@ public class AccountService implements IAccountService {
             throw new AppException(ErrorCode.ACCOUNT_ALREADY_EXISTS);
         }
 
-        // Mã hóa mật khẩu
+        // MÃ£ hÃ³a máº­t kháº©u
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        // Tạo tài khoản
+        // Táº¡o tÃ i khoáº£n
         Account account = new Account();
         account.setUsername(request.getUsername());
         account.setEmail(request.getEmail());
@@ -157,7 +152,7 @@ public class AccountService implements IAccountService {
         account.setPhone(request.getPhone());
         accountRepository.save(account);
 
-        // Gán role
+        // GÃ¡n role
         Role role = roleRepository
                 .findByRoleName(request.getUserType().equals("CUSTOMER") ? Roles.CUSTOMER : Roles.HOST)
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
@@ -185,13 +180,13 @@ public class AccountService implements IAccountService {
 
     @Override
     public AccountResponse createAccount(AccountRequest accountRequest) {
-        // Kiểm tra xem tên đăng nhập hoặc số điện thoại đã tồn tại hay chưa
+        // Kiá»ƒm tra xem tÃªn Ä‘Äƒng nháº­p hoáº·c sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i hay chÆ°a
         if (accountRepository.existsByUsername(accountRequest.getUsername())
                 || accountRepository.existsByPhone(accountRequest.getPhone())) {
             throw new AppException(ErrorCode.ACCOUNT_ALREADY_EXISTS);
         }
 
-        // Tạo đối tượng Account mới
+        // Táº¡o Ä‘á»‘i tÆ°á»£ng Account má»›i
         Account account = new Account();
         account.setUsername(accountRequest.getUsername());
         account.setFullname(accountRequest.getFullname());
@@ -202,20 +197,20 @@ public class AccountService implements IAccountService {
         account.setCccd(accountRequest.getCccd());
         account.setAvatar(accountRequest.getAvatar());
 
-        // Mã hóa mật khẩu
+        // MÃ£ hÃ³a máº­t kháº©u
         String encodedPassword = passwordEncoder.encode(accountRequest.getPassword());
         account.setPassword(encodedPassword);
 
-        // Khởi tạo danh sách authorities để tránh NullPointerException
+        // Khá»Ÿi táº¡o danh sÃ¡ch authorities Ä‘á»ƒ trÃ¡nh NullPointerException
         account.setAuthorities(new ArrayList<>());
 
-        // Lưu tài khoản trước
+        // LÆ°u tÃ i khoáº£n trÆ°á»›c
         Account savedAccount = accountRepository.save(account);
 
-        // Xử lý danh sách vai trò
+        // Xá»­ lÃ½ danh sÃ¡ch vai trÃ²
         if (accountRequest.getRole() != null && !accountRequest.getRole().isEmpty()) {
             for (String roleName : accountRequest.getRole()) {
-                // Chuyển đổi roleName thành Roles enum
+                // Chuyá»ƒn Ä‘á»•i roleName thÃ nh Roles enum
                 Roles roleEnum;
                 try {
                     roleEnum = Roles.valueOf(roleName.toUpperCase());
@@ -227,15 +222,15 @@ public class AccountService implements IAccountService {
                 if (roleOptional.isPresent()) {
                     Role role = roleOptional.get();
 
-                    // Tạo đối tượng Auth mới cho mỗi vai trò và liên kết tài khoản với vai trò
+                    // Táº¡o Ä‘á»‘i tÆ°á»£ng Auth má»›i cho má»—i vai trÃ² vÃ  liÃªn káº¿t tÃ i khoáº£n vá»›i vai trÃ²
                     Auth auth = new Auth();
                     auth.setAccount(savedAccount);
                     auth.setRole(role);
 
-                    // Thêm quyền vào danh sách authorities của tài khoản
+                    // ThÃªm quyá»n vÃ o danh sÃ¡ch authorities cá»§a tÃ i khoáº£n
                     savedAccount.getAuthorities().add(auth);
 
-                    // Lưu dữ liệu quyền vào cơ sở dữ liệu
+                    // LÆ°u dá»¯ liá»‡u quyá»n vÃ o cÆ¡ sá»Ÿ dá»¯ liá»‡u
                     authRepository.save(auth);
                 } else {
                     throw new AppException(ErrorCode.ROLE_NOT_FOUND);
@@ -259,17 +254,18 @@ public class AccountService implements IAccountService {
         response.setCccd(account.getCccd());
         response.setAvatar(account.getAvatar());
 
-        // Lấy danh sách các vai trò từ account và chuyển thành List<String>
+        // Láº¥y danh sÃ¡ch cÃ¡c vai trÃ² tá»« account vÃ  chuyá»ƒn thÃ nh List<String>
         List<String> roles = account.getAuthorities().stream()
                 .map(auth -> auth.getRole().getRoleName().name())
-                .distinct() // Đảm bảo không có trùng lặp
+                .distinct() // Äáº£m báº£o khÃ´ng cÃ³ trÃ¹ng láº·p
                 .collect(Collectors.toList());
         response.setRole(roles);
 
-        // Lấy quyền từ danh sách authorities và chuyển đổi thành List<String>
+        // Láº¥y quyá»n tá»« danh sÃ¡ch authorities vÃ  chuyá»ƒn Ä‘á»•i thÃ nh List<String>
         List<String> permissions = account.getAuthorities().stream()
-                .flatMap(auth -> auth.getRole().getPermissions().stream().map(Permission::getName)) // Chỉ lấy tên quyền
-                .distinct() // Để loại bỏ trùng lặp nếu cần
+                .flatMap(auth ->
+                        auth.getRole().getPermissions().stream().map(Permission::getName)) // Chá»‰ láº¥y tÃªn quyá»n
+                .distinct() // Äá»ƒ loáº¡i bá» trÃ¹ng láº·p náº¿u cáº§n
                 .collect(Collectors.toList());
         response.setPermissions(permissions);
 
@@ -278,16 +274,16 @@ public class AccountService implements IAccountService {
 
     @Override
     public AccountResponse updateAccount(String username, AccountRequest accountRequest) {
-        // Kiểm tra xem tài khoản có tồn tại hay không
+        // Kiá»ƒm tra xem tÃ i khoáº£n cÃ³ tá»“n táº¡i hay khÃ´ng
         Optional<Account> accountOptional = accountRepository.findById(username);
         if (!accountOptional.isPresent()) {
             throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
         }
 
-        // Lấy tài khoản đã tồn tại
+        // Láº¥y tÃ i khoáº£n Ä‘Ã£ tá»“n táº¡i
         Account account = accountOptional.get();
 
-        // Cập nhật thông tin
+        // Cáº­p nháº­t thÃ´ng tin
         account.setFullname(accountRequest.getFullname());
         account.setPhone(accountRequest.getPhone());
         account.setEmail(accountRequest.getEmail());
@@ -296,31 +292,32 @@ public class AccountService implements IAccountService {
         account.setCccd(accountRequest.getCccd());
         account.setAvatar(accountRequest.getAvatar());
 
-        // Nếu mật khẩu mới được cung cấp, mã hóa và cập nhật
+        // Náº¿u máº­t kháº©u má»›i Ä‘Æ°á»£c cung cáº¥p, mÃ£ hÃ³a vÃ  cáº­p nháº­t
         if (accountRequest.getPassword() != null
                 && !accountRequest.getPassword().isEmpty()) {
             String encodedPassword = passwordEncoder.encode(accountRequest.getPassword());
             account.setPassword(encodedPassword);
         }
 
-        // Lưu tài khoản vào cơ sở dữ liệu
+        // LÆ°u tÃ i khoáº£n vÃ o cÆ¡ sá»Ÿ dá»¯ liá»‡u
         Account updatedAccount = accountRepository.save(account);
 
-        return convertToAccountResponse(updatedAccount); // Trả về AccountResponse cho tài khoản đã cập nhật
+        return convertToAccountResponse(
+                updatedAccount); // Tráº£ vá» AccountResponse cho tÃ i khoáº£n Ä‘Ã£ cáº­p nháº­t
     }
 
     @Override
     @Transactional
     public void deleteAccount(String username) {
-        // Kiểm tra xem tài khoản có tồn tại hay không
+        // Kiá»ƒm tra xem tÃ i khoáº£n cÃ³ tá»“n táº¡i hay khÃ´ng
         if (!accountRepository.existsById(username)) {
             throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
         }
 
-        // Xóa các bản ghi liên quan trong bảng auths
+        // XÃ³a cÃ¡c báº£n ghi liÃªn quan trong báº£ng auths
         authRepository.deleteByAccount_Username(username);
 
-        // Xóa tài khoản từ cơ sở dữ liệu
+        // XÃ³a tÃ i khoáº£n tá»« cÆ¡ sá»Ÿ dá»¯ liá»‡u
         accountRepository.deleteById(username);
     }
 
@@ -363,12 +360,12 @@ public class AccountService implements IAccountService {
 
         BCryptPasswordEncoder pe = new BCryptPasswordEncoder();
 
-        // Nếu password cũ không khớp với password trong database
+        // Náº¿u password cÅ© khÃ´ng khá»›p vá»›i password trong database
         if (!pe.matches(changePasswordRequest.getOldPassword(), account.getPassword())) {
             return "Old password is not correct";
         }
 
-        // Nếu password mới trùng với password cũ
+        // Náº¿u password má»›i trÃ¹ng vá»›i password cÅ©
         if (pe.matches(changePasswordRequest.getNewPassword(), account.getPassword())) {
             return "New password cannot be the same as the old password";
         }

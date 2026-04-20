@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -40,24 +39,19 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/authen")
 @Slf4j
 public class AuthenController {
-    @Autowired
-    private IAccountService accountService;
+    private final IAccountService accountService;
 
-    @Autowired
-    private IAuthorityService authorityService;
+    private final IAuthorityService authorityService;
 
-    @Autowired
-    private IMailService mailService;
+    private final IMailService mailService;
 
-    @Autowired
-    AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
 
-    @Autowired
-    private org.springframework.data.redis.core.StringRedisTemplate redisTemplate;
+    private final org.springframework.data.redis.core.StringRedisTemplate redisTemplate;
 
     @GetMapping("/error")
     public ResponseEntity<String> loginFailure() {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Đăng nhập thất bại!");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("ÄÄƒng nháº­p tháº¥t báº¡i!");
     }
 
     @GetMapping("/success")
@@ -67,17 +61,16 @@ public class AuthenController {
 
         if (oauthUser == null) {
             log.error("OAuth2 User is null");
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Không xác thực được tài khoản Google");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "KhÃ´ng xÃ¡c thá»±c Ä‘Æ°á»£c tÃ i khoáº£n Google");
             return;
         }
-
-        log.info("OAuth2 User Info: {}", oauthUser.getAttributes());
 
         String email = oauthUser.getAttribute("email");
         String name = oauthUser.getAttribute("name");
 
         if (email == null || name == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Không lấy được thông tin email hoặc tên");
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST, "KhÃ´ng láº¥y Ä‘Æ°á»£c thÃ´ng tin email hoáº·c tÃªn");
             return;
         }
 
@@ -92,7 +85,6 @@ public class AuthenController {
         });
 
         String token = authorityService.generateToken(account);
-        log.info("Generated JWT Token: {}", token);
 
         response.setContentType("application/json");
         response.getWriter().write("{\"token\":\"" + token + "\"}");
@@ -101,14 +93,14 @@ public class AuthenController {
     @PostMapping("/login")
     @RateLimited(key = "login", maxAttempts = 5, windowSeconds = 300)
     public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
-        Account account = accountService
+        accountService
                 .findByPhone(loginRequest.getPhone())
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
         LoginResponse loginResponse = authorityService.loginResponse(loginRequest);
 
         return ApiResponse.<LoginResponse>builder()
-                .message("Đăng nhập thành công.")
+                .message("ÄÄƒng nháº­p thÃ nh cÃ´ng.")
                 .result(loginResponse)
                 .build();
     }
@@ -123,7 +115,9 @@ public class AuthenController {
     @PostMapping("/logout")
     public ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
         authorityService.logout(request);
-        return ApiResponse.<Void>builder().message("Đăng xuất thành công.").build();
+        return ApiResponse.<Void>builder()
+                .message("ÄÄƒng xuáº¥t thÃ nh cÃ´ng.")
+                .build();
     }
 
     @PostMapping("/register")
@@ -133,7 +127,7 @@ public class AuthenController {
 
         RegisterResponse response = new RegisterResponse();
         response.setStatus(true);
-        response.setMessage("Đăng ký thành công");
+        response.setMessage("ÄÄƒng kÃ½ thÃ nh cÃ´ng");
         response.setUsername(account.getUsername());
 
         return ApiResponse.<RegisterResponse>builder().result(response).build();
@@ -144,7 +138,7 @@ public class AuthenController {
             throws ParseException, JOSEException {
         LoginResponse loginResponse = authorityService.refreshToken(request);
         return ApiResponse.<LoginResponse>builder()
-                .message("Làm mới token thành công.")
+                .message("LÃ m má»›i token thÃ nh cÃ´ng.")
                 .result(loginResponse)
                 .build();
     }
@@ -180,7 +174,7 @@ public class AuthenController {
         int randomOtp = (int) (Math.random() * 90000) + 10000;
         try {
             boolean result = mailService.Send_ForgetPassword(
-                    changePasswordByEmail.getEmail(), "Yêu cầu thay đổi mật khẩu", String.valueOf(randomOtp));
+                    changePasswordByEmail.getEmail(), "YÃªu cáº§u thay Ä‘á»•i máº­t kháº©u", String.valueOf(randomOtp));
             if (result) {
                 redisTemplate
                         .opsForValue()
@@ -221,7 +215,7 @@ public class AuthenController {
         int randomOtp = (int) (Math.random() * 90000) + 10000;
         try {
             boolean result = mailService.Send_ForgetPassword(
-                    authenticationRegister.getGmail(), "Xác thực tài khoản", String.valueOf(randomOtp));
+                    authenticationRegister.getGmail(), "XÃ¡c thá»±c tÃ i khoáº£n", String.valueOf(randomOtp));
             if (result) {
                 redisTemplate
                         .opsForValue()
@@ -251,7 +245,7 @@ public class AuthenController {
         if (storedOtp == null || !changePasswordByEmail.getCode().equals(storedOtp)) {
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
-                    .message("Mã OTP không đúng hoặc đã hết hạn")
+                    .message("MÃ£ OTP khÃ´ng Ä‘Ãºng hoáº·c Ä‘Ã£ háº¿t háº¡n")
                     .result(false)
                     .build();
         }
@@ -286,7 +280,7 @@ public class AuthenController {
         if (storedOtp == null || !authenticationRegister.getCode().equals(storedOtp)) {
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
-                    .message("Mã OTP không đúng hoặc đã hết hạn")
+                    .message("MÃ£ OTP khÃ´ng Ä‘Ãºng hoáº·c Ä‘Ã£ háº¿t háº¡n")
                     .result(false)
                     .build();
         } else {
@@ -302,36 +296,36 @@ public class AuthenController {
     @PostMapping("/checkregister")
     @PermitAll
     public ApiResponse<Boolean> checkRegister(@RequestBody @Valid RegisterRequest request) {
-        // Kiểm tra tên đăng nhập đã tồn tại chưa
+        // Kiá»ƒm tra tÃªn Ä‘Äƒng nháº­p Ä‘Ã£ tá»“n táº¡i chÆ°a
         if (accountRepository.existsByUsername(request.getUsername())) {
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
-                    .message("Tên đăng nhập đã tồn tại!")
+                    .message("TÃªn Ä‘Äƒng nháº­p Ä‘Ã£ tá»“n táº¡i!")
                     .result(false)
                     .build();
         }
 
-        //        // Kiểm tra số điện thoại đã tồn tại chưa
+        //        // Kiá»ƒm tra sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i chÆ°a
         //        if (accountRepository.existsByPhone(request.getPhone())) {
         //            return ApiResponse.<Boolean>builder()
         //                    .code(HttpStatus.BAD_REQUEST.value())
-        //                    .message("Số điện thoại đã tồn tại!")
+        //                    .message("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i!")
         //                    .result(false)
         //                    .build();
         //        }
 
-        // Kiểm tra email đã tồn tại chưa
+        // Kiá»ƒm tra email Ä‘Ã£ tá»“n táº¡i chÆ°a
         // if (accountRepository.existsAccountByEmail(request.getEmail())) {
         //     return ApiResponse.<Boolean>builder()
         //             .code(HttpStatus.BAD_REQUEST.value())
-        //             .message("Email đã tồn tại!")
+        //             .message("Email Ä‘Ã£ tá»“n táº¡i!")
         //             .result(false)
         //             .build();
         // }
 
         return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
-                .message("Thông tin hợp lệ")
+                .message("ThÃ´ng tin há»£p lá»‡")
                 .result(true)
                 .build();
     }

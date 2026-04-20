@@ -9,7 +9,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -46,17 +45,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthorityService implements IAuthorityService {
 
-    @Autowired
-    InvalidatedTokenRepository invalidatedTokenRepository;
+    final InvalidatedTokenRepository invalidatedTokenRepository;
 
-    @Autowired
-    AccountRepository accountRepository;
+    final AccountRepository accountRepository;
 
-    @Autowired
-    AccountService accountService;
+    final AccountService accountService;
 
-    @Autowired
-    AuthRepository authRepository;
+    final AuthRepository authRepository;
 
     @NonFinal
     @Value("${jwt.signer-key}")
@@ -72,10 +67,10 @@ public class AuthorityService implements IAuthorityService {
 
     public IntrospecTokenResponse introspect(IntrospecTokenRequest request) throws ParseException, JOSEException {
         try {
-            // Lấy token từ request
+            // Láº¥y token tá»« request
             String token = request.getToken();
 
-            // Kiểm tra token có rỗng hay không
+            // Kiá»ƒm tra token cÃ³ rá»—ng hay khÃ´ng
             if (StringUtils.isEmpty(token)) {
                 return IntrospecTokenResponse.builder()
                         .valid(false)
@@ -83,16 +78,16 @@ public class AuthorityService implements IAuthorityService {
                         .build();
             }
 
-            // Gọi hàm verifyToken để xác thực token
+            // Gá»i hÃ m verifyToken Ä‘á»ƒ xÃ¡c thá»±c token
             SignedJWT signedJWT = verifyToken(token, false);
 
-            // Parse chuỗi JWT thành đối tượng SignedJWT để có thể xử lý
+            // Parse chuá»—i JWT thÃ nh Ä‘á»‘i tÆ°á»£ng SignedJWT Ä‘á»ƒ cÃ³ thá»ƒ xá»­ lÃ½
             JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
             List<String> roles = claimsSet.getStringListClaim("roles");
             List<String> permissions = claimsSet.getStringListClaim("permissions");
             Date expirationTime = claimsSet.getExpirationTime();
 
-            // Kiểm tra token đã hết hạn chưa
+            // Kiá»ƒm tra token Ä‘Ã£ háº¿t háº¡n chÆ°a
             if (expirationTime == null || expirationTime.before(new Date())) {
                 return IntrospecTokenResponse.builder()
                         .valid(false)
@@ -100,23 +95,23 @@ public class AuthorityService implements IAuthorityService {
                         .build();
             }
 
-            // Nếu token hợp lệ (chữ ký đúng và chưa hết hạn)
+            // Náº¿u token há»£p lá»‡ (chá»¯ kÃ½ Ä‘Ãºng vÃ  chÆ°a háº¿t háº¡n)
             return IntrospecTokenResponse.builder()
-                    .valid(true) // Token hợp lệ
-                    .message("Token is valid") // Message thông báo
-                    .subject(claimsSet.getSubject()) // Subject của token (thường là username/phone)
-                    .expirationTime(expirationTime) // Thời gian hết hạn
-                    .issuer(claimsSet.getIssuer()) // Issuer (người phát hành token)
-                    .issuedAt(claimsSet.getIssueTime()) // Thời gian phát hành token
-                    .roles(roles) // Thêm roles vào response
-                    .permissions(permissions) // Thêm permissions vào response
+                    .valid(true) // Token há»£p lá»‡
+                    .message("Token is valid") // Message thÃ´ng bÃ¡o
+                    .subject(claimsSet.getSubject()) // Subject cá»§a token (thÆ°á»ng lÃ  username/phone)
+                    .expirationTime(expirationTime) // Thá»i gian háº¿t háº¡n
+                    .issuer(claimsSet.getIssuer()) // Issuer (ngÆ°á»i phÃ¡t hÃ nh token)
+                    .issuedAt(claimsSet.getIssueTime()) // Thá»i gian phÃ¡t hÃ nh token
+                    .roles(roles) // ThÃªm roles vÃ o response
+                    .permissions(permissions) // ThÃªm permissions vÃ o response
                     .build();
 
         } catch (Exception e) {
-            // Log lại lỗi nếu có exception xảy ra trong quá trình xử lý token
+            // Log láº¡i lá»—i náº¿u cÃ³ exception xáº£y ra trong quÃ¡ trÃ¬nh xá»­ lÃ½ token
             log.error("Error introspecting token", e);
 
-            // Trả về response với thông báo lỗi cụ thể
+            // Tráº£ vá» response vá»›i thÃ´ng bÃ¡o lá»—i cá»¥ thá»ƒ
             return IntrospecTokenResponse.builder()
                     .valid(false)
                     .message("Error processing token: " + e.getMessage())
@@ -125,76 +120,76 @@ public class AuthorityService implements IAuthorityService {
     }
 
     public LoginResponse loginResponse(LoginRequest request) {
-        // Lấy tài khoản từ AccountService dựa trên số điện thoại và mật khẩu
-        // Nếu không tìm thấy hoặc mật khẩu sai, ném ngoại lệ AUTHENTICATED
+        // Láº¥y tÃ i khoáº£n tá»« AccountService dá»±a trÃªn sá»‘ Ä‘iá»‡n thoáº¡i vÃ  máº­t kháº©u
+        // Náº¿u khÃ´ng tÃ¬m tháº¥y hoáº·c máº­t kháº©u sai, nÃ©m ngoáº¡i lá»‡ AUTHENTICATED
         Account account = accountService
                 .login(request.getPhone(), request.getPassword())
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
-        // Tạo token JWT cho tài khoản sau khi đăng nhập thành công
+        // Táº¡o token JWT cho tÃ i khoáº£n sau khi Ä‘Äƒng nháº­p thÃ nh cÃ´ng
         var token = generateToken(account);
 
-        // Lấy danh sách vai trò của tài khoản
+        // Láº¥y danh sÃ¡ch vai trÃ² cá»§a tÃ i khoáº£n
         List<String> roles = account.getRoles();
 
-        // Xây dựng đối tượng LoginResponse với các thông tin cần thiết
+        // XÃ¢y dá»±ng Ä‘á»‘i tÆ°á»£ng LoginResponse vá»›i cÃ¡c thÃ´ng tin cáº§n thiáº¿t
         return LoginResponse.builder()
                 .token(token) // Token JWT
-                .authenticated(true) // Trạng thái xác thực thành công
-                .username(account.getUsername()) // Tên người dùng
-                .fullname(account.getFullname()) // Họ và tên đầy đủ
+                .authenticated(true) // Tráº¡ng thÃ¡i xÃ¡c thá»±c thÃ nh cÃ´ng
+                .username(account.getUsername()) // TÃªn ngÆ°á»i dÃ¹ng
+                .fullname(account.getFullname()) // Há» vÃ  tÃªn Ä‘áº§y Ä‘á»§
                 .phone(account.getPhone())
-                .email(account.getEmail()) // Địa chỉ email
-                .avatar(account.getAvatar()) // Ảnh đại diện (avatar)
-                .birthday(account.getBirthday()) // Ngày sinh của người dùng
-                .gender(account.getGender()) // Giới tính
-                .cccd(account.getCccd()) // CCCD (Chứng minh nhân dân)
+                .email(account.getEmail()) // Äá»‹a chá»‰ email
+                .avatar(account.getAvatar()) // áº¢nh Ä‘áº¡i diá»‡n (avatar)
+                .birthday(account.getBirthday()) // NgÃ y sinh cá»§a ngÆ°á»i dÃ¹ng
+                .gender(account.getGender()) // Giá»›i tÃ­nh
+                .cccd(account.getCccd()) // CCCD (Chá»©ng minh nhÃ¢n dÃ¢n)
                 .roles(roles)
-                .build(); // Hoàn thành việc xây dựng LoginResponse
+                .build(); // HoÃ n thÃ nh viá»‡c xÃ¢y dá»±ng LoginResponse
     }
 
     public String generateToken(Account account) {
-        // Tạo tiêu đề cho JWT sử dụng thuật toán ký HS512
+        // Táº¡o tiÃªu Ä‘á» cho JWT sá»­ dá»¥ng thuáº­t toÃ¡n kÃ½ HS512
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
-        // Lấy danh sách role và permission từ tài khoản
+        // Láº¥y danh sÃ¡ch role vÃ  permission tá»« tÃ i khoáº£n
         List<String> roles = account.getAuthorities().stream()
-                .map(auth -> auth.getRole().getRoleName().name()) // Lấy tên của các role
+                .map(auth -> auth.getRole().getRoleName().name()) // Láº¥y tÃªn cá»§a cÃ¡c role
                 .collect(Collectors.toList());
 
         List<String> permissions = account.getAuthorities().stream()
-                .flatMap(auth -> auth.getRole().getPermissions().stream()) // Lấy các permissions từ role
-                .map(permission -> permission.getName()) // Lấy tên của các permission
-                .distinct() // Loại bỏ trùng lặp nếu có
+                .flatMap(auth -> auth.getRole().getPermissions().stream()) // Láº¥y cÃ¡c permissions tá»« role
+                .map(permission -> permission.getName()) // Láº¥y tÃªn cá»§a cÃ¡c permission
+                .distinct() // Loáº¡i bá» trÃ¹ng láº·p náº¿u cÃ³
                 .collect(Collectors.toList());
 
-        // Xây dựng JWT với các thông tin cần thiết
+        // XÃ¢y dá»±ng JWT vá»›i cÃ¡c thÃ´ng tin cáº§n thiáº¿t
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(account.getPhone()) // Subject của JWT là số điện thoại người dùng
-                .issuer(account.getUsername()) // Người phát hành (issuer)
-                .issueTime(new Date()) // Thời gian phát hành JWT
+                .subject(account.getPhone()) // Subject cá»§a JWT lÃ  sá»‘ Ä‘iá»‡n thoáº¡i ngÆ°á»i dÃ¹ng
+                .issuer(account.getUsername()) // NgÆ°á»i phÃ¡t hÃ nh (issuer)
+                .issueTime(new Date()) // Thá»i gian phÃ¡t hÃ nh JWT
                 .expirationTime(new Date(Instant.now()
                         .plus(VALID_DURATION, ChronoUnit.SECONDS)
-                        .toEpochMilli())) // Thời gian hết hạn của JWT
-                .claim("roles", roles) // Thêm danh sách roles vào claim
+                        .toEpochMilli())) // Thá»i gian háº¿t háº¡n cá»§a JWT
+                .claim("roles", roles) // ThÃªm danh sÃ¡ch roles vÃ o claim
                 .jwtID(UUID.randomUUID().toString())
-                .claim("permissions", permissions) // Thêm danh sách permissions vào claim
-                .build(); // Hoàn thành việc xây dựng claims
+                .claim("permissions", permissions) // ThÃªm danh sÃ¡ch permissions vÃ o claim
+                .build(); // HoÃ n thÃ nh viá»‡c xÃ¢y dá»±ng claims
 
-        // Chuyển claims thành payload cho JWT
+        // Chuyá»ƒn claims thÃ nh payload cho JWT
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
 
-        // Tạo đối tượng JWSObject chứa header và payload
+        // Táº¡o Ä‘á»‘i tÆ°á»£ng JWSObject chá»©a header vÃ  payload
         JWSObject jwsObject = new JWSObject(header, payload);
 
         try {
-            // Ký JWT bằng khóa bí mật
+            // KÃ½ JWT báº±ng khÃ³a bÃ­ máº­t
             jwsObject.sign(new MACSigner(signerKey.getBytes()));
 
-            // Trả về JWT đã được ký (token) dưới dạng chuỗi
+            // Tráº£ vá» JWT Ä‘Ã£ Ä‘Æ°á»£c kÃ½ (token) dÆ°á»›i dáº¡ng chuá»—i
             return jwsObject.serialize();
         } catch (JOSEException e) {
-            // Log lỗi nếu không thể tạo token JWT và ném ra ngoại lệ
+            // Log lá»—i náº¿u khÃ´ng thá»ƒ táº¡o token JWT vÃ  nÃ©m ra ngoáº¡i lá»‡
             log.error("Cannot generate token", e);
             throw new RuntimeException(e);
         }

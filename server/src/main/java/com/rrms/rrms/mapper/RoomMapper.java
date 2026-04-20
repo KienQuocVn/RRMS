@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
 import com.rrms.rrms.dto.request.RoomImageRequest;
@@ -11,7 +12,7 @@ import com.rrms.rrms.dto.request.RoomRequest;
 import com.rrms.rrms.dto.response.*;
 import com.rrms.rrms.models.*;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RoomMapper {
 
     RoomMapper INSTANCE = Mappers.getMapper(RoomMapper.class);

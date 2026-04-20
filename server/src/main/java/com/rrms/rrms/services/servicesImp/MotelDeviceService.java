@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.MotelDeviceRequest;
@@ -19,22 +18,20 @@ import com.rrms.rrms.repositories.MotelRepository;
 import com.rrms.rrms.repositories.RoomDeviceRepository;
 import com.rrms.rrms.services.IMotelDeviceService;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class MotelDeviceService implements IMotelDeviceService {
-    @Autowired
-    private MotelDeviceRepository motelDeviceRepository;
+    private final MotelDeviceRepository motelDeviceRepository;
 
-    @Autowired
-    private MotelDeviceMapper mapper;
+    private final MotelDeviceMapper mapper;
 
-    @Autowired
-    MotelRepository motelRepository;
+    final MotelRepository motelRepository;
 
-    @Autowired
-    RoomDeviceRepository roomDeviceRepository;
+    final RoomDeviceRepository roomDeviceRepository;
 
     @Override
     public List<MotelDeviceResponse> getAllMotelDevicesByMotel(UUID motelId) {

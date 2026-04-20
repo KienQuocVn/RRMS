@@ -4,7 +4,6 @@ import java.text.ParseException;
 import java.util.Objects;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -17,14 +16,16 @@ import com.nimbusds.jose.JOSEException;
 import com.rrms.rrms.dto.request.IntrospecTokenRequest;
 import com.rrms.rrms.services.servicesImp.AuthorityService;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class CustomJwtDecoder implements JwtDecoder {
 
     @Value("${jwt.signer-key}")
     public String signerKey;
 
-    @Autowired
-    private AuthorityService authenticationService;
+    private final AuthorityService authenticationService;
 
     private NimbusJwtDecoder nimbusJwtDecoder = null;
 

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import com.rrms.rrms.dto.request.MotelRequest;
 import com.rrms.rrms.dto.response.MotelResponse;
@@ -13,17 +14,17 @@ import com.rrms.rrms.dto.response.MotelServiceResponse;
 import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.models.MotelService;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface MotelMapper {
     @Mapping(target = "motelServices", source = "motelServices")
     MotelResponse motelToMotelResponse(Motel motel);
 
     Motel motelRequestToMotel(MotelRequest motelRequest);
 
-    @Mapping(target = "motelId", source = "motel.motelId") // ánh xạ motelId
-    MotelServiceResponse motelServiceToMotelServiceResponse(MotelService motelService); // thêm ánh xạ mới
+    @Mapping(target = "motelId", source = "motel.motelId") // Ã¡nh xáº¡ motelId
+    MotelServiceResponse motelServiceToMotelServiceResponse(MotelService motelService); // thÃªm Ã¡nh xáº¡ má»›i
 
-    // Phương thức mặc định để ánh xạ danh sách motel services
+    // PhÆ°Æ¡ng thá»©c máº·c Ä‘á»‹nh Ä‘á»ƒ Ã¡nh xáº¡ danh sÃ¡ch motel services
     default List<MotelServiceResponse> mapMotelServices(List<MotelService> motelServices) {
         if (motelServices == null) {
             return Collections.emptyList();

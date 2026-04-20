@@ -2,7 +2,6 @@ package com.rrms.rrms.controllers;
 
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,8 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class HeartController {
-    @Autowired
-    private HeartService heartService;
+    private final HeartService heartService;
 
     @Operation(summary = "Get heart by username")
     @GetMapping("/{username}")

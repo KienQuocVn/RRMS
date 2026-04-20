@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,26 +14,28 @@ import com.rrms.rrms.dto.response.TransactionResponse;
 import com.rrms.rrms.models.Transaction;
 import com.rrms.rrms.services.servicesImp.TransactionService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/transactions")
+@RequiredArgsConstructor
 public class TransactionController {
 
-    @Autowired
-    private TransactionService transactionService;
+    private final TransactionService transactionService;
 
     @GetMapping("/{username}")
     public ResponseEntity<List<Transaction>> getTransactionsByUsername(@PathVariable String username) {
         List<Transaction> transactions = transactionService.getTransactionsByUsername(username);
         if (transactions.isEmpty()) {
-            return ResponseEntity.noContent().build(); // Trả về 204 nếu không có giao dịch
+            return ResponseEntity.noContent().build(); // Tráº£ vá» 204 náº¿u khÃ´ng cÃ³ giao dá»‹ch
         }
-        return ResponseEntity.ok(transactions); // Trả về 200 với danh sách giao dịch
+        return ResponseEntity.ok(transactions); // Tráº£ vá» 200 vá»›i danh sÃ¡ch giao dá»‹ch
     }
 
     @PostMapping("/receipts")
     public ResponseEntity<TransactionResponse> createReceipt(
             @RequestBody TransactionRequest transactionDTO, @RequestParam String username) {
-        transactionDTO.setTransactionType(true); // Đặt loại giao dịch là phiếu thu
+        transactionDTO.setTransactionType(true); // Äáº·t loáº¡i giao dá»‹ch lÃ  phiáº¿u thu
         TransactionResponse newTransaction = transactionService.createTransaction(transactionDTO, username);
         return ResponseEntity.ok(newTransaction);
     }
@@ -42,7 +43,7 @@ public class TransactionController {
     @PostMapping("/expenses")
     public ResponseEntity<TransactionResponse> createExpense(
             @RequestBody TransactionRequest transactionDTO, @RequestParam String username) {
-        transactionDTO.setTransactionType(false); // Đặt loại giao dịch là phiếu chi
+        transactionDTO.setTransactionType(false); // Äáº·t loáº¡i giao dá»‹ch lÃ  phiáº¿u chi
         TransactionResponse newTransaction = transactionService.createTransaction(transactionDTO, username);
         return ResponseEntity.ok(newTransaction);
     }
@@ -51,9 +52,10 @@ public class TransactionController {
     public ResponseEntity<String> deleteTransaction(@PathVariable UUID id, @RequestParam String username) {
         boolean isDeleted = transactionService.deleteTransaction(id, username);
         if (isDeleted) {
-            return ResponseEntity.ok("Xóa thành công");
+            return ResponseEntity.ok("XÃ³a thÃ nh cÃ´ng");
         } else {
-            return ResponseEntity.status(404).body("Giao dịch không tồn tại hoặc không thuộc tài khoản này");
+            return ResponseEntity.status(404)
+                    .body("Giao dá»‹ch khÃ´ng tá»“n táº¡i hoáº·c khÃ´ng thuá»™c tÃ i khoáº£n nÃ y");
         }
     }
 
