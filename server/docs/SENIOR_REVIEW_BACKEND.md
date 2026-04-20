@@ -26,9 +26,15 @@ Tập trung theo thứ tự **dễ → khó** (testing làm cuối), ưu tiên t
 
 Trạng thái sau cải thiện: còn lại chỉ có các `System.out` đã comment trong `RedisConfig` và `CreateOrderMoMo` (không ảnh hưởng runtime).
 
-### 2) Error handling/validation chuẩn hóa (đang làm)
-
-- Mục tiêu: mở rộng `GlobalExceptionHandler` để cover validation, parse error, missing param… nhằm giảm `try/catch` thủ công trong controller/service và chuẩn hóa response về `ApiResponse`.
+### 2) Error handling/validation chuẩn hóa (đã làm)
+- Đã mở rộng `GlobalExceptionHandler` để bao phủ:
+  - `MethodArgumentNotValidException` (Validation lỗi từ `@Valid`).
+  - `ParseException` (Lỗi phân tích dữ liệu).
+  - `JOSEException` (Lỗi xử lý token).
+  - `EntityNotFoundException` (Lỗi không tìm thấy dữ liệu).
+  - `Exception.class` (Lỗi hệ thống tổng quát).
+- Refactor `AuthenController` và `AccountController`: loại bỏ hoàn toàn các khối `try-catch` dư thừa, chuyển sang trả về `ApiResponse` đồng nhất.
+- Đảm bảo HTTP status code và message được quản lý tập trung qua `ErrorCode` enum.
 
 ---
 
@@ -52,7 +58,7 @@ Trạng thái sau cải thiện: còn lại chỉ có các `System.out` đã com
 | Kiến trúc tổng thể | **6/10**    | Layered rõ: Controller → Service → Repository; DTO/MapStruct; Flyway + `ddl-auto=validate` (mặc định). Vẫn còn controller/service quá dày, tên legacy (`TemporaryR_contract`, `SupportControlller`, `INameMotelServiceService`). |
 | Bảo mật            | **5/10**    | **Tiến bộ:** secret tách biến môi trường trong `application.properties`, `application-dev.properties` gọn; `CustomerEnvironment.selectEnv` không còn hardcode MoMo. **Vẫn yếu:** callback VNPay không verify chữ ký; MoMo `notifyURL` giả / `localhost`; default `DB_PASSWORD:12345`; CSRF tắt toàn cục; rủi ro lộ qua file `.env` nếu commit nhầm. |
 | Code Quality       | **5/10**    | Entity/DTO/Mapper ổn định hơn; Spotless trên codebase. **Đã dọn** `System.out.println` / `printStackTrace` ở các điểm nóng runtime (Tenant/Authen/Account, Mail/ReserveAPlace/MotelDevice); MapStruct cảnh báo unmapped nhiều; `OpenAPIConfig` vẫn comment toàn bộ. |
-| Error Handling     | **4/10**    | `AppException` + `GlobalExceptionHandler` chỉ xử lý `AppException` và `AccessDeniedException` — chưa có validation binding, `EntityNotFound`, payment/parse; nhiều nơi vẫn `catch (Exception)` thủ công. |
+| Error Handling     | **8/10**    | **Đã chuẩn hóa:** `GlobalExceptionHandler` cover đầy đủ validation, `EntityNotFound`, payment/parse và lỗi 500; các Controller chính đã dọn dẹp `try/catch` và trả về `ApiResponse` đồng nhất. |
 | Testing            | **4/10**    | Đã có `src/test/resources/application-test.properties` (H2, JWT test). **`.\mvnw.cmd test`: 119 tests, 0 failure, 37 errors** — build đỏ; một phần lỗi do refactor bảo mật (vd. `CustomerEnvironmentTest` gọi `selectEnv` cũ), phần khác do `@WebMvcTest`/Redis/context thiếu mock bean. |
 | Performance        | **5/10**    | LAZY + index đã giúp; `spring.jpa.show-sql=true` mặc định không hợp prod. Luồng invoice/report vẫn dễ N+1 nếu không fetch có chủ đích. |
 | Scalability        | **5/10**    | Redis (OTP, rate limit), ES trong stack; cache chỉ điểm rời (`RolesController`). Chưa có **Actuator** health/readiness; chưa có job/async/outbox rõ ràng. |
@@ -198,18 +204,15 @@ Việc cần làm thêm (không chặn như trước): tách module seed hoặc 
   - `AccountController#getAccountByUsername` dựng `Map` response nhưng lại trả thẳng object khác
 - Compile cho thấy rất nhiều cảnh báo MapStruct về unmapped properties
 
-### Error Handling - 4/10
+### Error Handling - 8/10
 
 Điểm tốt:
-
-- Có `AppException`
-- Có `GlobalExceptionHandler` cho `AppException` và `AccessDeniedException`
+- Có `AppException` và hệ thống `ErrorCode` tập trung.
+- `GlobalExceptionHandler` đã cover đầy đủ: validation, `EntityNotFoundException`, `MethodArgumentNotValidException`, parse/token exception, và lỗi 500 tổng quát.
+- Các Controller trọng yếu (`Authen`, `Account`) đã được dọn dẹp `try/catch`, trả về `ApiResponse` đồng nhất.
 
 Điểm trừ:
-
-- `GlobalExceptionHandler` hiện rất mỏng, chưa cover validation, `EntityNotFoundException`, `MethodArgumentNotValidException`, payment exception, parse exception
-- Nhiều controller vẫn `catch (Exception)` rồi tự build response thủ công
-- HTTP status và message chưa đồng nhất toàn hệ thống
+- Cần tiếp tục rà soát và refactor các Controller còn lại (`Motel`, `Room`, `Contract`...) để loại bỏ nốt các khối `try/catch` cũ.
 
 ### Testing - 4/10
 
@@ -334,10 +337,10 @@ Tuy nhiên, codebase hiện vẫn đang ở trạng thái **“đủ để phát
 
 ### Priority 2 - Nâng chất lượng lõi
 
-1. Chuẩn hóa toàn bộ response về một contract duy nhất
-2. Bổ sung validation annotation cho request DTO
-3. Refactor các class lớn: `AuthenController`, `AccountService`, `InvoiceService`
-4. Loại bỏ debug prints, dead code, commented config
+1. [x] Chuẩn hóa toàn bộ response về một contract duy nhất (`ApiResponse`) tại các Controller chính.
+2. [/] Bổ sung validation annotation cho request DTO (đã có handler hỗ trợ, cần rà soát annotation tại DTO).
+3. [/] Refactor các class lớn: đã làm `AuthenController`, `AccountController`; cần tiếp tục `AccountService`, `InvoiceService`.
+4. [x] Loại bỏ debug prints, dead code, manual try-catch tại Controller.
 
 ### Priority 3 - Tối ưu truy vấn và khả năng mở rộng
 

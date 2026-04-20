@@ -7,6 +7,12 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
+    UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_KEY(1001, "Uncategorized error", HttpStatus.BAD_REQUEST),
+    INVALID_ENUM_VALUE(1002, "Invalid enum value", HttpStatus.BAD_REQUEST),
+    ENTITY_NOT_FOUND(1003, "Entity not found", HttpStatus.NOT_FOUND),
+    PAYMENT_EXCEPTION(1004, "Payment error", HttpStatus.BAD_REQUEST),
+    PARSE_EXCEPTION(1005, "Parse error", HttpStatus.BAD_REQUEST),
     MOTEL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Motel not found", HttpStatus.NOT_FOUND),
     ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Account not found", HttpStatus.NOT_FOUND),
     ROOM_DETAIL_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Room detail not found", HttpStatus.NOT_FOUND),

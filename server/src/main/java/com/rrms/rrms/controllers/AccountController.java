@@ -1,13 +1,7 @@
 package com.rrms.rrms.controllers;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import jakarta.persistence.EntityNotFoundException;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +11,6 @@ import com.rrms.rrms.dto.request.ChangePasswordRequest;
 import com.rrms.rrms.dto.response.AccountResponse;
 import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.enums.Roles;
-import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.models.Account;
 import com.rrms.rrms.services.IAccountService;
 
@@ -40,7 +33,7 @@ public class AccountController {
     @Operation(summary = "Get all account")
     @GetMapping("/get-all-account")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> getAllAccount() {
+    public ApiResponse<List<AccountResponse>> getAllAccount() {
         var authen = SecurityContextHolder.getContext().getAuthentication();
 
         log.info("Get all account {}", authen.getName());
@@ -48,164 +41,74 @@ public class AccountController {
                 .forEach(grantedAuthority -> log.info("GrantedAuthority: {}", grantedAuthority.getAuthority()));
         log.info("In method get Admin");
 
-        Map<String, Object> rs = new HashMap<>();
-        try {
-            rs.put("status", true);
-            rs.put("message", "Call api success");
-            rs.put("data", accountService.findAll());
-            log.info("Get all account successfully");
-        } catch (Exception ex) {
-            rs.put("status", false);
-            rs.put("message", "Call api failed");
-            rs.put("data", null);
-            log.error("Get all account failed", ex);
-        }
-        return ResponseEntity.ok(rs);
+        return ApiResponse.<List<AccountResponse>>builder()
+                .message("Call api success")
+                .result(accountService.findAll())
+                .build();
     }
 
     @GetMapping("/by-host-role")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> getAccountsByHostRole() {
-        Map<String, Object> rs = new HashMap<>();
-        try {
-            List<AccountResponse> accountResponses = accountService.getAccountsByRole(Roles.HOST);
-            if (!accountResponses.isEmpty()) { // Check if the list is not empty
-                rs.put("status", true);
-                rs.put("message", "Call api success");
-                rs.put("data", accountResponses); // Directly send the list
-            } else {
-                rs.put("status", false);
-                rs.put("message", "No accounts found for HOST role");
-                rs.put("data", null);
-            }
-            log.info("Get accounts by HOST role successfully");
-        } catch (Exception ex) {
-            rs.put("status", false);
-            rs.put("message", "Call api failed");
-            rs.put("data", null);
-            log.error("Get accounts by HOST role failed", ex);
-        }
-        return ResponseEntity.ok(rs);
+    public ApiResponse<List<AccountResponse>> getAccountsByHostRole() {
+        List<AccountResponse> accountResponses = accountService.getAccountsByRole(Roles.HOST);
+        return ApiResponse.<List<AccountResponse>>builder()
+                .message("Call api success")
+                .result(accountResponses)
+                .build();
     }
 
     @Operation(summary = "Get account by username")
     @GetMapping("/{username}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> getAccountByUsername(@PathVariable String username) {
-        Map<String, Object> rs = new HashMap<>();
-        try {
-            AccountResponse account = accountService.findByUsername(username);
-            rs.put("status", true);
-            rs.put("message", "Call API success");
-            rs.put("data", account);
-            log.info("Get account by Username successfully");
-            return ResponseEntity.ok(account);
-        } catch (Exception ex) {
-            rs.put("status", false);
-            rs.put("message", "Call API failed");
-            rs.put("data", null);
-            log.error("Get account by Username failed", ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(rs);
-        }
+    public ApiResponse<AccountResponse> getAccountByUsername(@PathVariable String username) {
+        AccountResponse account = accountService.findByUsername(username);
+        return ApiResponse.<AccountResponse>builder()
+                .message("Call API success")
+                .result(account)
+                .build();
     }
 
     @PostMapping("/createAccount")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> createAccount(@RequestBody AccountRequest accountRequest) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            AccountResponse accountResponse = accountService.createAccount(accountRequest);
-            response.put("status", true);
-            response.put("message", "Account created successfully");
-            response.put("data", accountResponse);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (AppException ex) {
-            response.put("status", false);
-            response.put("message", "Error creating account: " + ex.getMessage());
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-        } catch (Exception ex) {
-            response.put("status", false);
-            response.put("message", "Account creation failed: " + ex.getMessage());
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ApiResponse<AccountResponse> createAccount(@RequestBody AccountRequest accountRequest) {
+        AccountResponse accountResponse = accountService.createAccount(accountRequest);
+        return ApiResponse.<AccountResponse>builder()
+                .message("Account created successfully")
+                .result(accountResponse)
+                .build();
     }
 
     @Operation(summary = "Update an existing host account")
     @PutMapping("/updateAccount/{username}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Map<String, Object>> updateAccount(
+    public ApiResponse<AccountResponse> updateAccount(
             @PathVariable String username, @RequestBody AccountRequest accountRequest) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            AccountResponse accountResponse = accountService.updateAccount(username, accountRequest);
-            response.put("status", true);
-            response.put("message", "Account updated successfully");
-            response.put("data", accountResponse);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        } catch (AppException ex) {
-            response.put("status", false);
-            response.put("message", "Error updating account: " + ex.getMessage());
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } catch (Exception ex) {
-            response.put("status", false);
-            response.put("message", "Account update failed: " + ex.getMessage());
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        AccountResponse accountResponse = accountService.updateAccount(username, accountRequest);
+        return ApiResponse.<AccountResponse>builder()
+                .message("Account updated successfully")
+                .result(accountResponse)
+                .build();
     }
 
     @Operation(summary = "Delete an existing account")
     @DeleteMapping("/deleteAccount/{username}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Map<String, Object>> deleteAccount(@PathVariable String username) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            accountService.deleteAccount(username);
-            response.put("status", true);
-            response.put("message", "Account deleted successfully");
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        } catch (AppException ex) {
-            response.put("status", false);
-            response.put("message", "Error deleting account: " + ex.getMessage());
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } catch (Exception ex) {
-            response.put("status", false);
-            response.put("message", "Account deletion failed: " + ex.getMessage());
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ApiResponse<Void> deleteAccount(@PathVariable String username) {
+        accountService.deleteAccount(username);
+        return ApiResponse.<Void>builder()
+                .message("Account deleted successfully")
+                .build();
     }
 
     @Operation(summary = "Update account by username")
     @PutMapping("/update-acc")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> updateAccount(@RequestParam("username") String username, @RequestBody Account account) {
-        Map<String, Object> rs = new HashMap<>();
-        try {
-            Account updateAcc = accountService.updateAcc(username, account);
-            rs.put("status", true);
-            rs.put("message", "Update product successful");
-            rs.put("data", updateAcc);
-            log.info("Update product successfully: {}", username);
-            return ResponseEntity.ok(rs);
-        } catch (EntityNotFoundException ex) {
-            rs.put("status", false);
-            rs.put("message", "Account not found: " + ex.getMessage());
-            rs.put("data", null);
-            log.error("Account not found", ex);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(rs);
-        } catch (Exception ex) {
-            rs.put("status", false);
-            rs.put("message", "Update Account failed: " + ex.getMessage());
-            rs.put("data", null);
-            log.error("Update Account failed", ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(rs);
-        }
+    public ApiResponse<Account> updateAccount(@RequestParam("username") String username, @RequestBody Account account) {
+        Account updateAcc = accountService.updateAcc(username, account);
+        return ApiResponse.<Account>builder()
+                .message("Update product successful")
+                .result(updateAcc)
+                .build();
     }
 
     @Operation(summary = "Get profile by username")
@@ -214,7 +117,6 @@ public class AccountController {
         AccountResponse accountResponse = accountService.findByUsername(username);
         log.info("Get profile successfully");
         return ApiResponse.<AccountResponse>builder()
-                .code(HttpStatus.OK.value())
                 .message("Get profile successfully")
                 .result(accountResponse)
                 .build();
@@ -226,7 +128,6 @@ public class AccountController {
         AccountResponse accountResponse = accountService.update(accountRequest);
         log.info("Update profile successfully");
         return ApiResponse.<AccountResponse>builder()
-                .code(HttpStatus.OK.value())
                 .message("Update profile successfully")
                 .result(accountResponse)
                 .build();
@@ -238,7 +139,6 @@ public class AccountController {
         String changePassword = accountService.changePassword(changePasswordRequest);
         log.info("Change password successfully");
         return ApiResponse.<String>builder()
-                .code(HttpStatus.OK.value())
                 .message("Change password successfully")
                 .result(changePassword)
                 .build();
@@ -246,31 +146,17 @@ public class AccountController {
 
     @GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
-    public ResponseEntity<?> searchAccounts(@RequestParam(required = false) String search) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            List<AccountResponse> accounts;
-            if (search == null || search.trim().isEmpty()) {
-                accounts = accountService.findAll();
-            } else {
-                accounts = accountService.searchAccounts(search.toLowerCase());
-            }
-
-            if (!accounts.isEmpty()) {
-                response.put("status", true);
-                response.put("message", "Search results found");
-                response.put("data", accounts);
-            } else {
-                response.put("status", false);
-                response.put("message", "No accounts found matching the criteria");
-                response.put("data", null);
-            }
-        } catch (Exception ex) {
-            response.put("status", false);
-            response.put("message", "Search operation failed");
-            response.put("data", null);
-            log.error("Search accounts failed search={}", search, ex);
+    public ApiResponse<List<AccountResponse>> searchAccounts(@RequestParam(required = false) String search) {
+        List<AccountResponse> accounts;
+        if (search == null || search.trim().isEmpty()) {
+            accounts = accountService.findAll();
+        } else {
+            accounts = accountService.searchAccounts(search.toLowerCase());
         }
-        return ResponseEntity.ok(response);
+
+        return ApiResponse.<List<AccountResponse>>builder()
+                .message("Search results found")
+                .result(accounts)
+                .build();
     }
 }

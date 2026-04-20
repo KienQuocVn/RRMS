@@ -2,9 +2,6 @@ package com.rrms.rrms.controllers;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.annotation.security.PermitAll;
@@ -23,6 +20,7 @@ import com.rrms.rrms.annotations.RateLimited;
 import com.rrms.rrms.dto.request.*;
 import com.rrms.rrms.dto.response.*;
 import com.rrms.rrms.dto.response.ApiResponse;
+import com.rrms.rrms.enums.ErrorCode;
 import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.models.Account;
 import com.rrms.rrms.repositories.AccountRepository;
@@ -101,137 +99,53 @@ public class AuthenController {
 
     @PostMapping("/login")
     @RateLimited(key = "login", maxAttempts = 5, windowSeconds = 300)
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            Optional<Account> accountOptional = accountService.findByPhone(loginRequest.getPhone());
-            if (accountOptional.isEmpty()) {
-                response.put("status", false);
-                response.put("message", "Sai thông tin đăng nhập");
-                response.put("data", null);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
+    public ApiResponse<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+        Account account = accountService
+                .findByPhone(loginRequest.getPhone())
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
-            LoginResponse loginResponse = authorityService.loginResponse(loginRequest);
-            response.put("status", true);
-            response.put("message", "Đăng nhập thành công.");
-            response.put("data", loginResponse);
-            return ResponseEntity.ok(response);
+        LoginResponse loginResponse = authorityService.loginResponse(loginRequest);
 
-        } catch (AppException ex) {
-            response.put("status", false);
-            response.put("message", "Sai thông tin đăng nhập");
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        } catch (Exception ex) {
-            response.put("status", false);
-            response.put("message", "Đã xảy ra lỗi khi thực hiện đăng nhập.");
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        return ApiResponse.<LoginResponse>builder()
+                .message("Đăng nhập thành công.")
+                .result(loginResponse)
+                .build();
     }
 
     @PostMapping("/introspect")
-    public ResponseEntity<?> introspect(@RequestBody IntrospecTokenRequest request) {
-        try {
-            var result = authorityService.introspect(request);
-            return ResponseEntity.ok(result);
-        } catch (ParseException e) {
-            return ResponseEntity.badRequest().body(new MessageTokenResponse("Invalid token format"));
-        } catch (JOSEException e) {
-            return ResponseEntity.badRequest().body(new MessageTokenResponse("Error verifying token"));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(new MessageTokenResponse("Internal server error"));
-        }
+    public ApiResponse<IntrospecTokenResponse> introspect(@RequestBody IntrospecTokenRequest request)
+            throws ParseException, JOSEException {
+        var result = authorityService.introspect(request);
+        return ApiResponse.<IntrospecTokenResponse>builder().result(result).build();
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody LogoutRequest request) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            authorityService.logout(request);
-            response.put("status", true);
-            response.put("message", "Đăng xuất thành công.");
-            return ResponseEntity.ok(response);
-        } catch (ParseException | JOSEException e) {
-            // Xử lý lỗi liên quan đến token không hợp lệ
-            log.error("Lỗi khi phân tích token: " + e.getMessage(), e);
-            response.put("status", false);
-            response.put("message", "Token không hợp lệ: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        } catch (Exception ex) {
-            // Xử lý lỗi hệ thống không lường trước
-            log.error("Lỗi không mong muốn trong quá trình đăng xuất: " + ex.getMessage(), ex);
-            response.put("status", false);
-            response.put("message", "Đã xảy ra lỗi khi thực hiện đăng xuất.");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
+        authorityService.logout(request);
+        return ApiResponse.<Void>builder().message("Đăng xuất thành công.").build();
     }
 
     @PostMapping("/register")
     @RateLimited(key = "register", maxAttempts = 5, windowSeconds = 300)
-    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
-        try {
-            // Đăng ký tài khoản mới
-            Account account = accountService.register(registerRequest);
+    public ApiResponse<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
+        Account account = accountService.register(registerRequest);
 
-            // Tạo đối tượng phản hồi
-            RegisterResponse response = new RegisterResponse();
-            response.setStatus(true);
-            response.setMessage("Đăng ký thành công");
-            response.setUsername(account.getUsername());
+        RegisterResponse response = new RegisterResponse();
+        response.setStatus(true);
+        response.setMessage("Đăng ký thành công");
+        response.setUsername(account.getUsername());
 
-            // Trả về phản hồi
-            return ResponseEntity.ok(response);
-
-        } catch (AppException ex) {
-            // Trường hợp tài khoản đã tồn tại hoặc lỗi khác
-            RegisterResponse response = new RegisterResponse();
-            response.setStatus(false);
-            response.setMessage(ex.getMessage());
-
-            // Trả về phản hồi lỗi
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        } catch (Exception ex) {
-            // Xử lý các lỗi khác không xác định
-            RegisterResponse response = new RegisterResponse();
-            response.setStatus(false);
-            response.setMessage("Đã xảy ra lỗi trong quá trình đăng ký.");
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        return ApiResponse.<RegisterResponse>builder().result(response).build();
     }
 
     @PostMapping("/refreshToken")
-    public ResponseEntity<?> refresh(@RequestBody RefreshRequest request) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            LoginResponse loginResponse = authorityService.refreshToken(request);
-            response.put("status", true);
-            response.put("message", "Làm mới token thành công.");
-            response.put("data", loginResponse);
-            return ResponseEntity.ok(response);
-        } catch (AppException ex) {
-            response.put("status", false);
-            response.put("message", ex.getMessage());
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-        } catch (ParseException ex) {
-            response.put("status", false);
-            response.put("message", "Token không hợp lệ.");
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        } catch (JOSEException ex) {
-            response.put("status", false);
-            response.put("message", "Đã xảy ra lỗi khi làm mới token.");
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        } catch (Exception ex) {
-            response.put("status", false);
-            response.put("message", "Đã xảy ra lỗi không xác định.");
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ApiResponse<LoginResponse> refresh(@RequestBody RefreshRequest request)
+            throws ParseException, JOSEException {
+        LoginResponse loginResponse = authorityService.refreshToken(request);
+        return ApiResponse.<LoginResponse>builder()
+                .message("Làm mới token thành công.")
+                .result(loginResponse)
+                .build();
     }
 
     @GetMapping("/checkMail")
