@@ -1,14 +1,19 @@
 package com.rrms.rrms.services.servicesImp;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rrms.rrms.dto.request.TransactionRequest;
 import com.rrms.rrms.dto.response.TransactionResponse;
+import com.rrms.rrms.dto.response.TransactionSummaryResponse;
+import com.rrms.rrms.enums.ErrorCode;
 import com.rrms.rrms.enums.PaymentStatus;
+import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.models.Account;
 import com.rrms.rrms.models.Invoice;
 import com.rrms.rrms.models.Transaction;
@@ -22,129 +27,112 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TransactionService {
     private final TransactionRepository transactionRepository;
-
     private final InvoiceRepository invoiceRepository;
-
     private final AccountRepository accountRepository;
 
-    public List<Transaction> getTransactionsByUsername(String username) {
-        Account account = accountRepository.findById(username).orElse(null);
-        if (account != null) {
-            return transactionRepository.findByAccount(account);
-        }
-        return List.of(); // Tráº£ vá» danh sÃ¡ch rá»—ng náº¿u khÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n
+    @Transactional(readOnly = true)
+    public Page<TransactionResponse> getTransactionsByUsername(String username, Pageable pageable) {
+        Account account = getAccount(username);
+        return transactionRepository.findByAccount(account, pageable).map(this::mapTransaction);
     }
 
-    public TransactionResponse createTransaction(TransactionRequest transactionDTO, String username) {
-        // Táº¡o Ä‘á»‘i tÆ°á»£ng Transaction tá»« TransactionRequest
+    public TransactionResponse createTransaction(TransactionRequest transactionRequest, String username) {
         Transaction transaction = new Transaction();
-        transaction.setAmount(transactionDTO.getAmount());
-        transaction.setPayerName(transactionDTO.getPayerName());
-        transaction.setPaymentDescription(transactionDTO.getPaymentDescription());
-        transaction.setCategory(transactionDTO.getCategory());
-        transaction.setTransactionDate(transactionDTO.getTransactionDate());
-        transaction.setTransactionType(transactionDTO.isTransactionType());
+        transaction.setAmount(transactionRequest.getAmount());
+        transaction.setPayerName(transactionRequest.getPayerName());
+        transaction.setPaymentDescription(
+                transactionRequest.getPaymentDescription() == null
+                        ? "Manual transaction"
+                        : transactionRequest.getPaymentDescription());
+        transaction.setCategory(
+                transactionRequest.getCategory() == null ? "GENERAL" : transactionRequest.getCategory());
+        transaction.setTransactionDate(
+                transactionRequest.getTransactionDate() == null
+                        ? java.time.LocalDate.now()
+                        : transactionRequest.getTransactionDate());
+        transaction.setTransactionType(transactionRequest.isTransactionType());
+        transaction.setAccount(getAccount(username));
 
-        // Láº¥y Invoice tá»« invoiceId (náº¿u request cÃ³ truyá»n)
-        if (transactionDTO.getInvoiceId() != null) {
+        if (transactionRequest.getInvoiceId() != null) {
             Invoice invoice = invoiceRepository
-                    .findById(transactionDTO.getInvoiceId())
-                    .orElseThrow(() -> new RuntimeException("Invoice not found"));
+                    .findDetailedByInvoiceId(transactionRequest.getInvoiceId())
+                    .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
             transaction.setInvoice(invoice);
         }
 
-        // TÃ¬m tÃ i khoáº£n dá»±a trÃªn username
-        Account account =
-                accountRepository.findById(username).orElseThrow(() -> new RuntimeException("Account not found"));
-
-        // LiÃªn káº¿t giao dá»‹ch vá»›i tÃ i khoáº£n
-        transaction.setAccount(account);
-
-        // LÆ°u giao dá»‹ch vÃ o cÆ¡ sá»Ÿ dá»¯ liá»‡u
         Transaction savedTransaction = transactionRepository.save(transaction);
 
-        // Tá»± Ä‘á»™ng kiá»ƒm tra vÃ  cáº­p nháº­t tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n
-        if (transaction.getInvoice() != null) {
-            updateInvoiceStatus(transaction.getInvoice().getInvoiceId());
+        if (savedTransaction.getInvoice() != null) {
+            updateInvoiceStatus(savedTransaction.getInvoice().getInvoiceId());
         }
 
-        // Chuyá»ƒn Ä‘á»•i sang DTO pháº£n há»“i
-        return new TransactionResponse(
-                savedTransaction.getTransactionId(),
-                savedTransaction.getAmount(),
-                savedTransaction.getPayerName(),
-                savedTransaction.getPaymentDescription(),
-                savedTransaction.getCategory(),
-                savedTransaction.getTransactionDate(),
-                savedTransaction.isTransactionType());
+        return mapTransaction(savedTransaction);
     }
 
-    public List<Transaction> getAllTransactions() {
-        return transactionRepository.findAll();
-    }
-
-    public boolean deleteTransaction(UUID id, String username) {
-        // TÃ¬m tÃ i khoáº£n dá»±a trÃªn username
-        Account account =
-                accountRepository.findById(username).orElseThrow(() -> new RuntimeException("Account not found"));
-
-        // Kiá»ƒm tra giao dá»‹ch cÃ³ thuá»™c vá» tÃ i khoáº£n khÃ´ng
+    public void deleteTransaction(UUID id, String username) {
+        Account account = getAccount(username);
         Transaction transaction =
-                transactionRepository.findById(id).orElseThrow(() -> new RuntimeException("Transaction not found"));
+                transactionRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_NOT_FOUND));
 
-        if (transaction.getAccount().equals(account)) {
-            transactionRepository.deleteById(id);
-            return true;
+        if (!transaction.getAccount().equals(account)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-        return false; // Giao dá»‹ch khÃ´ng thuá»™c vá» tÃ i khoáº£n
+
+        transactionRepository.deleteById(id);
     }
 
+    @Transactional(readOnly = true)
+    public TransactionSummaryResponse getSummary(String username) {
+        Account account = getAccount(username);
+        BigDecimal totalIncome = transactionRepository.sumAmountByTransactionTypeAndAccount(true, account);
+        BigDecimal totalExpense = transactionRepository.sumAmountByTransactionTypeAndAccount(false, account);
+
+        return TransactionSummaryResponse.builder()
+                .totalIncome(totalIncome)
+                .totalExpense(totalExpense)
+                .profit(totalIncome.subtract(totalExpense))
+                .build();
+    }
+
+    @Transactional(readOnly = true)
     public BigDecimal getTotalIncome(String username) {
-        Account account =
-                accountRepository.findById(username).orElseThrow(() -> new RuntimeException("Account not found"));
-
-        List<Transaction> incomes = transactionRepository.findByTransactionTypeAndAccount(true, account);
-        return incomes.stream().map(Transaction::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        return getSummary(username).getTotalIncome();
     }
 
+    @Transactional(readOnly = true)
     public BigDecimal getTotalExpense(String username) {
-        Account account =
-                accountRepository.findById(username).orElseThrow(() -> new RuntimeException("Account not found"));
-
-        List<Transaction> expenses = transactionRepository.findByTransactionTypeAndAccount(false, account);
-        return expenses.stream().map(Transaction::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        return getSummary(username).getTotalExpense();
     }
 
+    @Transactional(readOnly = true)
     public BigDecimal getProfit(String username) {
-        return getTotalIncome(username).subtract(getTotalExpense(username));
+        return getSummary(username).getProfit();
     }
 
     private void updateInvoiceStatus(UUID invoiceId) {
-        Invoice invoice =
-                invoiceRepository.findById(invoiceId).orElseThrow(() -> new RuntimeException("Invoice not found"));
+        Invoice invoice = invoiceRepository
+                .findDetailedByInvoiceId(invoiceId)
+                .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
 
-        // TÃ­nh tá»•ng tiá»n cáº§n thanh toÃ¡n cá»§a hÃ³a Ä‘Æ¡n
         double totalServiceAmount = invoice.getDetailInvoices().stream()
                 .filter(detail -> detail.getRoomService() != null)
                 .mapToDouble(
                         detail -> detail.getRoomService().getService().getPrice() * detail.getRoomServiceQuantity())
                 .sum();
 
-        double totalAddition = invoice.getAdditionItems() != null
-                ? invoice.getAdditionItems().stream()
+        double totalAddition = invoice.getAdditionItems() == null
+                ? 0
+                : invoice.getAdditionItems().stream()
                         .mapToDouble(charge -> charge.getIsAddition() ? charge.getAmount() : -charge.getAmount())
-                        .sum()
-                : 0;
+                        .sum();
 
         double totalInvoiceAmount = invoice.getContract().getPrice() + totalServiceAmount + totalAddition;
 
-        // TÃ­nh tá»•ng tiá»n Ä‘Ã£ thanh toÃ¡n (tá»•ng transactions loáº¡i thu vÃ o)
         BigDecimal totalPaid = transactionRepository.findByInvoice(invoice).stream()
                 .filter(Transaction::isTransactionType)
                 .map(Transaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Cáº­p nháº­t tráº¡ng thÃ¡i
         if (totalPaid.compareTo(BigDecimal.valueOf(totalInvoiceAmount)) >= 0) {
             invoice.setPaymentStatus(PaymentStatus.PAID);
         } else if (totalPaid.compareTo(BigDecimal.ZERO) > 0) {
@@ -154,5 +142,20 @@ public class TransactionService {
         }
 
         invoiceRepository.save(invoice);
+    }
+
+    private Account getAccount(String username) {
+        return accountRepository.findById(username).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+    }
+
+    private TransactionResponse mapTransaction(Transaction transaction) {
+        return new TransactionResponse(
+                transaction.getTransactionId(),
+                transaction.getAmount(),
+                transaction.getPayerName(),
+                transaction.getPaymentDescription(),
+                transaction.getCategory(),
+                transaction.getTransactionDate(),
+                transaction.isTransactionType());
     }
 }

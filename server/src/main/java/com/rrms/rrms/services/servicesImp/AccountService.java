@@ -1,8 +1,13 @@
 package com.rrms.rrms.services.servicesImp;
 
-import java.util.*;
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +21,11 @@ import com.rrms.rrms.enums.ErrorCode;
 import com.rrms.rrms.enums.Roles;
 import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.AccountMapper;
-import com.rrms.rrms.models.*;
+import com.rrms.rrms.models.Account;
+import com.rrms.rrms.models.Auth;
+import com.rrms.rrms.models.Heart;
+import com.rrms.rrms.models.Permission;
+import com.rrms.rrms.models.Role;
 import com.rrms.rrms.repositories.AccountRepository;
 import com.rrms.rrms.repositories.AuthRepository;
 import com.rrms.rrms.repositories.RoleRepository;
@@ -31,31 +40,54 @@ import lombok.experimental.FieldDefaults;
 @RequiredArgsConstructor
 public class AccountService implements IAccountService {
 
-    final AccountRepository accountRepository;
-
-    final AuthRepository authRepository;
-
-    final RoleRepository roleRepository;
-
-    final AccountMapper accountMapper;
-
-    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    AccountRepository accountRepository;
+    AuthRepository authRepository;
+    RoleRepository roleRepository;
+    AccountMapper accountMapper;
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
+    @Transactional(readOnly = true)
     public List<AccountResponse> findAll() {
-        List<Account> accounts = accountRepository.findAll();
-        return accounts.stream().map(accountMapper::toAccountResponse).collect(Collectors.toList());
+        return accountRepository.findAll().stream()
+                .map(accountMapper::toAccountResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<AccountResponse> getAccountsByRole(Roles role) {
-        List<Account> accounts = accountRepository.findAllByAuthorities_Role_RoleName(role);
-        return accounts.stream().map(accountMapper::toAccountResponse).collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public Page<AccountResponse> findAll(Pageable pageable) {
+        return accountRepository.findAll(pageable).map(accountMapper::toAccountResponse);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<AccountResponse> getAccountsByRole(Roles role) {
+        return accountRepository.findAllByAuthorities_Role_RoleName(role).stream()
+                .map(accountMapper::toAccountResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AccountResponse> getAccountsByRole(Roles role, Pageable pageable) {
+        return accountRepository
+                .findAllByAuthorities_Role_RoleName(role, pageable)
+                .map(accountMapper::toAccountResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<AccountResponse> searchAccounts(String search) {
-        List<Account> searchResults = accountRepository.searchAccounts(search);
-        return searchResults.stream().map(accountMapper::toAccountResponse).collect(Collectors.toList());
+        return accountRepository.searchAccounts(search).stream()
+                .map(accountMapper::toAccountResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AccountResponse> searchAccounts(String search, Pageable pageable) {
+        return accountRepository.searchAccounts(search, pageable).map(accountMapper::toAccountResponse);
     }
 
     @Override
@@ -75,7 +107,6 @@ public class AccountService implements IAccountService {
 
     @Override
     public Account register(RegisterRequest request) {
-        // Kiá»ƒm tra xem username hoáº·c phone Ä‘Ã£ tá»“n táº¡i chÆ°a
         if (accountRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.INVALID_USERNAME);
         }
@@ -84,49 +115,25 @@ public class AccountService implements IAccountService {
             throw new AppException(ErrorCode.INVALID_PHONE);
         }
 
-        //        if (accountRepository.existsAccountByEmail(request.getEmail())) {
-        //            throw new AppException(ErrorCode.INVALID_EMAIL);
-        //        }
-
-        // Kiá»ƒm tra Ä‘á»™ dÃ i máº­t kháº©u (Ã­t nháº¥t 8 kÃ½ tá»±)
         if (request.getPassword().length() < 8) {
             throw new AppException(ErrorCode.INVALID_PASSWORD);
         }
 
-        // Kiá»ƒm tra sá»‘ Ä‘iá»‡n thoáº¡i (Ä‘á»§ 10 sá»‘)
-        // if (!request.getPhone().matches("\\d{10}")) {
-        //     throw new AppException(ErrorCode.INVALID_PHONE2);
-        // }
-
-        // MÃ£ hÃ³a máº­t kháº©u trÆ°á»›c khi lÆ°u vÃ o cÆ¡ sá»Ÿ dá»¯ liá»‡u
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-
-        // Táº¡o Ä‘á»‘i tÆ°á»£ng Account má»›i
         Account account = new Account();
         Heart heart = new Heart();
         account.setUsername(request.getUsername());
         account.setPhone(request.getPhone());
         account.setEmail(request.getEmail());
-        account.setPassword(encodedPassword);
-        account.setEmail(request.getEmail());
+        account.setPassword(passwordEncoder.encode(request.getPassword()));
         account.setHeart(heart);
         heart.setAccount(account);
-        // LÆ°u tÃ i khoáº£n vÃ o cÆ¡ sá»Ÿ dá»¯ liá»‡u
+
         Account savedAccount = accountRepository.save(account);
 
-        // Láº¥y role CUSTOMER tá»« cÆ¡ sá»Ÿ dá»¯ liá»‡u
-        Role customerRole;
-        if ("CUSTOMER".equals(request.getUserType())) {
-            customerRole = roleRepository
-                    .findByRoleName(Roles.CUSTOMER)
-                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-        } else {
-            customerRole = roleRepository
-                    .findByRoleName(Roles.HOST)
-                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-        }
+        Role customerRole = roleRepository
+                .findByRoleName("CUSTOMER".equals(request.getUserType()) ? Roles.CUSTOMER : Roles.HOST)
+                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
 
-        // Táº¡o Ä‘á»‘i tÆ°á»£ng Auth vÃ  gÃ¡n role CUSTOMER cho tÃ i khoáº£n
         Auth auth = new Auth();
         auth.setAccount(savedAccount);
         auth.setRole(customerRole);
@@ -141,20 +148,15 @@ public class AccountService implements IAccountService {
             throw new AppException(ErrorCode.ACCOUNT_ALREADY_EXISTS);
         }
 
-        // MÃ£ hÃ³a máº­t kháº©u
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-
-        // Táº¡o tÃ i khoáº£n
         Account account = new Account();
         account.setUsername(request.getUsername());
         account.setEmail(request.getEmail());
-        account.setPassword(encodedPassword);
+        account.setPassword(passwordEncoder.encode(request.getPassword()));
         account.setPhone(request.getPhone());
         accountRepository.save(account);
 
-        // GÃ¡n role
         Role role = roleRepository
-                .findByRoleName(request.getUserType().equals("CUSTOMER") ? Roles.CUSTOMER : Roles.HOST)
+                .findByRoleName("CUSTOMER".equals(request.getUserType()) ? Roles.CUSTOMER : Roles.HOST)
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
         Auth auth = new Auth();
         auth.setAccount(account);
@@ -167,26 +169,23 @@ public class AccountService implements IAccountService {
     @Override
     public Optional<Account> login(String phone, String password) {
         Optional<Account> accountOptional = accountRepository.findByPhone(phone);
+        if (accountOptional.isPresent()
+                && passwordEncoder.matches(password, accountOptional.get().getPassword())) {
+            return accountOptional;
+        }
         if (accountOptional.isPresent()) {
-            Account account = accountOptional.get();
-            if (passwordEncoder.matches(password, account.getPassword())) {
-                return Optional.of(account);
-            } else {
-                throw new AppException(ErrorCode.INVALID_PASSWORD);
-            }
+            throw new AppException(ErrorCode.INVALID_PASSWORD);
         }
         return Optional.empty();
     }
 
     @Override
     public AccountResponse createAccount(AccountRequest accountRequest) {
-        // Kiá»ƒm tra xem tÃªn Ä‘Äƒng nháº­p hoáº·c sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i hay chÆ°a
         if (accountRepository.existsByUsername(accountRequest.getUsername())
                 || accountRepository.existsByPhone(accountRequest.getPhone())) {
             throw new AppException(ErrorCode.ACCOUNT_ALREADY_EXISTS);
         }
 
-        // Táº¡o Ä‘á»‘i tÆ°á»£ng Account má»›i
         Account account = new Account();
         account.setUsername(accountRequest.getUsername());
         account.setFullname(accountRequest.getFullname());
@@ -196,48 +195,32 @@ public class AccountService implements IAccountService {
         account.setGender(accountRequest.getGender());
         account.setCccd(accountRequest.getCccd());
         account.setAvatar(accountRequest.getAvatar());
-
-        // MÃ£ hÃ³a máº­t kháº©u
-        String encodedPassword = passwordEncoder.encode(accountRequest.getPassword());
-        account.setPassword(encodedPassword);
-
-        // Khá»Ÿi táº¡o danh sÃ¡ch authorities Ä‘á»ƒ trÃ¡nh NullPointerException
+        account.setPassword(passwordEncoder.encode(accountRequest.getPassword()));
         account.setAuthorities(new ArrayList<>());
 
-        // LÆ°u tÃ i khoáº£n trÆ°á»›c
         Account savedAccount = accountRepository.save(account);
 
-        // Xá»­ lÃ½ danh sÃ¡ch vai trÃ²
-        if (accountRequest.getRole() != null && !accountRequest.getRole().isEmpty()) {
-            for (String roleName : accountRequest.getRole()) {
-                // Chuyá»ƒn Ä‘á»•i roleName thÃ nh Roles enum
-                Roles roleEnum;
-                try {
-                    roleEnum = Roles.valueOf(roleName.toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    throw new AppException(ErrorCode.ROLE_NOT_FOUND);
-                }
-
-                Optional<Role> roleOptional = roleRepository.findByRoleName(roleEnum);
-                if (roleOptional.isPresent()) {
-                    Role role = roleOptional.get();
-
-                    // Táº¡o Ä‘á»‘i tÆ°á»£ng Auth má»›i cho má»—i vai trÃ² vÃ  liÃªn káº¿t tÃ i khoáº£n vá»›i vai trÃ²
-                    Auth auth = new Auth();
-                    auth.setAccount(savedAccount);
-                    auth.setRole(role);
-
-                    // ThÃªm quyá»n vÃ o danh sÃ¡ch authorities cá»§a tÃ i khoáº£n
-                    savedAccount.getAuthorities().add(auth);
-
-                    // LÆ°u dá»¯ liá»‡u quyá»n vÃ o cÆ¡ sá»Ÿ dá»¯ liá»‡u
-                    authRepository.save(auth);
-                } else {
-                    throw new AppException(ErrorCode.ROLE_NOT_FOUND);
-                }
-            }
-        } else {
+        if (accountRequest.getRole() == null || accountRequest.getRole().isEmpty()) {
             throw new AppException(ErrorCode.ROLE_NOT_PROVIDED);
+        }
+
+        for (String roleName : accountRequest.getRole()) {
+            Roles roleEnum;
+            try {
+                roleEnum = Roles.valueOf(roleName.toUpperCase());
+            } catch (IllegalArgumentException exception) {
+                throw new AppException(ErrorCode.ROLE_NOT_FOUND);
+            }
+
+            Role role = roleRepository
+                    .findByRoleName(roleEnum)
+                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+
+            Auth auth = new Auth();
+            auth.setAccount(savedAccount);
+            auth.setRole(role);
+            savedAccount.getAuthorities().add(auth);
+            authRepository.save(auth);
         }
 
         return convertToAccountResponse(savedAccount);
@@ -249,41 +232,28 @@ public class AccountService implements IAccountService {
         response.setFullname(account.getFullname());
         response.setPhone(account.getPhone());
         response.setEmail(account.getEmail());
-        response.setBirthday(java.sql.Date.valueOf(account.getBirthday()));
+        if (account.getBirthday() != null) {
+            response.setBirthday(Date.valueOf(account.getBirthday()));
+        }
         response.setGender(account.getGender());
         response.setCccd(account.getCccd());
         response.setAvatar(account.getAvatar());
-
-        // Láº¥y danh sÃ¡ch cÃ¡c vai trÃ² tá»« account vÃ  chuyá»ƒn thÃ nh List<String>
-        List<String> roles = account.getAuthorities().stream()
+        response.setRole(account.getAuthorities().stream()
                 .map(auth -> auth.getRole().getRoleName().name())
-                .distinct() // Äáº£m báº£o khÃ´ng cÃ³ trÃ¹ng láº·p
-                .collect(Collectors.toList());
-        response.setRole(roles);
-
-        // Láº¥y quyá»n tá»« danh sÃ¡ch authorities vÃ  chuyá»ƒn Ä‘á»•i thÃ nh List<String>
-        List<String> permissions = account.getAuthorities().stream()
-                .flatMap(auth ->
-                        auth.getRole().getPermissions().stream().map(Permission::getName)) // Chá»‰ láº¥y tÃªn quyá»n
-                .distinct() // Äá»ƒ loáº¡i bá» trÃ¹ng láº·p náº¿u cáº§n
-                .collect(Collectors.toList());
-        response.setPermissions(permissions);
-
+                .distinct()
+                .collect(Collectors.toList()));
+        response.setPermissions(account.getAuthorities().stream()
+                .flatMap(auth -> auth.getRole().getPermissions().stream().map(Permission::getName))
+                .distinct()
+                .collect(Collectors.toList()));
         return response;
     }
 
     @Override
     public AccountResponse updateAccount(String username, AccountRequest accountRequest) {
-        // Kiá»ƒm tra xem tÃ i khoáº£n cÃ³ tá»“n táº¡i hay khÃ´ng
-        Optional<Account> accountOptional = accountRepository.findById(username);
-        if (!accountOptional.isPresent()) {
-            throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
-        }
+        Account account =
+                accountRepository.findById(username).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
 
-        // Láº¥y tÃ i khoáº£n Ä‘Ã£ tá»“n táº¡i
-        Account account = accountOptional.get();
-
-        // Cáº­p nháº­t thÃ´ng tin
         account.setFullname(accountRequest.getFullname());
         account.setPhone(accountRequest.getPhone());
         account.setEmail(accountRequest.getEmail());
@@ -292,42 +262,36 @@ public class AccountService implements IAccountService {
         account.setCccd(accountRequest.getCccd());
         account.setAvatar(accountRequest.getAvatar());
 
-        // Náº¿u máº­t kháº©u má»›i Ä‘Æ°á»£c cung cáº¥p, mÃ£ hÃ³a vÃ  cáº­p nháº­t
         if (accountRequest.getPassword() != null
                 && !accountRequest.getPassword().isEmpty()) {
-            String encodedPassword = passwordEncoder.encode(accountRequest.getPassword());
-            account.setPassword(encodedPassword);
+            account.setPassword(passwordEncoder.encode(accountRequest.getPassword()));
         }
 
-        // LÆ°u tÃ i khoáº£n vÃ o cÆ¡ sá»Ÿ dá»¯ liá»‡u
-        Account updatedAccount = accountRepository.save(account);
-
-        return convertToAccountResponse(
-                updatedAccount); // Tráº£ vá» AccountResponse cho tÃ i khoáº£n Ä‘Ã£ cáº­p nháº­t
+        return convertToAccountResponse(accountRepository.save(account));
     }
 
     @Override
     @Transactional
     public void deleteAccount(String username) {
-        // Kiá»ƒm tra xem tÃ i khoáº£n cÃ³ tá»“n táº¡i hay khÃ´ng
         if (!accountRepository.existsById(username)) {
             throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
         }
 
-        // XÃ³a cÃ¡c báº£n ghi liÃªn quan trong báº£ng auths
         authRepository.deleteByAccount_Username(username);
-
-        // XÃ³a tÃ i khoáº£n tá»« cÆ¡ sá»Ÿ dá»¯ liá»‡u
         accountRepository.deleteById(username);
     }
 
     @Override
     public Account updateAcc(String username, Account account) {
+        if (!accountRepository.existsById(username)) {
+            throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
+        }
+        account.setUsername(username);
         return accountRepository.save(account);
     }
 
-    // @Cacheable(value = "account", key = "#username")
     @Override
+    @Transactional(readOnly = true)
     public AccountResponse findByUsername(String username) {
         Account account = accountRepository
                 .findByUsername(username)
@@ -358,21 +322,15 @@ public class AccountService implements IAccountService {
                 .findByUsername(changePasswordRequest.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
 
-        BCryptPasswordEncoder pe = new BCryptPasswordEncoder();
-
-        // Náº¿u password cÅ© khÃ´ng khá»›p vá»›i password trong database
-        if (!pe.matches(changePasswordRequest.getOldPassword(), account.getPassword())) {
-            return "Old password is not correct";
+        if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), account.getPassword())) {
+            throw new AppException(ErrorCode.OLD_PASSWORD_INCORRECT);
         }
 
-        // Náº¿u password má»›i trÃ¹ng vá»›i password cÅ©
-        if (pe.matches(changePasswordRequest.getNewPassword(), account.getPassword())) {
-            return "New password cannot be the same as the old password";
+        if (passwordEncoder.matches(changePasswordRequest.getNewPassword(), account.getPassword())) {
+            throw new AppException(ErrorCode.NEW_PASSWORD_MUST_BE_DIFFERENT);
         }
 
-        String hashedNewPassword = pe.encode(changePasswordRequest.getNewPassword());
-
-        account.setPassword(hashedNewPassword);
+        account.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
         accountRepository.save(account);
 
         return "Password changed successfully";
@@ -387,12 +345,10 @@ public class AccountService implements IAccountService {
             Account account = accountRepository
                     .findByEmail(changePasswordByEmail.getEmail())
                     .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
-            BCryptPasswordEncoder pe = new BCryptPasswordEncoder();
-            String hashedNewPassword = pe.encode(changePasswordByEmail.getNewPassword());
-            account.setPassword(hashedNewPassword);
+            account.setPassword(passwordEncoder.encode(changePasswordByEmail.getNewPassword()));
             accountRepository.save(account);
             return true;
-        } catch (Exception e) {
+        } catch (Exception exception) {
             return false;
         }
     }

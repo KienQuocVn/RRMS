@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.PermissionRequest;
 import com.rrms.rrms.dto.response.PermissionResponse;
+import com.rrms.rrms.enums.ErrorCode;
+import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.PermissionMapper;
 import com.rrms.rrms.models.Permission;
 import com.rrms.rrms.repositories.PermissionRepository;
@@ -23,20 +25,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PermissionService implements IPermissionService {
 
-    final PermissionRepository permissionRepository;
-
-    final PermissionMapper permissionMapper;
+    PermissionRepository permissionRepository;
+    PermissionMapper permissionMapper;
 
     @Override
     public List<PermissionResponse> getAllPermissions() {
-        List<Permission> permissions = permissionRepository.findAll();
-        return permissions.stream().map(permissionMapper::toPermissionResponse).toList();
+        return permissionRepository.findAll().stream()
+                .map(permissionMapper::toPermissionResponse)
+                .toList();
     }
 
     @Override
     public PermissionResponse createPermission(PermissionRequest permissionRequest) {
-        Permission permission = permissionMapper.toPermission(permissionRequest);
-        permission = permissionRepository.save(permission);
+        Permission permission = permissionRepository.save(permissionMapper.toPermission(permissionRequest));
         log.info("Permission saved: {}", permission.getName());
         return permissionMapper.toPermissionResponse(permission);
     }
@@ -45,19 +46,18 @@ public class PermissionService implements IPermissionService {
     public PermissionResponse updatePermission(PermissionRequest permissionRequest) {
         Permission existingPermission = permissionRepository
                 .findById(permissionRequest.getPermissionId())
-                .orElseThrow(() -> new RuntimeException("Permission not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.PERMISSION_NOT_FOUND));
 
         existingPermission.setName(permissionRequest.getName());
         existingPermission.setDescription(permissionRequest.getDescription());
 
-        existingPermission = permissionRepository.save(existingPermission);
-        return permissionMapper.toPermissionResponse(existingPermission);
+        return permissionMapper.toPermissionResponse(permissionRepository.save(existingPermission));
     }
 
     @Override
     public void deletePermission(UUID id) {
         if (!permissionRepository.existsById(id)) {
-            throw new RuntimeException("Permission not found");
+            throw new AppException(ErrorCode.PERMISSION_NOT_FOUND);
         }
         permissionRepository.deleteById(id);
     }

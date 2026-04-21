@@ -90,20 +90,12 @@ public class MotelController {
     @Operation(summary = "Update motel by id")
     @PutMapping("/{id}")
     public ApiResponse<MotelResponse> updateMotel(@PathVariable("id") UUID id, @RequestBody MotelRequest motelRequest) {
-        if (!id.equals(null) && !motelRequest.equals(null)) {
-            MotelResponse motelResponse = motelService.update(id, motelRequest);
-            log.info("Update motel successfully");
-            return ApiResponse.<MotelResponse>builder()
-                    .code(HttpStatus.OK.value())
-                    .message("success")
-                    .result(motelResponse)
-                    .build();
-        }
-        log.error("Update motel failed");
+        MotelResponse motelResponse = motelService.update(id, motelRequest);
+        log.info("Update motel successfully");
         return ApiResponse.<MotelResponse>builder()
-                .code(HttpStatus.BAD_REQUEST.value())
-                .message("error")
-                .result(null)
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(motelResponse)
                 .build();
     }
 

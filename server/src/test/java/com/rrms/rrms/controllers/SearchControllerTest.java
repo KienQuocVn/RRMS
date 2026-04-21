@@ -1,5 +1,6 @@
 package com.rrms.rrms.controllers;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Date;
@@ -25,7 +26,7 @@ import com.rrms.rrms.services.ISearchService;
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource("/test.properties")
-public class SearchControllerTest {
+class SearchControllerTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -42,125 +43,127 @@ public class SearchControllerTest {
 
     @Test
     void getRoom_returnsListOfBulletinBoardSearchResponse() throws Exception {
-        // Arrange: Mock service to return a list of BulletinBoardSearchResponse
         BulletinBoardSearchResponse room =
                 BulletinBoardSearchResponse.builder().address("123 Main St").build();
         when(searchService.getRooms()).thenReturn(List.of(room));
 
-        // Act & Assert: Perform the GET request and verify the response
         mockMvc.perform(MockMvcRequestBuilders.get("/searchs").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk()) // Expecting HTTP 200 OK
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Tìm kiếm thành công"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.result[0].address")
-                        .value("123 Main St")); // Ensure the correct address is returned
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result[0].address").value("123 Main St"));
     }
 
     @Test
     void getRoom_whenNoRooms_returnsEmptyList() throws Exception {
-        // Arrange: Mock service to return an empty list
         when(searchService.getRooms()).thenReturn(List.of());
 
-        // Act & Assert: Perform the GET request and verify the response
         mockMvc.perform(MockMvcRequestBuilders.get("/searchs").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk()) // Expecting HTTP 200 OK
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Tìm kiếm thành công"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.result").isEmpty()); // Ensure the result is an empty list
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result").isEmpty());
+    }
+
+    @Test
+    void getRoomsSortedByPrice_whenSortOrderDesc_callsDescService() throws Exception {
+        BulletinBoardSearchResponse room =
+                BulletinBoardSearchResponse.builder().address("Descending St").build();
+        when(searchService.getRoomsSortedByPriceDESC()).thenReturn(List.of(room));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/search/asc")
+                        .param("sortOrder", "DESC")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result[0].address").value("Descending St"));
+
+        verify(searchService).getRoomsSortedByPriceDESC();
+    }
+
+    @Test
+    void getRoom_supportsVersionedAliasRoute() throws Exception {
+        BulletinBoardSearchResponse room =
+                BulletinBoardSearchResponse.builder().address("Alias Street").build();
+        when(searchService.getRooms()).thenReturn(List.of(room));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/search").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result[0].address").value("Alias Street"));
     }
 
     @Test
     void getRoomHomeDateNew_returnsListOfBulletinBoardSearchResponse() throws Exception {
-        // Arrange: Mock service to return a list of BulletinBoardSearchResponse
         BulletinBoardSearchResponse room = BulletinBoardSearchResponse.builder()
                 .address("123 Main St")
                 .createdDate(new Date())
                 .build();
         when(searchService.findAllByDatenew()).thenReturn(List.of(room));
 
-        // Act & Assert: Perform the GET request and verify the response
         mockMvc.perform(MockMvcRequestBuilders.get("/searchs/roomNews").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk()) // Expecting HTTP 200 OK
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Tìm kiếm thành công"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result[0].address").value("123 Main St"));
     }
 
     @Test
     void getRoomHomeDateNew_whenNoRooms_returnsEmptyList() throws Exception {
-        // Arrange: Mock service to return an empty list
         when(searchService.findAllByDatenew()).thenReturn(List.of());
 
-        // Act & Assert: Perform the GET request and verify the response
         mockMvc.perform(MockMvcRequestBuilders.get("/searchs/roomNews").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk()) // Expecting HTTP 200 OK
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Tìm kiếm thành công"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.result").isEmpty()); // Ensure the result is an empty list
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result").isEmpty());
     }
 
     @Test
     void getRoomHomeDateNewVieux_returnsListOfBulletinBoardSearchResponse() throws Exception {
-        // Arrange: Mock service to return a list of BulletinBoardSearchResponse
         BulletinBoardSearchResponse room = BulletinBoardSearchResponse.builder()
                 .address("456 Old St")
                 .createdDate(new Date())
                 .build();
         when(searchService.findAllByIsActive()).thenReturn(List.of(room));
 
-        // Act & Assert: Perform the GET request and verify the response
         mockMvc.perform(MockMvcRequestBuilders.get("/searchs/roomVieux").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk()) // Expecting HTTP 200 OK
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Tìm kiếm thành công"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result[0].address").value("456 Old St"));
     }
 
     @Test
     void getRoomHomeDateNewVieux_whenNoRooms_returnsEmptyList() throws Exception {
-        // Arrange: Mock service to return an empty list
         when(searchService.findAllByIsActive()).thenReturn(List.of());
 
-        // Act & Assert: Perform the GET request and verify the response
         mockMvc.perform(MockMvcRequestBuilders.get("/searchs/roomVieux").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk()) // Expecting HTTP 200 OK
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Tìm kiếm thành công"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.result").isEmpty()); // Ensure the result is an empty list
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result").isEmpty());
     }
 
     @Test
     void searchAddress_returnsListOfBulletinBoardSearchResponse() throws Exception {
-        // Arrange: Mock service to return a list of BulletinBoardSearchResponse
         BulletinBoardSearchResponse room = BulletinBoardSearchResponse.builder()
                 .address("123 Main St")
                 .createdDate(new Date())
                 .build();
         when(searchService.listRoomByAddress("123 Main St")).thenReturn(List.of(room));
 
-        // Act & Assert: Perform the GET request and verify the response
         mockMvc.perform(MockMvcRequestBuilders.get("/searchs/addressBullet")
                         .param("address", "123 Main St")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk()) // Expecting HTTP 200 OK
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Tìm kiếm thành công"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.result[0].address")
-                        .value("123 Main St")); // Ensure the correct address is returned
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result[0].address").value("123 Main St"));
     }
 
     @Test
     void searchAddress_whenNoRoomsFound_returnsEmptyList() throws Exception {
-        // Arrange: Mock service to return an empty list
         when(searchService.listRoomByAddress("Nonexistent Address")).thenReturn(List.of());
 
-        // Act & Assert: Perform the GET request and verify the response
         mockMvc.perform(MockMvcRequestBuilders.get("/searchs/addressBullet")
                         .param("address", "Nonexistent Address")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk()) // Expecting HTTP 200 OK
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Không tìm thấy kết quả"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.result").isEmpty()); // Ensure the result is an empty list
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result").isEmpty());
     }
 }

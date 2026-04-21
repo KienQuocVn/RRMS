@@ -12,6 +12,8 @@ public interface ISearchService {
     List<BulletinBoardSearchResponse> getRooms();
 
     List<BulletinBoardSearchResponse> getRoomsSortedByPriceASC();
+
+    List<BulletinBoardSearchResponse> getRoomsSortedByPriceDESC();
     //    List<RoomSearchResponse> findByAddressNoElastic(String keyword);
     //
     //    List<RoomSearchResponse> findByAddress(String keyword);

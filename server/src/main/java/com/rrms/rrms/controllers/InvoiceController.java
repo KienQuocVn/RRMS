@@ -1,30 +1,27 @@
 package com.rrms.rrms.controllers;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.google.zxing.WriterException;
 import com.rrms.rrms.dto.request.CollectPaymentRequest;
 import com.rrms.rrms.dto.request.InvoiceRequest;
 import com.rrms.rrms.dto.request.UpdateInvoiceRequest;
+import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.InvoiceResponse;
+import com.rrms.rrms.dto.response.PageResponse;
 import com.rrms.rrms.dto.response.QRCodeResponse;
+import com.rrms.rrms.enums.ErrorCode;
+import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.models.Invoice;
 import com.rrms.rrms.services.IInvoices;
 import com.rrms.rrms.services.servicesImp.QRCodeService;
+import com.rrms.rrms.utils.PageableUtils;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
@@ -37,93 +34,92 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @RestController
-@RequestMapping("/invoices")
+@RequestMapping({"/invoices", "/api/v1/invoices"})
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class InvoiceController {
-    private final IInvoices invoices;
+    IInvoices invoices;
+    QRCodeService qrCodeService;
 
-    private final QRCodeService qrCodeService;
-
-    @PostMapping("/create")
-    public ResponseEntity<InvoiceResponse> createInvoice(@RequestBody InvoiceRequest request) {
-        InvoiceResponse response = invoices.createInvoice(request);
-        return ResponseEntity.ok(response);
+    @PostMapping({"", "/create"})
+    public ResponseEntity<ApiResponse<InvoiceResponse>> createInvoice(@RequestBody InvoiceRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.<InvoiceResponse>builder()
+                        .message("Invoice created successfully")
+                        .result(invoices.createInvoice(request))
+                        .build());
     }
 
     @PutMapping("/{invoiceId}/cancel")
-    public ResponseEntity<String> cancelInvoice(@PathVariable UUID invoiceId) {
+    public ApiResponse<Void> cancelInvoice(@PathVariable UUID invoiceId) {
         invoices.cancelInvoice(invoiceId);
-        return ResponseEntity.ok("HÃ³a Ä‘Æ¡n Ä‘Ã£ Ä‘Æ°á»£c há»§y thÃ nh cÃ´ng");
+        return ApiResponse.<Void>builder()
+                .message("Invoice canceled successfully")
+                .build();
     }
 
-    @DeleteMapping("/delete/{invoiceId}")
-    public ResponseEntity<?> deleteInvoice(@PathVariable("invoiceId") UUID invoiceId) {
+    @DeleteMapping({"/{invoiceId}", "/delete/{invoiceId}"})
+    public ApiResponse<Void> deleteInvoice(@PathVariable("invoiceId") UUID invoiceId) {
         invoices.deleteInvoice(invoiceId);
-        return ResponseEntity.ok("XÃ³a hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng.");
+        return ApiResponse.<Void>builder()
+                .message("Invoice deleted successfully")
+                .build();
     }
 
-    @PutMapping("/update/{invoiceId}")
-    public ResponseEntity<InvoiceResponse> updateInvoice(
+    @PutMapping({"/{invoiceId}", "/update/{invoiceId}"})
+    public ApiResponse<InvoiceResponse> updateInvoice(
             @PathVariable UUID invoiceId, @RequestBody UpdateInvoiceRequest request) {
-        InvoiceResponse response = invoices.updateInvoice(invoiceId, request);
-        return ResponseEntity.ok(response);
+        return ApiResponse.<InvoiceResponse>builder()
+                .message("Invoice updated successfully")
+                .result(invoices.updateInvoice(invoiceId, request))
+                .build();
     }
 
     @GetMapping("/motel/{motelId}")
-    public ResponseEntity<List<InvoiceResponse>> getInvoicesByMotelId(@PathVariable UUID motelId) {
-        List<InvoiceResponse> responses = invoices.getInvoicesByMotelId(motelId);
-        return ResponseEntity.ok(responses);
+    public ApiResponse<PageResponse<InvoiceResponse>> getInvoicesByMotelId(
+            @PathVariable UUID motelId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection) {
+        PageResponse<InvoiceResponse> result = PageResponse.from(invoices.getInvoicesByMotelId(
+                motelId, PageableUtils.of(page, size, sortBy == null ? "invoiceCreateDate" : sortBy, sortDirection)));
+
+        return ApiResponse.<PageResponse<InvoiceResponse>>builder()
+                .message("Invoices retrieved successfully")
+                .result(result)
+                .build();
     }
 
     @PatchMapping("/{invoiceId}/collect-payment")
-    public ResponseEntity<InvoiceResponse> collectPayment(
+    public ApiResponse<InvoiceResponse> collectPayment(
             @PathVariable UUID invoiceId, @RequestBody CollectPaymentRequest request) {
         invoices.collectPayment(invoiceId, request);
-
         Invoice invoice = invoices.findInvoiceById(invoiceId);
-        InvoiceResponse response = invoices.mapToResponse(invoice);
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.<InvoiceResponse>builder()
+                .message("Payment collected successfully")
+                .result(invoices.mapToResponse(invoice))
+                .build();
     }
 
-    // Endpoint má»›i Ä‘á»ƒ táº¡o mÃ£ QR
     @GetMapping("/{invoiceId}/generate-qr")
-    public ResponseEntity<QRCodeResponse> generateQrCode(@PathVariable UUID invoiceId) {
+    public ApiResponse<QRCodeResponse> generateQrCode(@PathVariable UUID invoiceId) {
         try {
             Invoice invoice = invoices.findInvoiceById(invoiceId);
-
-            double totalAmount = calculateTotalAmount(invoice); // TÃ­nh tá»•ng tiá»n
-            String bankAccount = "0919925302"; // Sá»‘ tÃ i khoáº£n ngÃ¢n hÃ ng
-            String bankName = "MB Bank"; // TÃªn ngÃ¢n hÃ ng
-            String description = "Thanh toÃ¡n hÃ³a Ä‘Æ¡n: " + invoiceId.toString();
-
-            // Táº¡o ná»™i dung QR
+            double totalAmount = invoices.mapToResponse(invoice).getTotalAmount();
+            String bankAccount = "0919925302";
+            String bankName = "MB Bank";
+            String description = "Thanh toan hoa don: " + invoiceId;
             String qrContent =
                     String.format("STK:%s\nNH:%s\nSoTien:%.2f\nND:%s", bankAccount, bankName, totalAmount, description);
-
-            // Táº¡o mÃ£ QR
             String qrCodeImage = qrCodeService.generateQRCodeImage(qrContent, 200, 200);
 
-            QRCodeResponse response = new QRCodeResponse(qrCodeImage, qrContent);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException | WriterException | IOException e) {
-            return ResponseEntity.status(500).body(null);
+            return ApiResponse.<QRCodeResponse>builder()
+                    .message("QR code generated successfully")
+                    .result(new QRCodeResponse(qrCodeImage, qrContent))
+                    .build();
+        } catch (WriterException | IOException exception) {
+            log.error("Could not generate QR code for invoice {}", invoiceId, exception);
+            throw new AppException(ErrorCode.QRCODE_GENERATION_FAILED);
         }
-    }
-
-    private double calculateTotalAmount(Invoice invoice) {
-        double totalServiceAmount = invoice.getDetailInvoices().stream()
-                .filter(detail -> detail.getRoomService() != null)
-                .mapToDouble(
-                        detail -> detail.getRoomService().getService().getPrice() * detail.getRoomServiceQuantity())
-                .sum();
-
-        double totalAddition = invoice.getAdditionItems() != null
-                ? invoice.getAdditionItems().stream()
-                        .mapToDouble(charge -> charge.getIsAddition() ? charge.getAmount() : -charge.getAmount())
-                        .sum()
-                : 0;
-
-        return invoice.getContract().getPrice() + totalServiceAmount + totalAddition;
     }
 }

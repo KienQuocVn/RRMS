@@ -41,6 +41,7 @@ public class SecurityConfig {
         "/v3/api-docs/**",
         "/searchs/**",
         "/search/**",
+        "/api/v1/search/**",
         "/detail/**",
         "/bulletin-board/*",
         "/motels/get-motel-id",
@@ -51,7 +52,9 @@ public class SecurityConfig {
         "/payment/paymentSuccess/**",
         "/payment/paymentFailed/**",
         "/api/verify-captcha/**",
-        "/support/**"
+        "/support/**",
+        "/supports/**",
+        "/api/v1/supports/**"
     };
 
     @Value("${jwt.signer-key}")

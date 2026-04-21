@@ -22,12 +22,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Tag(name = "Support Controller", description = "Controller for Support")
 @RestController
-@RequestMapping("/support")
+@RequestMapping({"/support", "/supports", "/api/v1/supports"})
 public class SupportControlller {
     ISupportService supportService;
 
     @Operation(summary = "Add support by id")
-    @PostMapping("/create")
+    @PostMapping({"", "/create"})
     public ApiResponse<Boolean> insertMotel(@RequestBody SupportRequest supportRequest) {
         boolean result = supportService.insert(supportRequest);
         if (result) {
@@ -48,7 +48,7 @@ public class SupportControlller {
     }
 
     @Operation(summary = "Get All support")
-    @GetMapping("/getAll")
+    @GetMapping({"", "/getAll"})
     public ApiResponse<List<SupportResponse>> insertMotel() {
         return ApiResponse.<List<SupportResponse>>builder()
                 .code(HttpStatus.OK.value())

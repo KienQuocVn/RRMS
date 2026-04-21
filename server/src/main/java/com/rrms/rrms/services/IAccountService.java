@@ -3,6 +3,9 @@ package com.rrms.rrms.services;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.rrms.rrms.dto.request.AccountRequest;
 import com.rrms.rrms.dto.request.ChangePasswordByEmail;
 import com.rrms.rrms.dto.request.ChangePasswordRequest;
@@ -14,9 +17,15 @@ import com.rrms.rrms.models.Account;
 public interface IAccountService {
     List<AccountResponse> findAll();
 
+    Page<AccountResponse> findAll(Pageable pageable);
+
     List<AccountResponse> getAccountsByRole(Roles role);
 
+    Page<AccountResponse> getAccountsByRole(Roles role, Pageable pageable);
+
     List<AccountResponse> searchAccounts(String search);
+
+    Page<AccountResponse> searchAccounts(String search, Pageable pageable);
 
     Optional<Account> findAccountsByUsername(String username);
 

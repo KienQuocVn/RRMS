@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { MotelContext } from '~/contexts/motelContext'
+import { MotelContext } from '~/contexts/MotelContext'
 
 export const useMotel = () => {
   const context = useContext(MotelContext)

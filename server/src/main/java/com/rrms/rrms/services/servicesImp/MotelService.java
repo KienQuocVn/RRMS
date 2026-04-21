@@ -14,6 +14,8 @@ import com.rrms.rrms.dto.request.MotelRequest;
 import com.rrms.rrms.dto.response.MotelResponse;
 import com.rrms.rrms.dto.response.MotelRoomCountResponse;
 import com.rrms.rrms.enums.ContractStatus;
+import com.rrms.rrms.enums.ErrorCode;
+import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.AccountMapper;
 import com.rrms.rrms.mapper.MotelMapper;
 import com.rrms.rrms.models.*;
@@ -74,7 +76,7 @@ public class MotelService implements IMotelService {
                     MotelResponse response = motelMapper.motelToMotelResponse(motel);
                     return response;
                 })
-                .orElseThrow(() -> new IllegalArgumentException("Motel not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.MOTEL_NOT_FOUND));
     }
 
     @Override
@@ -100,29 +102,25 @@ public class MotelService implements IMotelService {
 
     @Override
     public MotelResponse update(UUID id, MotelRequest motel) {
-        Optional<Motel> motelfind = motelRepository.findById(id);
-        if (motelfind.isPresent()) {
-            motelfind.get().setMotelName(motel.getMotelName());
-            motelfind.get().setArea(motel.getArea());
-            motelfind.get().setAveragePrice(motel.getAveragePrice());
-            motelfind.get().setAddress(motel.getAddress());
-            motelfind.get().setMethodofcreation(motel.getMethodofcreation());
-            motelfind.get().setMaxperson(motel.getMaxperson());
-            motelfind.get().setInvoicedate(motel.getInvoicedate());
-            motelfind.get().setPaymentdeadline(motel.getPaymentdeadline());
-            motelfind.get().setAccount(accountMapper.toAccount(motel.getAccount()));
-            motelfind.get().setTypeRoom(motel.getTypeRoom());
-            return motelMapper.motelToMotelResponse(motelRepository.save(motelfind.get()));
-        }
-        return null;
+        Motel existingMotel =
+                motelRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.MOTEL_NOT_FOUND));
+        existingMotel.setMotelName(motel.getMotelName());
+        existingMotel.setArea(motel.getArea());
+        existingMotel.setAveragePrice(motel.getAveragePrice());
+        existingMotel.setAddress(motel.getAddress());
+        existingMotel.setMethodofcreation(motel.getMethodofcreation());
+        existingMotel.setMaxperson(motel.getMaxperson());
+        existingMotel.setInvoicedate(motel.getInvoicedate());
+        existingMotel.setPaymentdeadline(motel.getPaymentdeadline());
+        existingMotel.setAccount(accountMapper.toAccount(motel.getAccount()));
+        existingMotel.setTypeRoom(motel.getTypeRoom());
+        return motelMapper.motelToMotelResponse(motelRepository.save(existingMotel));
     }
 
     @Override
     public void delete(UUID id) {
-        Optional<Motel> motelfind = motelRepository.findById(id);
-        if (motelfind.isPresent()) {
-            motelRepository.deleteById(id);
-        }
+        motelRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.MOTEL_NOT_FOUND));
+        motelRepository.deleteById(id);
     }
 
     @Override

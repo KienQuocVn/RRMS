@@ -1,9 +1,10 @@
 package com.rrms.rrms.controllers;
 
-import java.util.List;
-
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +13,11 @@ import com.rrms.rrms.dto.request.AccountRequest;
 import com.rrms.rrms.dto.request.ChangePasswordRequest;
 import com.rrms.rrms.dto.response.AccountResponse;
 import com.rrms.rrms.dto.response.ApiResponse;
+import com.rrms.rrms.dto.response.PageResponse;
 import com.rrms.rrms.enums.Roles;
 import com.rrms.rrms.models.Account;
 import com.rrms.rrms.services.IAccountService;
+import com.rrms.rrms.utils.PageableUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,34 +31,44 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @RestController
-@RequestMapping("/api-accounts")
+@RequestMapping({"/api-accounts", "/api/v1/accounts"})
 public class AccountController {
     IAccountService accountService;
 
-    @Operation(summary = "Get all account")
-    @GetMapping("/get-all-account")
+    @Operation(summary = "Get all accounts")
+    @GetMapping({"", "/get-all-account"})
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ApiResponse<List<AccountResponse>> getAllAccount() {
-        var authen = SecurityContextHolder.getContext().getAuthentication();
+    public ApiResponse<PageResponse<AccountResponse>> getAllAccounts(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Get all account {}", authentication.getName());
 
-        log.info("Get all account {}", authen.getName());
-        authen.getAuthorities()
-                .forEach(grantedAuthority -> log.info("GrantedAuthority: {}", grantedAuthority.getAuthority()));
-        log.info("In method get Admin");
+        Pageable pageable = PageableUtils.of(page, size, sortBy, sortDirection);
+        PageResponse<AccountResponse> result = PageResponse.from(accountService.findAll(pageable));
 
-        return ApiResponse.<List<AccountResponse>>builder()
-                .message("Call api success")
-                .result(accountService.findAll())
+        return ApiResponse.<PageResponse<AccountResponse>>builder()
+                .message("Accounts retrieved successfully")
+                .result(result)
                 .build();
     }
 
-    @GetMapping("/by-host-role")
+    @GetMapping({"/by-host-role", "/roles/host"})
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ApiResponse<List<AccountResponse>> getAccountsByHostRole() {
-        List<AccountResponse> accountResponses = accountService.getAccountsByRole(Roles.HOST);
-        return ApiResponse.<List<AccountResponse>>builder()
-                .message("Call api success")
-                .result(accountResponses)
+    public ApiResponse<PageResponse<AccountResponse>> getAccountsByHostRole(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection) {
+        Pageable pageable = PageableUtils.of(page, size, sortBy, sortDirection);
+        PageResponse<AccountResponse> result =
+                PageResponse.from(accountService.getAccountsByRole(Roles.HOST, pageable));
+
+        return ApiResponse.<PageResponse<AccountResponse>>builder()
+                .message("Host accounts retrieved successfully")
+                .result(result)
                 .build();
     }
 
@@ -63,37 +76,36 @@ public class AccountController {
     @GetMapping("/{username}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public ApiResponse<AccountResponse> getAccountByUsername(@PathVariable String username) {
-        AccountResponse account = accountService.findByUsername(username);
         return ApiResponse.<AccountResponse>builder()
-                .message("Call API success")
-                .result(account)
+                .message("Account retrieved successfully")
+                .result(accountService.findByUsername(username))
                 .build();
     }
 
-    @PostMapping("/createAccount")
+    @PostMapping({"", "/createAccount"})
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public ApiResponse<AccountResponse> createAccount(@RequestBody @Valid AccountRequest accountRequest) {
-        AccountResponse accountResponse = accountService.createAccount(accountRequest);
-        return ApiResponse.<AccountResponse>builder()
-                .message("Account created successfully")
-                .result(accountResponse)
-                .build();
+    public ResponseEntity<ApiResponse<AccountResponse>> createAccount(
+            @RequestBody @Valid AccountRequest accountRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.<AccountResponse>builder()
+                        .message("Account created successfully")
+                        .result(accountService.createAccount(accountRequest))
+                        .build());
     }
 
-    @Operation(summary = "Update an existing host account")
-    @PutMapping("/updateAccount/{username}")
+    @Operation(summary = "Update an existing account")
+    @PutMapping({"/{username}", "/updateAccount/{username}"})
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public ApiResponse<AccountResponse> updateAccount(
             @PathVariable String username, @RequestBody @Valid AccountRequest accountRequest) {
-        AccountResponse accountResponse = accountService.updateAccount(username, accountRequest);
         return ApiResponse.<AccountResponse>builder()
                 .message("Account updated successfully")
-                .result(accountResponse)
+                .result(accountService.updateAccount(username, accountRequest))
                 .build();
     }
 
     @Operation(summary = "Delete an existing account")
-    @DeleteMapping("/deleteAccount/{username}")
+    @DeleteMapping({"/{username}", "/deleteAccount/{username}"})
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public ApiResponse<Void> deleteAccount(@PathVariable String username) {
         accountService.deleteAccount(username);
@@ -106,59 +118,58 @@ public class AccountController {
     @PutMapping("/update-acc")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public ApiResponse<Account> updateAccount(@RequestParam("username") String username, @RequestBody Account account) {
-        Account updateAcc = accountService.updateAcc(username, account);
         return ApiResponse.<Account>builder()
-                .message("Update product successful")
-                .result(updateAcc)
+                .message("Account updated successfully")
+                .result(accountService.updateAcc(username, account))
                 .build();
     }
 
     @Operation(summary = "Get profile by username")
     @GetMapping("/profile")
     public ApiResponse<AccountResponse> getProfile(@RequestParam("username") String username) {
-        AccountResponse accountResponse = accountService.findByUsername(username);
         log.info("Get profile successfully");
         return ApiResponse.<AccountResponse>builder()
                 .message("Get profile successfully")
-                .result(accountResponse)
+                .result(accountService.findByUsername(username))
                 .build();
     }
 
     @Operation(summary = "Update profile by username")
     @PutMapping("/profile")
     public ApiResponse<AccountResponse> updateProfile(@RequestBody @Valid AccountRequest accountRequest) {
-        AccountResponse accountResponse = accountService.update(accountRequest);
         log.info("Update profile successfully");
         return ApiResponse.<AccountResponse>builder()
                 .message("Update profile successfully")
-                .result(accountResponse)
+                .result(accountService.update(accountRequest))
                 .build();
     }
 
     @Operation(summary = "Change password by username")
     @PutMapping("/profile/change-password")
     public ApiResponse<String> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
-        String changePassword = accountService.changePassword(changePasswordRequest);
         log.info("Change password successfully");
         return ApiResponse.<String>builder()
                 .message("Change password successfully")
-                .result(changePassword)
+                .result(accountService.changePassword(changePasswordRequest))
                 .build();
     }
 
     @GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
-    public ApiResponse<List<AccountResponse>> searchAccounts(@RequestParam(required = false) String search) {
-        List<AccountResponse> accounts;
-        if (search == null || search.trim().isEmpty()) {
-            accounts = accountService.findAll();
-        } else {
-            accounts = accountService.searchAccounts(search.toLowerCase());
-        }
+    public ApiResponse<PageResponse<AccountResponse>> searchAccounts(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection) {
+        Pageable pageable = PageableUtils.of(page, size, sortBy, sortDirection);
+        PageResponse<AccountResponse> result = search == null || search.trim().isEmpty()
+                ? PageResponse.from(accountService.findAll(pageable))
+                : PageResponse.from(accountService.searchAccounts(search.trim(), pageable));
 
-        return ApiResponse.<List<AccountResponse>>builder()
-                .message("Search results found")
-                .result(accounts)
+        return ApiResponse.<PageResponse<AccountResponse>>builder()
+                .message("Accounts retrieved successfully")
+                .result(result)
                 .build();
     }
 }

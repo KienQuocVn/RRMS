@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.SupportRequest;
 import com.rrms.rrms.dto.response.SupportResponse;
+import com.rrms.rrms.enums.ErrorCode;
+import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.AccountMapper;
 import com.rrms.rrms.models.Account;
 import com.rrms.rrms.models.Support;
@@ -28,18 +30,15 @@ public class SupportService implements ISupportService {
     Support toSupport(SupportRequest request) {
         Account account = accountRepository
                 .findByUsername(request.getAccount().getUsername())
-                .orElse(null);
-        if (account != null) {
-            Support support = new Support();
-            support.setAccount(account);
-            support.setNameContact(request.getNameContact());
-            support.setPhoneContact(request.getPhoneContact());
-            support.setDateOfStay(request.getDateOfStay());
-            support.setPriceFirst(request.getPriceFirst());
-            support.setPriceEnd(request.getPriceEnd());
-            return support;
-        }
-        return null;
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        Support support = new Support();
+        support.setAccount(account);
+        support.setNameContact(request.getNameContact());
+        support.setPhoneContact(request.getPhoneContact());
+        support.setDateOfStay(request.getDateOfStay());
+        support.setPriceFirst(request.getPriceFirst());
+        support.setPriceEnd(request.getPriceEnd());
+        return support;
     }
 
     SupportResponse toSupportResponse(Support support) {
@@ -58,11 +57,7 @@ public class SupportService implements ISupportService {
     public boolean insert(SupportRequest supportRequest) {
         Support support = toSupport(supportRequest);
         Support status = supportRepository.save(support);
-        if (status != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return status != null;
     }
 
     @Override

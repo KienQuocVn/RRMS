@@ -272,6 +272,7 @@
 | Error tracking (Sentry) | All | 2 ngày |
 | Load testing | Server | 3 ngày |
 | Documentation hoàn chỉnh (API docs, Architecture) | All | 5 ngày |
+- [x] Đã hoàn thành lập tài liệu API chi tiết tại `BACKEND_API_DOCS.md`
 
 ---
 

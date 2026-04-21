@@ -1,70 +1,74 @@
 package com.rrms.rrms.controllers;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.request.TransactionRequest;
+import com.rrms.rrms.dto.response.ApiResponse;
+import com.rrms.rrms.dto.response.PageResponse;
 import com.rrms.rrms.dto.response.TransactionResponse;
-import com.rrms.rrms.models.Transaction;
+import com.rrms.rrms.dto.response.TransactionSummaryResponse;
 import com.rrms.rrms.services.servicesImp.TransactionService;
+import com.rrms.rrms.utils.PageableUtils;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/transactions")
+@RequestMapping({"/transactions", "/api/v1/transactions"})
 @RequiredArgsConstructor
 public class TransactionController {
 
     private final TransactionService transactionService;
 
     @GetMapping("/{username}")
-    public ResponseEntity<List<Transaction>> getTransactionsByUsername(@PathVariable String username) {
-        List<Transaction> transactions = transactionService.getTransactionsByUsername(username);
-        if (transactions.isEmpty()) {
-            return ResponseEntity.noContent().build(); // Tráº£ vá» 204 náº¿u khÃ´ng cÃ³ giao dá»‹ch
-        }
-        return ResponseEntity.ok(transactions); // Tráº£ vá» 200 vá»›i danh sÃ¡ch giao dá»‹ch
+    public ApiResponse<PageResponse<TransactionResponse>> getTransactionsByUsername(
+            @PathVariable String username,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection) {
+        return ApiResponse.<PageResponse<TransactionResponse>>builder()
+                .message("Transactions retrieved successfully")
+                .result(PageResponse.from(transactionService.getTransactionsByUsername(
+                        username,
+                        PageableUtils.of(page, size, sortBy == null ? "transactionDate" : sortBy, sortDirection))))
+                .build();
     }
 
     @PostMapping("/receipts")
-    public ResponseEntity<TransactionResponse> createReceipt(
-            @RequestBody TransactionRequest transactionDTO, @RequestParam String username) {
-        transactionDTO.setTransactionType(true); // Äáº·t loáº¡i giao dá»‹ch lÃ  phiáº¿u thu
-        TransactionResponse newTransaction = transactionService.createTransaction(transactionDTO, username);
-        return ResponseEntity.ok(newTransaction);
+    public ApiResponse<TransactionResponse> createReceipt(
+            @RequestBody TransactionRequest transactionRequest, @RequestParam String username) {
+        transactionRequest.setTransactionType(true);
+        return ApiResponse.<TransactionResponse>builder()
+                .message("Receipt created successfully")
+                .result(transactionService.createTransaction(transactionRequest, username))
+                .build();
     }
 
     @PostMapping("/expenses")
-    public ResponseEntity<TransactionResponse> createExpense(
-            @RequestBody TransactionRequest transactionDTO, @RequestParam String username) {
-        transactionDTO.setTransactionType(false); // Äáº·t loáº¡i giao dá»‹ch lÃ  phiáº¿u chi
-        TransactionResponse newTransaction = transactionService.createTransaction(transactionDTO, username);
-        return ResponseEntity.ok(newTransaction);
+    public ApiResponse<TransactionResponse> createExpense(
+            @RequestBody TransactionRequest transactionRequest, @RequestParam String username) {
+        transactionRequest.setTransactionType(false);
+        return ApiResponse.<TransactionResponse>builder()
+                .message("Expense created successfully")
+                .result(transactionService.createTransaction(transactionRequest, username))
+                .build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteTransaction(@PathVariable UUID id, @RequestParam String username) {
-        boolean isDeleted = transactionService.deleteTransaction(id, username);
-        if (isDeleted) {
-            return ResponseEntity.ok("XÃ³a thÃ nh cÃ´ng");
-        } else {
-            return ResponseEntity.status(404)
-                    .body("Giao dá»‹ch khÃ´ng tá»“n táº¡i hoáº·c khÃ´ng thuá»™c tÃ i khoáº£n nÃ y");
-        }
+    public ApiResponse<Void> deleteTransaction(@PathVariable UUID id, @RequestParam String username) {
+        transactionService.deleteTransaction(id, username);
+        return ApiResponse.<Void>builder()
+                .message("Transaction deleted successfully")
+                .build();
     }
 
     @GetMapping("/summary")
-    public ResponseEntity<Map<String, BigDecimal>> getSummary(@RequestParam String username) {
-        Map<String, BigDecimal> summary = new HashMap<>();
-        summary.put("totalIncome", transactionService.getTotalIncome(username));
-        summary.put("totalExpense", transactionService.getTotalExpense(username));
-        summary.put("profit", transactionService.getProfit(username));
-        return ResponseEntity.ok(summary);
+    public ApiResponse<TransactionSummaryResponse> getSummary(@RequestParam String username) {
+        return ApiResponse.<TransactionSummaryResponse>builder()
+                .message("Transaction summary retrieved successfully")
+                .result(transactionService.getSummary(username))
+                .build();
     }
 }

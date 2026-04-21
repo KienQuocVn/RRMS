@@ -1,13 +1,16 @@
 package com.rrms.rrms.controllers;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.MotelRoomCountResponse;
 import com.rrms.rrms.dto.response.TenantSummaryDTO;
+import com.rrms.rrms.enums.ErrorCode;
+import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.services.IMotelService;
 import com.rrms.rrms.services.ITenantService;
 import com.rrms.rrms.services.servicesImp.ContractService;
@@ -15,67 +18,78 @@ import com.rrms.rrms.services.servicesImp.ContractService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/report")
+@RequestMapping({"/report", "/api/v1/reports"})
 @RequiredArgsConstructor
 public class ReportController {
     private final IMotelService motelService;
-
     private final ContractService contractService;
-
     private final ITenantService tenantService;
 
     @GetMapping("/total-rooms")
-    public ResponseEntity<?> getTotalRooms(@RequestParam UUID motelId, @RequestParam String username) {
-        var totalRooms = motelService.getTotalRooms(motelId, username);
+    public ApiResponse<Integer> getTotalRooms(@RequestParam UUID motelId, @RequestParam String username) {
+        Integer totalRooms = motelService
+                .getTotalRooms(motelId, username)
+                .orElseThrow(() -> new AppException(ErrorCode.MOTEL_NOT_FOUND));
 
-        if (totalRooms.isPresent()) {
-            return ResponseEntity.ok(totalRooms.get());
-        } else {
-            return ResponseEntity.status(404).body("KhÃ´ng tÃ¬m tháº¥y nhÃ  trá»");
-        }
+        return ApiResponse.<Integer>builder()
+                .message("Total rooms retrieved successfully")
+                .result(totalRooms)
+                .build();
     }
 
     @GetMapping("/room-counts")
-    public List<MotelRoomCountResponse> getRoomCountsByContractStatus() {
-        return motelService.getRoomCountsByContractStatus();
+    public ApiResponse<List<MotelRoomCountResponse>> getRoomCountsByContractStatus() {
+        return ApiResponse.<List<MotelRoomCountResponse>>builder()
+                .message("Room counts retrieved successfully")
+                .result(motelService.getRoomCountsByContractStatus())
+                .build();
     }
 
-    // Láº¥y tá»•ng sá»‘ ngÆ°á»i thuÃª theo nhÃ  trá»
     @GetMapping("/{motelId}/tenants/count")
-    public ResponseEntity<Integer> getTotalTenants(@PathVariable UUID motelId) {
-        Integer totalTenants = contractService.getTotalTenantsByMotelId(motelId);
-        return ResponseEntity.ok(totalTenants);
+    public ApiResponse<Integer> getTotalTenants(@PathVariable UUID motelId) {
+        return ApiResponse.<Integer>builder()
+                .message("Total tenants retrieved successfully")
+                .result(contractService.getTotalTenantsByMotelId(motelId))
+                .build();
     }
 
-    // TÃ³m táº¯t thÃ´ng tin ngÆ°á»i thuÃª
     @GetMapping("/tenant/summary")
-    public List<TenantSummaryDTO> getTenantSummary() {
-        return tenantService.getTenantSummary();
+    public ApiResponse<List<TenantSummaryDTO>> getTenantSummary() {
+        return ApiResponse.<List<TenantSummaryDTO>>builder()
+                .message("Tenant summary retrieved successfully")
+                .result(tenantService.getTenantSummary())
+                .build();
     }
 
-    // Tá»•ng tiá»n cá»c
     @GetMapping("/{motelId}/deposits")
-    public ResponseEntity<Double> getTotalDeposit(@PathVariable UUID motelId) {
-        Double totalDeposit = motelService.calculateTotalDeposit(motelId);
-        return ResponseEntity.ok(totalDeposit);
+    public ApiResponse<Double> getTotalDeposit(@PathVariable UUID motelId) {
+        return ApiResponse.<Double>builder()
+                .message("Total deposit retrieved successfully")
+                .result(motelService.calculateTotalDeposit(motelId))
+                .build();
     }
 
-    // Tá»•ng tiá»n giá»¯ chÃ¢n
     @GetMapping("/{motelId}/reserve-deposits")
-    public ResponseEntity<Double> getTotalReserveDeposit(@PathVariable UUID motelId) {
-        Double totalReserveDeposit = motelService.calculateTotalReserveDeposit(motelId);
-        return ResponseEntity.ok(totalReserveDeposit);
+    public ApiResponse<Double> getTotalReserveDeposit(@PathVariable UUID motelId) {
+        return ApiResponse.<Double>builder()
+                .message("Total reserve deposit retrieved successfully")
+                .result(motelService.calculateTotalReserveDeposit(motelId))
+                .build();
     }
-    // tá»•ng tiá»n hÃ³a Ä‘Æ¡n Ä‘Ã£ thanh toÃ¡n
+
     @GetMapping("/{motelId}/total-paid-invoices")
-    public ResponseEntity<BigDecimal> getTotalPaidInvoices(@PathVariable UUID motelId) {
-        BigDecimal totalPaidInvoices = motelService.getTotalPaidInvoices(motelId);
-        return ResponseEntity.ok(totalPaidInvoices);
+    public ApiResponse<BigDecimal> getTotalPaidInvoices(@PathVariable UUID motelId) {
+        return ApiResponse.<BigDecimal>builder()
+                .message("Total paid invoices retrieved successfully")
+                .result(motelService.getTotalPaidInvoices(motelId))
+                .build();
     }
-    // tá»•ng tiá»n phÃ²ng Ä‘Ã£ thanh toÃ¡n
+
     @GetMapping("/{motelId}/total-paid-room-price")
-    public ResponseEntity<BigDecimal> getTotalPaidRoomPrice(@PathVariable UUID motelId) {
-        BigDecimal totalPaidRoomPrice = motelService.getTotalPaidRoomPrice(motelId);
-        return ResponseEntity.ok(totalPaidRoomPrice);
+    public ApiResponse<BigDecimal> getTotalPaidRoomPrice(@PathVariable UUID motelId) {
+        return ApiResponse.<BigDecimal>builder()
+                .message("Total paid room price retrieved successfully")
+                .result(motelService.getTotalPaidRoomPrice(motelId))
+                .build();
     }
 }

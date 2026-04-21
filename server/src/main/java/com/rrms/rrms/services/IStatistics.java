@@ -4,7 +4,7 @@ import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Map;
 
-import com.rrms.rrms.models.Account;
+import com.rrms.rrms.dto.response.AccountResponse;
 
 public interface IStatistics {
     Long getTotalAccounts();
@@ -23,5 +23,5 @@ public interface IStatistics {
 
     Map<Integer, Long> getTotalMotelsByMonth();
 
-    List<Account> getRecentHosts();
+    List<AccountResponse> getRecentHosts();
 }

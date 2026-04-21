@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Search Controller")
 @RestController
 @Slf4j
-@RequestMapping("/searchs")
+@RequestMapping({"/searchs", "/search", "/api/v1/search"})
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class SearchController {
@@ -52,7 +52,7 @@ public class SearchController {
         if ("ASC".equalsIgnoreCase(sortOrder)) {
             rooms = searchService.getRoomsSortedByPriceASC();
         } else if ("DESC".equalsIgnoreCase(sortOrder)) {
-            rooms = searchService.getRoomsSortedByPriceASC();
+            rooms = searchService.getRoomsSortedByPriceDESC();
         } else {
             apiResponse.setCode(HttpStatus.BAD_REQUEST.value());
             apiResponse.setMessage("Invalid sortOrder. Valid values are 'ASC' or 'DESC'.");

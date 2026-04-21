@@ -165,7 +165,7 @@ public class AuthorityService implements IAuthorityService {
 
         // XÃ¢y dá»±ng JWT vá»›i cÃ¡c thÃ´ng tin cáº§n thiáº¿t
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(account.getPhone()) // Subject cá»§a JWT lÃ  sá»‘ Ä‘iá»‡n thoáº¡i ngÆ°á»i dÃ¹ng
+                .subject(account.getUsername()) // Subject of the JWT must align with refresh token lookup
                 .issuer(account.getUsername()) // NgÆ°á»i phÃ¡t hÃ nh (issuer)
                 .issueTime(new Date()) // Thá»i gian phÃ¡t hÃ nh JWT
                 .expirationTime(new Date(Instant.now()
@@ -191,7 +191,7 @@ public class AuthorityService implements IAuthorityService {
         } catch (JOSEException e) {
             // Log lá»—i náº¿u khÃ´ng thá»ƒ táº¡o token JWT vÃ  nÃ©m ra ngoáº¡i lá»‡
             log.error("Cannot generate token", e);
-            throw new RuntimeException(e);
+            throw new AppException(ErrorCode.TOKEN_GENERATION_FAILED);
         }
     }
 

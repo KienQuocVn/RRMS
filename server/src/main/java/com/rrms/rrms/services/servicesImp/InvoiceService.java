@@ -5,21 +5,50 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.rrms.rrms.dto.request.*;
-import com.rrms.rrms.dto.response.*;
+import com.rrms.rrms.dto.request.CollectPaymentRequest;
+import com.rrms.rrms.dto.request.InvoiceAdditionItemRequest;
+import com.rrms.rrms.dto.request.InvoiceDetailDeviceRequest;
+import com.rrms.rrms.dto.request.InvoiceDetailServiceRequest;
+import com.rrms.rrms.dto.request.InvoiceRequest;
+import com.rrms.rrms.dto.request.UpdateInvoiceAdditionItemRequest;
+import com.rrms.rrms.dto.request.UpdateInvoiceRequest;
+import com.rrms.rrms.dto.response.InvoiceAdditionItemResponse;
+import com.rrms.rrms.dto.response.InvoiceDeviceDetailResponse;
+import com.rrms.rrms.dto.response.InvoiceResponse;
+import com.rrms.rrms.dto.response.InvoiceServiceDetailResponse;
+import com.rrms.rrms.dto.response.TransactionResponse;
 import com.rrms.rrms.enums.ErrorCode;
 import com.rrms.rrms.enums.PaymentStatus;
 import com.rrms.rrms.exceptions.AppException;
-import com.rrms.rrms.models.*;
+import com.rrms.rrms.models.Contract;
+import com.rrms.rrms.models.Invoice;
+import com.rrms.rrms.models.InvoiceAdditionItem;
+import com.rrms.rrms.models.InvoiceDetail;
 import com.rrms.rrms.models.MotelService;
+import com.rrms.rrms.models.Room;
+import com.rrms.rrms.models.RoomDevice;
 import com.rrms.rrms.models.RoomService;
-import com.rrms.rrms.repositories.*;
+import com.rrms.rrms.models.Transaction;
+import com.rrms.rrms.repositories.ContractRepository;
+import com.rrms.rrms.repositories.DetailInvoiceRepository;
+import com.rrms.rrms.repositories.InvoiceAdditionItemRepository;
+import com.rrms.rrms.repositories.InvoiceRepository;
+import com.rrms.rrms.repositories.RoomDeviceRepository;
+import com.rrms.rrms.repositories.RoomServiceRepository;
+import com.rrms.rrms.repositories.TransactionRepository;
 import com.rrms.rrms.services.IInvoices;
 
 import lombok.RequiredArgsConstructor;
@@ -29,95 +58,63 @@ import lombok.RequiredArgsConstructor;
 public class InvoiceService implements IInvoices {
 
     private final InvoiceRepository invoiceRepository;
-
     private final ContractRepository contractRepository;
-
     private final DetailInvoiceRepository detailInvoiceRepository;
-
     private final RoomDeviceRepository roomDeviceRepository;
-
     private final RoomServiceRepository roomServiceRepository;
-
-    private final RoomRepository roomRepository;
-
     private final TransactionRepository transactionRepository;
-
     private final InvoiceAdditionItemRepository additionItemRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<InvoiceResponse> getInvoicesByMotelId(UUID motelId) {
-        List<Room> rooms = roomRepository.findByMotelMotelId(motelId);
+        return getInvoicesByMotelId(motelId, Pageable.unpaged()).getContent();
+    }
 
-        List<Contract> contracts = rooms.stream()
-                .flatMap(room -> contractRepository.findByRoomRoomId(room.getRoomId()).stream())
+    @Override
+    @Transactional(readOnly = true)
+    public Page<InvoiceResponse> getInvoicesByMotelId(UUID motelId, Pageable pageable) {
+        Page<UUID> invoiceIds = invoiceRepository.findInvoiceIdsByMotelId(motelId, pageable);
+        if (invoiceIds.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, invoiceIds.getTotalElements());
+        }
+
+        Map<UUID, Invoice> invoicesById = invoiceRepository.findDetailedByInvoiceIdIn(invoiceIds.getContent()).stream()
+                .collect(Collectors.toMap(
+                        Invoice::getInvoiceId, invoice -> invoice, (left, right) -> left, LinkedHashMap::new));
+
+        List<InvoiceResponse> responses = invoiceIds.getContent().stream()
+                .map(invoicesById::get)
+                .filter(invoice -> invoice != null)
+                .map(this::mapToResponse)
                 .collect(Collectors.toList());
 
-        List<Invoice> invoices = contracts.stream()
-                .flatMap(contract -> invoiceRepository.findByContractContractId(contract.getContractId()).stream())
-                .collect(Collectors.toList());
-
-        return invoices.stream()
-                .map(invoice -> {
-                    List<InvoiceDetail> details =
-                            detailInvoiceRepository.findByInvoiceInvoiceId(invoice.getInvoiceId());
-
-                    LocalDate moveInDate = invoice.getContract()
-                            .getMoveinDate()
-                            .toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate();
-                    LocalDate dueDateOfMoveInDate = moveInDate.plusDays(30);
-
-                    double totalServiceAmount = 0;
-                    if (details != null) {
-                        for (InvoiceDetail detail : details) {
-                            if (detail.getRoomService() != null) {
-                                MotelService service = detail.getRoomService().getService();
-                                int quantity = detail.getRoomServiceQuantity();
-                                totalServiceAmount += service.getPrice() * quantity;
-                            }
-                        }
-                    }
-
-                    return mapToResponse(invoice, details, moveInDate, dueDateOfMoveInDate, totalServiceAmount);
-                })
-                .collect(Collectors.toList());
+        return new PageImpl<>(responses, pageable, invoiceIds.getTotalElements());
     }
 
     @Override
     public void cancelInvoice(UUID invoiceId) {
-        // TÃ¬m hÃ³a Ä‘Æ¡n theo ID
-        Invoice invoice =
-                invoiceRepository.findById(invoiceId).orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
+        Invoice invoice = getDetailedInvoice(invoiceId);
 
-        // Kiá»ƒm tra tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n
         if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new AppException(ErrorCode.INVOICE_ALREADY_CANCELED);
-        }
-
-        if (invoice.getPaymentStatus() == PaymentStatus.CANCELED) {
             throw new AppException(ErrorCode.INVOICE_ALREADY_PAID);
         }
 
-        // Cáº­p nháº­t tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n
-        invoice.setPaymentStatus(PaymentStatus.CANCELED);
+        if (invoice.getPaymentStatus() == PaymentStatus.CANCELED) {
+            throw new AppException(ErrorCode.INVOICE_ALREADY_CANCELED);
+        }
 
-        // LÆ°u hÃ³a Ä‘Æ¡n vÃ o cÆ¡ sá»Ÿ dá»¯ liá»‡u
+        invoice.setPaymentStatus(PaymentStatus.CANCELED);
         invoiceRepository.save(invoice);
     }
 
     @Override
     public InvoiceResponse createInvoice(InvoiceRequest request) {
-
-        double totalServiceAmount = 0;
         Contract contract = contractRepository
                 .findById(request.getContractId())
-                .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CONTRACT_NOT_FOUND));
 
-        LocalDate moveInDate = contract.getMoveinDate()
-                .toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
+        LocalDate moveInDate = toLocalDate(contract.getMoveinDate());
         LocalDate dueDateOfMoveInDate = moveInDate.plusDays(30);
 
         Invoice invoice = new Invoice();
@@ -129,63 +126,15 @@ public class InvoiceService implements IInvoices {
         invoice.setDueDate(invoice.getInvoiceCreateDate().plusDays(7));
         invoice.setDeposit(contract.getDeposit());
         invoice.setContract(contract);
+        invoice.setDueDateofmoveinDate(dueDateOfMoveInDate);
         invoice.setPaymentStatus(PaymentStatus.UNPAID);
 
-        List<InvoiceDetail> details = new ArrayList<>();
+        invoice.setAdditionItems(buildAdditionItems(invoice, request.getAdditionItems()));
+        invoice.setDetailInvoices(
+                buildInvoiceDetails(invoice, request.getServiceDetails(), request.getDeviceDetails()));
 
-        if (request.getAdditionItems() != null) {
-            List<InvoiceAdditionItem> additionalCharges = new ArrayList<>();
-            for (InvoiceAdditionItemRequest addRequest : request.getAdditionItems()) {
-                InvoiceAdditionItem charge = new InvoiceAdditionItem();
-                charge.setInvoice(invoice); // GÃ¡n invoice
-                charge.setReason(addRequest.getReason());
-                charge.setAmount(addRequest.getAmount());
-                charge.setIsAddition(addRequest.getIsAddition());
-                additionalCharges.add(charge);
-            }
-            invoice.setAdditionItems(additionalCharges);
-        }
-
-        if (request.getServiceDetails() != null) {
-            for (InvoiceDetailServiceRequest serviceDetailRequest : request.getServiceDetails()) {
-                InvoiceDetail detail = new InvoiceDetail();
-                RoomService roomService = roomServiceRepository
-                        .findById(serviceDetailRequest.getRoomServiceId())
-                        .orElseThrow(() -> new RuntimeException("RoomService khÃ´ng tá»“n táº¡i"));
-
-                MotelService service = roomService.getService();
-                if (service == null) {
-                    throw new RuntimeException("MotelService khÃ´ng tá»“n táº¡i");
-                }
-
-                int quantity = serviceDetailRequest.getQuantity() != null ? serviceDetailRequest.getQuantity() : 1;
-                double totalPrice = service.getPrice() * quantity;
-
-                detail.setInvoice(invoice);
-                detail.setRoomService(roomService);
-                detail.setRoomServiceQuantity(quantity);
-                details.add(detail);
-                totalServiceAmount += totalPrice;
-            }
-        }
-
-        if (request.getDeviceDetails() != null) {
-            for (InvoiceDetailDeviceRequest deviceDetailRequest : request.getDeviceDetails()) {
-                InvoiceDetail detail = new InvoiceDetail();
-                RoomDevice roomDevice = roomDeviceRepository
-                        .findById(deviceDetailRequest.getRoomDeviceId())
-                        .orElseThrow(() -> new RuntimeException("RoomDevice khÃ´ng tá»“n táº¡i"));
-
-                detail.setInvoice(invoice);
-                detail.setRoomDevice(roomDevice);
-                details.add(detail);
-            }
-        }
-
-        invoice.setDetailInvoices(details);
-        invoiceRepository.save(invoice);
-
-        return mapToResponse(invoice, details, moveInDate, dueDateOfMoveInDate, totalServiceAmount);
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+        return mapToResponse(savedInvoice);
     }
 
     public InvoiceResponse mapToResponse(
@@ -204,6 +153,7 @@ public class InvoiceService implements IInvoices {
         response.setMoveinDate(moveInDate);
         response.setDueDateofmoveinDate(dueDateOfMoveInDate);
         response.setPaymentStatus(invoice.getPaymentStatus());
+
         Room room = invoice.getContract().getRoom();
         if (room != null) {
             response.setRoomId(room.getRoomId());
@@ -214,18 +164,16 @@ public class InvoiceService implements IInvoices {
                             : room.getPrice());
         }
 
-        double totalAddition = invoice.getAdditionItems() != null
-                ? invoice.getAdditionItems().stream()
+        double totalAddition = invoice.getAdditionItems() == null
+                ? 0
+                : invoice.getAdditionItems().stream()
                         .mapToDouble(charge -> charge.getIsAddition() ? charge.getAmount() : -charge.getAmount())
-                        .sum()
-                : 0;
+                        .sum();
 
         double basePrice = invoice.getContract().getActualPrice() != null
                 ? invoice.getContract().getActualPrice()
                 : invoice.getContract().getPrice();
-        double totalInvoice = basePrice + totalServiceAmount + totalAddition;
-
-        response.setTotalAmount(totalInvoice);
+        response.setTotalAmount(basePrice + totalServiceAmount + totalAddition);
 
         List<InvoiceServiceDetailResponse> serviceDetailResponses = details.stream()
                 .filter(detail -> detail.getRoomService() != null)
@@ -240,7 +188,6 @@ public class InvoiceService implements IInvoices {
                     serviceResponse.setQuantity(detail.getRoomServiceQuantity());
                     serviceResponse.setChargetype(service.getChargetype());
                     serviceResponse.setTotalPrice(service.getPrice() * detail.getRoomServiceQuantity());
-
                     return serviceResponse;
                 })
                 .collect(Collectors.toList());
@@ -250,7 +197,6 @@ public class InvoiceService implements IInvoices {
                 .filter(detail -> detail.getRoomDevice() != null)
                 .map(detail -> {
                     InvoiceDeviceDetailResponse deviceResponse = new InvoiceDeviceDetailResponse();
-
                     deviceResponse.setRoomDeviceId(detail.getRoomDevice().getRoomDeviceId());
                     deviceResponse.setDeviceName(
                             detail.getRoomDevice().getMotelDevice().getDeviceName());
@@ -264,29 +210,23 @@ public class InvoiceService implements IInvoices {
                 .collect(Collectors.toList());
         response.setDeviceDetails(deviceDetailResponses);
 
-        List<InvoiceAdditionItemResponse> additionItemResponses = invoice.getAdditionItems().stream()
-                .map(charge -> {
-                    InvoiceAdditionItemResponse additionResponse = new InvoiceAdditionItemResponse();
-                    additionResponse.setAdditionalChargeId(charge.getAdditionalChargeId());
-                    additionResponse.setReason(charge.getReason());
-                    additionResponse.setAmount(charge.getAmount());
-                    additionResponse.setAddition(charge.getIsAddition());
-                    return additionResponse;
-                })
-                .collect(Collectors.toList());
+        List<InvoiceAdditionItemResponse> additionItemResponses = invoice.getAdditionItems() == null
+                ? Collections.emptyList()
+                : invoice.getAdditionItems().stream()
+                        .map(charge -> {
+                            InvoiceAdditionItemResponse additionResponse = new InvoiceAdditionItemResponse();
+                            additionResponse.setAdditionalChargeId(charge.getAdditionalChargeId());
+                            additionResponse.setReason(charge.getReason());
+                            additionResponse.setAmount(charge.getAmount());
+                            additionResponse.setAddition(charge.getIsAddition());
+                            return additionResponse;
+                        })
+                        .collect(Collectors.toList());
         response.setAdditionItems(additionItemResponses);
 
-        // Thiáº¿t láº­p danh sÃ¡ch giao dá»‹ch
         if (invoice.getTransactions() != null) {
             response.setTransactions(invoice.getTransactions().stream()
-                    .map(t -> new TransactionResponse(
-                            t.getTransactionId(),
-                            t.getAmount(),
-                            t.getPayerName(),
-                            t.getPaymentDescription(),
-                            t.getCategory(),
-                            t.getTransactionDate(),
-                            t.isTransactionType()))
+                    .map(this::mapTransactionResponse)
                     .collect(Collectors.toList()));
         }
 
@@ -295,21 +235,16 @@ public class InvoiceService implements IInvoices {
 
     @Override
     public void deleteInvoice(UUID invoiceId) {
-        // 1. TÃ¬m kiáº¿m hÃ³a Ä‘Æ¡n theo ID
-        Invoice invoice =
-                invoiceRepository.findById(invoiceId).orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
+        Invoice invoice = getDetailedInvoice(invoiceId);
 
-        // 2. Kiá»ƒm tra tráº¡ng thÃ¡i thanh toÃ¡n
         if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
             throw new AppException(ErrorCode.INVOICE_CANNOT_BE_DELETED);
         }
 
-        // XÃ³a InvoiceDetail
         if (invoice.getDetailInvoices() != null) {
             detailInvoiceRepository.deleteAll(invoice.getDetailInvoices());
         }
 
-        // XÃ³a InvoiceAdditionItem
         if (invoice.getAdditionItems() != null) {
             additionItemRepository.deleteAll(invoice.getAdditionItems());
         }
@@ -319,9 +254,7 @@ public class InvoiceService implements IInvoices {
 
     @Override
     public InvoiceResponse updateInvoice(UUID invoiceId, UpdateInvoiceRequest request) {
-        Invoice invoice = invoiceRepository
-                .findById(invoiceId)
-                .orElseThrow(() -> new RuntimeException("HÃ³a Ä‘Æ¡n khÃ´ng tá»“n táº¡i"));
+        Invoice invoice = getDetailedInvoice(invoiceId);
 
         if (request.getInvoiceReason() != null) {
             invoice.setInvoiceReason(request.getInvoiceReason());
@@ -337,87 +270,159 @@ public class InvoiceService implements IInvoices {
             invoice.setDueDate(request.getDueDate());
         }
 
-        LocalDate moveInDate = invoice.getContract()
-                .getMoveinDate()
-                .toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
+        if (request.getServiceDetails() != null || request.getDeviceDetails() != null) {
+            List<InvoiceDetail> updatedDetails =
+                    buildInvoiceDetails(invoice, request.getServiceDetails(), request.getDeviceDetails());
+            List<InvoiceDetail> currentDetails =
+                    invoice.getDetailInvoices() == null ? new ArrayList<>() : invoice.getDetailInvoices();
+            currentDetails.clear();
+            currentDetails.addAll(updatedDetails);
+            invoice.setDetailInvoices(currentDetails);
+        }
 
-        List<InvoiceDetail> updatedDetails = new ArrayList<>();
+        if (request.getAdditionItems() != null) {
+            List<InvoiceAdditionItem> updatedAdditionItems =
+                    buildUpdatedAdditionItems(invoice, request.getAdditionItems());
+            List<InvoiceAdditionItem> currentAdditionItems =
+                    invoice.getAdditionItems() == null ? new ArrayList<>() : invoice.getAdditionItems();
+            currentAdditionItems.clear();
+            currentAdditionItems.addAll(updatedAdditionItems);
+            invoice.setAdditionItems(currentAdditionItems);
+        }
 
-        if (request.getServiceDetails() != null) {
-            for (InvoiceDetailServiceRequest serviceRequest : request.getServiceDetails()) {
-                InvoiceDetail detail = new InvoiceDetail();
+        return mapToResponse(invoiceRepository.save(invoice));
+    }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Invoice findInvoiceById(UUID invoiceId) {
+        return getDetailedInvoice(invoiceId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InvoiceResponse mapToResponse(Invoice invoice) {
+        List<InvoiceDetail> details =
+                invoice.getDetailInvoices() == null ? Collections.emptyList() : invoice.getDetailInvoices();
+        LocalDate moveInDate = toLocalDate(invoice.getContract().getMoveinDate());
+        LocalDate dueDateOfMoveInDate = moveInDate.plusDays(30);
+        double totalServiceAmount = calculateTotalServiceAmount(details);
+        return mapToResponse(invoice, details, moveInDate, dueDateOfMoveInDate, totalServiceAmount);
+    }
+
+    @Override
+    public void collectPayment(UUID invoiceId, CollectPaymentRequest request) {
+        Invoice invoice = getDetailedInvoice(invoiceId);
+
+        if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new AppException(ErrorCode.INVOICE_ALREADY_PAID);
+        }
+
+        Transaction transaction = new Transaction();
+        transaction.setAmount(BigDecimal.valueOf(request.getTotalAmount()));
+        transaction.setPayerName(request.getPaymentName() == null ? "Invoice payer" : request.getPaymentName());
+        transaction.setPaymentDescription(
+                request.getDescription() == null ? "Invoice payment" : request.getDescription());
+        transaction.setCategory("INVOICE");
+        transaction.setTransactionDate(request.getPaymentDate() != null ? request.getPaymentDate() : LocalDate.now());
+        transaction.setTransactionType(true);
+        transaction.setInvoice(invoice);
+        transaction.setAccount(invoice.getContract().getAccount());
+
+        transactionRepository.save(transaction);
+        invoice.setPaymentStatus(PaymentStatus.PAID);
+        invoiceRepository.save(invoice);
+    }
+
+    private Invoice getDetailedInvoice(UUID invoiceId) {
+        return invoiceRepository
+                .findDetailedByInvoiceId(invoiceId)
+                .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
+    }
+
+    private LocalDate toLocalDate(java.util.Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    private List<InvoiceAdditionItem> buildAdditionItems(Invoice invoice, List<InvoiceAdditionItemRequest> requests) {
+        if (requests == null) {
+            return new ArrayList<>();
+        }
+
+        List<InvoiceAdditionItem> additionItems = new ArrayList<>();
+        for (InvoiceAdditionItemRequest request : requests) {
+            InvoiceAdditionItem charge = new InvoiceAdditionItem();
+            charge.setInvoice(invoice);
+            charge.setReason(request.getReason());
+            charge.setAmount(request.getAmount());
+            charge.setIsAddition(request.getIsAddition());
+            additionItems.add(charge);
+        }
+        return additionItems;
+    }
+
+    private List<InvoiceAdditionItem> buildUpdatedAdditionItems(
+            Invoice invoice, List<UpdateInvoiceAdditionItemRequest> requests) {
+        List<InvoiceAdditionItem> currentItems =
+                invoice.getAdditionItems() == null ? new ArrayList<>() : invoice.getAdditionItems();
+        List<InvoiceAdditionItem> updatedItems = new ArrayList<>();
+
+        for (UpdateInvoiceAdditionItemRequest request : requests) {
+            InvoiceAdditionItem additionItem = currentItems.stream()
+                    .filter(item -> item.getAdditionalChargeId() != null
+                            && item.getAdditionalChargeId().equals(request.getAdditionalChargeId()))
+                    .findFirst()
+                    .orElse(new InvoiceAdditionItem());
+
+            additionItem.setInvoice(invoice);
+            additionItem.setReason(request.getReason());
+            additionItem.setAmount(request.getAmount());
+            additionItem.setIsAddition(request.getIsAddition());
+            updatedItems.add(additionItem);
+        }
+
+        return updatedItems;
+    }
+
+    private List<InvoiceDetail> buildInvoiceDetails(
+            Invoice invoice,
+            List<InvoiceDetailServiceRequest> serviceDetails,
+            List<InvoiceDetailDeviceRequest> deviceDetails) {
+        List<InvoiceDetail> details = new ArrayList<>();
+
+        if (serviceDetails != null) {
+            for (InvoiceDetailServiceRequest serviceDetailRequest : serviceDetails) {
                 RoomService roomService = roomServiceRepository
-                        .findById(serviceRequest.getRoomServiceId())
-                        .orElseThrow(() -> new RuntimeException("RoomService khÃ´ng tá»“n táº¡i"));
-
+                        .findById(serviceDetailRequest.getRoomServiceId())
+                        .orElseThrow(() -> new AppException(ErrorCode.ROOM_SERVICE_NOT_FOUND));
                 MotelService service = roomService.getService();
                 if (service == null) {
-                    throw new RuntimeException("MotelService khÃ´ng tá»“n táº¡i");
+                    throw new AppException(ErrorCode.SERVICE_NOT_FOUND);
                 }
 
-                int quantity = serviceRequest.getQuantity() != null ? serviceRequest.getQuantity() : 1;
+                InvoiceDetail detail = new InvoiceDetail();
                 detail.setInvoice(invoice);
                 detail.setRoomService(roomService);
-                detail.setRoomServiceQuantity(quantity);
-
-                updatedDetails.add(detail);
+                detail.setRoomServiceQuantity(
+                        serviceDetailRequest.getQuantity() != null ? serviceDetailRequest.getQuantity() : 1);
+                details.add(detail);
             }
         }
 
-        if (request.getDeviceDetails() != null) {
-            for (InvoiceDetailDeviceRequest deviceRequest : request.getDeviceDetails()) {
-                InvoiceDetail detail = invoice.getDetailInvoices().stream()
-                        .filter(d -> d.getRoomDevice() != null
-                                && d.getRoomDevice().getRoomDeviceId().equals(deviceRequest.getRoomDeviceId()))
-                        .findFirst()
-                        .orElse(new InvoiceDetail());
-
+        if (deviceDetails != null) {
+            for (InvoiceDetailDeviceRequest deviceDetailRequest : deviceDetails) {
                 RoomDevice roomDevice = roomDeviceRepository
-                        .findById(deviceRequest.getRoomDeviceId())
-                        .orElseThrow(() -> new RuntimeException("RoomDevice khÃ´ng tá»“n táº¡i"));
+                        .findById(deviceDetailRequest.getRoomDeviceId())
+                        .orElseThrow(() -> new AppException(ErrorCode.ROOM_DEVICE_NOT_FOUND));
 
+                InvoiceDetail detail = new InvoiceDetail();
                 detail.setInvoice(invoice);
                 detail.setRoomDevice(roomDevice);
-
-                updatedDetails.add(detail);
+                details.add(detail);
             }
         }
 
-        invoice.getDetailInvoices().clear();
-        invoice.getDetailInvoices().addAll(updatedDetails);
-
-        List<InvoiceAdditionItem> updatedAdditionItems = new ArrayList<>();
-        if (request.getAdditionItems() != null) {
-            for (UpdateInvoiceAdditionItemRequest additionRequest : request.getAdditionItems()) {
-
-                InvoiceAdditionItem additionItem = invoice.getAdditionItems().stream()
-                        .filter(a -> a.getAdditionalChargeId().equals(additionRequest.getAdditionalChargeId()))
-                        .findFirst()
-                        .orElse(new InvoiceAdditionItem());
-
-                additionItem.setInvoice(invoice);
-                additionItem.setReason(additionRequest.getReason());
-                additionItem.setAmount(additionRequest.getAmount());
-                additionItem.setIsAddition(additionRequest.getIsAddition());
-
-                updatedAdditionItems.add(additionItem);
-            }
-        }
-
-        invoice.getAdditionItems().clear();
-        invoice.getAdditionItems().addAll(updatedAdditionItems);
-
-        invoiceRepository.save(invoice);
-
-        return mapToResponse(
-                invoice,
-                invoice.getDetailInvoices(),
-                moveInDate,
-                invoice.getDueDateofmoveinDate(),
-                calculateTotalServiceAmount(invoice.getDetailInvoices()));
+        return details;
     }
 
     private double calculateTotalServiceAmount(List<InvoiceDetail> details) {
@@ -428,57 +433,14 @@ public class InvoiceService implements IInvoices {
                 .sum();
     }
 
-    @Override
-    public Invoice findInvoiceById(UUID invoiceId) {
-        return invoiceRepository
-                .findById(invoiceId)
-                .orElseThrow(() -> new RuntimeException("Invoice khÃ´ng tá»“n táº¡i"));
-    }
-
-    @Override
-    public InvoiceResponse mapToResponse(Invoice invoice) {
-        InvoiceResponse response = new InvoiceResponse();
-        List<InvoiceDetail> details = invoice.getDetailInvoices();
-        LocalDate moveInDate = invoice.getContract()
-                .getMoveinDate()
-                .toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-        LocalDate dueDateOfMoveInDate = moveInDate.plusDays(30);
-        double totalServiceAmount = details.stream()
-                .filter(detail -> detail.getRoomService() != null)
-                .mapToDouble(
-                        detail -> detail.getRoomService().getService().getPrice() * detail.getRoomServiceQuantity())
-                .sum();
-        return mapToResponse(invoice, details, moveInDate, dueDateOfMoveInDate, totalServiceAmount);
-    }
-
-    @Override
-    public void collectPayment(UUID invoiceId, CollectPaymentRequest request) {
-        // TÃ¬m hÃ³a Ä‘Æ¡n
-        Invoice invoice = invoiceRepository
-                .findById(invoiceId)
-                .orElseThrow(() -> new RuntimeException("Invoice khÃ´ng tá»“n táº¡i"));
-
-        // Kiá»ƒm tra tráº¡ng thÃ¡i thanh toÃ¡n
-        if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new RuntimeException("HÃ³a Ä‘Æ¡n Ä‘Ã£ Ä‘Æ°á»£c thanh toÃ¡n trÆ°á»›c Ä‘Ã³.");
-        }
-
-        // Táº¡o Ä‘á»‘i tÆ°á»£ng Transaction thay vÃ¬ Payment
-        Transaction transaction = new Transaction();
-        transaction.setAmount(BigDecimal.valueOf(request.getTotalAmount()));
-        transaction.setPayerName(request.getPaymentName());
-        transaction.setPaymentDescription(request.getDescription());
-        transaction.setTransactionDate(request.getPaymentDate() != null ? request.getPaymentDate() : LocalDate.now());
-        transaction.setTransactionType(true); // Thu vÃ o
-        transaction.setInvoice(invoice);
-
-        transactionRepository.save(transaction);
-
-        // Cáº­p nháº­t tráº¡ng thÃ¡i hÃ³a Ä‘Æ¡n (Logic sáº½ Ä‘Æ°á»£c cáº£i thiá»‡n sau á»Ÿ TransactionService)
-        // Hiá»‡n táº¡i táº¡m thá»i marked lÃ  PAID náº¿u collect qua API nÃ y
-        invoice.setPaymentStatus(PaymentStatus.PAID);
-        invoiceRepository.save(invoice);
+    private TransactionResponse mapTransactionResponse(Transaction transaction) {
+        return new TransactionResponse(
+                transaction.getTransactionId(),
+                transaction.getAmount(),
+                transaction.getPayerName(),
+                transaction.getPaymentDescription(),
+                transaction.getCategory(),
+                transaction.getTransactionDate(),
+                transaction.isTransactionType());
     }
 }
