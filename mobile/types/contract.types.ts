@@ -8,7 +8,7 @@ export enum ContractStatus {
   PENDING = 'PENDING',
 }
 
-export interface Contract {
+export interface ContractResponse {
   contractId: string;
   moveinDate: string;
   leaseTerm: string;

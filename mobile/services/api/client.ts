@@ -4,7 +4,7 @@ import { authStorage } from '../storage/auth.storage';
 
 // Cấu hình Base URL linh hoạt cho Android/iOS
 // IP 10.0.2.2 là địa chỉ của máy host trong Android Emulator
-const BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8080';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,

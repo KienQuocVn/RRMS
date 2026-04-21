@@ -433,3 +433,53 @@ docs: update coding standards
 - Sử dụng `react-native-reanimated` cho animations phức tạp
 - Expo Router `animation: 'slide_from_right'` cho screen transitions
 - Thời gian animation: 200-300ms cho micro-interactions
+
+---
+
+## 🚀 11. Senior Development Patterns
+
+### 11.1. Networking Excellence
+- **Interceptors**: Sử dụng axios interceptors để tự động chèn token và xử lý lỗi global (401, 403, 500).
+- **Service Layer**: Tách biệt logic gọi API khỏi UI component. Mỗi domain nghiệp vụ có 1 service file riêng.
+- **DTO Mapping**: Chuyển đổi dữ liệu từ Backend (Snake Case hoặc định dạng thô) sang Camel Case hoặc Model thân thiện với UI tại Service Layer.
+- **Error Propagation**: Luôn sử dụng `try-catch` và trả về một cấu trúc lỗi đồng nhất để UI có thể hiển thị thông báo thân thiện.
+
+### 11.2. State Management (Zustand + Persistence)
+- **Persist Middleware**: Sử dụng middleware `persist` của Zustand để tự động đồng bộ hóa state với `AsyncStorage`.
+- **Atomic Selectors**: Luôn sử dụng selectors khi truy xuất state để tránh re-render dư thừa.
+- **Hydration Safety**: Xử lý trạng thái "vừa load" khi state đang được phục hồi từ bộ nhớ đệm (AsyncStorage).
+
+### 11.3. Clean Code & SOLID
+- **Interface Segregation**: Không bắt một component nhận quá nhiều props không liên quan.
+- **Dependency Inversion**: Service client không nên phụ thuộc vào hardcode URL (luôn dùng biến môi trường).
+
+---
+
+## 🔒 12. Bảo mật & Độ tin cậy (Senior Level)
+
+### 12.1. Quản lý Secret & Token
+- **Environment Variables**: KHÔNG bao giờ commit `.env`. Luôn có `.env.example`.
+- **Bearer Token**: Token phải được lưu trữ an toàn trong `AsyncStorage` (hoặc `SecureStore` nếu cần bảo mật cao hơn).
+- **Refresh Token**: Implement cơ chế tự động refresh token khi token hiện tại sắp hết hạn để duy trì phiên đăng nhập bền vững.
+
+### 12.2. Error Handling & Monitoring
+- **Global Error Handling**: Xử lý lỗi tập trung tại Axios Interceptor và Global Exception Handler (nếu có).
+- **Retry Mechanism**: Thiết lập chính sách thử lại (retry) cho các request quan trọng khi mạng không ổn định.
+- **Offline Mode**: Thiết kế App để người dùng vẫn có thể xem được dữ liệu cũ từ cache khi không có mạng.
+
+---
+
+## 🛠️ 13. Cấu hình Đa nền tảng (Web vs Native)
+
+Dự án ưu tiên khả năng chạy ổn định trên cả trình duyệt (Web) và thiết bị thật (Native).
+
+### 13.1. Quản lý ESM & `import.meta`
+- Trình duyệt (Chrome/Edge) và Metro Web có thể không hỗ trợ hoàn toàn `import.meta` từ các thư viện ESM hiện đại. 
+- Ưu tiên sử dụng các phiên bản thư viện đã được transpiled (như Zustand 4.x) cho giai đoạn phát triển Web.
+
+### 13.2. Tính năng thử nghiệm (Experimental Features)
+- **React Compiler** & **New Architecture** chỉ nên bật khi tiến hành kiểm thử hiệu năng cuối cùng trên thiết bị Native.
+- Trong quá trình phát triển tính năng (Feature Development), các cờ này nên được tắt để đảm bảo tốc độ bundling và khả năng debug tốt nhất trên trình duyệt.
+
+### 13.3. Font & Icons trên Web
+- Đảm bảo `@expo/vector-icons` và `expo-font` được load đúng cách bằng cách giữ cho bundling sạch lỗi `SyntaxError`. Lỗi bundle sẽ ngăn cản việc chèn CSS font vào trình duyệt.

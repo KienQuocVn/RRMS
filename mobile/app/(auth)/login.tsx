@@ -36,7 +36,11 @@ export default function LoginScreen() {
   // ── Handlers ──
   const handleLogin = async () => {
     if (!phone || !password) return;
-    await login({ phone, password });
+    const success = await login({ phone, password });
+    if (success) {
+      // Thành công sẽ tự động điều hướng nhờ Auth Guard trong Root Layout
+      console.log('Login successful');
+    }
   };
 
   const handleLoginZalo = () => {

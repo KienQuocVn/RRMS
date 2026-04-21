@@ -9,7 +9,7 @@ export interface RoomServiceResponse {
   unit: string;
 }
 
-export interface Room {
+export interface RoomResponse2 {
   roomId: string;
   motelId: string;
   name: string;

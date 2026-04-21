@@ -2,7 +2,7 @@
  * Motel Type Definitions
  */
 
-export interface Motel {
+export interface MotelResponse {
   motelId: string;
   motelName: string;
   area: number;

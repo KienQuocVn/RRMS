@@ -4,12 +4,14 @@
  * TODO: Thêm logic kiểm tra authentication state
  */
 
+import { useEffect } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { useRouter, useSegments, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useAuth } from '@/hooks/use-auth';
 
 export const unstable_settings = {
   initialRouteName: '(auth)',
@@ -17,6 +19,27 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const segments = useSegments();
+  const router = useRouter();
+  
+  const token = useAuth((state) => state.token);
+  const isHydrated = useAuth((state) => state.isHydrated);
+
+  // ── Auth Guard Logic ──
+  useEffect(() => {
+    // Chờ cho đến khi dữ liệu từ storage được nạp vào store
+    if (!isHydrated) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (!token && !inAuthGroup) {
+      // Nếu chưa có token và không ở trong nhóm auth -> Đẩy ra Login
+      router.replace('/(auth)/login');
+    } else if (token && inAuthGroup) {
+      // Nếu đã có token và vẫn ở trong nhóm auth -> Vào Home
+      router.replace('/(tabs)/(home)');
+    }
+  }, [token, segments, isHydrated]);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -24,22 +47,7 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        <Stack.Screen name="rooms-list" />
-        <Stack.Screen name="invoices-list" />
-        <Stack.Screen name="services-settings" />
-        <Stack.Screen name="contracts-list" />
-        <Stack.Screen name="tenants-list" />
-        <Stack.Screen name="assets-list" />
-        <Stack.Screen name="vehicles-list" />
-        <Stack.Screen name="tenant-app-settings" />
-        <Stack.Screen name="invoice-settings" />
-        <Stack.Screen name="motel-settings" />
-        <Stack.Screen name="broker-management" />
-        <Stack.Screen name="bank-account" />
-        <Stack.Screen name="finance-summary" />
-        <Stack.Screen name="service-summary" />
-        <Stack.Screen name="zalo-history" />
-        <Stack.Screen name="transfer-history" />
+        {/* Các screen khác */}
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

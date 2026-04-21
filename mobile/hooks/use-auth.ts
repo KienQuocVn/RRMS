@@ -1,63 +1,87 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '@/services/api/auth.service';
-import { authStorage } from '@/services/storage/auth.storage';
 import { LoginRequest, LoginResponse } from '@/types/auth.types';
 
-interface AuthStore {
+interface AuthState {
   token: string | null;
   user: LoginResponse | null;
   isLoading: boolean;
+  isHydrated: boolean; // Trạng thái đã load dữ liệu từ storage xong chưa
   error: string | null;
 
   // Actions
-  login: (credentials: LoginRequest) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<boolean>;
   logout: () => Promise<void>;
-  initialize: () => Promise<void>;
+  setHydrated: () => void;
 }
 
-export const useAuth = create<AuthStore>((set) => ({
-  token: null,
-  user: null,
-  isLoading: false,
-  error: null,
+export const useAuth = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      token: null,
+      user: null,
+      isLoading: false,
+      isHydrated: false,
+      error: null,
 
-  initialize: async () => {
-    const token = await authStorage.getToken();
-    const user = await authStorage.getUser();
-    if (token && user) {
-      set({ token, user, isLoading: false });
-    }
-  },
+      setHydrated: () => set({ isHydrated: true }),
 
-  login: async (credentials) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await authService.login(credentials);
-      if (response.status && response.data) {
-        const { token } = response.data;
-        await authStorage.saveToken(token);
-        await authStorage.saveUser(response.data);
-        set({ token, user: response.data, isLoading: false });
-      } else {
-        set({ error: response.message || 'Đăng nhập thất bại', isLoading: false });
-      }
-    } catch (err: any) {
-      set({ error: err.message || 'Lỗi kết nối máy chủ', isLoading: false });
-    }
-  },
+      login: async (credentials) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await authService.login(credentials);
+          // Theo cấu trúc Backend: { code, message, result }
+          // Lưu ý: authService.login trả về BackendResponse (status, message, data) 
+          // do apiClient đã intercept dữ liệu
+          
+          if (response && response.data) {
+            const { token } = response.data;
+            set({ 
+              token, 
+              user: response.data, 
+              isLoading: false,
+              error: null 
+            });
+            return true;
+          } else {
+            set({ 
+              error: response.message || 'Số điện thoại hoặc mật khẩu không đúng', 
+              isLoading: false 
+            });
+            return false;
+          }
+        } catch (err: any) {
+          console.error('Login error:', err);
+          set({ 
+            error: err.response?.data?.message || 'Lỗi kết nối máy chủ', 
+            isLoading: false 
+          });
+          return false;
+        }
+      },
 
-  logout: async () => {
-    set({ isLoading: true });
-    try {
-      const token = await authStorage.getToken();
-      if (token) {
-        await authService.logout(token);
-      }
-    } catch (err) {
-      console.log('Logout error (silent):', err);
-    } finally {
-      await authStorage.clearAll();
-      set({ token: null, user: null, isLoading: false, error: null });
+      logout: async () => {
+        set({ isLoading: true });
+        try {
+          const token = get().token;
+          if (token) {
+            await authService.logout(token);
+          }
+        } catch (err) {
+          console.log('Logout error (silent):', err);
+        } finally {
+          set({ token: null, user: null, isLoading: false, error: null });
+        }
+      },
+    }),
+    {
+      name: 'rrms-auth-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setHydrated();
+      },
     }
-  },
-}));
+  )
+);

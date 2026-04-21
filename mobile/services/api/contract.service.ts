@@ -1,25 +1,34 @@
 import { apiClient } from './client';
-import { Contract } from '@/types/contract.types';
+import { API_ENDPOINTS } from './endpoints';
+import { ContractResponse } from '@/types/contract.types';
+import { BackendResponse } from '@/types/common.types';
 
 export const contractService = {
   /**
-   * Lấy danh sách hợp đồng theo Motel ID
+   * Tạo hợp đồng mới
    */
-  getContractsByMotel: async (motelId: string): Promise<Contract[]> => {
-    return apiClient.get(`/contracts/motel/${motelId}`);
+  createContract: async (data: any): Promise<ContractResponse> => {
+    return apiClient.post(API_ENDPOINTS.CONTRACTS.BASE, data);
   },
 
   /**
-   * Lấy hợp đồng theo Room ID
+   * Lấy danh sách hợp đồng theo nhà trọ
    */
-  getContractByRoom: async (roomId: string): Promise<Contract> => {
-    return apiClient.get(`/contracts/room/${roomId}`);
+  getContractsByMotel: async (motelId: string): Promise<ContractResponse[]> => {
+    return apiClient.get(API_ENDPOINTS.CONTRACTS.GET_BY_MOTEL(motelId));
   },
 
   /**
-   * Lấy hợp đồng theo ID
+   * Cập nhật trạng thái hợp đồng
    */
-  getContractById: async (contractId: string): Promise<Contract> => {
-    return apiClient.get(`/contracts/${contractId}`);
+  updateStatus: async (params: { roomId: string, newStatus: string, reportCloseDate: string }): Promise<string> => {
+    return apiClient.put(API_ENDPOINTS.CONTRACTS.UPDATE_STATUS, null, { params });
+  },
+
+  /**
+   * Lấy toàn bộ mẫu hợp đồng
+   */
+  getTemplates: async (): Promise<any[]> => {
+    return apiClient.get(API_ENDPOINTS.TEMPLATES.BASE);
   },
 };
