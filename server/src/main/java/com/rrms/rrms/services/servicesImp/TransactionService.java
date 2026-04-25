@@ -20,12 +20,15 @@ import com.rrms.rrms.models.Transaction;
 import com.rrms.rrms.repositories.AccountRepository;
 import com.rrms.rrms.repositories.InvoiceRepository;
 import com.rrms.rrms.repositories.TransactionRepository;
+import com.rrms.rrms.services.ITransactionService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-public class TransactionService {
+@Slf4j
+public class TransactionService implements ITransactionService {
     private final TransactionRepository transactionRepository;
     private final InvoiceRepository invoiceRepository;
     private final AccountRepository accountRepository;

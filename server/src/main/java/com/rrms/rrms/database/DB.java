@@ -55,7 +55,7 @@ public class DB {
             BrokerRepository brokerRepository,
             PaymentRepository paymentRepository,
             InvoiceRepository invoiceRepository,
-            DetailInvoiceRepository detailInvoiceRepository,
+            InvoiceDetailRepository detailInvoiceRepository,
             InvoiceAdditionItemRepository invoiceAdditionItemRepository,
             TransactionRepository transactionRepository,
             MeterReadingRepository meterReadingRepository,
@@ -609,7 +609,7 @@ public class DB {
 
     private void seedInvoices(
             InvoiceRepository iRepo,
-            DetailInvoiceRepository diRepo,
+            InvoiceDetailRepository diRepo,
             InvoiceAdditionItemRepository iaRepo,
             List<Contract> contracts) {
         for (Contract c : contracts) {

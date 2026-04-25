@@ -15,8 +15,11 @@ import com.rrms.rrms.services.IContractService;
 import com.rrms.rrms.services.IMotelService;
 import com.rrms.rrms.services.ITenantService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Report Controller", description = "Motel financial and occupancy reports")
 @RestController
 @RequestMapping({"/report", "/api/v1/reports"})
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class ReportController {
     private final IContractService contractService;
     private final ITenantService tenantService;
 
+    @Operation(summary = "Get total room count for a motel")
     @GetMapping("/total-rooms")
     public ApiResponse<Integer> getTotalRooms(@RequestParam UUID motelId, @RequestParam String username) {
         Integer totalRooms = motelService
@@ -37,6 +41,7 @@ public class ReportController {
                 .build();
     }
 
+    @Operation(summary = "Get room counts grouped by contract status")
     @GetMapping("/room-counts")
     public ApiResponse<List<MotelRoomCountResponse>> getRoomCountsByContractStatus() {
         return ApiResponse.<List<MotelRoomCountResponse>>builder()
@@ -45,6 +50,7 @@ public class ReportController {
                 .build();
     }
 
+    @Operation(summary = "Get total tenant count for a motel")
     @GetMapping("/{motelId}/tenants/count")
     public ApiResponse<Integer> getTotalTenants(@PathVariable UUID motelId) {
         return ApiResponse.<Integer>builder()
@@ -53,6 +59,7 @@ public class ReportController {
                 .build();
     }
 
+    @Operation(summary = "Get tenant summary report")
     @GetMapping("/tenant/summary")
     public ApiResponse<List<TenantSummaryDTO>> getTenantSummary() {
         return ApiResponse.<List<TenantSummaryDTO>>builder()
@@ -61,6 +68,7 @@ public class ReportController {
                 .build();
     }
 
+    @Operation(summary = "Get total deposit amount for a motel")
     @GetMapping("/{motelId}/deposits")
     public ApiResponse<Double> getTotalDeposit(@PathVariable UUID motelId) {
         return ApiResponse.<Double>builder()
@@ -69,6 +77,7 @@ public class ReportController {
                 .build();
     }
 
+    @Operation(summary = "Get total reservation deposit for a motel")
     @GetMapping("/{motelId}/reserve-deposits")
     public ApiResponse<Double> getTotalReserveDeposit(@PathVariable UUID motelId) {
         return ApiResponse.<Double>builder()
@@ -77,6 +86,7 @@ public class ReportController {
                 .build();
     }
 
+    @Operation(summary = "Get total paid invoice amount for a motel")
     @GetMapping("/{motelId}/total-paid-invoices")
     public ApiResponse<BigDecimal> getTotalPaidInvoices(@PathVariable UUID motelId) {
         return ApiResponse.<BigDecimal>builder()
@@ -85,6 +95,7 @@ public class ReportController {
                 .build();
     }
 
+    @Operation(summary = "Get total paid room price for a motel")
     @GetMapping("/{motelId}/total-paid-room-price")
     public ApiResponse<BigDecimal> getTotalPaidRoomPrice(@PathVariable UUID motelId) {
         return ApiResponse.<BigDecimal>builder()

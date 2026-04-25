@@ -8,7 +8,11 @@ import org.springframework.stereotype.Repository;
 
 import com.rrms.rrms.models.InvoiceDetail;
 
+/**
+ * Repository for InvoiceDetail entity.
+ * Renamed from DetailInvoiceRepository to follow {Entity}Repository convention.
+ */
 @Repository
-public interface DetailInvoiceRepository extends JpaRepository<InvoiceDetail, UUID> {
+public interface InvoiceDetailRepository extends JpaRepository<InvoiceDetail, UUID> {
     List<InvoiceDetail> findByInvoiceInvoiceId(UUID invoiceId);
 }

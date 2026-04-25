@@ -1,3 +1,38 @@
 package com.rrms.rrms.services;
 
-public interface IInvoiceService {}
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.rrms.rrms.dto.request.CollectPaymentRequest;
+import com.rrms.rrms.dto.request.InvoiceRequest;
+import com.rrms.rrms.dto.request.UpdateInvoiceRequest;
+import com.rrms.rrms.dto.response.InvoiceResponse;
+import com.rrms.rrms.models.Invoice;
+
+/**
+ * Service interface for Invoice operations.
+ * Handles invoice CRUD, payment collection, and mapping.
+ */
+public interface IInvoiceService {
+
+    List<InvoiceResponse> getInvoicesByMotelId(UUID motelId);
+
+    Page<InvoiceResponse> getInvoicesByMotelId(UUID motelId, Pageable pageable);
+
+    InvoiceResponse createInvoice(InvoiceRequest request);
+
+    void deleteInvoice(UUID invoiceId);
+
+    void cancelInvoice(UUID invoiceId);
+
+    InvoiceResponse updateInvoice(UUID invoiceId, UpdateInvoiceRequest request);
+
+    Invoice findInvoiceById(UUID invoiceId);
+
+    InvoiceResponse mapToResponse(Invoice invoice);
+
+    void collectPayment(UUID invoiceId, CollectPaymentRequest request);
+}

@@ -12,13 +12,15 @@ import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 import com.rrms.rrms.repositories.PaymentRepository;
-import com.rrms.rrms.services.IPayment;
+import com.rrms.rrms.services.IPaymentService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-public class PaymentService implements IPayment {
+@Slf4j
+public class PaymentService implements IPaymentService {
 
     private final PaymentRepository paymentRepository;
 

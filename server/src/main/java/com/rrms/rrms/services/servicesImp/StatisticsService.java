@@ -17,13 +17,15 @@ import com.rrms.rrms.repositories.AccountRepository;
 import com.rrms.rrms.repositories.AuthRepository;
 import com.rrms.rrms.repositories.MotelRepository;
 import com.rrms.rrms.repositories.TenantRepository;
-import com.rrms.rrms.services.IStatistics;
+import com.rrms.rrms.services.IStatisticsService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-public class StatisticsService implements IStatistics {
+@Slf4j
+public class StatisticsService implements IStatisticsService {
     private final AccountRepository accountRepository;
     private final AuthRepository authRepository;
     private final TenantRepository tenantRepository;

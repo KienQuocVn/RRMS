@@ -43,23 +43,25 @@ import com.rrms.rrms.models.RoomDevice;
 import com.rrms.rrms.models.RoomService;
 import com.rrms.rrms.models.Transaction;
 import com.rrms.rrms.repositories.ContractRepository;
-import com.rrms.rrms.repositories.DetailInvoiceRepository;
 import com.rrms.rrms.repositories.InvoiceAdditionItemRepository;
+import com.rrms.rrms.repositories.InvoiceDetailRepository;
 import com.rrms.rrms.repositories.InvoiceRepository;
 import com.rrms.rrms.repositories.RoomDeviceRepository;
 import com.rrms.rrms.repositories.RoomServiceRepository;
 import com.rrms.rrms.repositories.TransactionRepository;
-import com.rrms.rrms.services.IInvoices;
+import com.rrms.rrms.services.IInvoiceService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-public class InvoiceService implements IInvoices {
+@Slf4j
+public class InvoiceService implements IInvoiceService {
 
     private final InvoiceRepository invoiceRepository;
     private final ContractRepository contractRepository;
-    private final DetailInvoiceRepository detailInvoiceRepository;
+    private final InvoiceDetailRepository invoiceDetailRepository;
     private final RoomDeviceRepository roomDeviceRepository;
     private final RoomServiceRepository roomServiceRepository;
     private final TransactionRepository transactionRepository;
@@ -151,7 +153,7 @@ public class InvoiceService implements IInvoices {
         response.setDueDate(invoice.getDueDate());
         response.setDeposit(invoice.getDeposit());
         response.setMoveinDate(moveInDate);
-        response.setDueDateofmoveinDate(dueDateOfMoveInDate);
+        response.setMoveInDueDate(dueDateOfMoveInDate);
         response.setPaymentStatus(invoice.getPaymentStatus());
 
         Room room = invoice.getContract().getRoom();
@@ -242,7 +244,7 @@ public class InvoiceService implements IInvoices {
         }
 
         if (invoice.getDetailInvoices() != null) {
-            detailInvoiceRepository.deleteAll(invoice.getDetailInvoices());
+            invoiceDetailRepository.deleteAll(invoice.getDetailInvoices());
         }
 
         if (invoice.getAdditionItems() != null) {

@@ -1,9 +1,11 @@
 package com.rrms.rrms.services.servicesImp;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rrms.rrms.dto.request.SupportRequest;
 import com.rrms.rrms.dto.response.SupportResponse;
@@ -17,52 +19,73 @@ import com.rrms.rrms.repositories.SupportRepository;
 import com.rrms.rrms.services.ISupportService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SupportService implements ISupportService {
     private final SupportRepository supportRepository;
-
     private final AccountRepository accountRepository;
-
     private final AccountMapper accountMapper;
 
-    Support toSupport(SupportRequest request) {
+    @Override
+    @Transactional
+    public SupportResponse createSupport(SupportRequest request) {
         Account account = accountRepository
-                .findByUsername(request.getAccount().getUsername())
+                .findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
-        Support support = new Support();
-        support.setAccount(account);
-        support.setNameContact(request.getNameContact());
-        support.setPhoneContact(request.getPhoneContact());
-        support.setDateOfStay(request.getDateOfStay());
-        support.setPriceFirst(request.getPriceFirst());
-        support.setPriceEnd(request.getPriceEnd());
-        return support;
-    }
 
-    SupportResponse toSupportResponse(Support support) {
-        SupportResponse response = new SupportResponse();
-        response.setSupportId(support.getSupportId());
-        response.setAccount(accountMapper.toAccountResponse(support.getAccount()));
-        response.setNameContact(support.getNameContact());
-        response.setPhoneContact(support.getPhoneContact());
-        response.setDateOfStay(support.getDateOfStay());
-        response.setPriceFirst(support.getPriceFirst());
-        response.setPriceEnd(support.getPriceEnd());
-        return response;
+        Support support = Support.builder()
+                .account(account)
+                .nameContact(request.getContactName())
+                .phoneContact(request.getContactPhone())
+                .dateOfStay(request.getDateOfStay())
+                .priceFirst(request.getPriceFirst())
+                .priceEnd(request.getPriceEnd())
+                .build();
+
+        Support saved = supportRepository.save(support);
+        log.info("Support ticket created: {}", saved.getSupportId());
+        return mapToResponse(saved);
     }
 
     @Override
-    public boolean insert(SupportRequest supportRequest) {
-        Support support = toSupport(supportRequest);
-        Support status = supportRepository.save(support);
-        return status != null;
+    @Transactional(readOnly = true)
+    public List<SupportResponse> getAllSupports() {
+        return supportRepository.findAllByOrderByCreateDateDesc().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<SupportResponse> listSupport() {
-        List<Support> supports = supportRepository.findAllByOrderByCreateDateDesc();
-        return supports.stream().map(this::toSupportResponse).collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public SupportResponse getSupportById(UUID supportId) {
+        Support support =
+                supportRepository.findById(supportId).orElseThrow(() -> new AppException(ErrorCode.ENTITY_NOT_FOUND));
+        return mapToResponse(support);
+    }
+
+    @Override
+    @Transactional
+    public void deleteSupport(UUID supportId) {
+        if (!supportRepository.existsById(supportId)) {
+            throw new AppException(ErrorCode.ENTITY_NOT_FOUND);
+        }
+        supportRepository.deleteById(supportId);
+        log.info("Support ticket deleted: {}", supportId);
+    }
+
+    private SupportResponse mapToResponse(Support support) {
+        return SupportResponse.builder()
+                .supportId(support.getSupportId())
+                .account(accountMapper.toAccountResponse(support.getAccount()))
+                .contactName(support.getNameContact())
+                .contactPhone(support.getPhoneContact())
+                .dateOfStay(support.getDateOfStay())
+                .createdAt(support.getCreateDate())
+                .priceFirst(support.getPriceFirst())
+                .priceEnd(support.getPriceEnd())
+                .build();
     }
 }

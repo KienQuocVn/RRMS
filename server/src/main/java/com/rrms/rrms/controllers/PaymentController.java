@@ -23,23 +23,26 @@ import com.rrms.rrms.configs.CustomerEnvironment;
 import com.rrms.rrms.configs.MoMoEndpoint;
 import com.rrms.rrms.configs.PartnerInfo;
 import com.rrms.rrms.configs.VNPayConfig;
-import com.rrms.rrms.dto.PaymentRestDTO;
 import com.rrms.rrms.dto.request.StripeRequest;
 import com.rrms.rrms.dto.response.PaymentResponse;
 import com.rrms.rrms.dto.response.StripeResponse;
+import com.rrms.rrms.dto.response.VnPayRedirectResponse;
 import com.rrms.rrms.enums.RequestType;
-import com.rrms.rrms.services.IPayment;
+import com.rrms.rrms.services.IPaymentService;
 import com.rrms.rrms.services.servicesImp.CreateOrderMoMo;
 import com.rrms.rrms.utils.LogUtils;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+@Tag(name = "Payment Controller", description = "Payment gateway integrations: PayPal, VNPay, MoMo, Stripe")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
 @Slf4j
@@ -76,13 +79,11 @@ public class PaymentController {
     @Value("${paypal.cancelUrl}")
     String paypalCancelUrl;
 
-    final IPayment paymentService;
+    final IPaymentService paymentService;
     final VNPayConfig vnpayConfig;
 
-    // Paypal payment
-    // sb-fo7f331992187@personal.example.com
-    // r&o}V0Z>
-    @PostMapping("/payment-paypal")
+    @Operation(summary = "Create PayPal payment")
+    @PostMapping({"/payment-paypal", "/paypal/create"})
     public Map<String, String> payment(
             @RequestParam("totalPrice") double totalPrice, @RequestParam("userName") String userName) {
         Map<String, String> response = new HashMap<>();
@@ -122,12 +123,8 @@ public class PaymentController {
         return "success";
     }
 
-    // vnpay
-    // 9704198526191432198
-    // NGUYEN VAN A
-    // 07/15
-    //	123456
-    @PostMapping("/create_payment")
+    @Operation(summary = "Create VNPay payment")
+    @PostMapping({"/create_payment", "/vnpay/create"})
     @PermitAll
     public ResponseEntity<?> getPay(@RequestBody Map<String, Object> requestData, HttpServletRequest request)
             throws UnsupportedEncodingException {
@@ -146,7 +143,6 @@ public class PaymentController {
         String vnp_TxnRef = VNPayConfig.getRandomNumber(6);
         String vnp_IpAddr = VNPayConfig.getIpAddress(request);
 
-        // cấu hình của vnpay
         String vnp_TmnCode = vnpayConfig.getVnp_TmnCode();
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
@@ -165,17 +161,15 @@ public class PaymentController {
         vnp_Params.put("vnp_ReturnUrl", vnpayConfig.getVnp_ReturnUrl());
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
-        // xử lý thời gian ngày giờ thanh toán
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         String vnp_CreateDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
 
-        cld.add(Calendar.MINUTE, 15); // Payment expires after 15 minutes
+        cld.add(Calendar.MINUTE, 15);
         String vnp_ExpireDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
 
-        // Tạo chuỗi dữ liệu và bảo mật của thanh toán
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
         Collections.sort(fieldNames);
         StringBuilder hashData = new StringBuilder();
@@ -200,15 +194,13 @@ public class PaymentController {
 
         String queryUrl = query.toString();
         String vnp_SecureHash = VNPayConfig.hmacSHA512(secretKey, hashData.toString());
-        queryUrl += "&vnp_SecureHash=" + vnp_SecureHash; // mã hóa
+        queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
 
-        // Tạo đường dẫn cho thanh toán
         String paymentUrl = vnpayConfig.getVnp_PayUrl() + "?" + queryUrl;
 
-        // Trả kết quả về cho client
-        PaymentRestDTO paymentRestDTO = new PaymentRestDTO();
-        paymentRestDTO.setURL(paymentUrl);
-        return ResponseEntity.status(HttpStatus.OK).body(paymentRestDTO);
+        VnPayRedirectResponse vnPayRedirectResponse =
+                VnPayRedirectResponse.builder().paymentUrl(paymentUrl).build();
+        return ResponseEntity.status(HttpStatus.OK).body(vnPayRedirectResponse);
     }
 
     @GetMapping("/vnpay-callback")
@@ -256,14 +248,14 @@ public class PaymentController {
         return "paymentVNPayFailed";
     }
 
-    @PostMapping("/payMoMo")
+    @Operation(summary = "Create MoMo payment")
+    @PostMapping({"/payMoMo", "/momo/create"})
     public PaymentResponse paymentMoMo(@RequestBody Map<String, Object> requestData, HttpServletRequest request)
             throws Exception {
         HttpSession session = request.getSession();
         String username = (String) requestData.get("username");
         session.setAttribute("username", username);
         LogUtils.init();
-        // Khởi tạo các tham số để giao dịch
         String requestId = String.valueOf(System.currentTimeMillis());
         String orderId = VNPayConfig.getRandomNumber(6);
         double totalPrice = Double.valueOf(requestData.get("totalPrice").toString());
@@ -272,7 +264,6 @@ public class PaymentController {
         String returnUrl = momoReturnUrl;
         String notifyURL = momoNotifyUrl;
 
-        // Chọn môi trường và thanh toán bằng momo
         MoMoEndpoint momoEndpointConfig = new MoMoEndpoint(momoEndpoint, "/create");
         PartnerInfo momoPartnerInfo = new PartnerInfo(momoPartnerCode, momoAccessKey, momoSecretKey);
         CustomerEnvironment environment =
@@ -297,13 +288,14 @@ public class PaymentController {
         return "paymentMomoSuccess";
     }
 
+    @Operation(summary = "Create Stripe payment intent")
     @PermitAll
-    @PostMapping("/payment-stripe")
+    @PostMapping({"/payment-stripe", "/stripe/create"})
     @ResponseBody
     public ResponseEntity<StripeResponse> createPaymentIntent(@RequestBody @Valid StripeRequest request)
             throws StripeException {
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
-                .setAmount(request.getAmount() * 100L) // Chuyển đổi USD sang cent
+                .setAmount(request.getAmount() * 100L)
                 .putMetadata("productName", request.getProductName())
                 .setCurrency("usd")
                 .setAutomaticPaymentMethods(PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
@@ -313,12 +305,12 @@ public class PaymentController {
 
         PaymentIntent intent = PaymentIntent.create(params);
 
-        // Trả về clientSecret cho frontend
         StripeResponse responseDto = new StripeResponse(intent.getId(), intent.getClientSecret());
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
-    @GetMapping("/list_payment")
+    @Operation(summary = "Get all payment records")
+    @GetMapping({"/list_payment", "/list"})
     public ResponseEntity<List<com.rrms.rrms.models.Payment>> getAllPayments() {
         List<com.rrms.rrms.models.Payment> payments = paymentService.getAllPayments();
         return ResponseEntity.ok(payments);

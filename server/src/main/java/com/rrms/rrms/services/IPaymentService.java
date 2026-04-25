@@ -5,7 +5,11 @@ import java.util.List;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
 
-public interface IPayment {
+/**
+ * Service interface for Payment Gateway operations.
+ * Supports PayPal, VNPay, MoMo, and Stripe integrations.
+ */
+public interface IPaymentService {
     Payment createPayment(
             Double total,
             String currency,

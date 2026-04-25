@@ -6,7 +6,11 @@ import java.util.Map;
 
 import com.rrms.rrms.dto.response.AccountResponse;
 
-public interface IStatistics {
+/**
+ * Service interface for system-wide Statistics.
+ * Provides aggregate counts and trends for admin dashboards.
+ */
+public interface IStatisticsService {
     Long getTotalAccounts();
 
     Long getTotalTenants();

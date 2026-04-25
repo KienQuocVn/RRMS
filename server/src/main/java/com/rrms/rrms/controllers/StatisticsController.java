@@ -10,17 +10,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rrms.rrms.dto.response.AccountResponse;
 import com.rrms.rrms.dto.response.ApiResponse;
-import com.rrms.rrms.services.IStatistics;
+import com.rrms.rrms.services.IStatisticsService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Statistics Controller", description = "System-wide statistics for admin dashboards")
 @RestController
 @RequestMapping({"/statistics", "/api/v1/statistics"})
 @RequiredArgsConstructor
 public class StatisticsController {
 
-    private final IStatistics statisticsService;
+    private final IStatisticsService statisticsService;
 
+    @Operation(summary = "Get total account count")
     @GetMapping("/total-accounts")
     public ApiResponse<Long> getTotalAccounts() {
         return ApiResponse.<Long>builder()
@@ -29,6 +33,7 @@ public class StatisticsController {
                 .build();
     }
 
+    @Operation(summary = "Get total tenant count")
     @GetMapping("/total-tenants")
     public ApiResponse<Long> getTotalTenants() {
         return ApiResponse.<Long>builder()
@@ -37,6 +42,7 @@ public class StatisticsController {
                 .build();
     }
 
+    @Operation(summary = "Get total host account count")
     @GetMapping("/total-host-accounts")
     public ApiResponse<Long> getTotalHostAccounts() {
         return ApiResponse.<Long>builder()
@@ -45,6 +51,7 @@ public class StatisticsController {
                 .build();
     }
 
+    @Operation(summary = "Get total motel count")
     @GetMapping("/total-motels")
     public ApiResponse<Long> getTotalMotels() {
         return ApiResponse.<Long>builder()
@@ -53,6 +60,7 @@ public class StatisticsController {
                 .build();
     }
 
+    @Operation(summary = "Get account creation statistics for last week by day")
     @GetMapping("/total-account-last-week")
     public ApiResponse<Map<DayOfWeek, Long>> getAccountsCreatedLastWeek() {
         return ApiResponse.<Map<DayOfWeek, Long>>builder()
@@ -61,6 +69,7 @@ public class StatisticsController {
                 .build();
     }
 
+    @Operation(summary = "Get account creation statistics for current year by month")
     @GetMapping("/accounts-total-this-year")
     public ApiResponse<Map<Integer, Long>> getAccountsCreatedThisYear() {
         return ApiResponse.<Map<Integer, Long>>builder()
@@ -69,6 +78,7 @@ public class StatisticsController {
                 .build();
     }
 
+    @Operation(summary = "Get account creation statistics for last year by month")
     @GetMapping("/accounts-total-last-year")
     public ApiResponse<Map<Integer, Long>> getAccountsCreatedLastYear() {
         return ApiResponse.<Map<Integer, Long>>builder()
@@ -77,6 +87,7 @@ public class StatisticsController {
                 .build();
     }
 
+    @Operation(summary = "Get motel creation statistics by month")
     @GetMapping("/total-motel-by-month")
     public ApiResponse<Map<Integer, Long>> getTotalMotelsByMonth() {
         return ApiResponse.<Map<Integer, Long>>builder()
@@ -85,6 +96,7 @@ public class StatisticsController {
                 .build();
     }
 
+    @Operation(summary = "Get recently registered host accounts")
     @GetMapping("/account-recent-hosts")
     public ApiResponse<List<AccountResponse>> getRecentHosts() {
         return ApiResponse.<List<AccountResponse>>builder()

@@ -9,18 +9,22 @@ import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.PageResponse;
 import com.rrms.rrms.dto.response.TransactionResponse;
 import com.rrms.rrms.dto.response.TransactionSummaryResponse;
-import com.rrms.rrms.services.servicesImp.TransactionService;
+import com.rrms.rrms.services.ITransactionService;
 import com.rrms.rrms.utils.PageableUtils;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Transaction Controller", description = "Income/expense transaction management")
 @RestController
 @RequestMapping({"/transactions", "/api/v1/transactions"})
 @RequiredArgsConstructor
 public class TransactionController {
 
-    private final TransactionService transactionService;
+    private final ITransactionService transactionService;
 
+    @Operation(summary = "Get transactions by username with pagination")
     @GetMapping("/{username}")
     public ApiResponse<PageResponse<TransactionResponse>> getTransactionsByUsername(
             @PathVariable String username,
@@ -36,6 +40,7 @@ public class TransactionController {
                 .build();
     }
 
+    @Operation(summary = "Create a receipt (income transaction)")
     @PostMapping("/receipts")
     public ApiResponse<TransactionResponse> createReceipt(
             @RequestBody TransactionRequest transactionRequest, @RequestParam String username) {
@@ -46,6 +51,7 @@ public class TransactionController {
                 .build();
     }
 
+    @Operation(summary = "Create an expense transaction")
     @PostMapping("/expenses")
     public ApiResponse<TransactionResponse> createExpense(
             @RequestBody TransactionRequest transactionRequest, @RequestParam String username) {
@@ -56,6 +62,7 @@ public class TransactionController {
                 .build();
     }
 
+    @Operation(summary = "Delete a transaction by ID")
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteTransaction(@PathVariable UUID id, @RequestParam String username) {
         transactionService.deleteTransaction(id, username);
@@ -64,6 +71,7 @@ public class TransactionController {
                 .build();
     }
 
+    @Operation(summary = "Get transaction summary (income, expense, profit)")
     @GetMapping("/summary")
     public ApiResponse<TransactionSummaryResponse> getSummary(@RequestParam String username) {
         return ApiResponse.<TransactionSummaryResponse>builder()

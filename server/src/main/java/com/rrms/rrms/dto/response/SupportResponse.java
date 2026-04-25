@@ -7,6 +7,9 @@ import java.util.UUID;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+/**
+ * Response DTO for support ticket data.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,10 +18,10 @@ import lombok.experimental.FieldDefaults;
 public class SupportResponse {
     private UUID supportId;
     private AccountResponse account;
-    private String nameContact;
-    private String phoneContact;
+    private String contactName;
+    private String contactPhone;
     private Date dateOfStay;
-    private LocalDateTime createDate;
+    private LocalDateTime createdAt;
     private long priceFirst;
     private long priceEnd;
 }
