@@ -115,9 +115,7 @@ public class AuthenController {
     @PostMapping("/logout")
     public ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
         authorityService.logout(request);
-        return ApiResponse.<Void>builder()
-                .message("ÄÄƒng xuáº¥t thÃ nh cÃ´ng.")
-                .build();
+        return ApiResponse.<Void>builder().message("Đăng xuất thành công").build();
     }
 
     @PostMapping("/register")
