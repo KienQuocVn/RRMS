@@ -22,5 +22,5 @@ public class RoomReservationResponse {
     Double deposit;
     String note;
     ContractStatus status; // Status of the contract (ACTIVE, ENDED, etc.)
-    RoomResponse2 room; // Trả về đối tượng Room
+    RoomResponse room; // Trả về đối tượng Room
 }

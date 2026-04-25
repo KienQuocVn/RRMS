@@ -1,19 +1,16 @@
 package com.rrms.rrms.controllers;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.request.MotelServiceRequest;
 import com.rrms.rrms.dto.request.MotelServiceUpdateRequest;
+import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.MotelServiceResponse;
-import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.services.IMotelServiceService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,70 +24,81 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-@Tag(name = "Motel service Controller", description = "Controller for Motel service")
-@RequestMapping("/motel-services")
+@Tag(name = "Motel Service Controller", description = "Controller for Motel services mapping")
+@RequestMapping("/api/v1/motel-services")
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class MotelServiceController {
 
-    private final IMotelServiceService motelServiceService;
+    IMotelServiceService motelServiceService;
 
-    // Táº¡o má»›i má»™t MotelService
-    @PostMapping("/create")
-    public ResponseEntity<MotelServiceResponse> createMotelService(@RequestBody MotelServiceRequest request) {
+    @Operation(summary = "Create a new MotelService mapping")
+    @PostMapping
+    public ApiResponse<MotelServiceResponse> createMotelService(@RequestBody MotelServiceRequest request) {
+        log.info("Create motel service mapping");
         MotelServiceResponse response = motelServiceService.createMotelService(request);
-        return ResponseEntity.ok(response);
+        return ApiResponse.<MotelServiceResponse>builder()
+                .code(HttpStatus.CREATED.value())
+                .message("success")
+                .result(response)
+                .build();
     }
 
-    @PutMapping("/update-by-motel/{motelId}")
-    public ResponseEntity<MotelServiceResponse> updateMotelServiceByIdMotel(
+    @Operation(summary = "Update MotelService mapping by Motel ID")
+    @PutMapping("/motel/{motelId}")
+    public ApiResponse<MotelServiceResponse> updateMotelServiceByMotelId(
             @PathVariable UUID motelId, @RequestBody MotelServiceUpdateRequest request) {
+        log.info("Update motel service mapping by motel ID: {}", motelId);
         MotelServiceResponse updatedService = motelServiceService.updateMotelServiceById(motelId, request);
-        return ResponseEntity.ok(updatedService);
+        return ApiResponse.<MotelServiceResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(updatedService)
+                .build();
     }
 
-    // Cáº­p nháº­t má»™t MotelService
-    @PutMapping("/update/{id}")
-    public ResponseEntity<MotelServiceResponse> updateMotelService(
+    @Operation(summary = "Update a MotelService mapping by ID")
+    @PutMapping("/{id}")
+    public ApiResponse<MotelServiceResponse> updateMotelService(
             @PathVariable UUID id, @RequestBody MotelServiceUpdateRequest request) {
+        log.info("Update motel service mapping ID: {}", id);
         MotelServiceResponse response = motelServiceService.updateMotelService(id, request);
-        return ResponseEntity.ok(response);
+        return ApiResponse.<MotelServiceResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(response)
+                .build();
     }
 
-    // Láº¥y táº¥t cáº£ cÃ¡c MotelService
+    @Operation(summary = "Get all MotelService mappings")
     @GetMapping
-    public ResponseEntity<List<MotelServiceResponse>> getAllMotelServices() {
+    public ApiResponse<List<MotelServiceResponse>> getAllMotelServices() {
         List<MotelServiceResponse> responses = motelServiceService.getAllMotelServices();
-        return ResponseEntity.ok(responses);
+        return ApiResponse.<List<MotelServiceResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(responses)
+                .build();
     }
 
-    // Láº¥y má»™t MotelService theo ID
+    @Operation(summary = "Get a MotelService mapping by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<MotelServiceResponse> getMotelServiceById(@PathVariable UUID id) {
+    public ApiResponse<MotelServiceResponse> getMotelServiceById(@PathVariable UUID id) {
         MotelServiceResponse response = motelServiceService.getMotelServiceById(id);
-        return ResponseEntity.ok(response);
+        return ApiResponse.<MotelServiceResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(response)
+                .build();
     }
 
-    // XÃ³a má»™t MotelService theo ID
-    @Operation(summary = "Delete an existing motelservice")
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Map<String, Object>> deleteMotelService(@PathVariable UUID id) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            motelServiceService.deleteMotelService(id);
-            response.put("status", true);
-            response.put("message", "MotelService deleted successfully");
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        } catch (AppException ex) {
-            response.put("status", false);
-            response.put("message", "Error deleting MotelService: " + ex.getMessage());
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } catch (Exception ex) {
-            response.put("status", false);
-            response.put("message", "MotelService deletion failed: " + ex.getMessage());
-            response.put("data", null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    @Operation(summary = "Delete an existing MotelService mapping")
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteMotelService(@PathVariable UUID id) {
+        log.info("Delete motel service mapping ID: {}", id);
+        motelServiceService.deleteMotelService(id);
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("MotelService deleted successfully")
+                .build();
     }
 }

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import com.rrms.rrms.dto.request.TypeRoomRequest;
 import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.TypeRoomResponse;
-import com.rrms.rrms.services.ITypeRoom;
+import com.rrms.rrms.services.ITypeRoomService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,34 +18,34 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "Type Room Controller")
+@Tag(name = "Type Room Controller", description = "Controller for Room Types")
 @RestController
 @Slf4j
-@RequestMapping("/type-rooms")
+@RequestMapping("/api/v1/type-rooms")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class TypeRoomController {
-    ITypeRoom typeRoomService;
+    ITypeRoomService typeRoomService;
 
-    @Operation(summary = "Create type room")
+    @Operation(summary = "Create a new room type")
     @PostMapping
     public ApiResponse<TypeRoomResponse> createTypeRoom(@RequestBody TypeRoomRequest typeRoomRequest) {
-        log.info("Create type room: {}", typeRoomRequest);
+        log.info("Create type room: {}", typeRoomRequest.getName());
         return ApiResponse.<TypeRoomResponse>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("Create type room successfully")
+                .message("success")
                 .result(typeRoomService.createTypeRoom(typeRoomRequest))
                 .build();
     }
 
-    @Operation(summary = "Get all type rooms")
+    @Operation(summary = "Get all room types")
     @GetMapping
     public ApiResponse<List<TypeRoomResponse>> findAllTypeRooms() {
         log.info("Get all type rooms");
         return ApiResponse.<List<TypeRoomResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Fetch all type rooms successfully")
+                .message("success")
                 .result(typeRoomService.findAllTypeRooms())
                 .build();
     }

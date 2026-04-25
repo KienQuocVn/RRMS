@@ -18,7 +18,7 @@ import com.rrms.rrms.models.RoomService;
 import com.rrms.rrms.repositories.MotelServiceRepository;
 import com.rrms.rrms.repositories.RoomRepository;
 import com.rrms.rrms.repositories.RoomServiceRepository;
-import com.rrms.rrms.services.IRoomService;
+import com.rrms.rrms.services.IRoomServiceService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @Slf4j
-public class RoomServiceService implements IRoomService {
+public class RoomServiceService implements IRoomServiceService {
 
     RoomServiceRepository roomServiceRepository;
     RoomRepository roomRepository;

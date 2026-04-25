@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.rrms.rrms.dto.request.BulletinBoardRoomRequest;
 import com.rrms.rrms.dto.request.RoomRequest;
-import com.rrms.rrms.dto.request.RoomRequest2;
 import com.rrms.rrms.dto.response.*;
 import com.rrms.rrms.enums.ErrorCode;
 import com.rrms.rrms.exceptions.AppException;
@@ -22,7 +22,7 @@ import com.rrms.rrms.repositories.AccountRepository;
 import com.rrms.rrms.repositories.MotelRepository;
 import com.rrms.rrms.repositories.RoomRepository;
 import com.rrms.rrms.repositories.RoomServiceRepository;
-import com.rrms.rrms.services.IRoom;
+import com.rrms.rrms.services.IRoomService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ import lombok.experimental.FieldDefaults;
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class RoomService implements IRoom {
+public class RoomService implements IRoomService {
     RoomRepository roomRepository;
     MotelRepository motelRepository;
     AccountRepository accountRepository;
@@ -45,89 +45,9 @@ public class RoomService implements IRoom {
     }
 
     @Override
-    public RoomDetailResponse createRoom(RoomRequest roomRequest) {
-
-        // Account account = accountRepository
-        // .findByUsername(roomRequest.getUsername())
-        // .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
-        //
-        // Motel motel = motelRepository.save(Motel.builder()
-        // .account(account)
-        // .motelName(roomRequest.getNameRoom())
-        // .address(roomRequest.getAddress())
-        // .build());
-        //
-        // Room room = roomMapper.toRoom(roomRequest);
-        // room.setMotel(motel);
-        //
-        // List<com.rrms.rrms.models.RoomService> roomServices =
-        // new ArrayList<>(roomMapper.mapRoomServices(roomRequest.getRoomServices()));
-        //
-        // if (roomRequest.getPriceElectric() != 0) {
-        // com.rrms.rrms.models.Service newService = new com.rrms.rrms.models.Service();
-        // // log.info("Price electric: {}", roomRequest.getPriceElectric());
-        //
-        // newService.setNameService("Điện");
-        // serviceRepository.save(newService);
-        // roomServices.add(com.rrms.rrms.models.RoomService.builder()
-        // .room(room)
-        // .service(newService)
-        // .build());
-        // }
-        //
-        // if (roomRequest.getPriceWater() != 0) {
-        // com.rrms.rrms.models.Service newService = new com.rrms.rrms.models.Service();
-        // // log.info("Price water: {}", roomRequest.getPriceWater());
-        //
-        // newService.setNameService("Nước");
-        // serviceRepository.save(newService);
-        // roomServices.add(com.rrms.rrms.models.RoomService.builder()
-        // .room(room)
-        // .service(newService)
-        // .build());
-        // }
-        //
-        // Room finalRoom1 = room;
-        // roomServices.forEach(roomService -> {
-        // if (roomService.getService() != null &&
-        // roomService.getService().getServiceId() != null) {
-        //
-        // com.rrms.rrms.models.Service service = serviceRepository
-        // .findById(roomService.getService().getServiceId())
-        // .orElseThrow(() -> new AppException(ErrorCode.SERVICE_NOT_FOUND));
-        // roomService.setService(service);
-        // } else {
-        //
-        // com.rrms.rrms.models.Service newService = new com.rrms.rrms.models.Service();
-        // newService.setNameService(roomService.getService().getNameService());
-        //
-        // newService = serviceRepository.save(newService);
-        // roomService.setService(newService);
-        // }
-        //
-        // roomService.setRoom(finalRoom1);
-        // });
-        //
-        // room.setRoomServices(roomServices);
-        //
-        // List<RoomImage> roomImages =
-        // roomMapper.mapRoomImages(roomRequest.getRoomImages());
-        // Room finalRoom = room;
-        // roomImages.forEach(image -> image.setRoom(finalRoom));
-        // room.setRoomImages(roomImages);
-        //
-        // room = roomRepository.save(room);
-        //
-        // return roomMapper.toRoomDetailResponse(room);
+    public RoomDetailResponse createRoom(BulletinBoardRoomRequest roomRequest) {
         return null;
     }
-
-    // @Override
-    // public List<BulletinBoardSearchResponse> getRooms() {
-    // return
-    // bulletinBoardRepository.findAll().stream().map(bulletinBoardMapper::toBulletinBoardSearchResponse)
-    // .toList();
-    // }
 
     @Override
     public List<PostRoomTableResponse> getPostRoomTable(String username) {
@@ -153,10 +73,8 @@ public class RoomService implements IRoom {
         return result;
     }
 
-    // lam bieng sua ben tren nen tao luon ben duoi
-
     @Override
-    public RoomResponse2 createRoom2(RoomRequest2 roomRequest) {
+    public RoomResponse createRoom(RoomRequest roomRequest) {
         Motel motel = motelRepository
                 .findById(roomRequest.getMotelId())
                 .orElseThrow(() -> new IllegalArgumentException("Motel not found"));
@@ -167,19 +85,19 @@ public class RoomService implements IRoom {
     }
 
     @Override
-    public RoomResponse2 getRoomById2(UUID roomId) {
+    public RoomResponse getRoomByIdStandard(UUID roomId) {
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new IllegalArgumentException("Room not found"));
         return convertToResponse(room);
     }
 
     @Override
-    public List<RoomResponse2> getAllRooms() {
+    public List<RoomResponse> getAllRooms() {
         List<Room> rooms = roomRepository.findAll();
         return rooms.stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
     @Override
-    public RoomResponse2 updateRoom2(UUID roomId, RoomRequest2 roomRequest) {
+    public RoomResponse updateRoom(UUID roomId, RoomRequest roomRequest) {
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
         updateEntityFromRequest(room, roomRequest);
@@ -196,7 +114,7 @@ public class RoomService implements IRoom {
     }
 
     @Override
-    public void deleteRoom2(UUID roomId) {
+    public void deleteRoomStandard(UUID roomId) {
         if (!roomRepository.existsById(roomId)) {
             throw new IllegalArgumentException("Room not found");
         }
@@ -204,46 +122,30 @@ public class RoomService implements IRoom {
     }
 
     @Override
-    public List<RoomResponse2> getRoomsByMotelId(UUID motelId) {
-        // Kiểm tra xem Motel có tồn tại không
+    public List<RoomResponse> getRoomsByMotelId(UUID motelId) {
         Motel motel =
                 motelRepository.findById(motelId).orElseThrow(() -> new IllegalArgumentException("Motel not found"));
-
-        // Lấy danh sách phòng theo motelId
         List<Room> rooms = roomRepository.findByMotel(motel);
-
-        // Chuyển đổi danh sách Room sang RoomResponse
         return rooms.stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<RoomResponse2> getRoomsByMotelIdNullContract(UUID motelId) {
-        // Kiểm tra xem Motel có tồn tại không
+    public List<RoomResponse> getRoomsByMotelIdNullContract(UUID motelId) {
         Motel motel =
                 motelRepository.findById(motelId).orElseThrow(() -> new IllegalArgumentException("Motel not found"));
-
-        // Lấy danh sách phòng theo motelId
         List<Room> rooms = roomRepository.findRoomsWithoutContractsByMotel(motel);
-
-        // Chuyển đổi danh sách Room sang RoomResponse
         return rooms.stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<RoomResponse2> getRoomsByMotelIdContract(UUID motelId) {
+    public List<RoomResponse> getRoomsByMotelIdContract(UUID motelId) {
         motelRepository.findById(motelId).orElseThrow(() -> new IllegalArgumentException("Motel not found"));
-
-        // Lấy danh sách phòng có hợp đồng
         List<Room> rooms = roomRepository.findRoomsWithContractsByMotelId(motelId);
-
-        // Chuyển đổi danh sách Room sang RoomResponse2
         return rooms.stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
-    // Chuyển đổi từ Room sang RoomResponse
-
-    private RoomResponse2 convertToResponse(Room room) {
-        RoomResponse2 response = new RoomResponse2();
+    private RoomResponse convertToResponse(Room room) {
+        RoomResponse response = new RoomResponse();
         response.setRoomId(room.getRoomId());
         response.setMotelId(room.getMotel().getMotelId());
         response.setName(room.getName());
@@ -255,11 +157,9 @@ public class RoomService implements IRoom {
         response.setStatus(room.getStatus());
         response.setFinance(room.getFinance());
         response.setDescription(room.getDescription());
-        // Lấy danh sách dịch vụ cho phòng
-        List<com.rrms.rrms.models.RoomService> roomServices =
-                roomServiceRepository.findByRoom(room); // Thay đổi phương thức cho phù hợp
 
-        // Chuyển đổi danh sách dịch vụ sang RoomServiceResponse
+        List<com.rrms.rrms.models.RoomService> roomServices = roomServiceRepository.findByRoom(room);
+
         List<RoomServiceResponse> serviceResponses = roomServices.stream()
                 .map(service -> new RoomServiceResponse(
                         service.getRoomServiceId(),
@@ -269,10 +169,8 @@ public class RoomService implements IRoom {
                 .collect(Collectors.toList());
 
         response.setServices(serviceResponses);
-        // Lấy hợp đồng mới nhất từ danh sách `room.getContracts()`
-        ContractResponse latestContract = Optional.ofNullable(room.getContracts())
-                .orElse(List.of()) // Trả về danh sách rỗng nếu room.getContracts() là null
-                .stream()
+
+        ContractResponse latestContract = Optional.ofNullable(room.getContracts()).orElse(List.of()).stream()
                 .map(contract -> ContractResponse.builder()
                         .contractId(contract.getContractId())
                         .moveInDate(contract.getMoveinDate())
@@ -289,11 +187,11 @@ public class RoomService implements IRoom {
                         .countTenant(contract.getCountTenant())
                         .status(contract.getStatus())
                         .build())
-                .max(Comparator.comparing(ContractResponse::getCreateDate)) // Lấy hợp đồng có ngày tạo lớn nhất
-                .orElse(null); // Trả về null nếu không có hợp đồng nào
+                .max(Comparator.comparing(ContractResponse::getCreateDate))
+                .orElse(null);
 
-        response.setLatestContract(latestContract); // Gắn hợp đồng mới nhất vào response
-        // Chuyển đổi ReserveAPlace (nếu có) thành ReserveAPlaceResponse
+        response.setLatestContract(latestContract);
+
         if (room.getReserveAPlaces() != null && !room.getReserveAPlaces().isEmpty()) {
             RoomReservationResponse roomReservationResponse =
                     convertToRoomReservationResponse(room.getReserveAPlaces().get(0));
@@ -303,8 +201,7 @@ public class RoomService implements IRoom {
         return response;
     }
 
-    // Chuyển đổi từ RoomRequest sang Room
-    private Room convertToEntity(RoomRequest2 roomRequest) {
+    private Room convertToEntity(RoomRequest roomRequest) {
         Room room = new Room();
         room.setName(roomRequest.getName());
         room.setGroup(roomRequest.getGroup());
@@ -318,8 +215,7 @@ public class RoomService implements IRoom {
         return room;
     }
 
-    // Cập nhật Room từ RoomRequest (chỉ cập nhật các trường cần thiết)
-    private void updateEntityFromRequest(Room room, RoomRequest2 roomRequest) {
+    private void updateEntityFromRequest(Room room, RoomRequest roomRequest) {
         if (roomRequest.getName() != null) room.setName(roomRequest.getName());
         if (roomRequest.getGroup() != null) room.setGroup(roomRequest.getGroup());
         if (roomRequest.getPrice() != null) room.setPrice(roomRequest.getPrice());

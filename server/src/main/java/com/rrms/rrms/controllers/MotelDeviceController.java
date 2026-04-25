@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import com.rrms.rrms.dto.request.MotelDeviceRequest;
 import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.MotelDeviceResponse;
-import com.rrms.rrms.services.servicesImp.MotelDeviceService;
+import com.rrms.rrms.services.IMotelDeviceService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,18 +22,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-@Tag(name = "MotelDevice Controller", description = "Controller for MotelDevice")
+@Tag(name = "Motel Device Controller", description = "Controller for mapping devices to motels")
 @RestController
-@RequestMapping("/moteldevices")
+@RequestMapping("/api/v1/motel-devices")
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class MotelDeviceController {
-    MotelDeviceService motelDeviceService;
 
-    @Operation(summary = "get All moteldevice by motelid")
-    @GetMapping("/{motelId}")
+    IMotelDeviceService motelDeviceService;
+
+    @Operation(summary = "Get all motel devices by motel ID")
+    @GetMapping("/motel/{motelId}")
     public ApiResponse<List<MotelDeviceResponse>> getMotelDevices(@PathVariable("motelId") UUID motelId) {
         List<MotelDeviceResponse> motelResponses = motelDeviceService.getAllMotelDevicesByMotel(motelId);
-        log.info("Get all moteldevices successfully");
+        log.info("Get all motel devices successfully for motel: {}", motelId);
         return ApiResponse.<List<MotelDeviceResponse>>builder()
                 .code(HttpStatus.OK.value())
                 .message("success")
@@ -41,44 +42,41 @@ public class MotelDeviceController {
                 .build();
     }
 
-    @Operation(summary = "insert moteldevice")
-    @PostMapping()
+    @Operation(summary = "Insert a new motel device")
+    @PostMapping
     public ApiResponse<MotelDeviceResponse> insertMotelDevice(@RequestBody MotelDeviceRequest motelDeviceRequest) {
         MotelDeviceResponse motelResponses = motelDeviceService.insertMotelDevice(motelDeviceRequest);
         if (motelResponses != null) {
-            log.info("Insert moteldevices successfully");
+            log.info("Insert motel device successfully");
             return ApiResponse.<MotelDeviceResponse>builder()
-                    .code(HttpStatus.OK.value())
+                    .code(HttpStatus.CREATED.value())
                     .message("success")
                     .result(motelResponses)
                     .build();
         } else {
-            log.info("Insert moteldevices failed");
+            log.error("Insert motel device failed");
             return ApiResponse.<MotelDeviceResponse>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
                     .message("error")
-                    .result(null)
                     .build();
         }
     }
 
-    @Operation(summary = "Delete moteldevice by id")
+    @Operation(summary = "Delete motel device by ID")
     @DeleteMapping("/{motelDeviceId}")
-    public ApiResponse<Boolean> deleteMotelDevice(@PathVariable("motelDeviceId") UUID motelDeviceId) {
+    public ApiResponse<Void> deleteMotelDevice(@PathVariable("motelDeviceId") UUID motelDeviceId) {
         boolean result = motelDeviceService.deleteMotelDevice(motelDeviceId);
         if (result) {
-            log.info("Delete moteldevice successfully");
-            return ApiResponse.<Boolean>builder()
+            log.info("Delete motel device successfully");
+            return ApiResponse.<Void>builder()
                     .code(HttpStatus.OK.value())
                     .message("success")
-                    .result(true)
                     .build();
         } else {
-            log.error("Delete moteldevice failed ");
-            return ApiResponse.<Boolean>builder()
+            log.error("Delete motel device failed");
+            return ApiResponse.<Void>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
                     .message("error")
-                    .result(false)
                     .build();
         }
     }

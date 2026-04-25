@@ -12,7 +12,7 @@ import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.TypeRoomMapper;
 import com.rrms.rrms.models.TypeRoom;
 import com.rrms.rrms.repositories.TypeRoomRepository;
-import com.rrms.rrms.services.ITypeRoom;
+import com.rrms.rrms.services.ITypeRoomService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import lombok.experimental.FieldDefaults;
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class TypeRoomService implements ITypeRoom {
+public class TypeRoomService implements ITypeRoomService {
 
     TypeRoomRepository typeRoomRepository;
     TypeRoomMapper typeRoomMapper;

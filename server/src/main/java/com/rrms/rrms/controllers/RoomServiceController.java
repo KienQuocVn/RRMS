@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +11,7 @@ import com.rrms.rrms.dto.request.RoomServiceRequest;
 import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.RoomServiceDetailResponse;
 import com.rrms.rrms.dto.response.RoomServiceResponse;
-import com.rrms.rrms.services.IRoomService;
+import com.rrms.rrms.services.IRoomServiceService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,72 +20,80 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "Room Service Controller")
+@Tag(name = "Room Service Mapping Controller", description = "Controller for mapping utilities/amenities to rooms")
 @RestController
 @Slf4j
-@RequestMapping("/room-service")
+@RequestMapping("/api/v1/room-services")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class RoomServiceController {
-    IRoomService roomServiceService;
+    IRoomServiceService roomServiceService;
 
-    @Operation(summary = "Create room service")
+    @Operation(summary = "Create room service mapping")
     @PostMapping
     public ApiResponse<RoomServiceResponse> createRoomService(@RequestBody RoomServiceRequest roomServiceRequest) {
-        log.info("Create room service");
+        log.info("Create room service mapping");
+        RoomServiceResponse response = roomServiceService.createRoomService(roomServiceRequest);
         return ApiResponse.<RoomServiceResponse>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("Create room service success")
-                .result(roomServiceService.createRoomService(roomServiceRequest))
+                .message("success")
+                .result(response)
                 .build();
     }
 
-    @Operation(summary = "Create room service")
-    @PostMapping("/create")
-    public ResponseEntity<RoomServiceResponse> createRoomService2(@RequestBody RoomServiceRequest roomServiceRequest) {
-        log.debug(
-                "Create room service payload - roomId: {}, serviceId: {}, quantity: {}",
-                roomServiceRequest.getRoomId(),
-                roomServiceRequest.getServiceId(),
-                roomServiceRequest.getQuantity());
-        RoomServiceResponse roomServiceResponse = roomServiceService.createRoomService2(roomServiceRequest);
-        return new ResponseEntity<>(roomServiceResponse, HttpStatus.CREATED);
-    }
-
-    // Endpoint để cập nhật RoomService
+    @Operation(summary = "Update room service mapping by ID")
     @PutMapping("/{roomServiceId}")
-    public ResponseEntity<RoomServiceResponse> updateRoomService(
+    public ApiResponse<RoomServiceResponse> updateRoomService(
             @PathVariable UUID roomServiceId, @RequestBody RoomServiceRequest request) {
         RoomServiceResponse response = roomServiceService.updateRoomService(roomServiceId, request);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ApiResponse.<RoomServiceResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(response)
+                .build();
     }
 
-    // Endpoint để lấy RoomService theo ID
+    @Operation(summary = "Get room service mapping by ID")
     @GetMapping("/{roomServiceId}")
-    public ResponseEntity<RoomServiceResponse> getRoomServiceById(@PathVariable UUID roomServiceId) {
+    public ApiResponse<RoomServiceResponse> getRoomServiceById(@PathVariable UUID roomServiceId) {
         RoomServiceResponse response = roomServiceService.getRoomServiceById(roomServiceId);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ApiResponse.<RoomServiceResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(response)
+                .build();
     }
 
-    // Endpoint để xóa RoomService
+    @Operation(summary = "Delete room service mapping")
     @DeleteMapping("/{roomServiceId}")
-    public ResponseEntity<Void> deleteRoomService(@PathVariable UUID roomServiceId) {
+    public ApiResponse<Void> deleteRoomService(@PathVariable UUID roomServiceId) {
         roomServiceService.deleteRoomService(roomServiceId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Deleted successfully")
+                .build();
     }
 
-    // Endpoint để lấy tất cả RoomService
+    @Operation(summary = "Get all room service mappings")
     @GetMapping
-    public ResponseEntity<List<RoomServiceResponse>> findAll() {
+    public ApiResponse<List<RoomServiceResponse>> findAll() {
         List<RoomServiceResponse> response = roomServiceService.findAll();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ApiResponse.<List<RoomServiceResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(response)
+                .build();
     }
 
-    // Endpoint để lấy RoomService theo Room ID
+    @Operation(summary = "Get room services by Room ID")
     @GetMapping("/room/{roomId}")
-    public ResponseEntity<List<RoomServiceDetailResponse>> findByRoomId(@PathVariable UUID roomId) {
+    public ApiResponse<List<RoomServiceDetailResponse>> findByRoomId(@PathVariable UUID roomId) {
         List<RoomServiceDetailResponse> response = roomServiceService.findByRoomId(roomId);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ApiResponse.<List<RoomServiceDetailResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(response)
+                .build();
     }
 }

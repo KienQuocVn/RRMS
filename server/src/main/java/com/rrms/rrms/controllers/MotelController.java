@@ -22,17 +22,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-@Tag(name = "Motel Controller", description = "Controller for Motel")
+@Tag(name = "Motel Controller", description = "Controller for Motel operations (ADMIN & HOST)")
 @RestController
-@RequestMapping("/motels")
+@RequestMapping("/api/v1/motels")
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class MotelController {
     IMotelService motelService;
 
     @Operation(summary = "Get all motels")
-    @GetMapping()
+    @GetMapping
     public ApiResponse<List<MotelResponse>> getMotels() {
-
         List<MotelResponse> motelResponses = motelService.findAll();
         log.info("Get all motels successfully");
         return ApiResponse.<List<MotelResponse>>builder()
@@ -42,21 +41,9 @@ public class MotelController {
                 .build();
     }
 
-    @Operation(summary = "Get motel by name")
-    @GetMapping("/{name}")
-    public ApiResponse<List<MotelResponse>> getMotel(@PathVariable String name) {
-        List<MotelResponse> motelResponses = motelService.findAllByMotelName(name);
-        log.info("Get motel successfully: {}", name);
-        return ApiResponse.<List<MotelResponse>>builder()
-                .code(HttpStatus.OK.value())
-                .message("success")
-                .result(motelResponses)
-                .build();
-    }
-
-    @Operation(summary = "Get motel by id")
-    @GetMapping("/get-motel-id")
-    public ApiResponse<MotelResponse> getMotelbyid(@RequestParam UUID id) {
+    @Operation(summary = "Get motel by ID")
+    @GetMapping("/{id}")
+    public ApiResponse<MotelResponse> getMotelById(@PathVariable UUID id) {
         MotelResponse motelResponse = motelService.findById(id);
         return ApiResponse.<MotelResponse>builder()
                 .code(HttpStatus.OK.value())
@@ -65,8 +52,9 @@ public class MotelController {
                 .build();
     }
 
-    @GetMapping("/get-motel-account")
-    public ApiResponse<List<MotelResponse>> getMotelbyaccount(@RequestParam String username) {
+    @Operation(summary = "Get motels by account username")
+    @GetMapping("/account/{username}")
+    public ApiResponse<List<MotelResponse>> getMotelsByAccount(@PathVariable String username) {
         List<MotelResponse> motelResponses = motelService.findMotelByAccount_Username(username);
         return ApiResponse.<List<MotelResponse>>builder()
                 .code(HttpStatus.OK.value())
@@ -75,11 +63,11 @@ public class MotelController {
                 .build();
     }
 
-    @Operation(summary = "Add motel by id")
-    @PostMapping("/create")
-    public ApiResponse<MotelResponse> insertMotel(@RequestBody MotelRequest motelRequest) {
+    @Operation(summary = "Create a new motel")
+    @PostMapping
+    public ApiResponse<MotelResponse> createMotel(@RequestBody MotelRequest motelRequest) {
         MotelResponse motelResponse = motelService.insert(motelRequest);
-        log.info("Insert motel successfully");
+        log.info("Create motel successfully");
         return ApiResponse.<MotelResponse>builder()
                 .code(HttpStatus.CREATED.value())
                 .message("success")
@@ -87,7 +75,7 @@ public class MotelController {
                 .build();
     }
 
-    @Operation(summary = "Update motel by id")
+    @Operation(summary = "Update motel by ID")
     @PutMapping("/{id}")
     public ApiResponse<MotelResponse> updateMotel(@PathVariable("id") UUID id, @RequestBody MotelRequest motelRequest) {
         MotelResponse motelResponse = motelService.update(id, motelRequest);
@@ -99,7 +87,7 @@ public class MotelController {
                 .build();
     }
 
-    @Operation(summary = "Delete motel by id")
+    @Operation(summary = "Delete motel by ID")
     @DeleteMapping("/{id}")
     public ApiResponse<Boolean> deleteMotel(@PathVariable("id") UUID id) {
         try {

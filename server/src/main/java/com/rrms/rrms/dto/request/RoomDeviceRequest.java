@@ -1,7 +1,7 @@
 package com.rrms.rrms.dto.request;
 
 import com.rrms.rrms.dto.response.MotelDeviceResponse;
-import com.rrms.rrms.dto.response.RoomResponse2;
+import com.rrms.rrms.dto.response.RoomResponse;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RoomDeviceRequest {
 
-    RoomResponse2 room;
+    RoomResponse room;
     MotelDeviceResponse motelDevice;
     int quantity;
 }

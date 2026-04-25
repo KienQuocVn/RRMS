@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.RoomReservationRequest;
 import com.rrms.rrms.dto.response.RoomReservationResponse;
-import com.rrms.rrms.dto.response.RoomResponse2;
+import com.rrms.rrms.dto.response.RoomResponse;
 import com.rrms.rrms.models.Reserve_a_place;
 import com.rrms.rrms.models.Room;
 import com.rrms.rrms.repositories.RoomRepository;
@@ -110,7 +110,7 @@ public class RoomReservationService implements IRoomReservationService {
     }
 
     private RoomReservationResponse mapToResponse(Reserve_a_place reserveAPlace) {
-        RoomResponse2 roomResponse = RoomResponse2.builder()
+        RoomResponse roomResponse = RoomResponse.builder()
                 .roomId(reserveAPlace.getRoom().getRoomId())
                 .name(reserveAPlace.getRoom().getName())
                 .price(reserveAPlace.getRoom().getPrice())

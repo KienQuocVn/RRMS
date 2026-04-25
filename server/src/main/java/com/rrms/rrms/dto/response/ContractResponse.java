@@ -17,7 +17,7 @@ import lombok.experimental.FieldDefaults;
 public class ContractResponse {
 
     private UUID contractId; // Contract ID
-    private RoomResponse2 room; // Room ID
+    private RoomResponse room; // Room ID
     private TenantResponse tenant; // Tenant ID
     private AccountResponse username; // Landlord's username
     private ContractTemplateResponse contractTemplate;

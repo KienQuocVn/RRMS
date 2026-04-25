@@ -3,82 +3,120 @@ package com.rrms.rrms.controllers;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.rrms.rrms.dto.request.RoomRequest2;
-import com.rrms.rrms.dto.response.RoomResponse2;
-import com.rrms.rrms.services.IRoom;
+import com.rrms.rrms.dto.request.RoomRequest;
+import com.rrms.rrms.dto.response.ApiResponse;
+import com.rrms.rrms.dto.response.RoomResponse;
+import com.rrms.rrms.services.IRoomService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "Room Controller", description = "Controller for Room")
+@Tag(name = "Room Controller", description = "Controller for Room operations (ADMIN & HOST)")
 @RestController
 @Slf4j
-@RequestMapping("/room")
+@RequestMapping("/api/v1/rooms")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class RoomController {
 
-    IRoom roomService;
+    IRoomService roomService;
 
-    // API tạo mới một phòng
+    @Operation(summary = "Create a new room")
     @PostMapping
-    public ResponseEntity<RoomResponse2> createRoom2(@RequestBody RoomRequest2 roomRequest) {
-        RoomResponse2 createdRoom = roomService.createRoom2(roomRequest);
-        return ResponseEntity.ok(createdRoom);
+    public ApiResponse<RoomResponse> createRoom(@RequestBody RoomRequest roomRequest) {
+        log.info("Create room for motelId: {}", roomRequest.getMotelId());
+        RoomResponse createdRoom = roomService.createRoom(roomRequest);
+        return ApiResponse.<RoomResponse>builder()
+                .code(HttpStatus.CREATED.value())
+                .message("success")
+                .result(createdRoom)
+                .build();
     }
 
-    // API lấy thông tin chi tiết phòng theo roomId
+    @Operation(summary = "Get room details by ID")
     @GetMapping("/{roomId}")
-    public ResponseEntity<RoomResponse2> getRoomById2(@PathVariable UUID roomId) {
-        RoomResponse2 roomDetail = roomService.getRoomById2(roomId);
-        return ResponseEntity.ok(roomDetail);
+    public ApiResponse<RoomResponse> getRoomById(@PathVariable UUID roomId) {
+        RoomResponse roomDetail = roomService.getRoomByIdStandard(roomId);
+        return ApiResponse.<RoomResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(roomDetail)
+                .build();
     }
 
-    // API lấy danh sách tất cả các phòng
+    @Operation(summary = "Get all rooms")
     @GetMapping
-    public ResponseEntity<List<RoomResponse2>> getAllRooms2() {
-        List<RoomResponse2> rooms = roomService.getAllRooms();
-        return ResponseEntity.ok(rooms);
+    public ApiResponse<List<RoomResponse>> getAllRooms() {
+        List<RoomResponse> rooms = roomService.getAllRooms();
+        return ApiResponse.<List<RoomResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(rooms)
+                .build();
     }
 
-    // API cập nhật thông tin phòng theo roomId
+    @Operation(summary = "Update room by ID")
     @PutMapping("/{roomId}")
-    public ResponseEntity<RoomResponse2> updateRoom2(@PathVariable UUID roomId, @RequestBody RoomRequest2 roomRequest) {
-        RoomResponse2 updatedRoom = roomService.updateRoom2(roomId, roomRequest);
-        return ResponseEntity.ok(updatedRoom);
+    public ApiResponse<RoomResponse> updateRoom(@PathVariable UUID roomId, @RequestBody RoomRequest roomRequest) {
+        log.info("Update room ID: {}", roomId);
+        RoomResponse updatedRoom = roomService.updateRoom(roomId, roomRequest);
+        return ApiResponse.<RoomResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(updatedRoom)
+                .build();
     }
 
-    // API xóa phòng theo roomId
+    @Operation(summary = "Delete room by ID")
     @DeleteMapping("/{roomId}")
-    public ResponseEntity<String> deleteRoom2(@PathVariable UUID roomId) {
-        roomService.deleteRoom2(roomId);
-        return ResponseEntity.ok("Room deleted successfully.");
+    public ApiResponse<Void> deleteRoom(@PathVariable UUID roomId) {
+        log.info("Delete room ID: {}", roomId);
+        roomService.deleteRoomStandard(roomId);
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Room deleted successfully")
+                .build();
     }
 
-    // API lấy danh sách phòng theo motelId
+    @Operation(summary = "Get all rooms by motel ID")
     @GetMapping("/motel/{motelId}")
-    public ResponseEntity<List<RoomResponse2>> getRoomsByMotelId(@PathVariable UUID motelId) {
-        List<RoomResponse2> rooms = roomService.getRoomsByMotelId(motelId);
-        return ResponseEntity.ok(rooms);
+    public ApiResponse<List<RoomResponse>> getRoomsByMotelId(@PathVariable UUID motelId) {
+        List<RoomResponse> rooms = roomService.getRoomsByMotelId(motelId);
+        return ApiResponse.<List<RoomResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(rooms)
+                .build();
     }
 
-    @GetMapping("/motel/W-Contract/{motelId}")
-    public ResponseEntity<List<RoomResponse2>> getRoomsByMotelIdWContract(@PathVariable UUID motelId) {
-        List<RoomResponse2> rooms = roomService.getRoomsByMotelIdNullContract(motelId);
-        return ResponseEntity.ok(rooms);
+    @Operation(summary = "Get all rooms by motel ID without active contracts")
+    @GetMapping("/motel/{motelId}/without-contract")
+    public ApiResponse<List<RoomResponse>> getRoomsByMotelIdWithoutContract(@PathVariable UUID motelId) {
+        List<RoomResponse> rooms = roomService.getRoomsByMotelIdNullContract(motelId);
+        return ApiResponse.<List<RoomResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(rooms)
+                .build();
     }
 
-    @GetMapping("/motel/Y-Contract/{motelId}")
-    public ResponseEntity<List<RoomResponse2>> getRoomsByMotelIdContract(@PathVariable UUID motelId) {
-        List<RoomResponse2> rooms = roomService.getRoomsByMotelIdContract(motelId);
-        return ResponseEntity.ok(rooms);
+    @Operation(summary = "Get all rooms by motel ID with active contracts")
+    @GetMapping("/motel/{motelId}/with-contract")
+    public ApiResponse<List<RoomResponse>> getRoomsByMotelIdWithContract(@PathVariable UUID motelId) {
+        List<RoomResponse> rooms = roomService.getRoomsByMotelIdContract(motelId);
+        return ApiResponse.<List<RoomResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .result(rooms)
+                .build();
     }
 }

@@ -15,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 public class RoomDeviceResponse {
     UUID roomDeviceId;
 
-    RoomResponse2 room;
+    RoomResponse room;
 
     MotelDeviceResponse motelDevice;
 

@@ -13,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class RoomResponse2 {
+public class RoomResponse {
     private UUID roomId;
     private UUID motelId;
     private String name;

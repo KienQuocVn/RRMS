@@ -3,22 +3,37 @@ package com.rrms.rrms.services;
 import java.util.List;
 import java.util.UUID;
 
-import com.rrms.rrms.dto.request.RoomServiceRequest;
-import com.rrms.rrms.dto.response.RoomServiceDetailResponse;
-import com.rrms.rrms.dto.response.RoomServiceResponse;
+import com.rrms.rrms.dto.request.BulletinBoardRoomRequest;
+import com.rrms.rrms.dto.request.RoomRequest;
+import com.rrms.rrms.dto.response.PostRoomTableResponse;
+import com.rrms.rrms.dto.response.RoomDetailResponse;
+import com.rrms.rrms.dto.response.RoomResponse;
 
 public interface IRoomService {
-    RoomServiceResponse createRoomService(RoomServiceRequest roomServiceRequest);
 
-    RoomServiceResponse updateRoomService(UUID roomServiceId, RoomServiceRequest request);
+    // Legacy (BulletinBoard)
+    RoomDetailResponse getRoomById(UUID id);
 
-    RoomServiceResponse getRoomServiceById(UUID roomServiceId);
+    RoomDetailResponse createRoom(BulletinBoardRoomRequest roomRequest);
 
-    List<RoomServiceResponse> findAll(); // Thêm phương thức findAll
+    List<PostRoomTableResponse> getPostRoomTable(String username);
 
-    List<RoomServiceDetailResponse> findByRoomId(UUID roomId); // Thêm phương thức findByRoomId
+    String deleteRoom(UUID id);
 
-    void deleteRoomService(UUID roomServiceId);
+    // Standard REST APIs
+    RoomResponse createRoom(RoomRequest roomRequest);
 
-    RoomServiceResponse createRoomService2(RoomServiceRequest roomServiceRequest);
+    RoomResponse getRoomByIdStandard(UUID roomId);
+
+    List<RoomResponse> getAllRooms();
+
+    RoomResponse updateRoom(UUID roomId, RoomRequest roomRequest);
+
+    void deleteRoomStandard(UUID roomId);
+
+    List<RoomResponse> getRoomsByMotelId(UUID motelId);
+
+    List<RoomResponse> getRoomsByMotelIdNullContract(UUID motelId);
+
+    List<RoomResponse> getRoomsByMotelIdContract(UUID motelId);
 }
