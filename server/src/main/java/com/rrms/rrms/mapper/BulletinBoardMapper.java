@@ -16,15 +16,24 @@ public interface BulletinBoardMapper {
 
     BulletinBoardResponse toBulletinBoardResponse(BulletinBoard bulletinBoard);
 
+    @Mapping(target = "bulletinBoardId", ignore = true)
+    @Mapping(target = "account", ignore = true)
+    @Mapping(target = "bulletinBoardImages", ignore = true)
+    @Mapping(target = "bulletinBoardReviews", ignore = true)
+    @Mapping(target = "bulletinBoardRules", ignore = true)
+    @Mapping(target = "bulletinBoardRentalAmenities", ignore = true)
     BulletinBoard toBulletinBoard(BulletinBoardRequest bulletinBoardRequest);
 
     BulletinBoardTableResponse toBulletinBoardTableResponse(BulletinBoard bulletinBoard);
 
     BulletinBoardSearchResponse toBulletinBoardSearchResponse(BulletinBoard bulletinBoard);
 
-    @Mapping(target = "bulletinBoardId", ignore = true) // KhÃ´ng ghi Ä‘Ã¨ ID
+    @Mapping(target = "bulletinBoardId", ignore = true)
     @Mapping(target = "account", ignore = true)
-    // KhÃ´ng ghi Ä‘Ã¨ tÃ i khoáº£n
+    @Mapping(target = "bulletinBoardImages", ignore = true)
+    @Mapping(target = "bulletinBoardReviews", ignore = true)
+    @Mapping(target = "bulletinBoardRules", ignore = true)
+    @Mapping(target = "bulletinBoardRentalAmenities", ignore = true)
     void updateBulletinBoardFromRequest(
             BulletinBoardRequest bulletinBoardRequest, @MappingTarget BulletinBoard bulletinBoard);
 }

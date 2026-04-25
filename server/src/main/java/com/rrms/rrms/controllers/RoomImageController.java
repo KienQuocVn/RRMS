@@ -32,10 +32,9 @@ public class RoomImageController {
     @PostMapping
     public ApiResponse<RoomImageResponse> postRoomImage(@RequestBody RoomImageRequest roomImageRequest) {
         RoomImageResponse response = roomImageService.postRoomImage(roomImageRequest);
-        log.info("Create room image successfully");
         return ApiResponse.<RoomImageResponse>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("success")
+                .message("Tạo hình ảnh phòng thành công")
                 .result(response)
                 .build();
     }

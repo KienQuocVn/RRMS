@@ -33,7 +33,7 @@ public class TransactionController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection) {
         return ApiResponse.<PageResponse<TransactionResponse>>builder()
-                .message("Transactions retrieved successfully")
+                .message("Lấy danh sách giao dịch thành công")
                 .result(PageResponse.from(transactionService.getTransactionsByUsername(
                         username,
                         PageableUtils.of(page, size, sortBy == null ? "transactionDate" : sortBy, sortDirection))))
@@ -46,7 +46,7 @@ public class TransactionController {
             @RequestBody TransactionRequest transactionRequest, @RequestParam String username) {
         transactionRequest.setTransactionType(true);
         return ApiResponse.<TransactionResponse>builder()
-                .message("Receipt created successfully")
+                .message("Tạo giao dịch thu (phiếu thu) thành công")
                 .result(transactionService.createTransaction(transactionRequest, username))
                 .build();
     }
@@ -57,7 +57,7 @@ public class TransactionController {
             @RequestBody TransactionRequest transactionRequest, @RequestParam String username) {
         transactionRequest.setTransactionType(false);
         return ApiResponse.<TransactionResponse>builder()
-                .message("Expense created successfully")
+                .message("Tạo giao dịch chi thành công")
                 .result(transactionService.createTransaction(transactionRequest, username))
                 .build();
     }
@@ -66,16 +66,14 @@ public class TransactionController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteTransaction(@PathVariable UUID id, @RequestParam String username) {
         transactionService.deleteTransaction(id, username);
-        return ApiResponse.<Void>builder()
-                .message("Transaction deleted successfully")
-                .build();
+        return ApiResponse.<Void>builder().message("Xóa giao dịch thành công").build();
     }
 
     @Operation(summary = "Get transaction summary (income, expense, profit)")
     @GetMapping("/summary")
     public ApiResponse<TransactionSummaryResponse> getSummary(@RequestParam String username) {
         return ApiResponse.<TransactionSummaryResponse>builder()
-                .message("Transaction summary retrieved successfully")
+                .message("Lấy tổng hợp giao dịch thành công")
                 .result(transactionService.getSummary(username))
                 .build();
     }

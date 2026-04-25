@@ -31,9 +31,8 @@ public class BulletinBoardController {
     @GetMapping("")
     public ApiResponse<List<BulletinBoardResponse>> getAllBulletinBoards() {
         List<BulletinBoardResponse> bulletinBoardResponse = bulletinBoardService.getAllBulletinBoards();
-        log.info("Get all bulletin board successfully");
         return ApiResponse.<List<BulletinBoardResponse>>builder()
-                .message("Get all bulletin board successfully")
+                .message("Lấy tất cả bảng tin thành công")
                 .code(HttpStatus.OK.value())
                 .result(bulletinBoardResponse)
                 .build();
@@ -43,9 +42,8 @@ public class BulletinBoardController {
     @GetMapping("/{id}")
     public ApiResponse<BulletinBoardResponse> getBulletinBoardById(@PathVariable UUID id) {
         BulletinBoardResponse bulletinBoardResponse = bulletinBoardService.getBulletinBoardById(id);
-        log.info("Get bulletin board by id successfully");
         return ApiResponse.<BulletinBoardResponse>builder()
-                .message("Get bulletin board by id successfully")
+                .message("Lấy bảng tin theo id thành công")
                 .code(HttpStatus.OK.value())
                 .result(bulletinBoardResponse)
                 .build();
@@ -56,9 +54,8 @@ public class BulletinBoardController {
     public ApiResponse<BulletinBoardResponse> createBulletinBoard(
             @RequestBody BulletinBoardRequest bulletinBoardRequest) {
         BulletinBoardResponse bulletinBoardResponse = bulletinBoardService.createBulletinBoard(bulletinBoardRequest);
-        log.info("Create bulletin board successfully");
         return ApiResponse.<BulletinBoardResponse>builder()
-                .message("Create bulletin board successfully")
+                .message("Tạo bảng tin thành công")
                 .code(HttpStatus.CREATED.value())
                 .result(bulletinBoardResponse)
                 .build();
@@ -68,12 +65,10 @@ public class BulletinBoardController {
     @PutMapping("/{id}")
     public ApiResponse<BulletinBoardResponse> updateBulletinBoard(
             @RequestBody BulletinBoardRequest bulletinBoardRequest, @PathVariable("id") UUID id) {
-        log.info("Update bulletin board with id: {}", id);
         BulletinBoardResponse bulletinBoardResponse =
                 bulletinBoardService.updateBulletinBoard(id, bulletinBoardRequest);
-        log.info("Update bulletin board successfully");
         return ApiResponse.<BulletinBoardResponse>builder()
-                .message("Update bulletin board successfully")
+                .message("Cập nhật bảng tin thành công")
                 .code(HttpStatus.OK.value())
                 .result(bulletinBoardResponse)
                 .build();
@@ -83,9 +78,8 @@ public class BulletinBoardController {
     @GetMapping("/table/{username}")
     public ApiResponse<List<BulletinBoardTableResponse>> getBulletinBoardTable(@PathVariable String username) {
         List<BulletinBoardTableResponse> bulletinBoardResponse = bulletinBoardService.getBulletinBoardTable(username);
-        log.info("Get bulletin board table successfully");
         return ApiResponse.<List<BulletinBoardTableResponse>>builder()
-                .message("Get bulletin board table successfully")
+                .message("Lấy bảng tin theo bảng thành công")
                 .code(HttpStatus.OK.value())
                 .result(bulletinBoardResponse)
                 .build();
@@ -95,9 +89,8 @@ public class BulletinBoardController {
     @GetMapping("/inactive")
     public ApiResponse<List<BulletinBoardResponse>> getInactiveBulletinBoards() {
         List<BulletinBoardResponse> inactiveBulletinBoards = bulletinBoardService.getBulletinBoard();
-        log.info("Get inactive bulletin boards successfully");
         return ApiResponse.<List<BulletinBoardResponse>>builder()
-                .message("Get inactive bulletin boards successfully")
+                .message("Lấy các bảng tin không hoạt động thành công")
                 .code(HttpStatus.OK.value())
                 .result(inactiveBulletinBoards)
                 .build();
@@ -107,9 +100,8 @@ public class BulletinBoardController {
     @PutMapping("/{id}/approve")
     public ApiResponse<BulletinBoardResponse> approveBulletinBoard(@PathVariable UUID id) {
         BulletinBoardResponse updatedBoard = bulletinBoardService.approveBulletinBoard(id);
-        log.info("Approve bulletin board successfully with id: {}", id);
         return ApiResponse.<BulletinBoardResponse>builder()
-                .message("Approve bulletin board successfully")
+                .message("Duyệt bảng tin thành công")
                 .code(HttpStatus.OK.value())
                 .result(updatedBoard)
                 .build();
@@ -119,9 +111,8 @@ public class BulletinBoardController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteBulletinBoard(@PathVariable UUID id) {
         bulletinBoardService.deleteBulletinBoard(id);
-        log.info("Delete bulletin board with id: {}", id);
         return ApiResponse.<Void>builder()
-                .message("Delete bulletin board successfully")
+                .message("Xóa bảng tin thành công")
                 .code(HttpStatus.OK.value())
                 .build();
     }
@@ -130,12 +121,10 @@ public class BulletinBoardController {
     @GetMapping("/search")
     public ApiResponse<List<BulletinBoardSearchResponse>> searchBulletinBoards(
             @RequestParam("address") String address) {
-        log.info("Searching bulletin boards with address: {}", address);
         List<BulletinBoardSearchResponse> result = bulletinBoardService.searchBulletinBoards(address);
 
-        log.info("Search bulletin board successfully, found: {}", result.size());
         return ApiResponse.<List<BulletinBoardSearchResponse>>builder()
-                .message("Search bulletin board successfully")
+                .message("Tìm kiếm bảng tin thành công")
                 .code(HttpStatus.OK.value())
                 .result(result)
                 .build();

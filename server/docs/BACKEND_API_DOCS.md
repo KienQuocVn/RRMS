@@ -1,38 +1,89 @@
-# 📖 RRMS BACKEND API DOCUMENTATION
+# RRMS BACKEND API DOCUMENTATION
 
-Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RRMS (Rental Room Management System), bao gồm cách thức gọi (URL, Method), dữ liệu yêu cầu (Request Body/Params), và phản hồi mong đợi (Expected Response).
+Tài liệu này mô tả các API backend của RRMS để test nhanh bằng Postman. Phần `AuthenController` bên dưới đã được cập nhật theo code hiện tại sau khi backend được update.
 
 ---
 
-## 🔐 1. XAC THUC & TAI KHOAN
+## 1. Xác Thực & Tài Khoản
 
 ### AuthenController
-**Base Path**: `/authen`
+**Base Path**: `/authen`  
+**Base URL local**: `http://localhost:8080`  
+**Auth requirement**: public, không cần `Authorization` header  
+**Content-Type**: `application/json` cho các API `POST`
+
+**Lưu ý nhanh**
+- `ApiResponse<T>` có format chuẩn: `{ "code": ..., "message": "...", "result": ... }`.
+- Một số API success không set `code` thủ công nên `code` thực tế là `1000`.
+- `login`, `register`, `forgetpassword`, `authenticationRegister` có rate limit theo IP.
+- OTP lưu Redis trong `5 phút`.
 
 #### 1.1 loginFailure
 - **URL**: `/authen/error`
 - **Method**: `GET`
-- **Response**: `ResponseEntity<String>`
+- **Mục đích**: callback khi đăng nhập Google thất bại.
+- **Response** (`401 Unauthorized`, plain text):
+```text
+Đăng nhập thất bại!
+```
 
 #### 1.2 loginSuccess
 - **URL**: `/authen/success`
 - **Method**: `GET`
-- **Response**: `void`
+- **Mục đích**: callback sau OAuth2 Google login thành công.
+- **Request**: không có body. Endpoint này phụ thuộc `OAuth2User`, thường test qua browser flow hơn Postman thuần.
+- **Success Response** (`200 OK`, raw JSON):
+```json
+{
+  "token": "eyJhbGciOiJIUzUxMiJ9..."
+}
+```
+- **Error Response** (`400 Bad Request`, plain text):
+```text
+Không xác thực được tài khoản Google
+```
+hoặc
+```text
+Không lấy được thông tin email hoặc tên
+```
 
 #### 1.3 login
 - **URL**: `/authen/login`
 - **Method**: `POST`
+- **Rate limit**: `5` lần / `300` giây / IP
 - **Request Body** (`LoginRequest`):
 ```json
 {
-  "max": null,
-  "message": null,
-  "phone": "0123456789",
-  "message": null,
-  "password": "password123"
+  "phone": "0911000001",
+  "password": "12345678"
 }
 ```
-- **Response**: `ApiResponse<LoginResponse>`
+- **Validation**:
+  - `phone`: bắt buộc, dài `10-11` ký tự
+  - `password`: bắt buộc, tối thiểu `6` ký tự
+- **Success Response** (`200 OK`):
+```json
+{
+  "code": 1000,
+  "message": "Đăng nhập thành công",
+  "result": {
+    "token": "eyJhbGciOiJIUzUxMiJ9...",
+    "authenticated": true,
+    "username": "host01",
+    "fullName": "Nguyen Van A",
+    "phone": "0912345678",
+    "email": "host01@example.com",
+    "avatar": "https://example.com/avatar.png",
+    "birthday": "1998-10-20",
+    "gender": "MALE",
+    "cccd": "079123456789",
+    "roles": [
+      "HOST"
+    ]
+  }
+}
+```
+
 
 #### 1.4 introspect
 - **URL**: `/authen/introspect`
@@ -40,10 +91,48 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 - **Request Body** (`IntrospecTokenRequest`):
 ```json
 {
-  "token": "string"
+  "token": "eyJhbGciOiJIUzUxMiJ9..."
 }
 ```
-- **Response**: `ApiResponse<IntrospecTokenResponse>`
+- **Success Response** (`200 OK`, token hợp lệ):
+```json
+{
+  "code": 1000,
+  "message": null,
+  "result": {
+    "valid": true,
+    "message": "Token is valid",
+    "subject": "host01",
+    "expirationTime": "2026-04-25T18:30:00.000+00:00",
+    "issuer": "host01",
+    "issuedAt": "2026-04-25T17:30:00.000+00:00",
+    "roles": [
+      "HOST"
+    ],
+    "permissions": [
+      "CREATE_ROOM",
+      "VIEW_INVOICE"
+    ]
+  }
+}
+```
+- **Response khi token rỗng/không hợp lệ** (`200 OK`):
+```json
+{
+  "code": 1000,
+  "message": null,
+  "result": {
+    "valid": false,
+    "message": "Token is empty",
+    "subject": null,
+    "expirationTime": null,
+    "issuer": null,
+    "issuedAt": null,
+    "roles": null,
+    "permissions": null
+  }
+}
+```
 
 #### 1.5 logout
 - **URL**: `/authen/logout`
@@ -51,29 +140,82 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 - **Request Body** (`LogoutRequest`):
 ```json
 {
-  "token": "string"
+  "token": "eyJhbGciOiJIUzUxMiJ9..."
 }
 ```
-- **Response**: `ApiResponse<Void>`
+- **Success Response** (`200 OK`):
+```json
+{
+  "code": 1000,
+  "message": "Đăng xuất thành công",
+  "result": null
+}
+```
 
 #### 1.6 register
 - **URL**: `/authen/register`
 - **Method**: `POST`
+- **Rate limit**: `5` lần / `300` giây / IP
 - **Request Body** (`RegisterRequest`):
 ```json
 {
-  "message": null,
-  "username": "string",
-  "max": null,
-  "message": null,
-  "phone": "0123456789",
-  "email": "user@example.com",
-  "message": null,
-  "password": "password123",
-  "userType": "string"
+  "username": "host01",
+  "phone": "0912345678",
+  "email": "host01@example.com",
+  "password": "Password@123",
+  "userType": "HOST"
 }
 ```
-- **Response**: `ApiResponse<RegisterResponse>`
+- **Validation**:
+  - `username`: bắt buộc, tối thiểu `3` ký tự
+  - `phone`: bắt buộc, dài `10-11` ký tự
+  - `email`: bắt buộc, đúng định dạng email
+  - `password`: DTO validate từ `6` ký tự, nhưng service thực tế chặn nếu dưới `8` ký tự
+  - `userType`: bắt buộc, hệ thống hiện map `CUSTOMER` hoặc `HOST`
+- **Success Response** (`200 OK`):
+```json
+{
+  "code": 1000,
+  "message": null,
+  "result": {
+    "status": true,
+    "message": "Đăng ký thành công",
+    "username": "host01"
+  }
+}
+```
+- **Error Response** (`400 Bad Request`, username đã tồn tại):
+```json
+{
+  "code": 400,
+  "message": "Username already exists",
+  "result": null
+}
+```
+- **Error Response** (`400 Bad Request`, phone đã tồn tại):
+```json
+{
+  "code": 400,
+  "message": "Phone number already exists",
+  "result": null
+}
+```
+- **Error Response** (`400 Bad Request`, mật khẩu < 8 ký tự theo service):
+```json
+{
+  "code": 400,
+  "message": "Invalid password",
+  "result": null
+}
+```
+- **Rate Limit Response** (`429 Too Many Requests`):
+```json
+{
+  "status": false,
+  "message": "Too many requests. Please try again later.",
+  "data": null
+}
+```
 
 #### 1.7 refresh
 - **URL**: `/authen/refreshToken`
@@ -81,41 +223,134 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 - **Request Body** (`RefreshRequest`):
 ```json
 {
-  "token": null
+  "token": "eyJhbGciOiJIUzUxMiJ9..."
 }
 ```
-- **Response**: `ApiResponse<LoginResponse>`
+- **Success Response** (`200 OK`):
+```json
+{
+  "code": 1000,
+  "message": "Làm mới token thành công",
+  "result": {
+    "token": "eyJhbGciOiJIUzUxMiJ9.new-token",
+    "authenticated": true,
+    "username": "host01",
+    "fullName": "Nguyen Van A",
+    "phone": "0912345678",
+    "email": "host01@example.com",
+    "avatar": "https://example.com/avatar.png",
+    "birthday": "1998-10-20",
+    "gender": "MALE",
+    "cccd": "079123456789",
+    "roles": null
+  }
+}
+```
+- **Error Response** (`401 Unauthorized`):
+```json
+{
+  "code": 401,
+  "message": "Unauthenticated",
+  "result": null
+}
+```
 
-#### 1.8 forget
+#### 1.8 checkMail
 - **URL**: `/authen/checkMail`
 - **Method**: `GET`
-- **Query Params**: `email` (String)
-- **Response**: `ApiResponse<Boolean>`
+- **Query Params**:
+  - `email`: `String`
+- **Success Response** (`200 OK`, email tồn tại):
+```json
+{
+  "code": 200,
+  "message": "Thành công",
+  "result": true
+}
+```
+- **Response khi email không tồn tại** (`400 Bad Request`):
+```json
+{
+  "code": 400,
+  "message": "Lỗi",
+  "result": false
+}
+```
 
-#### 1.9 forget
+#### 1.9 forgetpassword
 - **URL**: `/authen/forgetpassword`
 - **Method**: `POST`
+- **Rate limit**: `3` lần / `300` giây / IP
+- **Mục đích**: gửi OTP reset password, lưu vào Redis key `otp:forgot:{email}` trong `5 phút`.
 - **Request Body** (`ChangePasswordByEmail`):
 ```json
 {
-  "email": "user@example.com",
-  "newPassword": "password123",
-  "code": "string"
+  "email": "host01@example.com",
+  "newPassword": null,
+  "code": null
 }
 ```
-- **Response**: `ApiResponse<Boolean>`
+- **Success Response** (`200 OK`):
+```json
+{
+  "code": 200,
+  "message": "Thành công",
+  "result": true
+}
+```
+- **Error Response** (`400 Bad Request`):
+```json
+{
+  "code": 400,
+  "message": "Lỗi",
+  "result": false
+}
+```
+- **Rate Limit Response** (`429 Too Many Requests`):
+```json
+{
+  "status": false,
+  "message": "Too many requests. Please try again later.",
+  "data": null
+}
+```
 
 #### 1.10 authenticationRegister
 - **URL**: `/authen/authenticationRegister`
 - **Method**: `POST`
+- **Rate limit**: `3` lần / `300` giây / IP
+- **Mục đích**: gửi OTP xác thực đăng ký, lưu vào Redis key `otp:register:{gmail}` trong `5 phút`.
 - **Request Body** (`AuthenticationRegister`):
 ```json
 {
-  "gmail": "user@example.com",
-  "code": "string"
+  "gmail": "host01@example.com",
+  "code": null
 }
 ```
-- **Response**: `ApiResponse<Boolean>`
+- **Success Response** (`200 OK`):
+```json
+{
+  "code": 200,
+  "message": "Thành công",
+  "result": true
+}
+```
+- **Error Response** (`400 Bad Request`):
+```json
+{
+  "code": 400,
+  "message": "Lỗi",
+  "result": false
+}
+```
+- **Rate Limit Response** (`429 Too Many Requests`):
+```json
+{
+  "status": false,
+  "message": "Too many requests. Please try again later.",
+  "data": null
+}
+```
 
 #### 1.11 acceptChangePassword
 - **URL**: `/authen/acceptChangePassword`
@@ -123,12 +358,35 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 - **Request Body** (`ChangePasswordByEmail`):
 ```json
 {
-  "email": "user@example.com",
-  "newPassword": "password123",
-  "code": "string"
+  "email": "host01@example.com",
+  "newPassword": "NewPassword@123",
+  "code": "12345"
 }
 ```
-- **Response**: `ApiResponse<Boolean>`
+- **Success Response** (`200 OK`):
+```json
+{
+  "code": 200,
+  "message": "Thành công",
+  "result": true
+}
+```
+- **Error Response** (`400 Bad Request`, OTP sai hoặc hết hạn):
+```json
+{
+  "code": 400,
+  "message": "Mã OTP không đúng hoặc đã hết hạn",
+  "result": false
+}
+```
+- **Error Response** (`400 Bad Request`, email không tồn tại hoặc update thất bại):
+```json
+{
+  "code": 400,
+  "message": "Lỗi",
+  "result": false
+}
+```
 
 #### 1.12 acceptAuthenticationRegister
 - **URL**: `/authen/acceptAuthenticationRegister`
@@ -136,69 +394,136 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 - **Request Body** (`AuthenticationRegister`):
 ```json
 {
-  "gmail": "user@example.com",
-  "code": "string"
+  "gmail": "host01@example.com",
+  "code": "12345"
 }
 ```
-- **Response**: `ApiResponse<Boolean>`
+- **Success Response** (`200 OK`):
+```json
+{
+  "code": 200,
+  "message": "Thành công",
+  "result": true
+}
+```
+- **Error Response** (`400 Bad Request`):
+```json
+{
+  "code": 400,
+  "message": "Mã OTP không đúng hoặc đã hết hạn",
+  "result": false
+}
+```
 
 #### 1.13 checkRegister
 - **URL**: `/authen/checkregister`
 - **Method**: `POST`
+- **Mục đích**: validate nhanh form đăng ký trước khi submit.
+- **Quan trọng**: code hiện tại chỉ check trùng `username`; phần check trùng `phone` và `email` đang được comment out.
 - **Request Body** (`RegisterRequest`):
 ```json
 {
-  "message": null,
-  "username": "string",
-  "max": null,
-  "message": null,
-  "phone": "0123456789",
-  "email": "user@example.com",
-  "message": null,
-  "password": "password123",
-  "userType": "string"
+  "username": "host01",
+  "phone": "0912345678",
+  "email": "host01@example.com",
+  "password": "Password@123",
+  "userType": "HOST"
 }
 ```
-- **Response**: `ApiResponse<Boolean>`
+- **Success Response** (`200 OK`):
+```json
+{
+  "code": 200,
+  "message": "Thông tin hợp lệ",
+  "result": true
+}
+```
+- **Error Response** (`400 Bad Request`, username đã tồn tại):
+```json
+{
+  "code": 400,
+  "message": "Tên đăng nhập đã tồn tại",
+  "result": false
+}
+```
+- **Validation Error** (`400 Bad Request`):
+```json
+{
+  "code": 1006,
+  "message": "Email không hợp lệ",
+  "result": null
+}
+```
 
-#### 1.14 checkRegister
+#### 1.14 checkRegisterByUsername
 - **URL**: `/authen/checkregister/{username}`
 - **Method**: `POST`
-- **Path Variables**: `username` (String)
-- **Response**: `ApiResponse<Boolean>`
+- **Path Variables**:
+  - `username`: `String`
+- **Success Response** (`200 OK`, username đã tồn tại):
+```json
+{
+  "code": 200,
+  "message": "Tên đăng nhập đã tồn tại",
+  "result": true
+}
+```
+- **Response khi username chưa tồn tại** (`404 Not Found`):
+```json
+{
+  "code": 404,
+  "message": "Tên đăng nhập không tồn tại",
+  "result": false
+}
+```
+
+### Postman test flow gợi ý
+1. `POST /authen/checkregister`
+2. `POST /authen/authenticationRegister`
+3. `POST /authen/acceptAuthenticationRegister`
+4. `POST /authen/register`
+5. `POST /authen/login`
+6. `POST /authen/refreshToken`
+7. `POST /authen/logout`
 
 ### AccountController
-**Base Path**: `/api-accounts`
+**Base Path**: `/api-accounts`  
+**Alias Base Path**: `/api/v1/accounts`
 
 #### 1.15 getAllAccounts
 - **URL**: `/api-accounts`
 - **Method**: `GET`
 - **Query Params**: `page` (Integer)
 - **Response**: `ApiResponse<PageResponse<AccountResponse>>`
+- **Success Message hiện tại**: `Tài khoản đã được khôi phục thành công`
 
 #### 1.16 getAllAccounts
 - **URL**: `/api-accounts/get-all-account`
 - **Method**: `GET`
 - **Query Params**: `page` (Integer)
 - **Response**: `ApiResponse<PageResponse<AccountResponse>>`
+- **Success Message hiện tại**: `Tài khoản đã được khôi phục thành công`
 
 #### 1.17 getAccountsByHostRole
 - **URL**: `/api-accounts/by-host-role`
 - **Method**: `GET`
 - **Query Params**: `page` (Integer)
 - **Response**: `ApiResponse<PageResponse<AccountResponse>>`
+- **Success Message hiện tại**: `Đã truy xuất thành công tài khoản máy chủ`
 
 #### 1.18 getAccountsByHostRole
 - **URL**: `/api-accounts/roles/host`
 - **Method**: `GET`
 - **Query Params**: `page` (Integer)
 - **Response**: `ApiResponse<PageResponse<AccountResponse>>`
+- **Success Message hiện tại**: `Đã truy xuất thành công tài khoản máy chủ`
 
 #### 1.19 getAccountByUsername
 - **URL**: `/api-accounts/{username}`
 - **Method**: `GET`
 - **Path Variables**: `username` (String)
 - **Response**: `ApiResponse<AccountResponse>`
+- **Success Message hiện tại**: `Tài khoản đã được khôi phục thành công`
 
 #### 1.20 createAccount
 - **URL**: `/api-accounts`
@@ -223,6 +548,8 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 }
 ```
 - **Response**: `ResponseEntity<ApiResponse<AccountResponse>>`
+- **HTTP Status thành công**: `201 Created`
+- **Success Message hiện tại**: `Tài khoản đã được tạo thành công`
 
 #### 1.21 createAccount
 - **URL**: `/api-accounts/createAccount`
@@ -247,6 +574,8 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 }
 ```
 - **Response**: `ResponseEntity<ApiResponse<AccountResponse>>`
+- **HTTP Status thành công**: `201 Created`
+- **Success Message hiện tại**: `Tài khoản đã được tạo thành công`
 
 #### 1.22 updateAccount
 - **URL**: `/api-accounts/{username}`
@@ -272,6 +601,7 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 }
 ```
 - **Response**: `ApiResponse<AccountResponse>`
+- **Success Message hiện tại**: `Tài khoản đã được cập nhật thành công.`
 
 #### 1.23 updateAccount
 - **URL**: `/api-accounts/updateAccount/{username}`
@@ -297,18 +627,21 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 }
 ```
 - **Response**: `ApiResponse<AccountResponse>`
+- **Success Message hiện tại**: `Tài khoản đã được cập nhật thành công.`
 
 #### 1.24 deleteAccount
 - **URL**: `/api-accounts/{username}`
 - **Method**: `DELETE`
 - **Path Variables**: `username` (String)
 - **Response**: `ApiResponse<Void>`
+- **Success Message hiện tại**: `Tài khoản đã bị xóa thành công`
 
 #### 1.25 deleteAccount
 - **URL**: `/api-accounts/deleteAccount/{username}`
 - **Method**: `DELETE`
 - **Path Variables**: `username` (String)
 - **Response**: `ApiResponse<Void>`
+- **Success Message hiện tại**: `Tài khoản đã bị xóa thành công`
 
 #### 1.26 updateAccount
 - **URL**: `/api-accounts/update-acc`
@@ -316,12 +649,14 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 - **Query Params**: `username` (String)
 - **Request Body**: `Account`
 - **Response**: `ApiResponse<Account>`
+- **Success Message hiện tại**: `Tài khoản đã được cập nhật thành công.`
 
 #### 1.27 getProfile
 - **URL**: `/api-accounts/profile`
 - **Method**: `GET`
 - **Query Params**: `username` (String)
 - **Response**: `ApiResponse<AccountResponse>`
+- **Success Message hiện tại**: `Đăng nhập thành công`
 
 #### 1.28 updateProfile
 - **URL**: `/api-accounts/profile`
@@ -346,6 +681,7 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 }
 ```
 - **Response**: `ApiResponse<AccountResponse>`
+- **Success Message hiện tại**: `Cập nhật hồ sơ thành công`
 
 #### 1.29 changePassword
 - **URL**: `/api-accounts/profile/change-password`
@@ -359,27 +695,32 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 }
 ```
 - **Response**: `ApiResponse<String>`
+- **Success Message hiện tại**: `Đổi mật khẩu thành công`
 
 #### 1.30 searchAccounts
 - **URL**: `/api-accounts/search`
 - **Method**: `GET`
 - **Query Params**: `search` (String)
 - **Response**: `ApiResponse<PageResponse<AccountResponse>>`
+- **Success Message hiện tại**: `Tài khoản đã được truy xuất thành công`
 
 #### 1.31 getFavorites
 - **URL**: `/api-accounts/me/favorites`
 - **Method**: `GET`
 - **Response**: `ApiResponse<java.util.List<com.rrms.rrms.dto.response.BulletinBoardResponse>>`
+- **Success Message hiện tại**: `Danh sách yêu thích đã được truy xuất thành công`
 
 #### 1.32 addFavorite
 - **URL**: `/api-accounts/me/favorites/{bulletinBoardId}`
 - **Method**: `POST`
 - **Response**: `ApiResponse<Void>`
+- **Success Message hiện tại**: `Đã thêm vào danh sách yêu thích thành công`
 
 #### 1.33 removeFavorite
 - **URL**: `/api-accounts/me/favorites/{bulletinBoardId}`
 - **Method**: `DELETE`
 - **Response**: `ApiResponse<Void>`
+- **Success Message hiện tại**: `Đã xóa khỏi danh sách yêu thích thành công`
 
 ### ProfileController
 **Base Path**: `/profile`
@@ -1499,12 +1840,16 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 }
 ```
 - **Response**: `ApiResponse<BrokerResponse>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Tạo môi giới thành công`
 
 #### 6.9 getAllBroker
-- **URL**: `/broker{motelId}`
+- **URL**: `/broker/{motelId}`
 - **Method**: `GET`
 - **Path Variables**: `motelId` (String)
 - **Response**: `ApiResponse<List<BrokerResponse>>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Lấy tất cả môi giới thành công`
 
 ### CarController
 **Base Path**: `/cars`
@@ -1901,12 +2246,16 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 - **URL**: `/api/v1/bulletin-boards`
 - **Method**: `GET`
 - **Response**: `ApiResponse<List<BulletinBoardResponse>>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Lấy tất cả bảng tin thành công`
 
 #### 8.2 getBulletinBoardById
 - **URL**: `/api/v1/bulletin-boards/{id}`
 - **Method**: `GET`
 - **Path Variables**: `id` (UUID)
 - **Response**: `ApiResponse<BulletinBoardResponse>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Lấy bảng tin theo id thành công`
 
 #### 8.3 createBulletinBoard
 - **URL**: `/api/v1/bulletin-boards`
@@ -1939,6 +2288,8 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 }
 ```
 - **Response**: `ApiResponse<BulletinBoardResponse>`
+- **HTTP Status thành công**: `201 Created`
+- **Success Message hiện tại**: `Tạo bảng tin thành công`
 
 #### 8.4 updateBulletinBoard
 - **URL**: `/api/v1/bulletin-boards/{id}`
@@ -1972,35 +2323,47 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 }
 ```
 - **Response**: `ApiResponse<BulletinBoardResponse>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Cập nhật bảng tin thành công`
 
 #### 8.5 getBulletinBoardTable
 - **URL**: `/api/v1/bulletin-boards/table/{username}`
 - **Method**: `GET`
 - **Path Variables**: `username` (String)
 - **Response**: `ApiResponse<List<BulletinBoardTableResponse>>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Lấy bảng tin theo bảng thành công`
 
 #### 8.6 getInactiveBulletinBoards
 - **URL**: `/api/v1/bulletin-boards/inactive`
 - **Method**: `GET`
 - **Response**: `ApiResponse<List<BulletinBoardResponse>>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Lấy các bảng tin không hoạt động thành công`
 
 #### 8.7 approveBulletinBoard
 - **URL**: `/api/v1/bulletin-boards/{id}/approve`
 - **Method**: `PUT`
 - **Path Variables**: `id` (UUID)
 - **Response**: `ApiResponse<BulletinBoardResponse>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Duyệt bảng tin thành công`
 
 #### 8.8 deleteBulletinBoard
 - **URL**: `/api/v1/bulletin-boards/{id}`
 - **Method**: `DELETE`
 - **Path Variables**: `id` (UUID)
 - **Response**: `ApiResponse<Void>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Xóa bảng tin thành công`
 
 #### 8.9 searchBulletinBoards
 - **URL**: `/api/v1/bulletin-boards/search`
 - **Method**: `GET`
 - **Query Params**: `address` (String)
 - **Response**: `ApiResponse<List<BulletinBoardSearchResponse>>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Tìm kiếm bảng tin thành công`
 
 ### BulletinBoardImageController
 **Base Path**: `/bulletin-board-image`
@@ -2027,24 +2390,32 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 }
 ```
 - **Response**: `ApiResponse<BulletinBoardReviewsResponse>`
+- **HTTP Status thành công**: `201 Created`
+- **Success Message hiện tại**: `Tạo đánh giá trên bảng tin thành công`
 
 #### 8.12 getBulletinBoardReviewsByBulletinBoardIdAndUsername
 - **URL**: `/bulletin-board-reviews`
 - **Method**: `GET`
 - **Query Params**: `bulletinBoardId` (UUID), `username` (String)
 - **Response**: `ApiResponse<BulletinBoardReviewsResponse>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Nhận đánh giá bảng tin thành công`
 
 #### 8.13 getRatingHistoryByBulletinBoardIdAndUsername
 - **URL**: `/bulletin-board-reviews/rating-history`
 - **Method**: `GET`
 - **Query Params**: `username` (String)
 - **Response**: `ApiResponse<List<RatingHistoryResponse>>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Lấy lịch sử xếp hạng thành công`
 
 #### 8.14 deleteBulletinBoardReviewsByBulletinBoardReviewsId
 - **URL**: `/bulletin-board-reviews/{bulletinBoardReviewsId}`
 - **Method**: `DELETE`
 - **Path Variables**: `bulletinBoardReviewsId` (UUID)
 - **Response**: `ApiResponse<Integer>`
+- **HTTP Status thành công**: `200 OK`
+- **Success Message hiện tại**: `Xóa thành công các đánh giá trên bảng tin`
 
 ### SearchController
 **Base Path**: `/api/v1/search`

@@ -44,13 +44,12 @@ public class AccountController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info("Get all account {}", authentication.getName());
 
         Pageable pageable = PageableUtils.of(page, size, sortBy, sortDirection);
         PageResponse<AccountResponse> result = PageResponse.from(accountService.findAll(pageable));
 
         return ApiResponse.<PageResponse<AccountResponse>>builder()
-                .message("Accounts retrieved successfully")
+                .message("Tài khoản đã được khôi phục thành công")
                 .result(result)
                 .build();
     }
@@ -67,7 +66,7 @@ public class AccountController {
                 PageResponse.from(accountService.getAccountsByRole(Roles.HOST, pageable));
 
         return ApiResponse.<PageResponse<AccountResponse>>builder()
-                .message("Host accounts retrieved successfully")
+                .message("Đã truy xuất thành công tài khoản máy chủ")
                 .result(result)
                 .build();
     }
@@ -77,7 +76,7 @@ public class AccountController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public ApiResponse<AccountResponse> getAccountByUsername(@PathVariable String username) {
         return ApiResponse.<AccountResponse>builder()
-                .message("Account retrieved successfully")
+                .message("Tài khoản đã được khôi phục thành công")
                 .result(accountService.findByUsername(username))
                 .build();
     }
@@ -88,7 +87,7 @@ public class AccountController {
             @RequestBody @Valid AccountRequest accountRequest) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.<AccountResponse>builder()
-                        .message("Account created successfully")
+                        .message("Tài khoản đã được tạo thành công")
                         .result(accountService.createAccount(accountRequest))
                         .build());
     }
@@ -99,7 +98,7 @@ public class AccountController {
     public ApiResponse<AccountResponse> updateAccount(
             @PathVariable String username, @RequestBody @Valid AccountRequest accountRequest) {
         return ApiResponse.<AccountResponse>builder()
-                .message("Account updated successfully")
+                .message("Tài khoản đã được cập nhật thành công.")
                 .result(accountService.updateAccount(username, accountRequest))
                 .build();
     }
@@ -110,7 +109,7 @@ public class AccountController {
     public ApiResponse<Void> deleteAccount(@PathVariable String username) {
         accountService.deleteAccount(username);
         return ApiResponse.<Void>builder()
-                .message("Account deleted successfully")
+                .message("Tài khoản đã bị xóa thành công")
                 .build();
     }
 
@@ -119,7 +118,7 @@ public class AccountController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public ApiResponse<Account> updateAccount(@RequestParam("username") String username, @RequestBody Account account) {
         return ApiResponse.<Account>builder()
-                .message("Account updated successfully")
+                .message("Tài khoản đã được cập nhật thành công.")
                 .result(accountService.updateAcc(username, account))
                 .build();
     }
@@ -127,9 +126,8 @@ public class AccountController {
     @Operation(summary = "Get profile by username")
     @GetMapping("/profile")
     public ApiResponse<AccountResponse> getProfile(@RequestParam("username") String username) {
-        log.info("Get profile successfully");
         return ApiResponse.<AccountResponse>builder()
-                .message("Get profile successfully")
+                .message("Đăng nhập thành công")
                 .result(accountService.findByUsername(username))
                 .build();
     }
@@ -137,9 +135,8 @@ public class AccountController {
     @Operation(summary = "Update profile by username")
     @PutMapping("/profile")
     public ApiResponse<AccountResponse> updateProfile(@RequestBody @Valid AccountRequest accountRequest) {
-        log.info("Update profile successfully");
         return ApiResponse.<AccountResponse>builder()
-                .message("Update profile successfully")
+                .message("Cập nhật hồ sơ thành công")
                 .result(accountService.update(accountRequest))
                 .build();
     }
@@ -147,9 +144,8 @@ public class AccountController {
     @Operation(summary = "Change password by username")
     @PutMapping("/profile/change-password")
     public ApiResponse<String> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
-        log.info("Change password successfully");
         return ApiResponse.<String>builder()
-                .message("Change password successfully")
+                .message("Đổi mật khẩu thành công")
                 .result(accountService.changePassword(changePasswordRequest))
                 .build();
     }
@@ -168,7 +164,7 @@ public class AccountController {
                 : PageResponse.from(accountService.searchAccounts(search.trim(), pageable));
 
         return ApiResponse.<PageResponse<AccountResponse>>builder()
-                .message("Accounts retrieved successfully")
+                .message("Tài khoản đã được truy xuất thành công")
                 .result(result)
                 .build();
     }
@@ -178,7 +174,7 @@ public class AccountController {
     public ApiResponse<java.util.List<com.rrms.rrms.dto.response.BulletinBoardResponse>> getFavorites() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         return ApiResponse.<java.util.List<com.rrms.rrms.dto.response.BulletinBoardResponse>>builder()
-                .message("Favorites retrieved successfully")
+                .message("Danh sách yêu thích đã được truy xuất thành công")
                 .result(accountService.getFavoriteBulletinBoards(authentication.getName()))
                 .build();
     }
@@ -189,7 +185,7 @@ public class AccountController {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         accountService.addFavoriteBulletinBoard(authentication.getName(), bulletinBoardId);
         return ApiResponse.<Void>builder()
-                .message("Added to favorites successfully")
+                .message("Đã thêm vào danh sách yêu thích thành công")
                 .build();
     }
 
@@ -199,7 +195,7 @@ public class AccountController {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         accountService.removeFavoriteBulletinBoard(authentication.getName(), bulletinBoardId);
         return ApiResponse.<Void>builder()
-                .message("Removed from favorites successfully")
+                .message("Đã xóa khỏi danh sách yêu thích thành công")
                 .build();
     }
 }

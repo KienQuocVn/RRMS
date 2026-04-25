@@ -46,7 +46,7 @@ public class InvoiceController {
     public ResponseEntity<ApiResponse<InvoiceResponse>> createInvoice(@RequestBody InvoiceRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.<InvoiceResponse>builder()
-                        .message("Invoice created successfully")
+                        .message("Hóa đơn đã được tạo thành công")
                         .result(invoiceService.createInvoice(request))
                         .build());
     }
@@ -56,7 +56,7 @@ public class InvoiceController {
     public ApiResponse<Void> cancelInvoice(@PathVariable UUID invoiceId) {
         invoiceService.cancelInvoice(invoiceId);
         return ApiResponse.<Void>builder()
-                .message("Invoice canceled successfully")
+                .message("Hóa đơn đã được hủy thành công")
                 .build();
     }
 
@@ -65,7 +65,7 @@ public class InvoiceController {
     public ApiResponse<Void> deleteInvoice(@PathVariable("invoiceId") UUID invoiceId) {
         invoiceService.deleteInvoice(invoiceId);
         return ApiResponse.<Void>builder()
-                .message("Invoice deleted successfully")
+                .message("Hóa đơn đã được xóa thành công")
                 .build();
     }
 
@@ -74,7 +74,7 @@ public class InvoiceController {
     public ApiResponse<InvoiceResponse> updateInvoice(
             @PathVariable UUID invoiceId, @RequestBody UpdateInvoiceRequest request) {
         return ApiResponse.<InvoiceResponse>builder()
-                .message("Invoice updated successfully")
+                .message("Hóa đơn đã được cập nhật thành công.")
                 .result(invoiceService.updateInvoice(invoiceId, request))
                 .build();
     }
@@ -91,7 +91,7 @@ public class InvoiceController {
                 motelId, PageableUtils.of(page, size, sortBy == null ? "invoiceCreateDate" : sortBy, sortDirection)));
 
         return ApiResponse.<PageResponse<InvoiceResponse>>builder()
-                .message("Invoices retrieved successfully")
+                .message("Hóa đơn đã được truy xuất thành công")
                 .result(result)
                 .build();
     }
@@ -103,7 +103,7 @@ public class InvoiceController {
         invoiceService.collectPayment(invoiceId, request);
         Invoice invoice = invoiceService.findInvoiceById(invoiceId);
         return ApiResponse.<InvoiceResponse>builder()
-                .message("Payment collected successfully")
+                .message("Thanh toán đã được thu thành công")
                 .result(invoiceService.mapToResponse(invoice))
                 .build();
     }
@@ -122,11 +122,10 @@ public class InvoiceController {
             String qrCodeImage = qrCodeService.generateQRCodeImage(qrContent, 200, 200);
 
             return ApiResponse.<QRCodeResponse>builder()
-                    .message("QR code generated successfully")
+                    .message("Mã QR đã được tạo thành công")
                     .result(new QRCodeResponse(qrCodeImage, qrContent))
                     .build();
         } catch (WriterException | IOException exception) {
-            log.error("Could not generate QR code for invoice {}", invoiceId, exception);
             throw new AppException(ErrorCode.QRCODE_GENERATION_FAILED);
         }
     }

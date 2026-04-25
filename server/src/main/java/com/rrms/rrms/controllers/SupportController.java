@@ -32,11 +32,11 @@ public class SupportController {
     @PostMapping({"", "/create"})
     public ResponseEntity<ApiResponse<SupportResponse>> createSupport(@RequestBody SupportRequest supportRequest) {
         SupportResponse result = supportService.createSupport(supportRequest);
-        log.info("Support ticket created successfully");
+        log.info("Tạo yêu cầu hỗ trợ thành công");
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.<SupportResponse>builder()
                         .code(HttpStatus.CREATED.value())
-                        .message("Support ticket created successfully")
+                        .message("Tạo yêu cầu hỗ trợ thành công")
                         .result(result)
                         .build());
     }
@@ -46,7 +46,7 @@ public class SupportController {
     public ApiResponse<List<SupportResponse>> getAllSupports() {
         return ApiResponse.<List<SupportResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Support tickets retrieved successfully")
+                .message("Lấy danh sách yêu cầu hỗ trợ thành công")
                 .result(supportService.getAllSupports())
                 .build();
     }
@@ -56,7 +56,7 @@ public class SupportController {
     public ApiResponse<SupportResponse> getSupportById(@PathVariable UUID supportId) {
         return ApiResponse.<SupportResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Support ticket retrieved successfully")
+                .message("Lấy thông tin yêu cầu hỗ trợ thành công")
                 .result(supportService.getSupportById(supportId))
                 .build();
     }
@@ -67,7 +67,7 @@ public class SupportController {
         supportService.deleteSupport(supportId);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Support ticket deleted successfully")
+                .message("Xóa yêu cầu hỗ trợ thành công")
                 .build();
     }
 }

@@ -29,9 +29,8 @@ public class TenantController {
     @RequestMapping("")
     public ApiResponse<List<TenantResponse>> getAllTenants() {
         List<TenantResponse> tenantResponses = tenantService.getAllTenants();
-        log.info("Get all tenants successfully");
         return ApiResponse.<List<TenantResponse>>builder()
-                .message("Get all tenants successfully")
+                .message("Lấy danh sách người thuê thành công")
                 .code(HttpStatus.OK.value())
                 .result(tenantResponses)
                 .build();
@@ -43,7 +42,7 @@ public class TenantController {
         TenantResponse tenantResponse = tenantService.findById(id);
         return ApiResponse.<TenantResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy thông tin người thuê thành công")
                 .result(tenantResponse)
                 .build();
     }
@@ -53,10 +52,9 @@ public class TenantController {
     public ApiResponse<TenantResponse> insertTenant(
             @RequestBody TenantRequest tenantRequest, @PathVariable UUID roomId) {
         TenantResponse tenantResponse = tenantService.insert(roomId, tenantRequest);
-        log.info("Insert tenant successfully");
         return ApiResponse.<TenantResponse>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("success")
+                .message("Thêm người thuê thành công")
                 .result(tenantResponse)
                 .build();
     }
@@ -67,17 +65,15 @@ public class TenantController {
             @PathVariable("id") UUID id, @RequestBody TenantRequest tenantRequest) {
         if (id != null && tenantRequest != null) {
             TenantResponse tenantResponse = tenantService.update(id, tenantRequest);
-            log.info("Update tenant successfully");
             return ApiResponse.<TenantResponse>builder()
                     .code(HttpStatus.OK.value())
-                    .message("success")
+                    .message("Cập nhật người thuê thành công")
                     .result(tenantResponse)
                     .build();
         }
-        log.error("Update tenant failed due to null id or tenantRequest");
         return ApiResponse.<TenantResponse>builder()
                 .code(HttpStatus.BAD_REQUEST.value())
-                .message("error")
+                .message("Cập nhật người thuê thất bại")
                 .result(null)
                 .build();
     }
@@ -87,17 +83,15 @@ public class TenantController {
     public ApiResponse<Boolean> deleteTenant(@PathVariable("id") UUID id) {
         try {
             tenantService.delete(id);
-            log.info("Delete tenant successfully");
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.OK.value())
-                    .message("success")
+                    .message("Xóa người thuê thành công")
                     .result(true)
                     .build();
         } catch (Exception e) {
-            log.error("Delete tenant failed", e);
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
-                    .message("error")
+                    .message("Xóa người thuê thất bại")
                     .result(false)
                     .build();
         }
@@ -108,17 +102,15 @@ public class TenantController {
     public ApiResponse<Boolean> deleteTenantByRoomId(@PathVariable("roomID") UUID roomID) {
         try {
             tenantService.deleteByRoomId(roomID);
-            log.info("Delete tenant successfully");
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.OK.value())
-                    .message("success")
+                    .message("Xóa người thuê theo phòng thành công")
                     .result(true)
                     .build();
         } catch (Exception e) {
-            log.error("Delete tenant failed", e);
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
-                    .message("error")
+                    .message("Xóa người thuê theo phòng thất bại")
                     .result(false)
                     .build();
         }
@@ -126,11 +118,9 @@ public class TenantController {
 
     @RequestMapping("/roomId/{roomId}")
     public ApiResponse<List<TenantResponse>> getAllTenantsRoomId(@PathVariable("roomId") UUID roomId) {
-        log.debug("Get tenants by roomId={}", roomId);
         List<TenantResponse> tenantResponses = tenantService.getAllTenantsRoomId(roomId);
-        log.info("Get all tenants by room id successfully");
         return ApiResponse.<List<TenantResponse>>builder()
-                .message("Get all tenants by room id successfully")
+                .message("Lấy danh sách người thuê theo phòng thành công")
                 .code(HttpStatus.OK.value())
                 .result(tenantResponses)
                 .build();

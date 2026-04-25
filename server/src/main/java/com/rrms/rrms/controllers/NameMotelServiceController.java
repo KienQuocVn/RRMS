@@ -28,7 +28,7 @@ public class NameMotelServiceController {
 
     private final INameMotelServiceService nameMotelServiceService;
 
-    // Táº¡o má»›i má»™t NameMotelService
+    // Tạo mới một NameMotelService
     @PostMapping
     public ResponseEntity<NameMotelServiceResponse> createNameMotelService(
             @RequestBody NameMotelServiceRequest request) {
@@ -36,7 +36,7 @@ public class NameMotelServiceController {
         return ResponseEntity.ok(response);
     }
 
-    // Cáº­p nháº­t má»™t NameMotelService
+    // Cập nhật một NameMotelService
     @PutMapping("/{id}")
     public ResponseEntity<NameMotelServiceResponse> updateNameMotelService(
             @PathVariable UUID id, @RequestBody NameMotelServiceRequest request) {
@@ -44,21 +44,21 @@ public class NameMotelServiceController {
         return ResponseEntity.ok(response);
     }
 
-    // Láº¥y táº¥t cáº£ cÃ¡c NameMotelService
+    // Lấy tất cả các NameMotelService
     @GetMapping
     public ResponseEntity<List<NameMotelServiceResponse>> getAllNameMotelServices() {
         List<NameMotelServiceResponse> responses = nameMotelServiceService.getAllNameMotelServices();
         return ResponseEntity.ok(responses);
     }
 
-    // Láº¥y má»™t NameMotelService theo ID
+    // Lấy một NameMotelService theo ID
     @GetMapping("/{id}")
     public ResponseEntity<NameMotelServiceResponse> getNameMotelServiceById(@PathVariable UUID id) {
         NameMotelServiceResponse response = nameMotelServiceService.getNameMotelServiceById(id);
         return ResponseEntity.ok(response);
     }
 
-    // XÃ³a má»™t NameMotelService theo ID
+    // Xóa một NameMotelService theo ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNameMotelService(@PathVariable UUID id) {
         nameMotelServiceService.deleteNameMotelService(id);

@@ -34,7 +34,7 @@ public class RoomReservationController {
         RoomReservationResponse response = roomReservationService.createRoomReservation(request);
         return ApiResponse.<RoomReservationResponse>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("Room reservation created successfully")
+                .message("Tạo đặt phòng thành công")
                 .result(response)
                 .build();
     }
@@ -44,7 +44,7 @@ public class RoomReservationController {
         RoomReservationResponse response = roomReservationService.getRoomReservationById(id);
         return ApiResponse.<RoomReservationResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy thông tin đặt phòng thành công")
                 .result(response)
                 .build();
     }
@@ -54,7 +54,7 @@ public class RoomReservationController {
         List<RoomReservationResponse> responses = roomReservationService.getAllRoomReservations();
         return ApiResponse.<List<RoomReservationResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách đặt phòng thành công")
                 .result(responses)
                 .build();
     }
@@ -65,7 +65,7 @@ public class RoomReservationController {
         RoomReservationResponse response = roomReservationService.updateRoomReservation(id, request);
         return ApiResponse.<RoomReservationResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Room reservation updated successfully")
+                .message("Cập nhật đặt phòng thành công")
                 .result(response)
                 .build();
     }
@@ -75,7 +75,7 @@ public class RoomReservationController {
         roomReservationService.deleteRoomReservation(id);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.NO_CONTENT.value())
-                .message("Room reservation deleted successfully")
+                .message("Xóa đặt phòng thành công")
                 .build();
     }
 
@@ -84,7 +84,7 @@ public class RoomReservationController {
         List<RoomReservationResponse> responses = roomReservationService.getRoomReservationsByRoomId(roomId);
         return ApiResponse.<List<RoomReservationResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách đặt phòng theo phòng thành công")
                 .result(responses)
                 .build();
     }

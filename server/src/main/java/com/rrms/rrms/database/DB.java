@@ -25,7 +25,7 @@ import net.datafaker.Faker;
 @Transactional
 @Profile("dev")
 public class DB {
-    private static final String DEFAULT_PASSWORD = "123";
+    private static final String DEFAULT_PASSWORD = "123456789";
     private int imageIndex = 0;
 
     @Bean
@@ -692,13 +692,13 @@ public class DB {
             Account host,
             Account customer) {
         for (int i = 0; i < 5; i++) {
-            BulletinBoard bb = bbRepo.save(BulletinBoard.builder()
+            BulletinBoard bb = BulletinBoard.builder()
                     .account(host)
                     .title("Phòng trọ cao cấp Q.9 - " + i)
                     .rentalCategory("Phòng trọ")
                     .description("Phòng mới xây, đầy đủ tiện nghi...")
                     .address("123 Lê Văn Việt, Q.9")
-                    .build());
+                    .build();
             bb.setRentPrice(java.math.BigDecimal.valueOf(2500000));
             bb.setPromotionalRentalPrice(java.math.BigDecimal.valueOf(2300000));
             bb.setDeposit(java.math.BigDecimal.valueOf(1000000));
@@ -711,7 +711,7 @@ public class DB {
             bb.setCloseHours("23h");
             bb.setStatus(true);
             bb.setIsActive(true);
-            bbRepo.save(bb);
+            bb = bbRepo.save(bb);
 
             bbiRepo.save(new BulletinBoardImage(
                     UUID.randomUUID(), bb, "https://picsum.photos/800/600?random=" + (++imageIndex)));

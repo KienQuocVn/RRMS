@@ -33,7 +33,7 @@ public class ServiceController {
     public ApiResponse<ServiceResponse> createService(@RequestBody ServiceRequest serviceRequest) {
         return ApiResponse.<ServiceResponse>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("Create service successfully")
+                .message("Tạo dịch vụ thành công")
                 .result(service.createService(serviceRequest))
                 .build();
     }

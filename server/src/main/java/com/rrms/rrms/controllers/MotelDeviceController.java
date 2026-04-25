@@ -34,10 +34,9 @@ public class MotelDeviceController {
     @GetMapping("/motel/{motelId}")
     public ApiResponse<List<MotelDeviceResponse>> getMotelDevices(@PathVariable("motelId") UUID motelId) {
         List<MotelDeviceResponse> motelResponses = motelDeviceService.getAllMotelDevicesByMotel(motelId);
-        log.info("Get all motel devices successfully for motel: {}", motelId);
         return ApiResponse.<List<MotelDeviceResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách thiết bị của nhà trọ thành công")
                 .result(motelResponses)
                 .build();
     }
@@ -47,17 +46,15 @@ public class MotelDeviceController {
     public ApiResponse<MotelDeviceResponse> insertMotelDevice(@RequestBody MotelDeviceRequest motelDeviceRequest) {
         MotelDeviceResponse motelResponses = motelDeviceService.insertMotelDevice(motelDeviceRequest);
         if (motelResponses != null) {
-            log.info("Insert motel device successfully");
             return ApiResponse.<MotelDeviceResponse>builder()
                     .code(HttpStatus.CREATED.value())
-                    .message("success")
+                    .message("Thêm thiết bị vào nhà trọ thành công")
                     .result(motelResponses)
                     .build();
         } else {
-            log.error("Insert motel device failed");
             return ApiResponse.<MotelDeviceResponse>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
-                    .message("error")
+                    .message("Thêm thiết bị vào nhà trọ thất bại")
                     .build();
         }
     }
@@ -67,16 +64,14 @@ public class MotelDeviceController {
     public ApiResponse<Void> deleteMotelDevice(@PathVariable("motelDeviceId") UUID motelDeviceId) {
         boolean result = motelDeviceService.deleteMotelDevice(motelDeviceId);
         if (result) {
-            log.info("Delete motel device successfully");
             return ApiResponse.<Void>builder()
                     .code(HttpStatus.OK.value())
-                    .message("success")
+                    .message("Xóa thiết bị khỏi nhà trọ thành công")
                     .build();
         } else {
-            log.error("Delete motel device failed");
             return ApiResponse.<Void>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
-                    .message("error")
+                    .message("Xóa thiết bị khỏi nhà trọ thất bại")
                     .build();
         }
     }

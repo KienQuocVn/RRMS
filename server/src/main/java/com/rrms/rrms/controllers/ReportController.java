@@ -36,7 +36,7 @@ public class ReportController {
                 .orElseThrow(() -> new AppException(ErrorCode.MOTEL_NOT_FOUND));
 
         return ApiResponse.<Integer>builder()
-                .message("Total rooms retrieved successfully")
+                .message("Lấy tổng số phòng thành công")
                 .result(totalRooms)
                 .build();
     }
@@ -45,7 +45,7 @@ public class ReportController {
     @GetMapping("/room-counts")
     public ApiResponse<List<MotelRoomCountResponse>> getRoomCountsByContractStatus() {
         return ApiResponse.<List<MotelRoomCountResponse>>builder()
-                .message("Room counts retrieved successfully")
+                .message("Lấy số lượng phòng theo trạng thái hợp đồng thành công")
                 .result(motelService.getRoomCountsByContractStatus())
                 .build();
     }
@@ -54,7 +54,7 @@ public class ReportController {
     @GetMapping("/{motelId}/tenants/count")
     public ApiResponse<Integer> getTotalTenants(@PathVariable UUID motelId) {
         return ApiResponse.<Integer>builder()
-                .message("Total tenants retrieved successfully")
+                .message("Lấy tổng số người thuê thành công")
                 .result(contractService.getTotalTenantsByMotelId(motelId))
                 .build();
     }
@@ -63,7 +63,7 @@ public class ReportController {
     @GetMapping("/tenant/summary")
     public ApiResponse<List<TenantSummaryDTO>> getTenantSummary() {
         return ApiResponse.<List<TenantSummaryDTO>>builder()
-                .message("Tenant summary retrieved successfully")
+                .message("Lấy báo cáo tổng hợp người thuê thành công")
                 .result(tenantService.getTenantSummary())
                 .build();
     }
@@ -72,7 +72,7 @@ public class ReportController {
     @GetMapping("/{motelId}/deposits")
     public ApiResponse<Double> getTotalDeposit(@PathVariable UUID motelId) {
         return ApiResponse.<Double>builder()
-                .message("Total deposit retrieved successfully")
+                .message("Lấy tổng tiền đặt cọc thành công")
                 .result(motelService.calculateTotalDeposit(motelId))
                 .build();
     }
@@ -81,7 +81,7 @@ public class ReportController {
     @GetMapping("/{motelId}/reserve-deposits")
     public ApiResponse<Double> getTotalReserveDeposit(@PathVariable UUID motelId) {
         return ApiResponse.<Double>builder()
-                .message("Total reserve deposit retrieved successfully")
+                .message("Lấy tổng tiền giữ chỗ thành công")
                 .result(motelService.calculateTotalReserveDeposit(motelId))
                 .build();
     }
@@ -90,7 +90,7 @@ public class ReportController {
     @GetMapping("/{motelId}/total-paid-invoices")
     public ApiResponse<BigDecimal> getTotalPaidInvoices(@PathVariable UUID motelId) {
         return ApiResponse.<BigDecimal>builder()
-                .message("Total paid invoices retrieved successfully")
+                .message("Lấy tổng tiền hóa đơn đã thanh toán thành công")
                 .result(motelService.getTotalPaidInvoices(motelId))
                 .build();
     }
@@ -99,7 +99,7 @@ public class ReportController {
     @GetMapping("/{motelId}/total-paid-room-price")
     public ApiResponse<BigDecimal> getTotalPaidRoomPrice(@PathVariable UUID motelId) {
         return ApiResponse.<BigDecimal>builder()
-                .message("Total paid room price retrieved successfully")
+                .message("Lấy tổng tiền phòng đã thanh toán thành công")
                 .result(motelService.getTotalPaidRoomPrice(motelId))
                 .build();
     }

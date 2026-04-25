@@ -30,10 +30,9 @@ public class BrokerController {
     @PostMapping("")
     public ApiResponse<BrokerResponse> createBroker(@RequestBody BrokerCreateRequest brokerRequest) {
         BrokerResponse brokerResponse = brokerService.createBroker(brokerRequest);
-        log.info("Create broker successfully");
         return ApiResponse.<BrokerResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Create broker successfully")
+                .message("Tạo môi giới thành công")
                 .result(brokerResponse)
                 .build();
     }
@@ -43,7 +42,7 @@ public class BrokerController {
         List<BrokerResponse> brokerResponse = brokerService.getAllBroker(UUID.fromString(motelId));
         return ApiResponse.<List<BrokerResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("get all broker successfully")
+                .message("Lấy tất cả môi giới thành công")
                 .result(brokerResponse)
                 .build();
     }

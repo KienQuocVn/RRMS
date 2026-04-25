@@ -34,7 +34,7 @@ public class TemporaryContractController {
         List<TemporaryContractResponse> allContracts = trcService.findAll();
         return ApiResponse.<List<TemporaryContractResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Retrieved all temporary contracts successfully")
+                .message("Lấy danh sách hợp đồng tạm thời thành công")
                 .result(allContracts)
                 .build();
     }
@@ -44,7 +44,7 @@ public class TemporaryContractController {
         List<TemporaryContractResponse> temRCResponses = trcService.findTRCByAccount_Username(username);
         return ApiResponse.<List<TemporaryContractResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách hợp đồng tạm thời theo tài khoản thành công")
                 .result(temRCResponses)
                 .build();
     }
@@ -54,7 +54,7 @@ public class TemporaryContractController {
         TemporaryContractResponse createdContract = trcService.insert(contract);
         return ApiResponse.<TemporaryContractResponse>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("Temporary contract created successfully")
+                .message("Tạo hợp đồng tạm thời thành công")
                 .result(createdContract)
                 .build();
     }
@@ -65,7 +65,7 @@ public class TemporaryContractController {
         TemporaryContractResponse updatedContract = trcService.update(id, contract);
         return ApiResponse.<TemporaryContractResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Temporary contract updated successfully")
+                .message("Cập nhật hợp đồng tạm thời thành công")
                 .result(updatedContract)
                 .build();
     }
@@ -75,7 +75,7 @@ public class TemporaryContractController {
         trcService.delete(id);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.NO_CONTENT.value())
-                .message("Temporary contract deleted successfully")
+                .message("Xóa hợp đồng tạm thời thành công")
                 .build();
     }
 }

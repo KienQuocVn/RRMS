@@ -33,7 +33,7 @@ public class BulletinBoardReviewsController {
             @RequestBody BulletinBoardReviewsRequest request) {
         BulletinBoardReviewsResponse response = bulletinBoardReviewsService.createOrUpdateBulletinBoardReviews(request);
         return ApiResponse.<BulletinBoardReviewsResponse>builder()
-                .message("Create Bulletin Board Reviews successfully")
+                .message("Tạo đánh giá trên bảng tin thành công")
                 .code(HttpStatus.CREATED.value())
                 .result(response)
                 .build();
@@ -46,7 +46,7 @@ public class BulletinBoardReviewsController {
                 bulletinBoardReviewsService.getBulletinBoardReviewsByBulletinBoardIdAndUsername(
                         bulletinBoardId, username);
         return ApiResponse.<BulletinBoardReviewsResponse>builder()
-                .message("Get Bulletin Board Reviews successfully")
+                .message("Nhận đánh giá bảng tin thành công")
                 .code(HttpStatus.OK.value())
                 .result(response)
                 .build();
@@ -58,7 +58,7 @@ public class BulletinBoardReviewsController {
         List<RatingHistoryResponse> response =
                 bulletinBoardReviewsService.getRatingHistoryByBulletinBoardIdAndUsername(username);
         return ApiResponse.<List<RatingHistoryResponse>>builder()
-                .message("Get Rating History successfully")
+                .message("Lấy lịch sử xếp hạng thành công")
                 .code(HttpStatus.OK.value())
                 .result(response)
                 .build();
@@ -70,7 +70,7 @@ public class BulletinBoardReviewsController {
         Integer response =
                 bulletinBoardReviewsService.deleteBulletinBoardReviewsByBulletinBoardReviewsId(bulletinBoardReviewsId);
         return ApiResponse.<Integer>builder()
-                .message("Delete Bulletin Board Reviews successfully")
+                .message("Xóa thành công các đánh giá trên bảng tin")
                 .code(HttpStatus.OK.value())
                 .result(response)
                 .build();

@@ -2,6 +2,7 @@ package com.rrms.rrms.models;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -93,17 +94,21 @@ public class BulletinBoard extends BaseEntity {
 
     @OneToMany(mappedBy = "bulletinBoard", cascade = CascadeType.MERGE, orphanRemoval = true)
     @JsonIgnore
-    private List<BulletinBoardImage> bulletinBoardImages;
+    @Builder.Default
+    private List<BulletinBoardImage> bulletinBoardImages = new ArrayList<>();
 
     @OneToMany(mappedBy = "bulletinBoard", cascade = CascadeType.MERGE, orphanRemoval = true)
     @JsonIgnore
-    private List<BulletinBoardReviews> bulletinBoardReviews;
+    @Builder.Default
+    private List<BulletinBoardReviews> bulletinBoardReviews = new ArrayList<>();
 
     @OneToMany(mappedBy = "bulletinBoard", cascade = CascadeType.MERGE, orphanRemoval = true)
     @JsonIgnore
-    private List<BulletinBoardRule> bulletinBoardRules;
+    @Builder.Default
+    private List<BulletinBoardRule> bulletinBoardRules = new ArrayList<>();
 
     @OneToMany(mappedBy = "bulletinBoard", cascade = CascadeType.MERGE, orphanRemoval = true)
     @JsonIgnore
-    private List<BulletinBoardRentalAmenity> bulletinBoardRentalAmenities;
+    @Builder.Default
+    private List<BulletinBoardRentalAmenity> bulletinBoardRentalAmenities = new ArrayList<>();
 }

@@ -31,9 +31,8 @@ public class RoomReviewController {
     @PostMapping
     public ApiResponse<RoomReviewResponse> createRoomReview(@RequestBody RoomReviewRequest roomReviewRequest) {
         RoomReviewResponse response = roomReviewService.createRoomReview(roomReviewRequest);
-        log.info("Create Room Review successfully");
         return ApiResponse.<RoomReviewResponse>builder()
-                .message("Create Room Review successfully")
+                .message("Tạo đánh giá phòng thành công")
                 .code(HttpStatus.CREATED.value())
                 .result(response)
                 .build();

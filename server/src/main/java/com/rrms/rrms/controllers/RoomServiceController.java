@@ -33,11 +33,10 @@ public class RoomServiceController {
     @Operation(summary = "Create room service mapping")
     @PostMapping
     public ApiResponse<RoomServiceResponse> createRoomService(@RequestBody RoomServiceRequest roomServiceRequest) {
-        log.info("Create room service mapping");
         RoomServiceResponse response = roomServiceService.createRoomService(roomServiceRequest);
         return ApiResponse.<RoomServiceResponse>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("success")
+                .message("Tạo dịch vụ cho phòng thành công")
                 .result(response)
                 .build();
     }
@@ -49,7 +48,7 @@ public class RoomServiceController {
         RoomServiceResponse response = roomServiceService.updateRoomService(roomServiceId, request);
         return ApiResponse.<RoomServiceResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Cập nhật dịch vụ phòng thành công")
                 .result(response)
                 .build();
     }
@@ -60,7 +59,7 @@ public class RoomServiceController {
         RoomServiceResponse response = roomServiceService.getRoomServiceById(roomServiceId);
         return ApiResponse.<RoomServiceResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy thông tin dịch vụ phòng thành công")
                 .result(response)
                 .build();
     }
@@ -71,7 +70,7 @@ public class RoomServiceController {
         roomServiceService.deleteRoomService(roomServiceId);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Deleted successfully")
+                .message("Xóa dịch vụ phòng thành công")
                 .build();
     }
 
@@ -81,7 +80,7 @@ public class RoomServiceController {
         List<RoomServiceResponse> response = roomServiceService.findAll();
         return ApiResponse.<List<RoomServiceResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách dịch vụ phòng thành công")
                 .result(response)
                 .build();
     }
@@ -92,7 +91,7 @@ public class RoomServiceController {
         List<RoomServiceDetailResponse> response = roomServiceService.findByRoomId(roomId);
         return ApiResponse.<List<RoomServiceDetailResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách dịch vụ theo phòng thành công")
                 .result(response)
                 .build();
     }

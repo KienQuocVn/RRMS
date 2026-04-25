@@ -33,10 +33,9 @@ public class MotelController {
     @GetMapping
     public ApiResponse<List<MotelResponse>> getMotels() {
         List<MotelResponse> motelResponses = motelService.findAll();
-        log.info("Get all motels successfully");
         return ApiResponse.<List<MotelResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách nhà trọ thành công")
                 .result(motelResponses)
                 .build();
     }
@@ -47,7 +46,7 @@ public class MotelController {
         MotelResponse motelResponse = motelService.findById(id);
         return ApiResponse.<MotelResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy thông tin nhà trọ thành công")
                 .result(motelResponse)
                 .build();
     }
@@ -58,7 +57,7 @@ public class MotelController {
         List<MotelResponse> motelResponses = motelService.findMotelByAccount_Username(username);
         return ApiResponse.<List<MotelResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách nhà trọ theo tài khoản thành công")
                 .result(motelResponses)
                 .build();
     }
@@ -67,10 +66,9 @@ public class MotelController {
     @PostMapping
     public ApiResponse<MotelResponse> createMotel(@RequestBody MotelRequest motelRequest) {
         MotelResponse motelResponse = motelService.insert(motelRequest);
-        log.info("Create motel successfully");
         return ApiResponse.<MotelResponse>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("success")
+                .message("Tạo mới nhà trọ thành công")
                 .result(motelResponse)
                 .build();
     }
@@ -79,10 +77,9 @@ public class MotelController {
     @PutMapping("/{id}")
     public ApiResponse<MotelResponse> updateMotel(@PathVariable("id") UUID id, @RequestBody MotelRequest motelRequest) {
         MotelResponse motelResponse = motelService.update(id, motelRequest);
-        log.info("Update motel successfully");
         return ApiResponse.<MotelResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Cập nhật nhà trọ thành công")
                 .result(motelResponse)
                 .build();
     }
@@ -92,17 +89,15 @@ public class MotelController {
     public ApiResponse<Boolean> deleteMotel(@PathVariable("id") UUID id) {
         try {
             motelService.delete(id);
-            log.info("Delete motel successfully");
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.OK.value())
-                    .message("success")
+                    .message("Xóa nhà trọ thành công")
                     .result(true)
                     .build();
         } catch (Exception e) {
-            log.error("Delete motel failed", e);
             return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
-                    .message("error")
+                    .message("Xóa nhà trọ thất bại")
                     .result(false)
                     .build();
         }

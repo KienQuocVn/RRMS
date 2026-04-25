@@ -37,15 +37,14 @@ public class RolesController {
     public ApiResponse<List<RoleResponse>> getAllRole() {
         List<RoleResponse> roleResponse = roleService.GetAllRoles();
         try {
-            log.info("Get all role successfully");
             return ApiResponse.<List<RoleResponse>>builder()
-                    .message("Get all role successfully")
+                    .message("Lấy danh sách vai trò thành công")
                     .code(HttpStatus.OK.value())
                     .result(roleResponse)
                     .build();
         } catch (Exception ex) {
             return ApiResponse.<List<RoleResponse>>builder()
-                    .message("Get all role failed")
+                    .message("Lấy danh sách vai trò thất bại")
                     .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .result(null)
                     .build();
@@ -57,16 +56,14 @@ public class RolesController {
     public ApiResponse<RoleResponse> getRoleById(@PathVariable("id") UUID id) {
         try {
             RoleResponse roleResponse = roleService.findById(id);
-            log.info("Get Role by id successfully");
             return ApiResponse.<RoleResponse>builder()
-                    .message("Call api success")
+                    .message("Lấy thông tin vai trò thành công")
                     .code(HttpStatus.OK.value())
                     .result(roleResponse)
                     .build();
         } catch (Exception ex) {
-            log.error("Get role failed", ex);
             return ApiResponse.<RoleResponse>builder()
-                    .message("Call api failed")
+                    .message("Lấy thông tin vai trò thất bại")
                     .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .result(null)
                     .build();
@@ -77,16 +74,14 @@ public class RolesController {
     public ApiResponse<RoleResponse> getRoleByIdNoCache(@PathVariable("id") UUID id) {
         try {
             RoleResponse roleResponse = roleService.findById(id);
-            log.info("Get Role by id successfully");
             return ApiResponse.<RoleResponse>builder()
-                    .message("Call api success")
+                    .message("Lấy thông tin vai trò thành công")
                     .code(HttpStatus.OK.value())
                     .result(roleResponse)
                     .build();
         } catch (Exception ex) {
-            log.error("Get role failed", ex);
             return ApiResponse.<RoleResponse>builder()
-                    .message("Call api failed")
+                    .message("Lấy thông tin vai trò thất bại")
                     .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .result(null)
                     .build();
@@ -98,16 +93,14 @@ public class RolesController {
     public ApiResponse<RoleResponse> addRole(@RequestBody RoleRequest request) {
         try {
             RoleResponse roleResponse = roleService.createRole(request);
-            log.info("Add role successfully: {}", roleResponse);
             return ApiResponse.<RoleResponse>builder()
-                    .message("Role added successfully")
+                    .message("Tạo vai trò mới thành công")
                     .code(HttpStatus.CREATED.value())
                     .result(roleResponse)
                     .build();
         } catch (Exception ex) {
-            log.error("Add role failed", ex);
             return ApiResponse.<RoleResponse>builder()
-                    .message("Failed to add role")
+                    .message("Tạo vai trò mới thất bại")
                     .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .result(null)
                     .build();
@@ -119,16 +112,14 @@ public class RolesController {
     public ApiResponse<RoleResponse> updateRole(@RequestBody RoleRequest roleRequest) {
         try {
             RoleResponse roleResponse = roleService.updateRole(roleRequest);
-            log.info("Update role successfully: {}", roleResponse);
             return ApiResponse.<RoleResponse>builder()
-                    .message("Role updated successfully")
+                    .message("Cập nhật vai trò thành công")
                     .code(HttpStatus.OK.value())
                     .result(roleResponse)
                     .build();
         } catch (Exception ex) {
-            log.error("Update role failed", ex);
             return ApiResponse.<RoleResponse>builder()
-                    .message("Failed to update role")
+                    .message("Cập nhật vai trò thất bại")
                     .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .result(null)
                     .build();
@@ -140,16 +131,14 @@ public class RolesController {
     public ApiResponse<Void> deleteRole(@PathVariable UUID id) {
         try {
             roleService.deleteRole(id);
-            log.info("Delete role successfully for id: {}", id);
             return ApiResponse.<Void>builder()
-                    .message("Role deleted successfully")
+                    .message("Xóa vai trò thành công")
                     .code(HttpStatus.NO_CONTENT.value())
                     .result(null)
                     .build();
         } catch (Exception ex) {
-            log.error("Delete role failed for id: {}", id, ex);
             return ApiResponse.<Void>builder()
-                    .message("Failed to delete role")
+                    .message("Xóa vai trò thất bại")
                     .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .result(null)
                     .build();

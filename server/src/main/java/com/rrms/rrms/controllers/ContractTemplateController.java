@@ -29,7 +29,7 @@ public class ContractTemplateController {
 
     private final IContractTemplateService contractTemplateService;
 
-    // Táº¡o má»›i má»™t Contract Template
+    // Tạo mới một Contract Template
     @PostMapping
     public ResponseEntity<ContractTemplateResponse> createContractTemplate(
             @RequestBody ContractTemplateRequest request) {
@@ -37,7 +37,7 @@ public class ContractTemplateController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // Láº¥y thÃ´ng tin cá»§a má»™t Contract Template theo ID
+    // Lấy thông tin của một Contract Template theo ID
     @GetMapping("/{id}")
     public ResponseEntity<ContractTemplateResponse> getContractTemplateById(@PathVariable UUID id) {
         ContractTemplateResponse response = contractTemplateService.getContractTemplateById(id);
@@ -46,21 +46,21 @@ public class ContractTemplateController {
                 : ResponseEntity.notFound().build();
     }
 
-    // Láº¥y danh sÃ¡ch táº¥t cáº£ Contract Templates
+    // Lấy danh sách tất cả Contract Templates
     @GetMapping
     public ResponseEntity<List<ContractTemplateResponse>> getAllContractTemplates() {
         List<ContractTemplateResponse> responses = contractTemplateService.getAllContractTemplates();
         return ResponseEntity.ok(responses);
     }
 
-    // Láº¥y danh sÃ¡ch Contract Templates theo Motel ID
+    // Lấy danh sách Contract Templates theo Motel ID
     @GetMapping("/motel/{motelId}")
     public ResponseEntity<List<ContractTemplateResponse>> getContractTemplatesByMotelId(@PathVariable UUID motelId) {
         List<ContractTemplateResponse> responses = contractTemplateService.getContractTemplatesByMotelId(motelId);
         return ResponseEntity.ok(responses);
     }
 
-    // Cáº­p nháº­t thÃ´ng tin cá»§a má»™t Contract Template
+    // Cập nhật thông tin của một Contract Template
     @PutMapping("/{id}")
     public ResponseEntity<ContractTemplateResponse> updateContractTemplate(
             @PathVariable UUID id, @RequestBody ContractTemplateRequest request) {
@@ -70,7 +70,7 @@ public class ContractTemplateController {
                 : ResponseEntity.notFound().build();
     }
 
-    // XÃ³a má»™t Contract Template theo ID
+    // Xóa một Contract Template theo ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteContractTemplate(@PathVariable UUID id) {
         contractTemplateService.deleteContractTemplate(id);

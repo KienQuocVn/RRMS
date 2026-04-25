@@ -28,7 +28,7 @@ public class MeterReadingController {
     @GetMapping("/motel/{motelId}")
     public ApiResponse<List<MeterReadingResponse>> getAllByMotel(@PathVariable UUID motelId) {
         return ApiResponse.<List<MeterReadingResponse>>builder()
-                .message("Meter readings retrieved successfully")
+                .message("Lấy danh sách chỉ số điện nước theo motel thành công")
                 .result(meterReadingService.getAllByMotel(motelId))
                 .build();
     }
@@ -37,7 +37,7 @@ public class MeterReadingController {
     @GetMapping("/room/{roomId}")
     public ApiResponse<List<MeterReadingResponse>> getAllByRoom(@PathVariable UUID roomId) {
         return ApiResponse.<List<MeterReadingResponse>>builder()
-                .message("Meter readings retrieved successfully")
+                .message("Lấy danh sách chỉ số điện nước theo phòng thành công")
                 .result(meterReadingService.getAllByRoom(roomId))
                 .build();
     }
@@ -47,7 +47,7 @@ public class MeterReadingController {
     public ResponseEntity<ApiResponse<MeterReadingResponse>> save(@RequestBody MeterReadingRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.<MeterReadingResponse>builder()
-                        .message("Meter reading created successfully")
+                        .message("Tạo mới chỉ số điện nước thành công")
                         .result(meterReadingService.save(request))
                         .build());
     }
@@ -57,7 +57,7 @@ public class MeterReadingController {
     public ApiResponse<Void> delete(@PathVariable UUID id) {
         meterReadingService.delete(id);
         return ApiResponse.<Void>builder()
-                .message("Meter reading deleted successfully")
+                .message("Xóa chỉ số điện nước thành công")
                 .build();
     }
 }

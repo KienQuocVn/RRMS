@@ -35,17 +35,17 @@ public class RoomDeviceController {
     public ApiResponse<RoomDeviceResponse> insertRoomDevice(@RequestBody RoomDeviceRequest roomDeviceRequest) {
         RoomDeviceResponse roomDeviceResponse = roomDeviceService.insertRoomDevice(roomDeviceRequest);
         if (roomDeviceResponse != null) {
-            log.info("Insert roomDevice successfully");
+            log.info("Thêm thiết bị vào phòng thành công");
             return ApiResponse.<RoomDeviceResponse>builder()
                     .code(HttpStatus.CREATED.value())
-                    .message("success")
+                    .message("Thêm thiết bị vào phòng thành công")
                     .result(roomDeviceResponse)
                     .build();
         } else {
-            log.error("Insert roomDevice failed");
+            log.error("Thêm thiết bị vào phòng thất bại");
             return ApiResponse.<RoomDeviceResponse>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
-                    .message("error")
+                    .message("Thêm thiết bị vào phòng thất bại")
                     .build();
         }
     }
@@ -56,16 +56,16 @@ public class RoomDeviceController {
             @PathVariable("roomId") UUID roomId, @PathVariable("motelDeviceId") UUID motelDeviceId) {
         Boolean result = roomDeviceService.deleteByRoomAndAndMotelDevice(roomId, motelDeviceId);
         if (result) {
-            log.info("delete roomDevice successfully");
+            log.info("Xóa thiết bị khỏi phòng thành công");
             return ApiResponse.<Void>builder()
                     .code(HttpStatus.OK.value())
-                    .message("success")
+                    .message("Xóa thiết bị khỏi phòng thành công")
                     .build();
         } else {
-            log.error("delete roomDevice failed");
+            log.error("Xóa thiết bị khỏi phòng thất bại");
             return ApiResponse.<Void>builder()
                     .code(HttpStatus.NOT_FOUND.value())
-                    .message("error")
+                    .message("Không tìm thấy thiết bị trong phòng")
                     .build();
         }
     }
@@ -76,7 +76,7 @@ public class RoomDeviceController {
         List<RoomDeviceResponse> getDeviceByRomId = roomDeviceService.getAllDeviceByRoomId(roomId);
         return ApiResponse.<List<RoomDeviceResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách thiết bị theo phòng thành công")
                 .result(getDeviceByRomId)
                 .build();
     }
@@ -89,16 +89,16 @@ public class RoomDeviceController {
             @RequestParam("quantity") Integer quantity) {
         Boolean result = roomDeviceService.updateQuantity(roomId, motelDeviceId, quantity);
         if (result) {
-            log.info("update quantity roomDevice successfully");
+            log.info("Cập nhật số lượng thiết bị trong phòng thành công");
             return ApiResponse.<Void>builder()
                     .code(HttpStatus.OK.value())
-                    .message("success")
+                    .message("Cập nhật số lượng thiết bị thành công")
                     .build();
         } else {
-            log.error("update quantity roomDevice failed");
+            log.error("Cập nhật số lượng thiết bị thất bại");
             return ApiResponse.<Void>builder()
                     .code(HttpStatus.NOT_FOUND.value())
-                    .message("error")
+                    .message("Không tìm thấy thiết bị để cập nhật")
                     .build();
         }
     }

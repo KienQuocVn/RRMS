@@ -1,5 +1,6 @@
 package com.rrms.rrms.services.servicesImp;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,8 +17,21 @@ import com.rrms.rrms.dto.response.BulletinBoardTableResponse;
 import com.rrms.rrms.enums.ErrorCode;
 import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.BulletinBoardMapper;
-import com.rrms.rrms.models.*;
-import com.rrms.rrms.repositories.*;
+import com.rrms.rrms.models.Account;
+import com.rrms.rrms.models.BulletinBoard;
+import com.rrms.rrms.models.BulletinBoardImage;
+import com.rrms.rrms.models.BulletinBoardRentalAmenity;
+import com.rrms.rrms.models.BulletinBoardRule;
+import com.rrms.rrms.models.RentalAmenities;
+import com.rrms.rrms.models.Rule;
+import com.rrms.rrms.repositories.AccountRepository;
+import com.rrms.rrms.repositories.BulletinBoardElasticsearchRepository;
+import com.rrms.rrms.repositories.BulletinBoardImageRepository;
+import com.rrms.rrms.repositories.BulletinBoardRentalAmenityRepository;
+import com.rrms.rrms.repositories.BulletinBoardRepository;
+import com.rrms.rrms.repositories.BulletinBoardRuleRepository;
+import com.rrms.rrms.repositories.RentalAmenitiesRepository;
+import com.rrms.rrms.repositories.RuleRepository;
 import com.rrms.rrms.services.IBulletinBoard;
 
 import lombok.AccessLevel;
@@ -52,9 +66,7 @@ public class BulletinBoardService implements IBulletinBoard {
 
     @Override
     public BulletinBoardResponse getBulletinBoardById(UUID id) {
-        return bulletinBoardMapper.toBulletinBoardResponse(bulletinBoardRepository
-                .findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.BULLETIN_BOARD_NOT_FOUND)));
+        return bulletinBoardMapper.toBulletinBoardResponse(reloadBulletinBoard(id));
     }
 
     @Override
@@ -67,125 +79,39 @@ public class BulletinBoardService implements IBulletinBoard {
         bulletinBoard.setAccount(account);
         bulletinBoard = bulletinBoardRepository.save(bulletinBoard);
 
-        for (BulletinBoardImage image : bulletinBoardRequest.getBulletinBoardImages()) {
-            BulletinBoardImage bulletinBoardImage = new BulletinBoardImage();
-            bulletinBoardImage.setBulletinBoard(bulletinBoard);
-            bulletinBoardImage.setImageLink(image.getImageLink());
+        saveImages(bulletinBoard, bulletinBoardRequest.getBulletinBoardImages());
+        saveRules(bulletinBoard, bulletinBoardRequest.getBulletinBoardRules());
+        saveRentalAmenities(bulletinBoard, bulletinBoardRequest.getBulletinBoardRentalAmenities());
 
-            if (bulletinBoardImage.getBulletinBoard() == null) {
-                bulletinBoardImage.setBulletinBoard(bulletinBoard);
-            }
-
-            bulletinBoardImageRepository.save(bulletinBoardImage);
-        }
-
-        for (BulletinBoardRule bulletinRule : bulletinBoardRequest.getBulletinBoardRules()) {
-            Rule rule = bulletinRule.getRule();
-            if (rule != null) {
-                rule = ruleRepository.save(rule);
-            } else {
-                rule = new Rule();
-                rule = ruleRepository.save(rule);
-            }
-
-            BulletinBoardRule bulletinBoardRule = new BulletinBoardRule();
-            bulletinBoardRule.setBulletinBoard(bulletinBoard);
-            bulletinBoardRule.setRule(rule);
-
-            bulletinBoardRuleRepository.save(bulletinBoardRule);
-        }
-
-        for (BulletinBoardRentalAmenity rentalAm : bulletinBoardRequest.getBulletinBoardRentalAmenities()) {
-            Optional<RentalAmenities> rentalAmenitiesOptional = rentalAmenitiesRepository.findByName(
-                    rentalAm.getRentalAmenities().getName());
-
-            RentalAmenities rentalAmenities;
-            if (rentalAmenitiesOptional.isPresent()) {
-                rentalAmenities = rentalAmenitiesOptional.get();
-            } else {
-                rentalAmenities = new RentalAmenities();
-                rentalAmenities.setName(rentalAm.getRentalAmenities().getName());
-                rentalAmenities = rentalAmenitiesRepository.save(rentalAmenities);
-            }
-
-            BulletinBoardRentalAmenity bulletinBoardRentalAmenity = new BulletinBoardRentalAmenity();
-            bulletinBoardRentalAmenity.setBulletinBoard(bulletinBoard);
-            bulletinBoardRentalAmenity.setRentalAmenities(rentalAmenities);
-
-            bulletinBoardRentalAmenityRepository.save(bulletinBoardRentalAmenity);
-        }
-
-        return bulletinBoardMapper.toBulletinBoardResponse(bulletinBoard);
+        return bulletinBoardMapper.toBulletinBoardResponse(reloadBulletinBoard(bulletinBoard.getBulletinBoardId()));
     }
 
-    @Transactional
     @Override
     public BulletinBoardResponse updateBulletinBoard(UUID bulletinBoardId, BulletinBoardRequest bulletinBoardRequest) {
-        // Lấy BulletinBoard hiện tại
         BulletinBoard bulletinBoard = bulletinBoardRepository
                 .findById(bulletinBoardId)
                 .orElseThrow(() -> new ResourceNotFoundException("BulletinBoard not found"));
         log.debug("Updating bulletin board id: {}", bulletinBoard.getBulletinBoardId());
 
-        // Cập nhật các trường cơ bản
         bulletinBoardMapper.updateBulletinBoardFromRequest(bulletinBoardRequest, bulletinBoard);
+        bulletinBoardRepository.save(bulletinBoard);
 
-        // Cập nhật danh sách hình ảnh
         if (bulletinBoardRequest.getBulletinBoardImages() != null) {
             bulletinBoardImageRepository.deleteAllByBulletinBoard(bulletinBoard);
-            for (BulletinBoardImage image : bulletinBoardRequest.getBulletinBoardImages()) {
-                BulletinBoardImage bulletinBoardImage = new BulletinBoardImage();
-                bulletinBoardImage.setBulletinBoard(bulletinBoard); // Đảm bảo rằng bulletinBoard được gán đúng
-                bulletinBoardImage.setImageLink(image.getImageLink());
-                bulletinBoardImageRepository.save(bulletinBoardImage);
-            }
+            saveImages(bulletinBoard, bulletinBoardRequest.getBulletinBoardImages());
         }
 
-        // Cập nhật danh sách quy tắc
         if (bulletinBoardRequest.getBulletinBoardRules() != null) {
             bulletinBoardRuleRepository.deleteAllByBulletinBoard(bulletinBoard);
-            for (BulletinBoardRule bulletinRule : bulletinBoardRequest.getBulletinBoardRules()) {
-                Rule rule = bulletinRule.getRule();
-                if (rule != null) {
-                    rule = ruleRepository.save(rule);
-                } else {
-                    rule = new Rule();
-                    rule = ruleRepository.save(rule);
-                }
-
-                BulletinBoardRule bulletinBoardRule = new BulletinBoardRule();
-                bulletinBoardRule.setBulletinBoard(bulletinBoard); // Đảm bảo rằng bulletinBoard được gán đúng
-                bulletinBoardRule.setRule(rule);
-                bulletinBoardRuleRepository.save(bulletinBoardRule);
-            }
+            saveRules(bulletinBoard, bulletinBoardRequest.getBulletinBoardRules());
         }
 
-        // Cập nhật danh sách tiện ích
         if (bulletinBoardRequest.getBulletinBoardRentalAmenities() != null) {
             bulletinBoardRentalAmenityRepository.deleteAllByBulletinBoard(bulletinBoard);
-            for (BulletinBoardRentalAmenity rentalAm : bulletinBoardRequest.getBulletinBoardRentalAmenities()) {
-                Optional<RentalAmenities> rentalAmenitiesOptional = rentalAmenitiesRepository.findByName(
-                        rentalAm.getRentalAmenities().getName());
-
-                RentalAmenities rentalAmenities;
-                if (rentalAmenitiesOptional.isPresent()) {
-                    rentalAmenities = rentalAmenitiesOptional.get();
-                } else {
-                    rentalAmenities = new RentalAmenities();
-                    rentalAmenities.setName(rentalAm.getRentalAmenities().getName());
-                    rentalAmenities = rentalAmenitiesRepository.save(rentalAmenities);
-                }
-
-                BulletinBoardRentalAmenity bulletinBoardRentalAmenity = new BulletinBoardRentalAmenity();
-                bulletinBoardRentalAmenity.setBulletinBoard(bulletinBoard); // Đảm bảo rằng bulletinBoard được gán đúng
-                bulletinBoardRentalAmenity.setRentalAmenities(rentalAmenities);
-                bulletinBoardRentalAmenityRepository.save(bulletinBoardRentalAmenity);
-            }
+            saveRentalAmenities(bulletinBoard, bulletinBoardRequest.getBulletinBoardRentalAmenities());
         }
 
-        // Lưu lại và trả về kết quả
-        bulletinBoard = bulletinBoardRepository.save(bulletinBoard); // Lưu lại bản cập nhật
-        return bulletinBoardMapper.toBulletinBoardResponse(bulletinBoard);
+        return bulletinBoardMapper.toBulletinBoardResponse(reloadBulletinBoard(bulletinBoardId));
     }
 
     @Override
@@ -230,5 +156,76 @@ public class BulletinBoardService implements IBulletinBoard {
     @Override
     public BulletinBoardSearchResponse findByBulletinBoardId(UUID id) {
         return bulletinBoardMapper.toBulletinBoardSearchResponse(bulletinBoardRepository.findByBulletinBoardId(id));
+    }
+
+    private void saveImages(BulletinBoard bulletinBoard, List<BulletinBoardImage> images) {
+        for (BulletinBoardImage image : safeList(images)) {
+            if (image == null || image.getImageLink() == null) {
+                continue;
+            }
+
+            BulletinBoardImage bulletinBoardImage = new BulletinBoardImage();
+            bulletinBoardImage.setBulletinBoard(bulletinBoard);
+            bulletinBoardImage.setImageLink(image.getImageLink());
+            bulletinBoardImageRepository.save(bulletinBoardImage);
+        }
+    }
+
+    private void saveRules(BulletinBoard bulletinBoard, List<BulletinBoardRule> bulletinBoardRules) {
+        for (BulletinBoardRule bulletinRule : safeList(bulletinBoardRules)) {
+            if (bulletinRule == null) {
+                continue;
+            }
+
+            Rule rule = bulletinRule.getRule();
+            if (rule != null) {
+                rule = ruleRepository.save(rule);
+            } else {
+                rule = ruleRepository.save(new Rule());
+            }
+
+            BulletinBoardRule bulletinBoardRule = new BulletinBoardRule();
+            bulletinBoardRule.setBulletinBoard(bulletinBoard);
+            bulletinBoardRule.setRule(rule);
+            bulletinBoardRuleRepository.save(bulletinBoardRule);
+        }
+    }
+
+    private void saveRentalAmenities(
+            BulletinBoard bulletinBoard, List<BulletinBoardRentalAmenity> bulletinBoardRentalAmenities) {
+        for (BulletinBoardRentalAmenity rentalAmenity : safeList(bulletinBoardRentalAmenities)) {
+            if (rentalAmenity == null
+                    || rentalAmenity.getRentalAmenities() == null
+                    || rentalAmenity.getRentalAmenities().getName() == null) {
+                continue;
+            }
+
+            Optional<RentalAmenities> rentalAmenitiesOptional = rentalAmenitiesRepository.findByName(
+                    rentalAmenity.getRentalAmenities().getName());
+
+            RentalAmenities rentalAmenities;
+            if (rentalAmenitiesOptional.isPresent()) {
+                rentalAmenities = rentalAmenitiesOptional.get();
+            } else {
+                rentalAmenities = new RentalAmenities();
+                rentalAmenities.setName(rentalAmenity.getRentalAmenities().getName());
+                rentalAmenities = rentalAmenitiesRepository.save(rentalAmenities);
+            }
+
+            BulletinBoardRentalAmenity bulletinBoardRentalAmenity = new BulletinBoardRentalAmenity();
+            bulletinBoardRentalAmenity.setBulletinBoard(bulletinBoard);
+            bulletinBoardRentalAmenity.setRentalAmenities(rentalAmenities);
+            bulletinBoardRentalAmenityRepository.save(bulletinBoardRentalAmenity);
+        }
+    }
+
+    private BulletinBoard reloadBulletinBoard(UUID bulletinBoardId) {
+        return bulletinBoardRepository
+                .findById(bulletinBoardId)
+                .orElseThrow(() -> new AppException(ErrorCode.BULLETIN_BOARD_NOT_FOUND));
+    }
+
+    private <T> List<T> safeList(List<T> values) {
+        return values == null ? Collections.emptyList() : values;
     }
 }

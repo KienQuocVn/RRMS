@@ -37,7 +37,7 @@ public class RoomController {
         RoomResponse createdRoom = roomService.createRoom(roomRequest);
         return ApiResponse.<RoomResponse>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("success")
+                .message("Tạo phòng mới thành công")
                 .result(createdRoom)
                 .build();
     }
@@ -48,7 +48,7 @@ public class RoomController {
         RoomResponse roomDetail = roomService.getRoomByIdStandard(roomId);
         return ApiResponse.<RoomResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy thông tin phòng thành công")
                 .result(roomDetail)
                 .build();
     }
@@ -59,7 +59,7 @@ public class RoomController {
         List<RoomResponse> rooms = roomService.getAllRooms();
         return ApiResponse.<List<RoomResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách phòng thành công")
                 .result(rooms)
                 .build();
     }
@@ -71,7 +71,7 @@ public class RoomController {
         RoomResponse updatedRoom = roomService.updateRoom(roomId, roomRequest);
         return ApiResponse.<RoomResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Cập nhật phòng thành công")
                 .result(updatedRoom)
                 .build();
     }
@@ -83,7 +83,7 @@ public class RoomController {
         roomService.deleteRoomStandard(roomId);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Room deleted successfully")
+                .message("Xóa phòng thành công")
                 .build();
     }
 
@@ -93,7 +93,7 @@ public class RoomController {
         List<RoomResponse> rooms = roomService.getRoomsByMotelId(motelId);
         return ApiResponse.<List<RoomResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách phòng theo nhà trọ thành công")
                 .result(rooms)
                 .build();
     }
@@ -104,7 +104,7 @@ public class RoomController {
         List<RoomResponse> rooms = roomService.getRoomsByMotelIdNullContract(motelId);
         return ApiResponse.<List<RoomResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách phòng chưa có hợp đồng thành công")
                 .result(rooms)
                 .build();
     }
@@ -115,7 +115,7 @@ public class RoomController {
         List<RoomResponse> rooms = roomService.getRoomsByMotelIdContract(motelId);
         return ApiResponse.<List<RoomResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách phòng đang có hợp đồng thành công")
                 .result(rooms)
                 .build();
     }

@@ -28,7 +28,7 @@ public class ProfileController {
         AccountResponse accountResponse = accountService.findByUsername(username);
         return ApiResponse.<AccountResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get profile successfully")
+                .message("Lấy thông tin hồ sơ thành công")
                 .result(accountResponse)
                 .build();
     }
@@ -38,7 +38,7 @@ public class ProfileController {
         AccountResponse accountResponse = accountService.update(accountRequest);
         return ApiResponse.<AccountResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Update profile successfully")
+                .message("Cập nhật thông tin hồ sơ thành công")
                 .result(accountResponse)
                 .build();
     }
@@ -48,7 +48,7 @@ public class ProfileController {
         String changePassword = accountService.changePassword(changePasswordRequest);
         return ApiResponse.<String>builder()
                 .code(HttpStatus.OK.value())
-                .message("Change password successfully")
+                .message("Đổi mật khẩu thành công")
                 .result(changePassword)
                 .build();
     }

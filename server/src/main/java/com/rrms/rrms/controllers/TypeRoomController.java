@@ -31,10 +31,9 @@ public class TypeRoomController {
     @Operation(summary = "Create a new room type")
     @PostMapping
     public ApiResponse<TypeRoomResponse> createTypeRoom(@RequestBody TypeRoomRequest typeRoomRequest) {
-        log.info("Create type room: {}", typeRoomRequest.getName());
         return ApiResponse.<TypeRoomResponse>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("success")
+                .message("Tạo loại phòng thành công")
                 .result(typeRoomService.createTypeRoom(typeRoomRequest))
                 .build();
     }
@@ -42,10 +41,9 @@ public class TypeRoomController {
     @Operation(summary = "Get all room types")
     @GetMapping
     public ApiResponse<List<TypeRoomResponse>> findAllTypeRooms() {
-        log.info("Get all type rooms");
         return ApiResponse.<List<TypeRoomResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách loại phòng thành công")
                 .result(typeRoomService.findAllTypeRooms())
                 .build();
     }

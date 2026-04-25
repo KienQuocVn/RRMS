@@ -30,9 +30,8 @@ public class PermissionController {
 
     @GetMapping({"", "/getAllPermission"})
     public ApiResponse<List<PermissionResponse>> getAllPermission() {
-        log.info("Get all permission successfully");
         return ApiResponse.<List<PermissionResponse>>builder()
-                .message("Permissions retrieved successfully")
+                .message("Lấy danh sách quyền thành công")
                 .result(permissionService.getAllPermissions())
                 .build();
     }
@@ -40,10 +39,9 @@ public class PermissionController {
     @PostMapping({"", "/createPermission"})
     public ResponseEntity<ApiResponse<PermissionResponse>> addPermission(@RequestBody PermissionRequest request) {
         PermissionResponse permissionResponse = permissionService.createPermission(request);
-        log.info("Add permission successfully: {}", permissionResponse.getPermissionId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.<PermissionResponse>builder()
-                        .message("Permission created successfully")
+                        .message("Tạo quyền mới thành công")
                         .result(permissionResponse)
                         .build());
     }
@@ -55,9 +53,8 @@ public class PermissionController {
             permissionRequest.setPermissionId(id);
         }
         PermissionResponse updatedPermission = permissionService.updatePermission(permissionRequest);
-        log.info("Update permission successfully: {}", updatedPermission.getPermissionId());
         return ApiResponse.<PermissionResponse>builder()
-                .message("Permission updated successfully")
+                .message("Cập nhật quyền thành công")
                 .result(updatedPermission)
                 .build();
     }
@@ -65,9 +62,6 @@ public class PermissionController {
     @DeleteMapping({"/{id}", "/deletePermission/{id}"})
     public ApiResponse<Void> deletePermission(@PathVariable UUID id) {
         permissionService.deletePermission(id);
-        log.info("Delete permission successfully for id: {}", id);
-        return ApiResponse.<Void>builder()
-                .message("Permission deleted successfully")
-                .build();
+        return ApiResponse.<Void>builder().message("Xóa quyền thành công").build();
     }
 }

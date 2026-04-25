@@ -28,7 +28,7 @@ public class StatisticsController {
     @GetMapping("/total-accounts")
     public ApiResponse<Long> getTotalAccounts() {
         return ApiResponse.<Long>builder()
-                .message("Total accounts retrieved successfully")
+                .message("Lấy tổng số tài khoản thành công")
                 .result(statisticsService.getTotalAccounts())
                 .build();
     }
@@ -37,7 +37,7 @@ public class StatisticsController {
     @GetMapping("/total-tenants")
     public ApiResponse<Long> getTotalTenants() {
         return ApiResponse.<Long>builder()
-                .message("Total tenants retrieved successfully")
+                .message("Lấy tổng số người thuê thành công")
                 .result(statisticsService.getTotalTenants())
                 .build();
     }
@@ -46,7 +46,7 @@ public class StatisticsController {
     @GetMapping("/total-host-accounts")
     public ApiResponse<Long> getTotalHostAccounts() {
         return ApiResponse.<Long>builder()
-                .message("Total host accounts retrieved successfully")
+                .message("Lấy tổng số tài khoản chủ trọ thành công")
                 .result(statisticsService.getTotalHostAccounts())
                 .build();
     }
@@ -55,7 +55,7 @@ public class StatisticsController {
     @GetMapping("/total-motels")
     public ApiResponse<Long> getTotalMotels() {
         return ApiResponse.<Long>builder()
-                .message("Total motels retrieved successfully")
+                .message("Lấy tổng số nhà trọ thành công")
                 .result(statisticsService.getTotalMotels())
                 .build();
     }
@@ -64,7 +64,7 @@ public class StatisticsController {
     @GetMapping("/total-account-last-week")
     public ApiResponse<Map<DayOfWeek, Long>> getAccountsCreatedLastWeek() {
         return ApiResponse.<Map<DayOfWeek, Long>>builder()
-                .message("Weekly account statistics retrieved successfully")
+                .message("Lấy thống kê tài khoản trong tuần vừa qua thành công")
                 .result(statisticsService.getAccountsCreatedLastWeek())
                 .build();
     }
@@ -73,7 +73,7 @@ public class StatisticsController {
     @GetMapping("/accounts-total-this-year")
     public ApiResponse<Map<Integer, Long>> getAccountsCreatedThisYear() {
         return ApiResponse.<Map<Integer, Long>>builder()
-                .message("Current year account statistics retrieved successfully")
+                .message("Lấy thống kê tài khoản trong năm hiện tại thành công")
                 .result(statisticsService.getAccountsCreatedThisYear())
                 .build();
     }
@@ -82,7 +82,7 @@ public class StatisticsController {
     @GetMapping("/accounts-total-last-year")
     public ApiResponse<Map<Integer, Long>> getAccountsCreatedLastYear() {
         return ApiResponse.<Map<Integer, Long>>builder()
-                .message("Last year account statistics retrieved successfully")
+                .message("Lấy thống kê tài khoản trong năm trước thành công")
                 .result(statisticsService.getAccountsCreatedLastYear())
                 .build();
     }
@@ -91,7 +91,7 @@ public class StatisticsController {
     @GetMapping("/total-motel-by-month")
     public ApiResponse<Map<Integer, Long>> getTotalMotelsByMonth() {
         return ApiResponse.<Map<Integer, Long>>builder()
-                .message("Monthly motel statistics retrieved successfully")
+                .message("Lấy thống kê nhà trọ theo tháng thành công")
                 .result(statisticsService.getTotalMotelsByMonth())
                 .build();
     }
@@ -100,7 +100,7 @@ public class StatisticsController {
     @GetMapping("/account-recent-hosts")
     public ApiResponse<List<AccountResponse>> getRecentHosts() {
         return ApiResponse.<List<AccountResponse>>builder()
-                .message("Recent hosts retrieved successfully")
+                .message("Lấy danh sách chủ trọ đăng ký gần đây thành công")
                 .result(statisticsService.getRecentHosts())
                 .build();
     }

@@ -34,11 +34,10 @@ public class MotelServiceController {
     @Operation(summary = "Create a new MotelService mapping")
     @PostMapping
     public ApiResponse<MotelServiceResponse> createMotelService(@RequestBody MotelServiceRequest request) {
-        log.info("Create motel service mapping");
         MotelServiceResponse response = motelServiceService.createMotelService(request);
         return ApiResponse.<MotelServiceResponse>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("success")
+                .message("Tạo mới dịch vụ cho nhà trọ thành công")
                 .result(response)
                 .build();
     }
@@ -47,11 +46,10 @@ public class MotelServiceController {
     @PutMapping("/motel/{motelId}")
     public ApiResponse<MotelServiceResponse> updateMotelServiceByMotelId(
             @PathVariable UUID motelId, @RequestBody MotelServiceUpdateRequest request) {
-        log.info("Update motel service mapping by motel ID: {}", motelId);
         MotelServiceResponse updatedService = motelServiceService.updateMotelServiceById(motelId, request);
         return ApiResponse.<MotelServiceResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Cập nhật dịch vụ theo nhà trọ thành công")
                 .result(updatedService)
                 .build();
     }
@@ -60,11 +58,10 @@ public class MotelServiceController {
     @PutMapping("/{id}")
     public ApiResponse<MotelServiceResponse> updateMotelService(
             @PathVariable UUID id, @RequestBody MotelServiceUpdateRequest request) {
-        log.info("Update motel service mapping ID: {}", id);
         MotelServiceResponse response = motelServiceService.updateMotelService(id, request);
         return ApiResponse.<MotelServiceResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Cập nhật dịch vụ thành công")
                 .result(response)
                 .build();
     }
@@ -75,7 +72,7 @@ public class MotelServiceController {
         List<MotelServiceResponse> responses = motelServiceService.getAllMotelServices();
         return ApiResponse.<List<MotelServiceResponse>>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy danh sách dịch vụ của nhà trọ thành công")
                 .result(responses)
                 .build();
     }
@@ -86,7 +83,7 @@ public class MotelServiceController {
         MotelServiceResponse response = motelServiceService.getMotelServiceById(id);
         return ApiResponse.<MotelServiceResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("success")
+                .message("Lấy thông tin dịch vụ thành công")
                 .result(response)
                 .build();
     }
@@ -94,11 +91,10 @@ public class MotelServiceController {
     @Operation(summary = "Delete an existing MotelService mapping")
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteMotelService(@PathVariable UUID id) {
-        log.info("Delete motel service mapping ID: {}", id);
         motelServiceService.deleteMotelService(id);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("MotelService deleted successfully")
+                .message("Xóa dịch vụ khỏi nhà trọ thành công")
                 .build();
     }
 }
