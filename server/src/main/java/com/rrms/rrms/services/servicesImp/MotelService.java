@@ -39,7 +39,7 @@ public class MotelService implements IMotelService {
 
     private final RoomRepository roomRepository;
 
-    private final ReserveAPlaceRepository reserveAPlaceRepository;
+    private final RoomReservationRepository roomReservationRepository;
 
     @Override
     public Optional<Integer> getTotalRooms(UUID motelId, String username) {
@@ -159,7 +159,7 @@ public class MotelService implements IMotelService {
                     noContractCount++;
                 }
                 // Kiá»ƒm tra phÃ²ng cÃ³ Ä‘áº·t cá»c
-                List<Reserve_a_place> reserves = reserveAPlaceRepository.findByRoom_RoomId(room.getRoomId());
+                List<Reserve_a_place> reserves = roomReservationRepository.findByRoom_RoomId(room.getRoomId());
                 reservedCount += reserves.size(); // Tá»•ng sá»‘ phÃ²ng Ä‘Ã£ Ä‘áº·t cá»c
             }
 
@@ -188,7 +188,7 @@ public class MotelService implements IMotelService {
 
     @Override
     public Double calculateTotalReserveDeposit(UUID motelId) {
-        return reserveAPlaceRepository.findTotalReserveDepositByMotelId(motelId);
+        return roomReservationRepository.findTotalReserveDepositByMotelId(motelId);
     }
 
     @Override

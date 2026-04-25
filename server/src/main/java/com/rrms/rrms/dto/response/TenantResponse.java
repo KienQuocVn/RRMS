@@ -34,7 +34,7 @@ public class TenantResponse implements Serializable {
     String backPhoto;
     Boolean role;
     String relationship;
-    Boolean type_of_tenant;
+    Boolean typeOfTenant;
     Boolean temporaryResidence;
     Boolean informationVerify;
 }

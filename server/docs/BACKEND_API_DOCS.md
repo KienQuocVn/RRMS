@@ -347,17 +347,23 @@ Tài liệu này cung cấp danh sách chi tiết các API của hệ thống RR
 - **Request Body**: `MeterReading` (Chỉ số cũ, chỉ số mới, loại chỉ số, ngày ghi)
 - **Expected Response**: `MeterReading`
 
-### 13.2 Giữ chỗ (Reserve a Place)
-- **URL**: `/reserve-a-place`
+### 13.2 Giữ chỗ (Room Reservation)
+- **URL**: `/room-reservations`
 - **Method**: `POST`
-- **Request Body**: `ReserveAPlaceRequest` (Thông tin khách giữ chỗ, tiền cọc giữ chỗ)
-- **Expected Response**: `ReserveAPlaceResponse`
+- **Request Body**: `RoomReservationRequest`
+- **Expected Response**: `RoomReservationResponse`
 
 ### 13.3 Hỗ trợ & Phản hồi (Support)
 - **URL**: `/support/create`
 - **Method**: `POST`
 - **Request Body**: `SupportRequest` (Tiêu đề, nội dung phản hồi)
 - **Expected Response**: `ApiResponse<Boolean>`
+
+### 13.4 Đăng ký tạm trú (Temporary Contract)
+- **URL**: `/temporary-contracts`
+- **Method**: `POST`
+- **Request Body**: `TemporaryContractRequest`
+- **Expected Response**: `TemporaryContractResponse`
 
 ---
 

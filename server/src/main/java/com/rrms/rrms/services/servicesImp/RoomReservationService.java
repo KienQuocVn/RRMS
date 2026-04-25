@@ -8,14 +8,14 @@ import java.util.stream.Collectors;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.stereotype.Service;
 
-import com.rrms.rrms.dto.request.ReserveAPlaceRequest;
-import com.rrms.rrms.dto.response.ReserveAPlaceResponse;
+import com.rrms.rrms.dto.request.RoomReservationRequest;
+import com.rrms.rrms.dto.response.RoomReservationResponse;
 import com.rrms.rrms.dto.response.RoomResponse2;
 import com.rrms.rrms.models.Reserve_a_place;
 import com.rrms.rrms.models.Room;
-import com.rrms.rrms.repositories.ReserveAPlaceRepository;
 import com.rrms.rrms.repositories.RoomRepository;
-import com.rrms.rrms.services.IReserveAPlaceService;
+import com.rrms.rrms.repositories.RoomReservationRepository;
+import com.rrms.rrms.services.IRoomReservationService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -26,14 +26,13 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @Slf4j
-public class ReserveAPlaceService implements IReserveAPlaceService {
+public class RoomReservationService implements IRoomReservationService {
 
-    private final ReserveAPlaceRepository reserveAPlaceRepository;
-
-    private final RoomRepository roomRepository;
+    RoomReservationRepository roomReservationRepository;
+    RoomRepository roomRepository;
 
     @Override
-    public ReserveAPlaceResponse createReserveAPlace(ReserveAPlaceRequest request) {
+    public RoomReservationResponse createRoomReservation(RoomReservationRequest request) {
         Room room =
                 roomRepository.findById(request.getRoomId()).orElseThrow(() -> new RuntimeException("Room not found"));
 
@@ -48,29 +47,30 @@ public class ReserveAPlaceService implements IReserveAPlaceService {
                 .room(room)
                 .build();
 
-        Reserve_a_place savedReserveAPlace = reserveAPlaceRepository.save(reserveAPlace);
+        Reserve_a_place savedReserveAPlace = roomReservationRepository.save(reserveAPlace);
         return mapToResponse(savedReserveAPlace);
     }
 
     @Override
-    public ReserveAPlaceResponse getReserveAPlaceById(UUID id) {
-        Reserve_a_place reserveAPlace =
-                reserveAPlaceRepository.findById(id).orElseThrow(() -> new RuntimeException("ReserveAPlace not found"));
-
+    public RoomReservationResponse getRoomReservationById(UUID id) {
+        Reserve_a_place reserveAPlace = roomReservationRepository
+                .findById(id)
+                .orElseThrow(() -> new RuntimeException("RoomReservation not found"));
         return mapToResponse(reserveAPlace);
     }
 
     @Override
-    public List<ReserveAPlaceResponse> getAllReserveAPlaces() {
-        return reserveAPlaceRepository.findAll().stream()
+    public List<RoomReservationResponse> getAllRoomReservations() {
+        return roomReservationRepository.findAll().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public ReserveAPlaceResponse updateReserveAPlace(UUID id, ReserveAPlaceRequest request) {
-        Reserve_a_place reserveAPlace =
-                reserveAPlaceRepository.findById(id).orElseThrow(() -> new RuntimeException("ReserveAPlace not found"));
+    public RoomReservationResponse updateRoomReservation(UUID id, RoomReservationRequest request) {
+        Reserve_a_place reserveAPlace = roomReservationRepository
+                .findById(id)
+                .orElseThrow(() -> new RuntimeException("RoomReservation not found"));
 
         Room room =
                 roomRepository.findById(request.getRoomId()).orElseThrow(() -> new RuntimeException("Room not found"));
@@ -83,25 +83,19 @@ public class ReserveAPlaceService implements IReserveAPlaceService {
         reserveAPlace.setNote(request.getNote());
         reserveAPlace.setRoom(room);
 
-        Reserve_a_place updatedReserveAPlace = reserveAPlaceRepository.save(reserveAPlace);
+        Reserve_a_place updatedReserveAPlace = roomReservationRepository.save(reserveAPlace);
         return mapToResponse(updatedReserveAPlace);
     }
 
     @Override
-    public void deleteReserveAPlace(UUID id) {
-        // Chuyá»ƒn UUID thÃ nh HEX (chuá»—i HEX)
+    public void deleteRoomReservation(UUID id) {
         String hexId = Hex.encodeHexString(toBytes(id));
-
-        // Kiá»ƒm tra sá»± tá»“n táº¡i cá»§a ReserveAPlace
-        if (!reserveAPlaceRepository.existsById(id)) {
-            throw new RuntimeException("ReserveAPlace not found");
+        if (!roomReservationRepository.existsById(id)) {
+            throw new RuntimeException("RoomReservation not found");
         }
-
-        // Thá»±c hiá»‡n xÃ³a báº±ng cÃ¡ch gá»i custom query
-        reserveAPlaceRepository.deleteByIdInHex(hexId);
+        roomReservationRepository.deleteByIdInHex(hexId);
     }
 
-    // HÃ m chuyá»ƒn UUID thÃ nh máº£ng byte
     private byte[] toBytes(UUID uuid) {
         ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
         buffer.putLong(uuid.getMostSignificantBits());
@@ -110,26 +104,19 @@ public class ReserveAPlaceService implements IReserveAPlaceService {
     }
 
     @Override
-    public List<ReserveAPlaceResponse> getReserveAPlacesByRoomId(UUID roomId) {
-        List<Reserve_a_place> reserveAPlaces = reserveAPlaceRepository.findByRoom_RoomId(roomId);
-
-        return reserveAPlaces.stream()
-                .map(this::mapToResponse) // Chuyá»ƒn Ä‘á»•i thÃ nh DTO
-                .collect(Collectors.toList());
+    public List<RoomReservationResponse> getRoomReservationsByRoomId(UUID roomId) {
+        List<Reserve_a_place> reserveAPlaces = roomReservationRepository.findByRoom_RoomId(roomId);
+        return reserveAPlaces.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
-    private ReserveAPlaceResponse mapToResponse(Reserve_a_place reserveAPlace) {
+    private RoomReservationResponse mapToResponse(Reserve_a_place reserveAPlace) {
         RoomResponse2 roomResponse = RoomResponse2.builder()
                 .roomId(reserveAPlace.getRoom().getRoomId())
-                .name(reserveAPlace.getRoom().getName()) // VÃ­ dá»¥ trÆ°á»ng roomName
-                .price(reserveAPlace.getRoom().getPrice()) // VÃ­ dá»¥ trÆ°á»ng roomPrice
+                .name(reserveAPlace.getRoom().getName())
+                .price(reserveAPlace.getRoom().getPrice())
                 .build();
-        log.debug(
-                "Map reserve_a_place reserveAPlaceId={} status={}",
-                reserveAPlace.getReserveaplaceId(),
-                reserveAPlace.getStatus());
-        return ReserveAPlaceResponse.builder()
-                .reserveAPlaceId(reserveAPlace.getReserveaplaceId())
+        return RoomReservationResponse.builder()
+                .roomReservationId(reserveAPlace.getReserveaplaceId())
                 .createDate(reserveAPlace.getCreatedate())
                 .moveInDate(reserveAPlace.getMoveinDate())
                 .nameTenant(reserveAPlace.getNametenant())
@@ -137,7 +124,7 @@ public class ReserveAPlaceService implements IReserveAPlaceService {
                 .deposit(reserveAPlace.getDeposit())
                 .note(reserveAPlace.getNote())
                 .status(reserveAPlace.getStatus())
-                .room(roomResponse) // Tráº£ vá» RoomResponse
+                .room(roomResponse)
                 .build();
     }
 }

@@ -13,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TenantRequest {
-    String avata;
+    String avatar;
     String fullName;
     String phone;
     String cccd;
@@ -28,7 +28,7 @@ public class TenantRequest {
     String backPhoto;
     Boolean role;
     String relationship;
-    Boolean type_of_tenant;
+    Boolean typeOfTenant;
     Boolean temporaryResidence;
     Boolean informationVerify;
 }

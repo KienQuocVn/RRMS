@@ -59,7 +59,7 @@ public class DB {
             InvoiceAdditionItemRepository invoiceAdditionItemRepository,
             TransactionRepository transactionRepository,
             MeterReadingRepository meterReadingRepository,
-            ReserveAPlaceRepository reserveAPlaceRepository,
+            RoomReservationRepository roomReservationRepository,
             SupportRepository supportRepository,
             BulletinBoardRepository bulletinBoardRepository,
             BulletinBoardImageRepository bulletinBoardImageRepository,
@@ -176,7 +176,7 @@ public class DB {
             seedMeterReadings(meterReadingRepository, contracts, coreServices);
             seedInvoices(invoiceRepository, detailInvoiceRepository, invoiceAdditionItemRepository, contracts);
             seedTransactions(transactionRepository, invoiceRepository.findAll(), host);
-            seedReservations(reserveAPlaceRepository, rooms);
+            seedReservations(roomReservationRepository, rooms);
             seedCars(carRepository, contracts);
             seedSupports(supportRepository, customer, employee);
 
@@ -647,7 +647,7 @@ public class DB {
         }
     }
 
-    private void seedReservations(ReserveAPlaceRepository repo, List<Room> rooms) {
+    private void seedReservations(RoomReservationRepository repo, List<Room> rooms) {
         repo.save(Reserve_a_place.builder()
                 .room(rooms.get(10))
                 .nametenant("Khách Đặt Cọc")

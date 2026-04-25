@@ -75,7 +75,7 @@ public class ContractService implements IContractService {
                 request.getUsername(),
                 request.getRoomId(),
                 request.getTenantId(),
-                request.getContracttemplateId());
+                request.getContractTemplateId());
         // Fetch related entities from the database using UUIDs
         Account username = accountRepository
                 .findByUsername(request.getUsername())
@@ -90,7 +90,7 @@ public class ContractService implements IContractService {
                 .orElseThrow(() -> new EntityNotFoundException("Tenant not found"));
 
         ContractTemplate contractTemplate = contractTemplateRepository
-                .findById(request.getContracttemplateId())
+                .findById(request.getContractTemplateId())
                 .orElseThrow(() -> new EntityNotFoundException("ContractTemplate not found"));
 
         // Create Contract entity from the request and set related entities

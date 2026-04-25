@@ -13,32 +13,32 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TemporaryR_contractRespone {
-    UUID temporaryrcontractId;
-    String householdhead;
-    String representativename;
+public class TemporaryContractResponse {
+    UUID temporaryContractId;
+    String householdHead;
+    String representativeName;
     String phone;
     LocalDate birth;
-    String permanentaddress;
+    String permanentAddress;
     String job;
     String identifier;
-    String placeofissue;
-    LocalDate dateofissue;
+    String placeOfIssue;
+    LocalDate dateOfIssue;
     String motelId; // ID của Motel
     String tenantUsername; // Tên người dùng của Tenant (Account)
 
     // Constructor để ánh xạ dữ liệu từ TemporaryR_contract
-    public TemporaryR_contractRespone(TemporaryR_contract contract) {
-        this.temporaryrcontractId = contract.getTemporaryrcontractId();
-        this.householdhead = contract.getHouseholdhead();
-        this.representativename = contract.getRepresentativename();
+    public TemporaryContractResponse(TemporaryR_contract contract) {
+        this.temporaryContractId = contract.getTemporaryrcontractId();
+        this.householdHead = contract.getHouseholdhead();
+        this.representativeName = contract.getRepresentativename();
         this.phone = contract.getPhone();
         this.birth = contract.getBirth();
-        this.permanentaddress = contract.getPermanentaddress();
+        this.permanentAddress = contract.getPermanentaddress();
         this.job = contract.getJob();
         this.identifier = contract.getIdentifier();
-        this.placeofissue = contract.getPlaceofissue();
-        this.dateofissue = contract.getDateofissue();
+        this.placeOfIssue = contract.getPlaceofissue();
+        this.dateOfIssue = contract.getDateofissue();
         this.motelId =
                 contract.getMotel() != null ? contract.getMotel().getMotelId().toString() : null;
         this.tenantUsername =

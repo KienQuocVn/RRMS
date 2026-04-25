@@ -12,16 +12,16 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TemporaryR_contractRequest {
-    String householdhead;
-    String representativename;
+public class TemporaryContractRequest {
+    String householdHead;
+    String representativeName;
     String phone;
     LocalDate birth;
-    String permanentaddress;
+    String permanentAddress;
     String job;
     String identifier;
-    String placeofissue;
-    LocalDate dateofissue;
+    String placeOfIssue;
+    LocalDate dateOfIssue;
     String motelId; // ID của Motel
     String tenantUsername; // Tên người dùng của Tenant (Account)
 }

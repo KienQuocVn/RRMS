@@ -275,29 +275,29 @@ public class RoomService implements IRoom {
                 .stream()
                 .map(contract -> ContractResponse.builder()
                         .contractId(contract.getContractId())
-                        .moveinDate(contract.getMoveinDate())
+                        .moveInDate(contract.getMoveinDate())
                         .leaseTerm(contract.getLeaseTerm())
                         .closeContract(contract.getCloseContract())
                         .description(contract.getDescription())
                         .debt(contract.getDebt())
                         .price(contract.getPrice())
                         .deposit(contract.getDeposit())
-                        .collectioncycle(contract.getCollectioncycle())
-                        .createdate(contract.getCreatedate())
-                        .signcontract(contract.getSigncontract())
+                        .collectionCycle(contract.getCollectioncycle())
+                        .createDate(contract.getCreatedate())
+                        .signContract(contract.getSigncontract())
                         .language(contract.getLanguage())
                         .countTenant(contract.getCountTenant())
                         .status(contract.getStatus())
                         .build())
-                .max(Comparator.comparing(ContractResponse::getCreatedate)) // Lấy hợp đồng có ngày tạo lớn nhất
+                .max(Comparator.comparing(ContractResponse::getCreateDate)) // Lấy hợp đồng có ngày tạo lớn nhất
                 .orElse(null); // Trả về null nếu không có hợp đồng nào
 
         response.setLatestContract(latestContract); // Gắn hợp đồng mới nhất vào response
         // Chuyển đổi ReserveAPlace (nếu có) thành ReserveAPlaceResponse
         if (room.getReserveAPlaces() != null && !room.getReserveAPlaces().isEmpty()) {
-            ReserveAPlaceResponse reserveAPlaceResponse =
-                    convertToReserveAPlaceResponse(room.getReserveAPlaces().get(0));
-            response.setReserveAPlace(reserveAPlaceResponse);
+            RoomReservationResponse roomReservationResponse =
+                    convertToRoomReservationResponse(room.getReserveAPlaces().get(0));
+            response.setRoomReservation(roomReservationResponse);
         }
 
         return response;
@@ -331,12 +331,12 @@ public class RoomService implements IRoom {
         if (roomRequest.getDescription() != null) room.setDescription(roomRequest.getDescription());
     }
 
-    private ReserveAPlaceResponse convertToReserveAPlaceResponse(Reserve_a_place reserveAPlace) {
+    private RoomReservationResponse convertToRoomReservationResponse(Reserve_a_place reserveAPlace) {
         if (reserveAPlace == null) {
             return null;
         }
-        return ReserveAPlaceResponse.builder()
-                .reserveAPlaceId(reserveAPlace.getReserveaplaceId())
+        return RoomReservationResponse.builder()
+                .roomReservationId(reserveAPlace.getReserveaplaceId())
                 .createDate(reserveAPlace.getCreatedate())
                 .moveInDate(reserveAPlace.getMoveinDate())
                 .nameTenant(reserveAPlace.getNametenant())

@@ -11,9 +11,9 @@ import com.rrms.rrms.dto.response.MotelRoomCountResponse;
 import com.rrms.rrms.dto.response.TenantSummaryDTO;
 import com.rrms.rrms.enums.ErrorCode;
 import com.rrms.rrms.exceptions.AppException;
+import com.rrms.rrms.services.IContractService;
 import com.rrms.rrms.services.IMotelService;
 import com.rrms.rrms.services.ITenantService;
-import com.rrms.rrms.services.servicesImp.ContractService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReportController {
     private final IMotelService motelService;
-    private final ContractService contractService;
+    private final IContractService contractService;
     private final ITenantService tenantService;
 
     @GetMapping("/total-rooms")

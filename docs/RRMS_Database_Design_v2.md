@@ -40,9 +40,9 @@
 | Hiện tại | Đề xuất | Lý do |
 |----------|---------|-------|
 | `accounts` | ✅ Giữ nguyên | Đúng |
-| `tenant` | ❌ → `tenants` | Phải số nhiều |
-| `ReserveAPlace` | ❌ → `room_reservations` | Không rõ nghĩa, sai convention |
-| `temporaryrcontracts` | ❌ → `temporary_contracts` | Typo + thiếu underscore |
+| `tenant` | ✅ → `tenants` | Đúng |
+| `ReserveAPlace` | ✅ → `room_reservations` | Đúng |
+| `temporaryrcontracts` | ✅ → `temporary_contracts` | Đúng |
 | `searchs` | ❌ → `search_histories` | Sai ngữ pháp |
 | `motel_device` | ❌ → `motel_devices` | Phải số nhiều |
 | `contracttemplates` | ❌ → `contract_templates` | Thiếu underscore |
@@ -159,15 +159,15 @@
 
 | Bảng | Table Name | PK | BaseEntity | Trạng thái |
 |------|-----------|----|-----------|----|
-| Contract | `contracts` | UUID | ✅ | 🔴 ENUM `IATExpire`/`ReportEnd` |
-| ContractTemplate | `contracttemplates` ❌ | UUID | ✅ | 🟡 Tên thiếu underscore |
+| Contract | `contracts` | UUID | ✅ | ✅ Đã chuẩn hóa Enum |
+| ContractTemplate | `contract_templates` | UUID | ✅ | ✅ Đã chuẩn hóa tên |
 | ContractOccupant | `contract_occupants` | UUID | ✅ | ✅ OK |
 | ContractDevice | `contract_devices` | UUID | ❌ | ✅ OK |
 | ContractDeviceHandover | `contract_device_handovers` | UUID | ✅ | ✅ OK |
 | ContractService | `contract_services` | UUID | ❌ | 🔴 BUG: `room_id` → `contract_id` |
-| Tenant | `tenant` ❌ | UUID | ✅ | 🟡 Số ít, `type_of_tenant` Boolean |
-| TemporaryR_contract | `temporaryrcontracts` ❌ | UUID | ✅ | 🟡 Tên sai convention |
-| Reserve_a_place | `ReserveAPlace` ❌ | UUID | ✅ | 🟡 ENUM `Stake`/`IATExpire` |
+| Tenant | `tenants` | UUID | ✅ | ✅ Đã chuẩn hóa tên |
+| TemporaryR_contract | `temporary_contracts` | UUID | ✅ | ✅ Đã refactor API layer |
+| Reserve_a_place | `room_reservations` | UUID | ✅ | ✅ Đã refactor API layer |
 
 ### 5.4 Invoice, Payment & Transaction (6 bảng)
 

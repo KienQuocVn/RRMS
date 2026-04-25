@@ -14,14 +14,22 @@ import com.rrms.rrms.models.Contract;
         uses = {RoomMapper.class, TenantMapper.class, AccountMapper.class, ContractTemplateMapper.class})
 public interface ContractMapper {
 
+    @Mapping(source = "moveInDate", target = "moveinDate")
+    @Mapping(source = "collectionCycle", target = "collectioncycle")
+    @Mapping(source = "createDate", target = "createdate")
+    @Mapping(source = "signContract", target = "signcontract")
+    @Mapping(source = "reportCloseContract", target = "reportcloseContract")
     Contract toEntity(ContractRequest request);
 
-    @Mapping(source = "room", target = "room") // Ãnh xáº¡ Room Ä‘á»‘i tÆ°á»£ng Ä‘áº§y Ä‘á»§
-    @Mapping(source = "tenant", target = "tenant") // Ãnh xáº¡ Tenant Ä‘á»‘i tÆ°á»£ng Ä‘áº§y Ä‘á»§
-    @Mapping(source = "account", target = "username") // Ãnh xáº¡ Account Ä‘á»‘i tÆ°á»£ng Ä‘áº§y Ä‘á»§
-    @Mapping(
-            source = "contractTemplate",
-            target = "contracttemplate") // Ãnh xáº¡ ContractTemplate Ä‘á»‘i tÆ°á»£ng Ä‘áº§y Ä‘á»§
+    @Mapping(source = "room", target = "room")
+    @Mapping(source = "tenant", target = "tenant")
+    @Mapping(source = "account", target = "username")
+    @Mapping(source = "contractTemplate", target = "contractTemplate")
     @Mapping(source = "broker.brokerId", target = "brokerId")
+    @Mapping(source = "moveinDate", target = "moveInDate")
+    @Mapping(source = "collectioncycle", target = "collectionCycle")
+    @Mapping(source = "createdate", target = "createDate")
+    @Mapping(source = "signcontract", target = "signContract")
+    @Mapping(source = "reportcloseContract", target = "reportCloseContract")
     ContractResponse toResponse(Contract contract);
 }

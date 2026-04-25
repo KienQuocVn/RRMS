@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.rrms.rrms.models.Reserve_a_place;
 
-public interface ReserveAPlaceRepository extends JpaRepository<Reserve_a_place, UUID> {
+public interface RoomReservationRepository extends JpaRepository<Reserve_a_place, UUID> {
     List<Reserve_a_place> findByRoom_RoomId(UUID roomId); // Tìm theo roomId
 
     @Modifying

@@ -20,9 +20,9 @@ public class ContractResponse {
     private RoomResponse2 room; // Room ID
     private TenantResponse tenant; // Tenant ID
     private AccountResponse username; // Landlord's username
-    private ContractTemplateResponse contracttemplate;
+    private ContractTemplateResponse contractTemplate;
     private UUID brokerId; // Broker ID (if any)
-    private Date moveinDate; // Move-in date
+    private Date moveInDate; // Move-in date
     private String leaseTerm; // Lease term (in months or years)
     private Date closeContract; // Contract end date
     private String description; // Description of the contract
@@ -30,11 +30,11 @@ public class ContractResponse {
     private Double price; // Price of the contract
     private Double actualPrice; // Actual negotiated price
     private Double deposit; // Deposit amount
-    private String collectioncycle; // Collection cycle
-    private LocalDate createdate; // Contract creation date
-    private String signcontract; // Sign contract status
+    private String collectionCycle; // Collection cycle
+    private LocalDate createDate; // Contract creation date
+    private String signContract; // Sign contract status
     private String language; // Language of the contract
     private Integer countTenant; // Number of tenants
     private ContractStatus status; // Contract status (ACTIVE, ENDED, etc.)
-    private Date reportcloseContract; // Contract end date
+    private Date reportCloseContract; // Contract end date
 }

@@ -27,5 +27,5 @@ public class RoomResponse2 {
     private String description;
     private List<RoomServiceResponse> services;
     private ContractResponse latestContract; // Hợp đồng mới nhất
-    private ReserveAPlaceResponse reserveAPlace;
+    private RoomReservationResponse roomReservation;
 }
