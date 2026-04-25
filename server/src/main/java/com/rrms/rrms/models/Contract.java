@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.rrms.rrms.enums.ContractStatus;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,6 +22,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(
         name = "contracts",
         indexes = {
@@ -39,7 +41,7 @@ public class Contract extends BaseEntity {
     @JsonBackReference(value = "Room-Contract") // Đặt tên cho tham chiếu ngược
     private Room room;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_id")
     @JsonBackReference(value = "Tenant-Contract") // Đặt tên cho tham chiếu ngược
     private Tenant tenant;
@@ -112,7 +114,7 @@ public class Contract extends BaseEntity {
 
     // trang thai hop dong
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "ENUM('ACTIVE', 'ENDED','IATExpire','ReportEnd')")
+    @Column(columnDefinition = "ENUM('ACTIVE', 'ENDED','EXPIRING','TERMINATED')")
     private ContractStatus status;
 
     // Ngay ket thuc hop dong

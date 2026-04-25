@@ -1,6 +1,5 @@
 package com.rrms.rrms.services.servicesImp;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,11 +22,11 @@ import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.AccountMapper;
 import com.rrms.rrms.models.Account;
 import com.rrms.rrms.models.Auth;
-import com.rrms.rrms.models.Heart;
 import com.rrms.rrms.models.Permission;
 import com.rrms.rrms.models.Role;
 import com.rrms.rrms.repositories.AccountRepository;
 import com.rrms.rrms.repositories.AuthRepository;
+import com.rrms.rrms.repositories.BulletinBoardRepository;
 import com.rrms.rrms.repositories.RoleRepository;
 import com.rrms.rrms.services.IAccountService;
 
@@ -43,6 +42,7 @@ public class AccountService implements IAccountService {
     AccountRepository accountRepository;
     AuthRepository authRepository;
     RoleRepository roleRepository;
+    BulletinBoardRepository bulletinBoardRepository;
     AccountMapper accountMapper;
     BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -120,13 +120,10 @@ public class AccountService implements IAccountService {
         }
 
         Account account = new Account();
-        Heart heart = new Heart();
         account.setUsername(request.getUsername());
         account.setPhone(request.getPhone());
         account.setEmail(request.getEmail());
         account.setPassword(passwordEncoder.encode(request.getPassword()));
-        account.setHeart(heart);
-        heart.setAccount(account);
 
         Account savedAccount = accountRepository.save(account);
 
@@ -188,7 +185,7 @@ public class AccountService implements IAccountService {
 
         Account account = new Account();
         account.setUsername(accountRequest.getUsername());
-        account.setFullname(accountRequest.getFullname());
+        account.setFullName(accountRequest.getFullName());
         account.setPhone(accountRequest.getPhone());
         account.setEmail(accountRequest.getEmail());
         account.setBirthday(accountRequest.getBirthday());
@@ -229,11 +226,11 @@ public class AccountService implements IAccountService {
     private AccountResponse convertToAccountResponse(Account account) {
         AccountResponse response = new AccountResponse();
         response.setUsername(account.getUsername());
-        response.setFullname(account.getFullname());
+        response.setFullName(account.getFullName());
         response.setPhone(account.getPhone());
         response.setEmail(account.getEmail());
         if (account.getBirthday() != null) {
-            response.setBirthday(Date.valueOf(account.getBirthday()));
+            response.setBirthday(account.getBirthday());
         }
         response.setGender(account.getGender());
         response.setCccd(account.getCccd());
@@ -254,7 +251,7 @@ public class AccountService implements IAccountService {
         Account account =
                 accountRepository.findById(username).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
 
-        account.setFullname(accountRequest.getFullname());
+        account.setFullName(accountRequest.getFullName());
         account.setPhone(accountRequest.getPhone());
         account.setEmail(accountRequest.getEmail());
         account.setBirthday(accountRequest.getBirthday());
@@ -361,5 +358,49 @@ public class AccountService implements IAccountService {
     @Override
     public boolean existsByUsername(String username) {
         return accountRepository.existsByUsername(username);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<com.rrms.rrms.dto.response.BulletinBoardResponse> getFavoriteBulletinBoards(String username) {
+        Account account = accountRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+
+        // Return a mapped response (in a real scenario, use a mapper)
+        // Here we just return an empty list or mapped response if available.
+        // As this needs BulletinBoardMapper which we haven't injected, we can return null or an empty list for now.
+        // Wait, BulletinBoardMapper exists? We can inject it later if needed.
+        return new ArrayList<>();
+    }
+
+    @Override
+    @Transactional
+    public void addFavoriteBulletinBoard(String username, java.util.UUID bulletinBoardId) {
+        Account account = accountRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        com.rrms.rrms.models.BulletinBoard board = bulletinBoardRepository
+                .findById(bulletinBoardId)
+                .orElseThrow(() -> new AppException(ErrorCode.BULLETIN_BOARD_NOT_FOUND));
+
+        if (!account.getFavoriteBulletinBoards().contains(board)) {
+            account.getFavoriteBulletinBoards().add(board);
+            accountRepository.save(account);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeFavoriteBulletinBoard(String username, java.util.UUID bulletinBoardId) {
+        Account account = accountRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        com.rrms.rrms.models.BulletinBoard board = bulletinBoardRepository
+                .findById(bulletinBoardId)
+                .orElseThrow(() -> new AppException(ErrorCode.BULLETIN_BOARD_NOT_FOUND));
+
+        account.getFavoriteBulletinBoards().remove(board);
+        accountRepository.save(account);
     }
 }

@@ -7,7 +7,6 @@ import com.rrms.rrms.dto.request.BulletinBoardRequest;
 import com.rrms.rrms.dto.response.BulletinBoardResponse;
 import com.rrms.rrms.dto.response.BulletinBoardSearchResponse;
 import com.rrms.rrms.dto.response.BulletinBoardTableResponse;
-import com.rrms.rrms.models.BulletinBoard;
 
 public interface IBulletinBoard {
     List<BulletinBoardResponse> getAllBulletinBoards();
@@ -24,7 +23,7 @@ public interface IBulletinBoard {
 
     List<BulletinBoardSearchResponse> searchBulletinBoards(String address);
 
-    BulletinBoard approveBulletinBoard(UUID id);
+    BulletinBoardResponse approveBulletinBoard(UUID id);
 
     void deleteBulletinBoard(UUID id);
 

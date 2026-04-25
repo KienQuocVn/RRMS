@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.rrms.rrms.enums.RoomStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,8 +56,9 @@ public class Room extends BaseEntity {
     @Column(name = "area", columnDefinition = "INT")
     private Integer area;
 
-    @Column(name = "status", columnDefinition = "BOOLEAN")
-    private Boolean status;
+    @Column(name = "status", columnDefinition = "ENUM('AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'RESERVED')")
+    @Enumerated(EnumType.STRING)
+    private RoomStatus status;
 
     @Column(name = "finance", columnDefinition = "TEXT")
     private String finance;

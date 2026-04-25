@@ -22,7 +22,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 @Table(
-        name = "tenant",
+        name = "tenants",
         indexes = {@Index(name = "idx_tenant_cccd", columnList = "CCCD", unique = true)})
 public class Tenant extends BaseEntity {
 
@@ -33,8 +33,8 @@ public class Tenant extends BaseEntity {
     @Column(columnDefinition = "VARCHAR(255)")
     private String avata;
 
-    @Column(columnDefinition = "VARCHAR(255)", nullable = false)
-    private String fullname;
+    @Column(name = "fullname", columnDefinition = "VARCHAR(255)", nullable = false)
+    private String fullName;
 
     @Column(columnDefinition = "VARCHAR(12)")
     private String phone;

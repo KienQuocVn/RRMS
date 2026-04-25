@@ -17,10 +17,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "bulletinBoards_rentalAms")
+@Table(name = "bulletin_board_rental_amenities")
 @JsonIgnoreProperties({"bulletinBoard"})
 @Builder
-public class BulletinBoards_RentalAm {
+public class BulletinBoardRentalAmenity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

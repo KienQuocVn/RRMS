@@ -1,7 +1,7 @@
 package com.rrms.rrms.dto.response;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.rrms.rrms.enums.Gender;
@@ -17,10 +17,10 @@ import lombok.experimental.FieldDefaults;
 public class AccountResponse implements Serializable {
     String username;
     String password;
-    String fullname;
+    String fullName;
     String phone;
     String email;
-    Date birthday;
+    LocalDate birthday;
     Gender gender;
     String cccd;
     String avatar;

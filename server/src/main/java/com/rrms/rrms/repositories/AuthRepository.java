@@ -11,8 +11,8 @@ public interface AuthRepository extends JpaRepository<Auth, UUID> {
     void deleteByAccount_Username(String username);
 
     @Query(
-            value = "SELECT COUNT(DISTINCT a.username) FROM Accounts a " + "JOIN Auths au ON a.username = au.username "
-                    + "JOIN Roles r ON au.role_id = r.role_id "
+            value = "SELECT COUNT(DISTINCT a.username) FROM accounts a " + "JOIN auths au ON a.username = au.username "
+                    + "JOIN roles r ON au.role_id = r.role_id "
                     + "WHERE r.role_name = 'host'",
             nativeQuery = true)
     Long countHostAccounts();

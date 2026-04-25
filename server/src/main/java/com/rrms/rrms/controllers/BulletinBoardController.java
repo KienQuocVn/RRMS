@@ -1,11 +1,9 @@
 package com.rrms.rrms.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.request.BulletinBoardRequest;
@@ -13,7 +11,6 @@ import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.BulletinBoardResponse;
 import com.rrms.rrms.dto.response.BulletinBoardSearchResponse;
 import com.rrms.rrms.dto.response.BulletinBoardTableResponse;
-import com.rrms.rrms.models.BulletinBoard;
 import com.rrms.rrms.services.IBulletinBoard;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @RestController
-@RequestMapping("/bulletin-board")
+@RequestMapping("/api/v1/bulletin-boards")
 public class BulletinBoardController {
 
     IBulletinBoard bulletinBoardService;
@@ -94,40 +91,51 @@ public class BulletinBoardController {
                 .build();
     }
 
+    @Operation(summary = "Get inactive bulletin boards")
     @GetMapping("/inactive")
-    public ResponseEntity<List<BulletinBoardResponse>> getBulletinBoard() {
+    public ApiResponse<List<BulletinBoardResponse>> getInactiveBulletinBoards() {
         List<BulletinBoardResponse> inactiveBulletinBoards = bulletinBoardService.getBulletinBoard();
-        return ResponseEntity.ok(inactiveBulletinBoards);
+        log.info("Get inactive bulletin boards successfully");
+        return ApiResponse.<List<BulletinBoardResponse>>builder()
+                .message("Get inactive bulletin boards successfully")
+                .code(HttpStatus.OK.value())
+                .result(inactiveBulletinBoards)
+                .build();
     }
 
+    @Operation(summary = "Approve bulletin board")
     @PutMapping("/{id}/approve")
-    public ResponseEntity<BulletinBoard> approveBulletinBoard(@PathVariable UUID id) {
-        BulletinBoard updatedBoard = bulletinBoardService.approveBulletinBoard(id);
-        return ResponseEntity.ok(updatedBoard);
+    public ApiResponse<BulletinBoardResponse> approveBulletinBoard(@PathVariable UUID id) {
+        BulletinBoardResponse updatedBoard = bulletinBoardService.approveBulletinBoard(id);
+        log.info("Approve bulletin board successfully with id: {}", id);
+        return ApiResponse.<BulletinBoardResponse>builder()
+                .message("Approve bulletin board successfully")
+                .code(HttpStatus.OK.value())
+                .result(updatedBoard)
+                .build();
     }
 
+    @Operation(summary = "Delete bulletin board")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBulletinBoard(@PathVariable UUID id) {
+    public ApiResponse<Void> deleteBulletinBoard(@PathVariable UUID id) {
         bulletinBoardService.deleteBulletinBoard(id);
-        log.info("Delete bulletin board with id: " + id);
-        return ResponseEntity.noContent().build();
+        log.info("Delete bulletin board with id: {}", id);
+        return ApiResponse.<Void>builder()
+                .message("Delete bulletin board successfully")
+                .code(HttpStatus.OK.value())
+                .build();
     }
 
+    @Operation(summary = "Search bulletin boards using Elasticsearch")
     @GetMapping("/search")
     public ApiResponse<List<BulletinBoardSearchResponse>> searchBulletinBoards(
             @RequestParam("address") String address) {
-        // Gọi service để thực hiện tìm kiếm
-        List<BulletinBoardSearchResponse> resultElastic = bulletinBoardService.searchBulletinBoards(address);
-        List<BulletinBoardSearchResponse> result = new ArrayList<>();
-        resultElastic.forEach(bulletinBoardSearchResponse -> {
-            if (bulletinBoardService.findByBulletinBoardId(bulletinBoardSearchResponse.getBulletinBoardId()) != null) {
-                result.add(
-                        bulletinBoardService.findByBulletinBoardId(bulletinBoardSearchResponse.getBulletinBoardId()));
-            }
-        });
-        log.info("Search bulletin board successfully");
+        log.info("Searching bulletin boards with address: {}", address);
+        List<BulletinBoardSearchResponse> result = bulletinBoardService.searchBulletinBoards(address);
+
+        log.info("Search bulletin board successfully, found: {}", result.size());
         return ApiResponse.<List<BulletinBoardSearchResponse>>builder()
-                .message("Search bulletin board successfully by elasticsearch: " + resultElastic.size())
+                .message("Search bulletin board successfully")
                 .code(HttpStatus.OK.value())
                 .result(result)
                 .build();

@@ -2,6 +2,7 @@ package com.rrms.rrms.dto.response;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import lombok.*;
@@ -20,7 +21,7 @@ public class BulletinBoardTableResponse implements Serializable {
     String title;
     String rentalCategory;
     String address;
-    Double rentPrice;
+    BigDecimal rentPrice;
     Integer area;
     Boolean status;
     Boolean isActive;

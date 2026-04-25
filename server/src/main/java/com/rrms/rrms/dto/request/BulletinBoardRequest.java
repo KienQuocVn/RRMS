@@ -1,11 +1,12 @@
 package com.rrms.rrms.dto.request;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.rrms.rrms.models.BulletinBoardImage;
+import com.rrms.rrms.models.BulletinBoardRentalAmenity;
 import com.rrms.rrms.models.BulletinBoardRule;
-import com.rrms.rrms.models.BulletinBoards_RentalAm;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,14 +22,14 @@ public class BulletinBoardRequest {
     String title;
     String rentalCategory;
     String description;
-    Double rentPrice;
-    Double promotionalRentalPrice;
-    Double deposit;
+    BigDecimal rentPrice;
+    BigDecimal promotionalRentalPrice;
+    BigDecimal deposit;
     Integer area;
-    Double electricityPrice;
-    Double waterPrice;
+    BigDecimal electricityPrice;
+    BigDecimal waterPrice;
     String maxPerson;
-    Date moveInDate;
+    LocalDate moveInDate;
     String openingHours;
     String closeHours;
     String address;
@@ -38,5 +39,5 @@ public class BulletinBoardRequest {
     Boolean isActive;
     List<BulletinBoardImage> bulletinBoardImages;
     List<BulletinBoardRule> bulletinBoardRules;
-    List<BulletinBoards_RentalAm> bulletinBoards_RentalAm;
+    List<BulletinBoardRentalAmenity> bulletinBoardRentalAmenities;
 }

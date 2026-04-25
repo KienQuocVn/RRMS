@@ -39,7 +39,7 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     @EntityGraph(attributePaths = {"authorities", "authorities.role", "authorities.role.permissions"})
     @Query("SELECT a FROM Account a WHERE "
             + "(LOWER(a.username) LIKE LOWER(CONCAT('%', :search, '%')) OR "
-            + "LOWER(a.fullname) LIKE LOWER(CONCAT('%', :search, '%')) OR "
+            + "LOWER(a.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR "
             + "LOWER(a.phone) LIKE LOWER(CONCAT('%', :search, '%')) OR "
             + "LOWER(a.email) LIKE LOWER(CONCAT('%', :search, '%')) OR "
             + "LOWER(a.cccd) LIKE LOWER(CONCAT('%', :search, '%')))")
@@ -48,7 +48,7 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     @EntityGraph(attributePaths = {"authorities", "authorities.role", "authorities.role.permissions"})
     @Query("SELECT a FROM Account a WHERE "
             + "(LOWER(a.username) LIKE LOWER(CONCAT('%', :search, '%')) OR "
-            + "LOWER(a.fullname) LIKE LOWER(CONCAT('%', :search, '%')) OR "
+            + "LOWER(a.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR "
             + "LOWER(a.phone) LIKE LOWER(CONCAT('%', :search, '%')) OR "
             + "LOWER(a.email) LIKE LOWER(CONCAT('%', :search, '%')) OR "
             + "LOWER(a.cccd) LIKE LOWER(CONCAT('%', :search, '%')))")
@@ -63,8 +63,8 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     Page<Account> findAll(Pageable pageable);
 
     @Query(
-            value = "SELECT COUNT(*) FROM Accounts a LEFT JOIN Auths au ON a.username = au.username "
-                    + "WHERE au.role_id IS NULL OR au.role_id != (SELECT role_id FROM Roles WHERE role_name = 'admin')",
+            value = "SELECT COUNT(*) FROM accounts a LEFT JOIN auths au ON a.username = au.username "
+                    + "WHERE au.role_id IS NULL OR au.role_id != (SELECT role_id FROM roles WHERE role_name = 'admin')",
             nativeQuery = true)
     Long countNonAdminAccounts();
 

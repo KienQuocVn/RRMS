@@ -23,7 +23,6 @@ public interface AccountMapper {
     @Mapping(target = "authorities", ignore = true)
     @Mapping(target = "commissionRate", ignore = true)
     @Mapping(target = "contracts", ignore = true)
-    @Mapping(target = "heart", ignore = true)
     @Mapping(target = "motels", ignore = true)
     Account toAccount(AccountRequest request);
 
@@ -42,7 +41,6 @@ public interface AccountMapper {
     @Mapping(target = "commissionRate", ignore = true)
     @Mapping(target = "contracts", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "heart", ignore = true)
     @Mapping(target = "motels", ignore = true)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "roles", ignore = true)
@@ -81,7 +79,7 @@ public interface AccountMapper {
         return Collections.emptyList(); // Nếu không có authorities, trả về danh sách rỗng
     }
 
-    @Mapping(target = "name", source = "fullname")
+    @Mapping(target = "name", source = "fullName")
     @Mapping(target = "status", ignore = true)
     BrokerResponse toBrokerResponse(Account account);
 }

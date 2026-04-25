@@ -35,7 +35,7 @@ public class BulletinBoardService implements IBulletinBoard {
     BulletinBoardRepository bulletinBoardRepository;
     BulletinBoardImageRepository bulletinBoardImageRepository;
     BulletinBoardRuleRepository bulletinBoardRuleRepository;
-    BulletinBoards_RentalAmRepository bulletinBoards_RentalAmRepository;
+    BulletinBoardRentalAmenityRepository bulletinBoardRentalAmenityRepository;
     RentalAmenitiesRepository rentalAmenitiesRepository;
     RuleRepository ruleRepository;
     AccountRepository accountRepository;
@@ -95,7 +95,7 @@ public class BulletinBoardService implements IBulletinBoard {
             bulletinBoardRuleRepository.save(bulletinBoardRule);
         }
 
-        for (BulletinBoards_RentalAm rentalAm : bulletinBoardRequest.getBulletinBoards_RentalAm()) {
+        for (BulletinBoardRentalAmenity rentalAm : bulletinBoardRequest.getBulletinBoardRentalAmenities()) {
             Optional<RentalAmenities> rentalAmenitiesOptional = rentalAmenitiesRepository.findByName(
                     rentalAm.getRentalAmenities().getName());
 
@@ -108,11 +108,11 @@ public class BulletinBoardService implements IBulletinBoard {
                 rentalAmenities = rentalAmenitiesRepository.save(rentalAmenities);
             }
 
-            BulletinBoards_RentalAm bulletinBoards_RentalAm = new BulletinBoards_RentalAm();
-            bulletinBoards_RentalAm.setBulletinBoard(bulletinBoard);
-            bulletinBoards_RentalAm.setRentalAmenities(rentalAmenities);
+            BulletinBoardRentalAmenity bulletinBoardRentalAmenity = new BulletinBoardRentalAmenity();
+            bulletinBoardRentalAmenity.setBulletinBoard(bulletinBoard);
+            bulletinBoardRentalAmenity.setRentalAmenities(rentalAmenities);
 
-            bulletinBoards_RentalAmRepository.save(bulletinBoards_RentalAm);
+            bulletinBoardRentalAmenityRepository.save(bulletinBoardRentalAmenity);
         }
 
         return bulletinBoardMapper.toBulletinBoardResponse(bulletinBoard);
@@ -161,9 +161,9 @@ public class BulletinBoardService implements IBulletinBoard {
         }
 
         // Cập nhật danh sách tiện ích
-        if (bulletinBoardRequest.getBulletinBoards_RentalAm() != null) {
-            bulletinBoards_RentalAmRepository.deleteAllByBulletinBoard(bulletinBoard);
-            for (BulletinBoards_RentalAm rentalAm : bulletinBoardRequest.getBulletinBoards_RentalAm()) {
+        if (bulletinBoardRequest.getBulletinBoardRentalAmenities() != null) {
+            bulletinBoardRentalAmenityRepository.deleteAllByBulletinBoard(bulletinBoard);
+            for (BulletinBoardRentalAmenity rentalAm : bulletinBoardRequest.getBulletinBoardRentalAmenities()) {
                 Optional<RentalAmenities> rentalAmenitiesOptional = rentalAmenitiesRepository.findByName(
                         rentalAm.getRentalAmenities().getName());
 
@@ -176,10 +176,10 @@ public class BulletinBoardService implements IBulletinBoard {
                     rentalAmenities = rentalAmenitiesRepository.save(rentalAmenities);
                 }
 
-                BulletinBoards_RentalAm bulletinBoards_RentalAm = new BulletinBoards_RentalAm();
-                bulletinBoards_RentalAm.setBulletinBoard(bulletinBoard); // Đảm bảo rằng bulletinBoard được gán đúng
-                bulletinBoards_RentalAm.setRentalAmenities(rentalAmenities);
-                bulletinBoards_RentalAmRepository.save(bulletinBoards_RentalAm);
+                BulletinBoardRentalAmenity bulletinBoardRentalAmenity = new BulletinBoardRentalAmenity();
+                bulletinBoardRentalAmenity.setBulletinBoard(bulletinBoard); // Đảm bảo rằng bulletinBoard được gán đúng
+                bulletinBoardRentalAmenity.setRentalAmenities(rentalAmenities);
+                bulletinBoardRentalAmenityRepository.save(bulletinBoardRentalAmenity);
             }
         }
 
@@ -213,12 +213,14 @@ public class BulletinBoardService implements IBulletinBoard {
         return bulletinBoardElasticsearchRepository.findByAddress(address);
     }
 
-    public BulletinBoard approveBulletinBoard(UUID id) {
+    @Override
+    public BulletinBoardResponse approveBulletinBoard(UUID id) {
         BulletinBoard bulletinBoard = bulletinBoardRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("BulletinBoard not found"));
         bulletinBoard.setIsActive(true);
-        return bulletinBoardRepository.save(bulletinBoard);
+        bulletinBoard = bulletinBoardRepository.save(bulletinBoard);
+        return bulletinBoardMapper.toBulletinBoardResponse(bulletinBoard);
     }
 
     public void deleteBulletinBoard(UUID id) {

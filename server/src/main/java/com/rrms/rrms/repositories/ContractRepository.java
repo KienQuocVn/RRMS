@@ -53,7 +53,7 @@ public interface ContractRepository extends JpaRepository<Contract, UUID> {
     @Transactional
     @Modifying
     @Query("UPDATE Contract c " + "SET c.status = :newStatus "
-            + "WHERE c.closeContract >= :thresholdDate AND c.status = 'IATExpire'")
+            + "WHERE c.closeContract >= :thresholdDate AND c.status = 'EXPIRING'")
     int updateStatusForContractsBasedOnDaysDifference2(
             @Param("newStatus") ContractStatus newStatus, @Param("thresholdDate") Date thresholdDate);
 

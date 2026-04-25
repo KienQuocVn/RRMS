@@ -21,7 +21,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "Permissions")
+@Table(name = "permissions")
 public class Permission {
 
     @Id

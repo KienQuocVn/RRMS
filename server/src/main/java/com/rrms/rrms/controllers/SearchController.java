@@ -1,6 +1,5 @@
 package com.rrms.rrms.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -23,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Search Controller")
 @RestController
 @Slf4j
-@RequestMapping({"/searchs", "/search", "/api/v1/search"})
+@RequestMapping("/api/v1/search")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class SearchController {
@@ -44,75 +43,74 @@ public class SearchController {
     //    }
 
     @Operation(summary = "Get all rooms sorted by price")
-    @GetMapping("/asc")
+    @GetMapping("/sort")
     public ApiResponse<List<BulletinBoardSearchResponse>> getRoomsSortedByPrice(
             @RequestParam(defaultValue = "ASC") String sortOrder) {
-        ApiResponse<List<BulletinBoardSearchResponse>> apiResponse = new ApiResponse<>();
+        log.info("Sorting bulletin boards by price: {}", sortOrder);
         List<BulletinBoardSearchResponse> rooms;
         if ("ASC".equalsIgnoreCase(sortOrder)) {
             rooms = searchService.getRoomsSortedByPriceASC();
         } else if ("DESC".equalsIgnoreCase(sortOrder)) {
             rooms = searchService.getRoomsSortedByPriceDESC();
         } else {
-            apiResponse.setCode(HttpStatus.BAD_REQUEST.value());
-            apiResponse.setMessage("Invalid sortOrder. Valid values are 'ASC' or 'DESC'.");
-            return apiResponse;
+            return ApiResponse.<List<BulletinBoardSearchResponse>>builder()
+                    .code(HttpStatus.BAD_REQUEST.value())
+                    .message("Invalid sortOrder. Valid values are 'ASC' or 'DESC'.")
+                    .build();
         }
-        apiResponse.setCode(HttpStatus.OK.value());
-        apiResponse.setMessage("Tìm kiếm thành công");
-        apiResponse.setResult(rooms);
-        return apiResponse;
+        return ApiResponse.<List<BulletinBoardSearchResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Search successful")
+                .result(rooms)
+                .build();
     }
 
-    @Operation(summary = "Get all rooms")
-    @GetMapping
-    public ApiResponse<List<BulletinBoardSearchResponse>> getRoom() {
-        ApiResponse<List<BulletinBoardSearchResponse>> apiResponse = new ApiResponse<>();
+    @Operation(summary = "Get all active rooms")
+    @GetMapping("")
+    public ApiResponse<List<BulletinBoardSearchResponse>> getRooms() {
+        log.info("Getting all active bulletin boards");
         List<BulletinBoardSearchResponse> rooms = searchService.getRooms();
-        apiResponse.setCode(HttpStatus.OK.value());
-        apiResponse.setMessage("Tìm kiếm thành công");
-        apiResponse.setResult(rooms);
-        return apiResponse;
+        return ApiResponse.<List<BulletinBoardSearchResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Search successful")
+                .result(rooms)
+                .build();
     }
 
-    @Operation(summary = "Get all rooms sorted by created date")
-    @GetMapping("/roomNews")
-    public ApiResponse<List<BulletinBoardSearchResponse>> getRoomHomeDateNew() {
-        ApiResponse<List<BulletinBoardSearchResponse>> apiResponse = new ApiResponse<>();
+    @Operation(summary = "Get latest bulletin boards (Newest)")
+    @GetMapping("/latest")
+    public ApiResponse<List<BulletinBoardSearchResponse>> getLatestRooms() {
+        log.info("Getting latest bulletin boards");
         List<BulletinBoardSearchResponse> rooms = searchService.findAllByDatenew();
-        apiResponse.setCode(HttpStatus.OK.value());
-        apiResponse.setMessage("Tìm kiếm thành công");
-        apiResponse.setResult(rooms);
-        return apiResponse;
+        return ApiResponse.<List<BulletinBoardSearchResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Search successful")
+                .result(rooms)
+                .build();
     }
 
-    @Operation(summary = "Get all rooms sorted by created date")
-    @GetMapping("/roomVieux")
-    public ApiResponse<List<BulletinBoardSearchResponse>> getRoomHomeDateNewVieux() {
-        ApiResponse<List<BulletinBoardSearchResponse>> apiResponse = new ApiResponse<>();
+    @Operation(summary = "Get oldest bulletin boards")
+    @GetMapping("/oldest")
+    public ApiResponse<List<BulletinBoardSearchResponse>> getOldestRooms() {
+        log.info("Getting oldest bulletin boards");
         List<BulletinBoardSearchResponse> rooms = searchService.findAllByIsActive();
-        apiResponse.setCode(HttpStatus.OK.value());
-        apiResponse.setMessage("Tìm kiếm thành công");
-        apiResponse.setResult(rooms);
-        return apiResponse;
+        return ApiResponse.<List<BulletinBoardSearchResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Search successful")
+                .result(rooms)
+                .build();
     }
 
-    @Operation(summary = "Search room by name")
-    @GetMapping("/addressBullet")
-    public ApiResponse<List<BulletinBoardSearchResponse>> searchAddress(@RequestParam("address") String address) {
-        ApiResponse<List<BulletinBoardSearchResponse>> apiResponse = new ApiResponse<>();
+    @Operation(summary = "Search room by address (Native Query)")
+    @GetMapping("/by-address")
+    public ApiResponse<List<BulletinBoardSearchResponse>> searchByAddress(@RequestParam("address") String address) {
+        log.info("Searching bulletin boards by address (native): {}", address);
         List<BulletinBoardSearchResponse> rooms = searchService.listRoomByAddress(address);
-        if (rooms == null || rooms.isEmpty()) {
-            // Trả về danh sách trống thay vì ném ngoại lệ
-            apiResponse.setCode(HttpStatus.OK.value());
-            apiResponse.setMessage("Không tìm thấy kết quả");
-            apiResponse.setResult(new ArrayList<>());
-            return apiResponse;
-        }
-        apiResponse.setCode(HttpStatus.OK.value());
-        apiResponse.setMessage("Tìm kiếm thành công: " + rooms.size());
-        apiResponse.setResult(rooms);
-        return apiResponse;
+        return ApiResponse.<List<BulletinBoardSearchResponse>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Search successful, found: " + rooms.size())
+                .result(rooms)
+                .build();
     }
 
     //    @GetMapping("/price")

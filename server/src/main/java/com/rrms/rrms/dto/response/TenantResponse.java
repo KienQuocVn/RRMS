@@ -20,7 +20,7 @@ public class TenantResponse implements Serializable {
     private static final long serialVersionUID = 1L;
 
     UUID tenantId;
-    String fullname;
+    String fullName;
     String phone;
     String cccd;
     String email;

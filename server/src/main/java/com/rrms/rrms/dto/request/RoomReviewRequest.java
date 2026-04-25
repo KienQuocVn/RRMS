@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RoomReviewRequest {
     String username;
-    String fullname;
+    String fullName;
     String avatar;
     String comment;
     int rating;

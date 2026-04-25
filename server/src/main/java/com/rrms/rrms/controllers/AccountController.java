@@ -172,4 +172,34 @@ public class AccountController {
                 .result(result)
                 .build();
     }
+
+    @Operation(summary = "Get user favorites")
+    @GetMapping("/me/favorites")
+    public ApiResponse<java.util.List<com.rrms.rrms.dto.response.BulletinBoardResponse>> getFavorites() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        return ApiResponse.<java.util.List<com.rrms.rrms.dto.response.BulletinBoardResponse>>builder()
+                .message("Favorites retrieved successfully")
+                .result(accountService.getFavoriteBulletinBoards(authentication.getName()))
+                .build();
+    }
+
+    @Operation(summary = "Add to favorites")
+    @PostMapping("/me/favorites/{bulletinBoardId}")
+    public ApiResponse<Void> addFavorite(@PathVariable java.util.UUID bulletinBoardId) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        accountService.addFavoriteBulletinBoard(authentication.getName(), bulletinBoardId);
+        return ApiResponse.<Void>builder()
+                .message("Added to favorites successfully")
+                .build();
+    }
+
+    @Operation(summary = "Remove from favorites")
+    @DeleteMapping("/me/favorites/{bulletinBoardId}")
+    public ApiResponse<Void> removeFavorite(@PathVariable java.util.UUID bulletinBoardId) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        accountService.removeFavoriteBulletinBoard(authentication.getName(), bulletinBoardId);
+        return ApiResponse.<Void>builder()
+                .message("Removed from favorites successfully")
+                .build();
+    }
 }

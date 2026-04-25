@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TenantRequest {
     String avata;
-    String fullname;
+    String fullName;
     String phone;
     String cccd;
     String email;

@@ -60,4 +60,10 @@ public interface IAccountService {
     boolean existsByEmail(String email);
 
     boolean existsByUsername(String username);
+
+    List<com.rrms.rrms.dto.response.BulletinBoardResponse> getFavoriteBulletinBoards(String username);
+
+    void addFavoriteBulletinBoard(String username, java.util.UUID bulletinBoardId);
+
+    void removeFavoriteBulletinBoard(String username, java.util.UUID bulletinBoardId);
 }

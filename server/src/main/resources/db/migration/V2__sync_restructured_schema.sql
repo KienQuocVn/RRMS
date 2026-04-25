@@ -1,1 +1,0 @@
--- Empty migration, as schema changes are integrated into V1 baseline

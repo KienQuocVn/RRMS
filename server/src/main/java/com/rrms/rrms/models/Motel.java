@@ -32,7 +32,7 @@ public class Motel extends BaseEntity {
     @Column(columnDefinition = "VARCHAR(255)")
     private String motelName;
 
-    @Column(columnDefinition = "DOUBLE")
+    @Column(columnDefinition = "DECIMAL(8, 2)")
     private Double area;
 
     @Column(columnDefinition = "DECIMAL(10, 2)")

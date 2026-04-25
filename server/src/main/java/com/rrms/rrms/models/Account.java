@@ -30,6 +30,14 @@ import lombok.Setter;
         })
 public class Account extends BaseEntity {
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_favorites",
+            joinColumns = @JoinColumn(name = "username"),
+            inverseJoinColumns = @JoinColumn(name = "bulletin_board_id"))
+    @Builder.Default
+    private List<BulletinBoard> favoriteBulletinBoards = new java.util.ArrayList<>();
+
     @Id
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private String username;
@@ -37,8 +45,8 @@ public class Account extends BaseEntity {
     @Column(columnDefinition = "VARCHAR(255)")
     private String password;
 
-    @Column(columnDefinition = "VARCHAR(255)")
-    private String fullname;
+    @Column(name = "fullname", columnDefinition = "VARCHAR(255)")
+    private String fullName;
 
     @Column(columnDefinition = "VARCHAR(200)", unique = true)
     private String phone;
@@ -65,10 +73,6 @@ public class Account extends BaseEntity {
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
     @JsonManagedReference(value = "Auth-Acc") // Đặt tên cho tham chiếu quản lý
     List<Auth> authorities;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "heart_id")
-    private Heart heart;
 
     public List<String> getRoles() {
         return authorities.stream()

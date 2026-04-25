@@ -1,11 +1,14 @@
 package com.rrms.rrms.models;
 
-// @Getter
-// @Setter
-// @NoArgsConstructor
-// @AllArgsConstructor
-// @Entity
-@SuppressWarnings("unused")
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class InvoiceTotals {
     private String username;
     private Double totalRoomPrice;

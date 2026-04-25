@@ -136,12 +136,12 @@ public class AuthorityService implements IAuthorityService {
         return LoginResponse.builder()
                 .token(token) // Token JWT
                 .authenticated(true) // Tráº¡ng thÃ¡i xÃ¡c thá»±c thÃ nh cÃ´ng
-                .username(account.getUsername()) // TÃªn ngÆ°á»i dÃ¹ng
-                .fullname(account.getFullname()) // Há» vÃ  tÃªn Ä‘áº§y Ä‘á»§
+                .username(account.getUsername()) // TÃªn ngÆ°á» i dÃ¹ng
+                .fullName(account.getFullName()) // Há»  vÃ  tÃªn Ä‘áº§y Ä‘á»§
                 .phone(account.getPhone())
-                .email(account.getEmail()) // Äá»‹a chá»‰ email
+                .email(account.getEmail()) // Ä á»‹a chá»‰ email
                 .avatar(account.getAvatar()) // áº¢nh Ä‘áº¡i diá»‡n (avatar)
-                .birthday(account.getBirthday()) // NgÃ y sinh cá»§a ngÆ°á»i dÃ¹ng
+                .birthday(account.getBirthday()) // NgÃ y sinh cá»§a ngÆ°á» i dÃ¹ng
                 .gender(account.getGender()) // Giá»›i tÃ­nh
                 .cccd(account.getCccd()) // CCCD (Chá»©ng minh nhÃ¢n dÃ¢n)
                 .roles(roles)
@@ -215,7 +215,7 @@ public class AuthorityService implements IAuthorityService {
                 .token(token)
                 .authenticated(true)
                 .username(user.getUsername())
-                .fullname(user.getFullname())
+                .fullName(user.getFullName())
                 .phone(user.getPhone())
                 .email(user.getEmail())
                 .avatar(user.getAvatar())

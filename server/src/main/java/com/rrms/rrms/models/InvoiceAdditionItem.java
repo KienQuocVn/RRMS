@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,7 +24,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "invoiceAdditionalCharge")
+@Builder
+@Table(name = "invoice_additional_charges")
 public class InvoiceAdditionItem {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -2,6 +2,8 @@ package com.rrms.rrms.dto.request;
 
 import java.util.UUID;
 
+import com.rrms.rrms.enums.RoomStatus;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -18,7 +20,7 @@ public class RoomRequest2 {
     private String prioritize;
     private Integer area;
     private Double deposit;
-    private Boolean status;
+    private RoomStatus status;
     private String finance;
     private String description;
 }

@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,7 +19,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Transaction")
+@Builder
+@Table(name = "transactions")
 public class Transaction extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -41,13 +41,13 @@ public class MeterReading extends BaseEntity {
     @JsonBackReference(value = "Service-MeterReading")
     private Service service;
 
-    @Column(name = "old_index", columnDefinition = "DOUBLE")
+    @Column(name = "old_index", columnDefinition = "DECIMAL(10, 3)")
     private Double oldIndex;
 
-    @Column(name = "new_index", columnDefinition = "DOUBLE")
+    @Column(name = "new_index", columnDefinition = "DECIMAL(10, 3)")
     private Double newIndex;
 
-    @Column(name = "usage_amount", columnDefinition = "DOUBLE")
+    @Column(name = "usage_amount", columnDefinition = "DECIMAL(10, 3)")
     private Double usageAmount;
 
     @Column(name = "reading_date", columnDefinition = "DATE")

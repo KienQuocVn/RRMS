@@ -19,7 +19,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "invalidatedToken")
+@Table(name = "invalidated_tokens")
 public class InvalidatedToken {
     @Id
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)

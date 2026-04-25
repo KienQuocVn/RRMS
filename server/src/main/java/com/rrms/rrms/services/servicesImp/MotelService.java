@@ -136,13 +136,13 @@ public class MotelService implements IMotelService {
                     .findContractsByMotelIdAndStatus(motel.getMotelId(), ContractStatus.ENDED)
                     .size();
             int iatExpireCount = contractRepository
-                    .findContractsByMotelIdAndStatus(motel.getMotelId(), ContractStatus.IATExpire)
+                    .findContractsByMotelIdAndStatus(motel.getMotelId(), ContractStatus.EXPIRING)
                     .size();
             int stakeCount = contractRepository
-                    .findContractsByMotelIdAndStatus(motel.getMotelId(), ContractStatus.Stake)
+                    .findContractsByMotelIdAndStatus(motel.getMotelId(), ContractStatus.DEPOSITED)
                     .size();
             int reportEndCount = contractRepository
-                    .findContractsByMotelIdAndStatus(motel.getMotelId(), ContractStatus.ReportEnd)
+                    .findContractsByMotelIdAndStatus(motel.getMotelId(), ContractStatus.TERMINATED)
                     .size();
 
             // Äáº¿m sá»‘ phÃ²ng khÃ´ng cÃ³ há»£p Ä‘á»“ng vÃ  sá»‘ phÃ²ng Ä‘Ã£ Ä‘áº·t cá»c

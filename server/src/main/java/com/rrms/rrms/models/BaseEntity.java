@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Base entity class providing automatic audit timestamps.
+ * Base entity class providing automatic audit timestamps and soft delete.
  * All entities that need created/updated tracking should extend this class.
  */
 @MappedSuperclass
@@ -30,4 +30,10 @@ public abstract class BaseEntity {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

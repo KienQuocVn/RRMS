@@ -26,7 +26,7 @@ public class AccountRequest implements Serializable {
     String password;
 
     @NotBlank(message = "Họ tên không được để trống")
-    String fullname;
+    String fullName;
 
     @NotBlank(message = "Số điện thoại không được để trống")
     @Size(min = 10, max = 11, message = "Số điện thoại phải từ 10 đến 11 số")

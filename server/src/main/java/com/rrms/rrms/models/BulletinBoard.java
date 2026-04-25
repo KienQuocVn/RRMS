@@ -1,6 +1,7 @@
 package com.rrms.rrms.models;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,33 +46,29 @@ public class BulletinBoard extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(columnDefinition = "DOUBLE")
-    private Double rentPrice;
+    @Column(columnDefinition = "DECIMAL(15, 2)")
+    private BigDecimal rentPrice;
 
-    @Column(columnDefinition = "DOUBLE")
-    private Double promotionalRentalPrice;
+    @Column(columnDefinition = "DECIMAL(15, 2)")
+    private BigDecimal promotionalRentalPrice;
 
-    @Column(columnDefinition = "DOUBLE")
-    private Double deposit;
+    @Column(columnDefinition = "DECIMAL(15, 2)")
+    private BigDecimal deposit;
 
     @Column(columnDefinition = "INT")
     private Integer area;
 
-    @Column(columnDefinition = "DOUBLE")
-    private Double electricityPrice;
+    @Column(columnDefinition = "DECIMAL(15, 2)")
+    private BigDecimal electricityPrice;
 
-    @Column(columnDefinition = "DOUBLE")
-    private Double waterPrice;
+    @Column(columnDefinition = "DECIMAL(15, 2)")
+    private BigDecimal waterPrice;
 
     @Column(columnDefinition = "VARCHAR(255)")
     private String maxPerson;
 
-    @Column(name = "move_in_date", columnDefinition = "Date")
-    private Date moveInDate;
-
-    @Column(columnDefinition = "Date")
-    @Builder.Default
-    private Date createdDate = new Date();
+    @Column(name = "move_in_date", columnDefinition = "DATE")
+    private LocalDate moveInDate;
 
     @Column(columnDefinition = "VARCHAR(255)")
     private String openingHours;
@@ -108,5 +105,5 @@ public class BulletinBoard extends BaseEntity {
 
     @OneToMany(mappedBy = "bulletinBoard", cascade = CascadeType.MERGE, orphanRemoval = true)
     @JsonIgnore
-    private List<BulletinBoards_RentalAm> bulletinBoards_RentalAm;
+    private List<BulletinBoardRentalAmenity> bulletinBoardRentalAmenities;
 }

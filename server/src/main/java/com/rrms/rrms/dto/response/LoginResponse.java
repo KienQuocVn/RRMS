@@ -21,7 +21,7 @@ public class LoginResponse {
     private String token;
     boolean authenticated;
     private String username;
-    private String fullname;
+    private String fullName;
     private String phone;
     private String email;
     private String avatar;

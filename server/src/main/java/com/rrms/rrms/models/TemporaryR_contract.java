@@ -6,6 +6,7 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +16,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "temporaryrcontracts")
+@Builder
+@Table(name = "temporary_contracts")
 public class TemporaryR_contract extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

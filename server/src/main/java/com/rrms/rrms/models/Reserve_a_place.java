@@ -20,7 +20,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "ReserveAPlace")
+@Table(name = "room_reservations")
 public class Reserve_a_place extends BaseEntity {
     @Id
     @GeneratedValue(generator = "UUID")
@@ -52,10 +52,10 @@ public class Reserve_a_place extends BaseEntity {
 
     // trang thai hop dong
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "ENUM('ACTIVE', 'ENDED','IATExpire','Stake')")
+    @Column(columnDefinition = "ENUM('ACTIVE', 'ENDED','EXPIRING','DEPOSITED')")
     private ContractStatus status;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "room_id")
     @JsonBackReference(value = "Room-ReserveAPlace") // Đặt tên cho tham chiếu ngược
     private Room room;
