@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:8080
+@baseUrl = http://localhost:7000
 @contentType = application/json
 @roomId = 052516ce-c8af-412b-a1cc-b5a52f558ccf
 

@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { authService } from '@/services/api/auth.service';
 import {
   AuthLogo,
   AuthInput,
@@ -29,16 +30,62 @@ export default function ForgotPasswordScreen() {
   const router = useRouter();
 
   // ── State ──
-  const [phone, setPhone] = useState('');
+  const [step, setStep] = useState<1 | 2>(1);
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   // ── Handlers ──
   const handleRequestReset = async () => {
+    if (!email) {
+      alert('Vui lòng nhập email.');
+      return;
+    }
     setLoading(true);
-    // TODO: Gọi API yêu cầu đổi mật khẩu
-    setTimeout(() => {
+    try {
+      const res = await authService.forgetPassword(email);
+      if (res.code === 200 || res.result) {
+        alert('Mã OTP đã được gửi đến email của bạn.');
+        setStep(2);
+      } else {
+        alert(res.message || 'Yêu cầu thất bại.');
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Lỗi kết nối máy chủ');
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!otp || !newPassword || !confirmPassword) {
+      alert('Vui lòng điền đầy đủ thông tin.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      alert('Mật khẩu xác nhận không khớp.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await authService.acceptChangePassword({
+        email,
+        newPassword,
+        code: otp
+      });
+      if (res.code === 200 || res.result) {
+        alert('Đổi mật khẩu thành công!');
+        router.back();
+      } else {
+        alert(res.message || 'Mã OTP không đúng hoặc đã hết hạn.');
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Lỗi kết nối máy chủ');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -70,27 +117,62 @@ export default function ForgotPasswordScreen() {
 
         {/* ── Form ── */}
         <View style={styles.form}>
-          <AuthInput
-            label=""
-            placeholder="Nhập số điện thoại"
-            keyboardType="phone-pad"
-            value={phone}
-            onChangeText={setPhone}
-          />
+          {step === 1 ? (
+            <>
+              <AuthInput
+                label="Email"
+                placeholder="Nhập email của bạn"
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
+              />
 
-          {/* Cảnh báo */}
-          <WarningBox
-            variant="warning"
-            message="Chú ý: Hãy chắc chắn số điện thoại của bạn nhập là đúng. Hệ thống sẽ gửi mã xác nhận qua số điện thoại này để xác minh trước khi bạn thực yêu cầu đổi mật khẩu mới."
-          />
+              {/* Cảnh báo */}
+              <WarningBox
+                variant="warning"
+                message="Chú ý: Hãy chắc chắn email của bạn nhập là đúng. Hệ thống sẽ gửi mã xác nhận qua email này để xác minh trước khi bạn thực hiện yêu cầu đổi mật khẩu mới."
+              />
 
-          {/* Buttons */}
-          <AuthButton
-            title="Yêu cầu đổi mật khẩu"
-            variant="primary"
-            onPress={handleRequestReset}
-            loading={loading}
-          />
+              {/* Buttons */}
+              <AuthButton
+                title="Yêu cầu đổi mật khẩu"
+                variant="primary"
+                onPress={handleRequestReset}
+                loading={loading}
+              />
+            </>
+          ) : (
+            <>
+              <AuthInput
+                label="Mã OTP"
+                placeholder="Nhập mã OTP (5 phút)"
+                keyboardType="number-pad"
+                value={otp}
+                onChangeText={setOtp}
+              />
+              <AuthInput
+                label="Mật khẩu mới"
+                placeholder="Nhập mật khẩu mới"
+                secureTextEntry
+                value={newPassword}
+                onChangeText={setNewPassword}
+              />
+              <AuthInput
+                label="Xác nhận mật khẩu"
+                placeholder="Nhập lại mật khẩu mới"
+                secureTextEntry
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
+
+              <AuthButton
+                title="Xác nhận đổi mật khẩu"
+                variant="primary"
+                onPress={handleResetPassword}
+                loading={loading}
+              />
+            </>
+          )}
 
           <AuthButton
             title="Quay lại đăng nhập"

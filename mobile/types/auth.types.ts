@@ -32,3 +32,11 @@ export interface AuthState {
   user: LoginResponse | null;
   isAuthenticated: boolean;
 }
+
+export interface RegisterRequest {
+  username?: string;
+  phone: string;
+  email: string;
+  password?: string;
+  userType?: 'CUSTOMER' | 'HOST' | 'BROKER';
+}

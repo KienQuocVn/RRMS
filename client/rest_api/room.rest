@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:8080
+@baseUrl = http://localhost:7000
 @roomId = 7d9c1cb7-fd8b-414b-897c-457dd4ab7960
 @motelId = 043d0cfa-1978-41ce-8f55-dcfb4efa1a46
 

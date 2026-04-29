@@ -30,21 +30,29 @@ import com.rrms.rrms.repositories.BulletinBoardRepository;
 import com.rrms.rrms.repositories.RoleRepository;
 import com.rrms.rrms.services.IAccountService;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-
 @Service
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@RequiredArgsConstructor
 public class AccountService implements IAccountService {
 
-    AccountRepository accountRepository;
-    AuthRepository authRepository;
-    RoleRepository roleRepository;
-    BulletinBoardRepository bulletinBoardRepository;
-    AccountMapper accountMapper;
-    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final AccountRepository accountRepository;
+    private final AuthRepository authRepository;
+    private final RoleRepository roleRepository;
+    private final BulletinBoardRepository bulletinBoardRepository;
+    private final AccountMapper accountMapper;
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    public AccountService(
+            AccountRepository accountRepository,
+            AuthRepository authRepository,
+            RoleRepository roleRepository,
+            BulletinBoardRepository bulletinBoardRepository,
+            AccountMapper accountMapper) {
+        this.accountRepository = accountRepository;
+        this.authRepository = authRepository;
+        this.roleRepository = roleRepository;
+        this.bulletinBoardRepository = bulletinBoardRepository;
+        this.accountMapper = accountMapper;
+        this.passwordEncoder = new BCryptPasswordEncoder();
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -127,13 +135,25 @@ public class AccountService implements IAccountService {
 
         Account savedAccount = accountRepository.save(account);
 
-        Role customerRole = roleRepository
-                .findByRoleName("CUSTOMER".equals(request.getUserType()) ? Roles.CUSTOMER : Roles.HOST)
-                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+        Roles roleEnum;
+        switch (request.getUserType().toUpperCase()) {
+            case "HOST":
+                roleEnum = Roles.HOST;
+                break;
+            case "BROKER":
+                roleEnum = Roles.BROKER;
+                break;
+            default:
+                roleEnum = Roles.CUSTOMER;
+                break;
+        }
+
+        Role role =
+                roleRepository.findByRoleName(roleEnum).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
 
         Auth auth = new Auth();
         auth.setAccount(savedAccount);
-        auth.setRole(customerRole);
+        auth.setRole(role);
         authRepository.save(auth);
 
         return savedAccount;
@@ -150,17 +170,29 @@ public class AccountService implements IAccountService {
         account.setEmail(request.getEmail());
         account.setPassword(passwordEncoder.encode(request.getPassword()));
         account.setPhone(request.getPhone());
-        accountRepository.save(account);
+        Account savedAccount = accountRepository.save(account);
 
-        Role role = roleRepository
-                .findByRoleName("CUSTOMER".equals(request.getUserType()) ? Roles.CUSTOMER : Roles.HOST)
-                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+        Roles roleEnum;
+        switch (request.getUserType().toUpperCase()) {
+            case "HOST":
+                roleEnum = Roles.HOST;
+                break;
+            case "BROKER":
+                roleEnum = Roles.BROKER;
+                break;
+            default:
+                roleEnum = Roles.CUSTOMER;
+                break;
+        }
+
+        Role role =
+                roleRepository.findByRoleName(roleEnum).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
         Auth auth = new Auth();
-        auth.setAccount(account);
+        auth.setAccount(savedAccount);
         auth.setRole(role);
         authRepository.save(auth);
 
-        return account;
+        return savedAccount;
     }
 
     @Override

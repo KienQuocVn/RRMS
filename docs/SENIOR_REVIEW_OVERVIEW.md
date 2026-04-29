@@ -148,10 +148,10 @@
 ### ✅ Đã có (Web + Backend)
 | # | Chức năng | Web | Backend | Mobile |
 |---|-----------|:---:|:-------:|:------:|
-| 1 | Đăng nhập (Phone + Password) | ✅ | ✅ | 🎨 UI only |
-| 2 | Đăng ký | ✅ | ✅ | 🎨 UI only |
+| 1 | Đăng nhập (Phone + Password) | ✅ | ✅ | ✅ |
+| 2 | Đăng ký | ✅ | ✅ | ✅ |
 | 3 | Đăng xuất | ✅ | ✅ | ❌ |
-| 4 | Quên mật khẩu | ✅ | ⚠️ Bug OTP | 🎨 UI only |
+| 4 | Quên mật khẩu | ✅ | ⚠️ Bug OTP | ✅ |
 | 5 | OAuth2 Google Login | ✅ | ✅ | ❌ |
 | 6 | Tìm kiếm nhà trọ | ✅ | ✅ | ❌ |
 | 7 | Xem chi tiết phòng | ✅ | ✅ | ❌ |
@@ -243,7 +243,7 @@
 | API versioning (/api/v1/) | Server | 1 ngày |
 | Loại bỏ dependencies dư thừa | Client | 2 ngày |
 | Mobile: Setup API client + Auth flow | Mobile | 5 ngày |
-| Mobile: Kết nối login/register | Mobile | 3 ngày |
+| Mobile: Kết nối login/register | Mobile | Hoàn thành ✅ |
 
 ### 🟢 Phase 3: Feature Enhancement (4-6 tuần)
 > Ưu tiên: **TRUNG BÌNH** - Bổ sung tính năng thiếu

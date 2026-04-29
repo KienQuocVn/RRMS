@@ -36,11 +36,11 @@ export const useAuth = create<AuthState>()(
           // Lưu ý: authService.login trả về BackendResponse (status, message, data) 
           // do apiClient đã intercept dữ liệu
           
-          if (response && response.data) {
-            const { token } = response.data;
+          if (response && response.result) {
+            const { token } = response.result;
             set({ 
               token, 
-              user: response.data, 
+              user: response.result, 
               isLoading: false,
               error: null 
             });

@@ -46,7 +46,7 @@ class OpenAPIConfigTest {
         assertThat(info.getLicense().getUrl()).isEqualTo("https://github.com/chauminhtrung/RRMS");
 
         List<Server> servers = openAPI.getServers();
-        assertThat(servers.get(0).getUrl()).isEqualTo("http://localhost:8080");
+        assertThat(servers.get(0).getUrl()).isEqualTo("http://localhost:7000");
     }
 
     @Test

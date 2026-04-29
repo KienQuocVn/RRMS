@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { authService } from '@/services/api/auth.service';
 import {
   AuthLogo,
   AuthInput,
@@ -33,15 +34,40 @@ export default function RegisterScreen() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [userType, setUserType] = useState<'HOST' | 'CUSTOMER' | 'BROKER'>('CUSTOMER');
   const [loading, setLoading] = useState(false);
 
   // ── Handlers ──
   const handleRegister = async () => {
+    if (!name || !phone || !password) {
+      alert('Vui lòng điền đầy đủ thông tin bắt buộc.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      alert('Mật khẩu xác nhận không khớp.');
+      return;
+    }
+
     setLoading(true);
-    // TODO: Gọi API đăng ký
-    setTimeout(() => {
+    try {
+      const res = await authService.register({
+        username: name,
+        phone,
+        email: '', // Backend đã làm optional, gửi chuỗi rỗng
+        password,
+        userType
+      });
+      if (res.code === 1000 || (res.result && res.result.status)) {
+        alert('Đăng ký thành công!');
+        router.back();
+      } else {
+        alert(res.message || 'Đăng ký thất bại.');
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Lỗi kết nối máy chủ');
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -74,7 +100,7 @@ export default function RegisterScreen() {
         {/* ── Form ── */}
         <View style={styles.form}>
           <AuthInput
-            label="Tên (Dùng hiển thị)"
+            label="Họ và tên (Dùng hiển thị)"
             required
             placeholder="Nhập tên của bạn"
             value={name}
@@ -82,13 +108,47 @@ export default function RegisterScreen() {
           />
 
           <AuthInput
-            label="SĐT (Dùng đăng nhập)"
+            label="Số điện thoại (Dùng đăng nhập)"
             required
             placeholder="Nhập đúng SĐT của bạn"
             keyboardType="phone-pad"
             value={phone}
             onChangeText={setPhone}
           />
+
+          {/* User Type Selection */}
+          <Text style={styles.label}>Bạn đăng ký với vai trò? <Text style={{color: Colors.error}}>*</Text></Text>
+          <View style={styles.radioGroup}>
+            <TouchableOpacity 
+              style={[styles.radioButton, userType === 'HOST' && styles.radioButtonActive]} 
+              onPress={() => setUserType('HOST')}
+            >
+              <View style={[styles.radioCircle, userType === 'HOST' && styles.radioCircleActive]}>
+                {userType === 'HOST' && <View style={styles.radioInnerCircle} />}
+              </View>
+              <Text style={[styles.radioLabel, userType === 'HOST' && styles.radioLabelActive]}>Chủ trọ</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.radioButton, userType === 'CUSTOMER' && styles.radioButtonActive]} 
+              onPress={() => setUserType('CUSTOMER')}
+            >
+              <View style={[styles.radioCircle, userType === 'CUSTOMER' && styles.radioCircleActive]}>
+                {userType === 'CUSTOMER' && <View style={styles.radioInnerCircle} />}
+              </View>
+              <Text style={[styles.radioLabel, userType === 'CUSTOMER' && styles.radioLabelActive]}>Người tìm trọ</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.radioButton, userType === 'BROKER' && styles.radioButtonActive]} 
+              onPress={() => setUserType('BROKER')}
+            >
+              <View style={[styles.radioCircle, userType === 'BROKER' && styles.radioCircleActive]}>
+                {userType === 'BROKER' && <View style={styles.radioInnerCircle} />}
+              </View>
+              <Text style={[styles.radioLabel, userType === 'BROKER' && styles.radioLabelActive]}>Môi giới</Text>
+            </TouchableOpacity>
+          </View>
 
           {/* 2 cột: Mật khẩu + Xác nhận */}
           <View style={styles.passwordRow}>
@@ -191,6 +251,61 @@ const styles = StyleSheet.create({
   },
   form: {
     flex: 1,
+  },
+  label: {
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.semiBold,
+    color: Colors.gray700,
+    marginBottom: Spacing.sm,
+  },
+  radioGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.lg,
+    gap: Spacing.xs,
+  },
+  radioButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    backgroundColor: Colors.white,
+  },
+  radioButtonActive: {
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primary + '08', // Light primary tint
+  },
+  radioCircle: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: Colors.gray400,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
+  },
+  radioCircleActive: {
+    borderColor: Colors.primary,
+  },
+  radioInnerCircle: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: Colors.primary,
+  },
+  radioLabel: {
+    fontSize: 12,
+    color: Colors.gray600,
+    fontWeight: FontWeights.medium,
+  },
+  radioLabelActive: {
+    color: Colors.primary,
+    fontWeight: FontWeights.bold,
   },
   passwordRow: {
     flexDirection: 'row',

@@ -1,6 +1,5 @@
 package com.rrms.rrms.dto.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -25,8 +24,6 @@ public class RegisterRequest {
     @Size(min = 10, max = 11, message = "Số điện thoại phải từ 10 đến 11 số")
     String phone;
 
-    @NotBlank(message = "Email không được để trống")
-    @Email(message = "Email không hợp lệ")
     String email;
 
     @NotBlank(message = "Mật khẩu không được để trống")

@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, Platform, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, FontSizes, FontWeights, Spacing, BorderRadius, Shadows } from '@/constants/theme';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/hooks/use-auth';
 
 interface MoreMenuItem {
   id: string;
@@ -37,11 +39,17 @@ const MORE_ITEMS: MoreMenuItem[] = [
   { id: 'os', icon: 'phone-portrait-outline', label: 'Hệ điều hành', rightText: 'IOS 18', rightSubText: 'iPhone', hideChevron: true },
 ];
 
-import { useRouter } from 'expo-router';
-
 export default function MoreScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { logout, user } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert('Xác nhận đăng xuất', 'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?', [
+      { text: 'Hủy', style: 'cancel' },
+      { text: 'Đăng xuất', style: 'destructive', onPress: () => logout() }
+    ]);
+  };
 
   return (
     <View style={[styles.container, { paddingTop: Platform.OS === 'ios' ? insets.top : Spacing.xl }]}>
@@ -58,7 +66,7 @@ export default function MoreScreen() {
               style={styles.avatar}
             />
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>Xin chào! Kiến Quốc</Text>
+              <Text style={styles.profileName}>Xin chào! {user?.fullname || user?.username || 'Bạn'}</Text>
               <Text style={styles.profileGreeting}>Chúc bạn một ngày làm việc hiệu quả!</Text>
               <View style={styles.verifiedBadge}>
                 <View style={styles.verifiedDot} />
@@ -133,7 +141,7 @@ export default function MoreScreen() {
         </View>
 
         {/* Logout */}
-        <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7}>
+        <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={24} color={Colors.error} />
           <Text style={styles.logoutText}>Đăng xuất tài khoản</Text>
         </TouchableOpacity>

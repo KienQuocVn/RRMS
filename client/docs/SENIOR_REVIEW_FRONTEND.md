@@ -143,19 +143,19 @@ export default httpClient
 ```javascript
 // ❌ KHÔNG hoạt động trên production
 export const getAccountByUsername = async (username) => {
-  return await axios.get(`http://localhost:8080/api-accounts/get-account/${username}`)
+  return await axios.get(`http://localhost:7000/api-accounts/get-account/${username}`)
 }
 
 export const createBroker = async (data) => {
-  return await axios.post(`http://localhost:8080/broker`, data, {...})
+  return await axios.post(`http://localhost:7000/broker`, data, {...})
 }
 
 export const getBrokers = async (motelId) => {
-  return await axios.get(`http://localhost:8080/broker/${motelId}`, {...})
+  return await axios.get(`http://localhost:7000/broker/${motelId}`, {...})
 }
 
 export const introspect = async () => {
-  return await axios.post(`http://localhost:8080/authen/introspect`, {...})
+  return await axios.post(`http://localhost:7000/authen/introspect`, {...})
 }
 ```
 
@@ -359,7 +359,7 @@ const ProtectedRoute = ({ children, requiredRoles }) => {
 - [x] Code splitting với `React.lazy()`
 - [ ] Áp dụng cấu trúc đề xuất trong `frontend-source-structure.md`
 - [x] Xóa duplicate routes trong `App.jsx`
-- [x] Tổ chức API calls theo domain *(hoàn thành: loại bỏ `apiClient.js` legacy, dùng các domain modules trong `src/apis/*` - 2026-04-17)*
+- [x] Tổ chức API calls theo domain _(hoàn thành: loại bỏ `apiClient.js` legacy, dùng các domain modules trong `src/apis/_` - 2026-04-17)\*
 
 ### Security
 
@@ -373,9 +373,9 @@ const ProtectedRoute = ({ children, requiredRoles }) => {
 
 - [x] Lazy load tất cả page components
 - [ ] Loại bỏ UI frameworks dư thừa (giữ MUI, bỏ Bootstrap)
-- [ ] Loại bỏ chart/date/carousel libraries dư thừa *(đang làm: removed `chart.js`, `react-chartjs-2`, `apexcharts` và migrate chart usage sang `@mui/x-charts` - 2026-04-17)*
-- [ ] Thêm React.memo cho components render nhiều lần *(đang làm: added `memo` + `useCallback`/`useMemo` cho `layouts/Header/Header.jsx` - 2026-04-17)*
-- [ ] Optimize re-renders (useCallback, useMemo) *(đang làm - 2026-04-17)*
+- [ ] Loại bỏ chart/date/carousel libraries dư thừa _(đang làm: removed `chart.js`, `react-chartjs-2`, `apexcharts` và migrate chart usage sang `@mui/x-charts` - 2026-04-17)_
+- [ ] Thêm React.memo cho components render nhiều lần _(đang làm: added `memo` + `useCallback`/`useMemo` cho `layouts/Header/Header.jsx` - 2026-04-17)_
+- [ ] Optimize re-renders (useCallback, useMemo) _(đang làm - 2026-04-17)_
 - [x] Sửa useEffect dependency `[location]` - quá rộng
 
 ### Code Quality
@@ -456,7 +456,7 @@ Cần: Global error boundary + centralized error handler qua interceptor
 1. ✅ Tách App.jsx thành route groups (đã hoàn thành 2026-04-17)
 2. ✅ Implement AuthContext + MotelContext (đã hoàn thành 2026-04-17)
 3. ✅ Code splitting (lazy loading) (đã hoàn thành 2026-04-17)
-4. Tổ chức lại API layer *(đang làm - 2026-04-17)*
+4. Tổ chức lại API layer _(đang làm - 2026-04-17)_
 
 ### Phase 3: Dependency Cleanup (1-2 tuần)
 

@@ -4,7 +4,7 @@ import { authStorage } from '../storage/auth.storage';
 
 // Cấu hình Base URL linh hoạt cho Android/iOS
 // IP 10.0.2.2 là địa chỉ của máy host trong Android Emulator
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8080';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:7000';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -19,9 +19,14 @@ export const apiClient = axios.create({
  */
 apiClient.interceptors.request.use(
   async (config) => {
-    const token = await authStorage.getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Không đính kèm token vào các request xác thực (login, register...)
+    const isAuthUrl = config.url?.includes('/authen/');
+    
+    if (!isAuthUrl) {
+      const token = await authStorage.getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },

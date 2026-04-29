@@ -18,7 +18,7 @@ public class VNPayConfig {
     @Value("${vnpay.api.payUrl:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}")
     private String vnp_PayUrl;
 
-    @Value("${vnpay.api.returnUrl:http://localhost:8080/payment/vnpay-callback}")
+    @Value("${vnpay.api.returnUrl:http://localhost:7000/payment/vnpay-callback}")
     private String vnp_ReturnUrl;
 
     @Value("${vnpay.api.tmnCode:XKE8UEHS}")
