@@ -44,6 +44,8 @@ public class BulletinBoardResponse implements Serializable {
     Double latitude;
     Boolean status;
     Boolean isActive;
+    MotelResponse motel;
+    RoomResponse room;
     List<BulletinBoardImage> bulletinBoardImages;
     List<BulletinBoardReviewsResponse> bulletinBoardReviews;
     List<BulletinBoardRule> bulletinBoardRules;

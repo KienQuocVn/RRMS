@@ -110,7 +110,7 @@ function SearchResultCard({
             <Avatar src={item?.account?.avatar || ''} alt={item?.account?.username || 'Avatar'} />
             <Box sx={{ minWidth: 0 }}>
               <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#344054' }}>
-                {item?.account?.username || t('searchPage.card.unknownUser')}
+                {item?.account?.fullName || item?.account?.username || t('searchPage.card.unknownUser')}
               </Typography>
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <VerifiedRoundedIcon sx={{ fontSize: 16, color: '#16a34a' }} />

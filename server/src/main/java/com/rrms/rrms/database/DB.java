@@ -26,7 +26,98 @@ import net.datafaker.Faker;
 @Profile("dev")
 public class DB {
     private static final String DEFAULT_PASSWORD = "123456789";
+    private static final Random SEEDED_RANDOM = new Random(20260508L);
+    private static final List<MotelSeedSpec> MOTEL_SEED_SPECS = List.of(
+            new MotelSeedSpec(
+                    "Nhà nghỉ Sài Gòn Central",
+                    "12 Tô Hiến Thành, Quận 10, Hồ Chí Minh",
+                    210.0,
+                    3200000L,
+                    4,
+                    "Tự động",
+                    "Không gian sạch sẽ, hợp người đi làm và sinh viên cần di chuyển nhanh trong trung tâm."),
+            new MotelSeedSpec(
+                    "Nhà nghỉ Thành Thái Garden",
+                    "88 Thành Thái, Quận 10, Hồ Chí Minh",
+                    198.0,
+                    3400000L,
+                    4,
+                    "Thủ công",
+                    "Khu vực sầm uất, thuận tiện tới trường học, bệnh viện và các tuyến xe buýt lớn."),
+            new MotelSeedSpec(
+                    "Nhà nghỉ Bình Thạnh Riverside",
+                    "25 Nguyễn Gia Trí, Bình Thạnh, Hồ Chí Minh",
+                    186.0,
+                    3600000L,
+                    4,
+                    "Tự động",
+                    "Phù hợp người đi làm gần Điện Biên Phủ, Landmark 81 và tuyến metro tương lai."),
+            new MotelSeedSpec(
+                    "Nhà nghỉ Cầu Giấy Hub",
+                    "45 Trần Thái Tông, Cầu Giấy, Hà Nội",
+                    204.0,
+                    3300000L,
+                    4,
+                    "Thủ công",
+                    "Thuận tiện đi làm khu Duy Tân, Keangnam và các trường đại học phía Tây Hà Nội."),
+            new MotelSeedSpec(
+                    "Nhà nghỉ Hà Đông Comfort",
+                    "102 Quang Trung, Hà Đông, Hà Nội",
+                    194.0,
+                    2950000L,
+                    4,
+                    "Tự động",
+                    "Phòng yên tĩnh, gần tàu điện Cát Linh - Hà Đông và các khu đô thị mới."),
+            new MotelSeedSpec(
+                    "Nhà nghỉ Ninh Kiều View",
+                    "17 Mậu Thân, Ninh Kiều, Cần Thơ",
+                    182.0,
+                    2800000L,
+                    4,
+                    "Thủ công",
+                    "Dễ dàng di chuyển tới bến Ninh Kiều, chợ đêm và các trường đại học trung tâm."),
+            new MotelSeedSpec(
+                    "Nhà nghỉ Thuận An Smart Stay",
+                    "66 Nguyễn Văn Tiết, Thuận An, Bình Dương",
+                    188.0,
+                    2700000L,
+                    4,
+                    "Tự động",
+                    "Phù hợp công nhân và chuyên gia cần ở gần VSIP, Aeon Mall và quốc lộ 13."),
+            new MotelSeedSpec(
+                    "Nhà nghỉ Dĩ An Transit",
+                    "9 ĐT743A, Dĩ An, Bình Dương",
+                    176.0,
+                    2650000L,
+                    4,
+                    "Thủ công",
+                    "Kết nối nhanh tới khu công nghiệp Sóng Thần, Đại học Quốc gia và bến xe miền Đông mới."),
+            new MotelSeedSpec(
+                    "Nhà nghỉ Hải Châu Breeze",
+                    "21 Hoàng Diệu, Hải Châu, Đà Nẵng",
+                    192.0,
+                    3100000L,
+                    4,
+                    "Tự động",
+                    "Không gian sáng, gần trung tâm hành chính, sông Hàn và cầu Rồng."),
+            new MotelSeedSpec(
+                    "Nhà nghỉ Biển Xanh",
+                    "5 Trần Phú, Nha Trang",
+                    208.0,
+                    3900000L,
+                    4,
+                    "Tự động",
+                    "Phù hợp người thích ở gần biển, khu du lịch và trung tâm thành phố Nha Trang."));
     private int imageIndex = 0;
+
+    private record MotelSeedSpec(
+            String motelName,
+            String address,
+            Double area,
+            Long averagePrice,
+            int maxPerson,
+            String methodOfCreation,
+            String description) {}
 
     @Bean
     CommandLineRunner initDatabase(
@@ -190,6 +281,7 @@ public class DB {
                     bulletinBoardRuleRepository,
                     rentalAmenitiesRepository,
                     bulletinBoardRentalAmenityRepository,
+                    rooms,
                     host,
                     customer);
 
@@ -303,7 +395,11 @@ public class DB {
     }
 
     private void seedNameMotelServices(NameMotelServiceRepository repo) {
-        String[][] data = {{"Điện", "Tiền điện"}, {"Nước", "Tiền nước"}, {"Rác", "Tiền rác"}, {"Internet", "Tiền wifi"}
+        String[][] data = {
+            {"Điện", "Tiền điện"},
+            {"Nước", "Tiền nước"},
+            {"Rác", "Tiền rác"},
+            {"Internet", "Tiền wifi"}
         };
         for (String[] d : data) {
             repo.save(NameMotelService.builder()
@@ -364,17 +460,17 @@ public class DB {
 
     private List<Motel> seedMotels(MotelRepository repo, Account host, TypeRoom tr) {
         List<Motel> motels = new ArrayList<>();
-        for (int i = 1; i <= 3; i++) {
+        for (MotelSeedSpec spec : MOTEL_SEED_SPECS) {
             motels.add(repo.save(Motel.builder()
                     .account(host)
-                    .motelName("Nhà trọ Sunshine " + i)
-                    .address(i + "23 Đường số " + i + ", Q.9, TP.HCM")
-                    .area(150.0 + i * 10)
-                    .averagePrice(3000000L)
-                    .maxperson(4)
+                    .motelName(spec.motelName())
+                    .address(spec.address())
+                    .area(spec.area())
+                    .averagePrice(spec.averagePrice())
+                    .maxperson(spec.maxPerson())
                     .invoicedate(5)
                     .paymentdeadline(10)
-                    .methodofcreation("Thủ công")
+                    .methodofcreation(spec.methodOfCreation())
                     .typeRoom(tr)
                     .build()));
         }
@@ -424,15 +520,19 @@ public class DB {
         List<Room> rooms = new ArrayList<>();
         for (Motel m : motels) {
             for (int i = 1; i <= 5; i++) {
+                double basePrice = m.getAveragePrice() + ((i - 3) * 180000L);
+                int area = 18 + (i * 3) + SEEDED_RANDOM.nextInt(4);
                 Room r = rRepo.save(Room.builder()
                         .motel(m)
-                        .name("Phòng " + i * 101)
-                        .price(3000000.0)
-                        .deposit(3000000.0)
-                        .area(25)
-                        .group("Tầng " + (i / 3 + 1))
-                        .status(RoomStatus.AVAILABLE)
-                        .description("Phòng đẹp, thoáng mát")
+                        .name(String.format("Phòng %s-%02d", m.getMotelName().replace("Nhà nghỉ ", ""), i))
+                        .price(basePrice)
+                        .deposit(basePrice)
+                        .area(area)
+                        .group("Tầng " + (i <= 2 ? 1 : i <= 4 ? 2 : 3))
+                        .status(i % 5 == 0 ? RoomStatus.RESERVED : RoomStatus.AVAILABLE)
+                        .prioritize(i % 2 == 0 ? "Ban công" : "Cửa sổ lớn")
+                        .finance("Thanh toán đầu tháng")
+                        .description("Phòng riêng đầy đủ tiện nghi, sạch sẽ và đã được kiểm tra trước khi đăng.")
                         .build());
                 rooms.add(r);
 
@@ -689,48 +789,98 @@ public class DB {
             BulletinBoardRuleRepository bbrlRepo,
             RentalAmenitiesRepository raRepo,
             BulletinBoardRentalAmenityRepository bbraRepo,
+            List<Room> rooms,
             Account host,
             Account customer) {
-        for (int i = 0; i < 5; i++) {
+        List<String> defaultAmenities =
+                List.of("Wifi tốc độ cao", "Máy lạnh", "Giữ xe", "Máy giặt", "Giờ giấc linh hoạt");
+        List<String> defaultRules = List.of(
+                "Không làm ồn sau 22h",
+                "Giữ gìn vệ sinh khu sinh hoạt chung",
+                "Không nuôi thú cưng kích thước lớn",
+                "Thông báo trước khi chuyển phòng");
+
+        for (int i = 0; i < rooms.size(); i++) {
+            Room room = rooms.get(i);
+            Motel motel = room.getMotel();
+            MotelSeedSpec seedSpec = MOTEL_SEED_SPECS.stream()
+                    .filter(spec -> spec.motelName().equals(motel.getMotelName()))
+                    .findFirst()
+                    .orElse(null);
+            BigDecimal rentPrice = BigDecimal.valueOf(room.getPrice());
+            BigDecimal promotionalPrice =
+                    i % 3 == 0 ? null : rentPrice.subtract(BigDecimal.valueOf(150000L + (i % 3) * 50000L));
+
             BulletinBoard bb = BulletinBoard.builder()
                     .account(host)
-                    .title("Phòng trọ cao cấp Q.9 - " + i)
-                    .rentalCategory("Phòng trọ")
-                    .description("Phòng mới xây, đầy đủ tiện nghi...")
-                    .address("123 Lê Văn Việt, Q.9")
+                    .motel(motel)
+                    .room(room)
+                    .title(room.getName() + " - " + motel.getMotelName())
+                    .rentalCategory("Nhà nghỉ")
+                    .description(buildBulletinBoardDescription(seedSpec, room))
+                    .address(motel.getAddress())
                     .build();
-            bb.setRentPrice(java.math.BigDecimal.valueOf(2500000));
-            bb.setPromotionalRentalPrice(java.math.BigDecimal.valueOf(2300000));
-            bb.setDeposit(java.math.BigDecimal.valueOf(1000000));
-            bb.setArea(35);
-            bb.setElectricityPrice(java.math.BigDecimal.valueOf(3500));
-            bb.setWaterPrice(java.math.BigDecimal.valueOf(20000));
-            bb.setMaxPerson("3");
-            bb.setMoveInDate(java.time.LocalDate.now());
-            bb.setOpeningHours("6h");
-            bb.setCloseHours("23h");
+            bb.setRentPrice(rentPrice);
+            bb.setPromotionalRentalPrice(promotionalPrice);
+            bb.setDeposit(BigDecimal.valueOf(room.getDeposit()));
+            bb.setArea(room.getArea());
+            bb.setElectricityPrice(BigDecimal.valueOf(3500 + (i % 3) * 200L));
+            bb.setWaterPrice(BigDecimal.valueOf(16000 + (i % 4) * 1000L));
+            bb.setMaxPerson(String.valueOf(Math.max(2, motel.getMaxperson() - (i % 2))));
+            bb.setMoveInDate(LocalDate.now().plusDays(i % 4));
+            bb.setOpeningHours("05:30");
+            bb.setCloseHours("23:30");
             bb.setStatus(true);
             bb.setIsActive(true);
             bb = bbRepo.save(bb);
 
-            bbiRepo.save(new BulletinBoardImage(
-                    UUID.randomUUID(), bb, "https://picsum.photos/800/600?random=" + (++imageIndex)));
+            for (int image = 0; image < 3; image++) {
+                bbiRepo.save(new BulletinBoardImage(
+                        UUID.randomUUID(), bb, "https://picsum.photos/800/600?random=" + (++imageIndex)));
+            }
 
-            Rule r = ruleRepo.save(
-                    Rule.builder().ruleName("Không làm ồn sau 22h").price(0L).build());
-            bbrlRepo.save(BulletinBoardRule.builder().bulletinBoard(bb).rule(r).build());
+            for (String ruleName : defaultRules.subList(0, 2 + (i % 2))) {
+                Rule r = ruleRepo.save(
+                        Rule.builder().ruleName(ruleName).price(0L).build());
+                bbrlRepo.save(
+                        BulletinBoardRule.builder().bulletinBoard(bb).rule(r).build());
+            }
 
-            RentalAmenities ra = raRepo.save(
-                    RentalAmenities.builder().name("Wifi miễn phí " + i).build());
-            bbraRepo.save(new com.rrms.rrms.models.BulletinBoardRentalAmenity(UUID.randomUUID(), ra, bb));
+            for (String amenityName : defaultAmenities.subList(0, 3 + (i % 2))) {
+                RentalAmenities ra = raRepo.save(
+                        RentalAmenities.builder().name(amenityName + " " + i).build());
+                bbraRepo.save(new BulletinBoardRentalAmenity(UUID.randomUUID(), ra, bb));
+            }
 
-            bbrRepo.save(BulletinBoardReviews.builder()
-                    .account(customer)
-                    .bulletinBoard(bb)
-                    .rating(5)
-                    .content("Phòng rất tốt!")
-                    .build());
+            int reviewCount = 1 + (i % 3);
+            for (int reviewIndex = 0; reviewIndex < reviewCount; reviewIndex++) {
+                bbrRepo.save(BulletinBoardReviews.builder()
+                        .account(customer)
+                        .bulletinBoard(bb)
+                        .rating(4 + (reviewIndex % 2))
+                        .content(buildReviewComment(f, motel, reviewIndex))
+                        .build());
+            }
         }
+    }
+
+    private String buildBulletinBoardDescription(MotelSeedSpec seedSpec, Room room) {
+        String baseDescription = seedSpec != null
+                ? seedSpec.description()
+                : "Tin đăng đã được kiểm tra thông tin cơ bản trước khi hiển thị.";
+
+        return baseDescription + " " + room.getName() + " có " + room.getArea() + "m2, mức giá "
+                + String.format(Locale.US, "%,.0f", room.getPrice()) + " VND/tháng.";
+    }
+
+    private String buildReviewComment(Faker faker, Motel motel, int reviewIndex) {
+        List<String> comments = List.of(
+                "Phòng đúng mô tả, chủ hỗ trợ nhanh và khu vực đi lại thuận tiện.",
+                "Giá hợp lý so với vị trí, nhà vệ sinh sạch và ảnh thực tế sát với tin đăng.",
+                "Ở gần chỗ học và chỗ làm nên tiết kiệm thời gian di chuyển mỗi ngày.");
+
+        return comments.get((reviewIndex + motel.getMotelName().length()) % comments.size()) + " "
+                + faker.lorem().sentence(6);
     }
 
     private void seedFavorites(AccountRepository aRepo, BulletinBoardRepository bRepo, String user, int count) {

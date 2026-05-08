@@ -1,5 +1,6 @@
 package com.rrms.rrms.controllers;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -67,9 +68,36 @@ public class SearchController {
 
     @Operation(summary = "Get all active rooms")
     @GetMapping("")
-    public ApiResponse<List<BulletinBoardSearchResponse>> getRooms() {
-        log.info("Getting all active bulletin boards");
-        List<BulletinBoardSearchResponse> rooms = searchService.getRooms();
+    public ApiResponse<List<BulletinBoardSearchResponse>> getRooms(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String district,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Integer minArea,
+            @RequestParam(required = false) Integer maxArea,
+            @RequestParam(required = false) String rentalCategory) {
+        boolean hasAdvancedFilter = query != null
+                || district != null
+                || minPrice != null
+                || maxPrice != null
+                || minArea != null
+                || maxArea != null
+                || rentalCategory != null;
+
+        log.info(
+                "Getting bulletin boards with filters - query: {}, district: {}, minPrice: {}, maxPrice: {}, minArea: {}, maxArea: {}, rentalCategory: {}",
+                query,
+                district,
+                minPrice,
+                maxPrice,
+                minArea,
+                maxArea,
+                rentalCategory);
+
+        List<BulletinBoardSearchResponse> rooms = hasAdvancedFilter
+                ? searchService.searchRooms(query, district, minPrice, maxPrice, minArea, maxArea, rentalCategory)
+                : searchService.getRooms();
+
         return ApiResponse.<List<BulletinBoardSearchResponse>>builder()
                 .code(HttpStatus.OK.value())
                 .message("Search successful")

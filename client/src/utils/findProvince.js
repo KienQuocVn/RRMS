@@ -66,7 +66,23 @@ const vietnamProvinces = [
 
 //Hàm lấy tên tỉnh từ địa chỉ
 export function findProvinceRegex(address) {
+  if (!address) return null
+
   const regex = new RegExp(vietnamProvinces.join('|'), 'i')
   const match = address.match(regex)
-  return match ? match[0] : null
+
+  if (match) {
+    return match[0]
+  }
+
+  const addressParts = address
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+  if (addressParts.length === 0) {
+    return null
+  }
+
+  return addressParts[addressParts.length - 1]
 }

@@ -15,20 +15,31 @@ import ProvinceSearchSection from './sections/ProvinceSearchSection'
 import ReadyToMoveRoomsSection from './sections/ReadyToMoveRoomsSection'
 import SuggestSpecialSection from './sections/SuggestSpecialSection'
 import WardSection from './sections/WardSection'
-import { buildRrmsDashboard } from './sections/rrmsData'
+import { buildFixedProvinceGroups, buildRrmsDashboard, RRMS_SPECIAL_HASHTAGS } from './sections/rrmsData'
 
 const LATEST_PER_PAGE = 6
+const DEFAULT_SEARCH_FILTERS = {
+  query: '',
+  district: '',
+  minPrice: null,
+  maxPrice: null,
+  minArea: null,
+  maxArea: null,
+  rentalCategory: '',
+  occupation: ''
+}
 
 const getApiResult = (payload) => (Array.isArray(payload?.result) ? payload.result : [])
 
 function RRMS({ setIsAdmin }) {
   const navigate = useNavigate()
-  const [searchText, setSearchText] = useState('')
+  const [searchFilters, setSearchFilters] = useState(DEFAULT_SEARCH_FILTERS)
   const [allRooms, setAllRooms] = useState([])
   const [latestRooms, setLatestRooms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [currentLatestPage, setCurrentLatestPage] = useState(1)
+  const searchText = searchFilters.query
 
   useEffect(() => {
     setIsAdmin(false)
@@ -80,6 +91,15 @@ function RRMS({ setIsAdmin }) {
   const dashboard = useMemo(() => buildRrmsDashboard({ allRooms, latestRooms }), [allRooms, latestRooms])
 
   const latestTotalPages = Math.max(1, Math.ceil(dashboard.latestRooms.length / LATEST_PER_PAGE))
+  const provinceSearchItems = useMemo(() => buildFixedProvinceGroups(dashboard.allRooms), [dashboard.allRooms])
+  const specialSearchTags = useMemo(
+    () =>
+      RRMS_SPECIAL_HASHTAGS.map((label) => ({
+        label: `#${label}`,
+        query: label
+      })),
+    []
+  )
 
   const latestVisibleRooms = useMemo(() => {
     const start = (currentLatestPage - 1) * LATEST_PER_PAGE
@@ -113,6 +133,8 @@ function RRMS({ setIsAdmin }) {
     return [...optionsMap.values()]
   }, [dashboard.districtGroups, dashboard.provinceGroups, dashboard.wardGroups])
 
+  const districtOptions = useMemo(() => dashboard.districtGroups.slice(0, 24), [dashboard.districtGroups])
+
   const popularKeywords = useMemo(() => {
     const keywords = [
       ...dashboard.districtGroups.slice(0, 10).map((item) => item.label),
@@ -128,23 +150,35 @@ function RRMS({ setIsAdmin }) {
   }, [dashboard.latestRooms.length])
 
   const handleSearch = (value = searchText) => {
-    const trimmedValue = value.trim()
+    if (typeof value === 'string') {
+      const trimmedValue = value.trim()
 
-    if (!trimmedValue) {
-      navigate('/search')
+      if (!trimmedValue) {
+        navigate('/search')
+        return
+      }
+
+      navigate(`/search?query=${encodeURIComponent(trimmedValue)}`)
       return
     }
 
-    navigate(`/search?query=${encodeURIComponent(trimmedValue)}`)
+    const params = new URLSearchParams()
+    const normalizedQuery = value?.query?.trim()
+
+    if (normalizedQuery) params.set('query', normalizedQuery)
+    if (value?.district) params.set('district', value.district)
+    if (typeof value?.minPrice === 'number') params.set('minPrice', String(value.minPrice))
+    if (typeof value?.maxPrice === 'number') params.set('maxPrice', String(value.maxPrice))
+    if (typeof value?.minArea === 'number') params.set('minArea', String(value.minArea))
+    if (typeof value?.maxArea === 'number') params.set('maxArea', String(value.maxArea))
+    if (value?.rentalCategory) params.set('rentalCategory', value.rentalCategory)
+
+    const queryString = params.toString()
+    navigate(queryString ? `/search?${queryString}` : '/search')
   }
 
   const handleSelectLocation = (location) => {
     navigate(`/search?query=${encodeURIComponent(location)}`)
-  }
-
-  const handleOpenRoom = (roomId) => {
-    if (!roomId) return
-    navigate(`/detail/${roomId}`)
   }
 
   const handleJumpToSection = (sectionId) => {
@@ -163,10 +197,11 @@ function RRMS({ setIsAdmin }) {
         background: 'linear-gradient(180deg, #f7fbff 0%, #edf6ff 20%, #ffffff 56%, #f8fafc 100%)'
       }}>
       <HeaderHomeSection
-        searchText={searchText}
-        onSearchTextChange={setSearchText}
+        filters={searchFilters}
+        onFiltersChange={setSearchFilters}
         onSearch={handleSearch}
         searchOptions={searchOptions}
+        districtOptions={districtOptions}
         stats={dashboard.stats}
       />
 
@@ -180,8 +215,12 @@ function RRMS({ setIsAdmin }) {
         <MenuHomeSection onJumpToSection={handleJumpToSection} />
         <DownloadOwnerBlockSection stats={dashboard.stats} />
         <PromotionSection room={dashboard.promotionHeroRoom} stats={dashboard.stats} onExplorePromotions={() => handleSearch(searchText)} />
-        <ProvinceSearchSection items={dashboard.provinceGroups} onSelectProvince={handleSelectLocation} />
-        <SuggestSpecialSection items={dashboard.specialSuggestions} onOpenRoom={handleOpenRoom} />
+        <ProvinceSearchSection items={provinceSearchItems} onSelectProvince={handleSelectLocation} />
+        <SuggestSpecialSection
+          title="Tìm phòng gần khu vực Quận 10, Hồ Chí Minh"
+          items={specialSearchTags}
+          onSelectHashtag={handleSelectLocation}
+        />
         <PopularRoomsSection rooms={dashboard.popularRooms} loading={loading} onViewAll={() => navigate('/search')} />
         <ReadyToMoveRoomsSection rooms={dashboard.readyRooms} loading={loading} />
         <DistrictSearchSection items={dashboard.districtGroups} onSelectDistrict={handleSelectLocation} />

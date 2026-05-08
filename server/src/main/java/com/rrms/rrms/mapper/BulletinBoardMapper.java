@@ -11,7 +11,10 @@ import com.rrms.rrms.dto.response.BulletinBoardSearchResponse;
 import com.rrms.rrms.dto.response.BulletinBoardTableResponse;
 import com.rrms.rrms.models.BulletinBoard;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(
+        componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        uses = {MotelMapper.class, RoomMapper.class})
 public interface BulletinBoardMapper {
 
     BulletinBoardResponse toBulletinBoardResponse(BulletinBoard bulletinBoard);
@@ -22,6 +25,8 @@ public interface BulletinBoardMapper {
     @Mapping(target = "bulletinBoardReviews", ignore = true)
     @Mapping(target = "bulletinBoardRules", ignore = true)
     @Mapping(target = "bulletinBoardRentalAmenities", ignore = true)
+    @Mapping(target = "motel", ignore = true)
+    @Mapping(target = "room", ignore = true)
     BulletinBoard toBulletinBoard(BulletinBoardRequest bulletinBoardRequest);
 
     BulletinBoardTableResponse toBulletinBoardTableResponse(BulletinBoard bulletinBoard);
@@ -34,6 +39,8 @@ public interface BulletinBoardMapper {
     @Mapping(target = "bulletinBoardReviews", ignore = true)
     @Mapping(target = "bulletinBoardRules", ignore = true)
     @Mapping(target = "bulletinBoardRentalAmenities", ignore = true)
+    @Mapping(target = "motel", ignore = true)
+    @Mapping(target = "room", ignore = true)
     void updateBulletinBoardFromRequest(
             BulletinBoardRequest bulletinBoardRequest, @MappingTarget BulletinBoard bulletinBoard);
 }

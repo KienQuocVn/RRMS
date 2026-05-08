@@ -1,4 +1,27 @@
 const DAY_IN_MS = 24 * 60 * 60 * 1000
+export const RRMS_POPULAR_PROVINCES = ['Hồ Chí Minh', 'Hà Nội', 'Cần Thơ', 'Bình Dương', 'Đà Nẵng', 'Nha Trang']
+export const RRMS_SPECIAL_HASHTAGS = [
+  'Trường Cao đẳng Đại Việt Sài Gòn',
+  'Trường Cao đẳng Du lịch Sài Gòn',
+  'Trường Cao đẳng Công thương TP.HCM',
+  'Trường Cao đẳng Công nghệ Sài Gòn',
+  'Trường Cao đẳng Bình Minh Sài Gòn',
+  'Trường Cao đẳng Bách khoa Sài Gòn',
+  'Trường Cao đẳng Bách khoa Nam Sài Gòn',
+  'Trường Cao đẳng An ninh mạng iSPACE',
+  'Trường Cao đẳng bán công Công nghệ và Quản trị doanh nghiệp',
+  'Trường Đại học Swinburne Việt Nam',
+  'Trường Đại học Greenwich Việt Nam',
+  'Trường Đại học Fulbright Việt Nam',
+  'Trường Đại học RMIT Việt Nam Nam Sài Gòn',
+  'Trường Kinh doanh Sài Gòn',
+  'Trường Đại học Quốc tế Sài Gòn',
+  'Trường Đại học Hoa Sen (HSU)',
+  'Học viện Thanh thiếu niên VN cơ sở Miền Nam',
+  'Nhạc viện TP.HCM',
+  'Trường Đại học Cảnh sát Nhân dân',
+  'Học viện Kỹ thuật Quân sự TP.HCM'
+]
 
 const toNumber = (value) => {
   const parsed = Number(value)
@@ -141,6 +164,15 @@ const buildLocationGroups = (rooms, level) => {
     })
 }
 
+export const buildFixedProvinceGroups = (rooms, labels = RRMS_POPULAR_PROVINCES) => {
+  const groupedByProvince = buildLocationGroups(rooms, 'province')
+  const provinceMap = new Map(groupedByProvince.map((item) => [item.label.toLowerCase(), item]))
+
+  return labels
+    .map((label) => provinceMap.get(label.toLowerCase()))
+    .filter(Boolean)
+}
+
 const buildPopularRooms = (rooms, limit) =>
   [...rooms]
     .sort((left, right) => {
@@ -233,7 +265,7 @@ export const buildRrmsDashboard = ({ allRooms = [], latestRooms = [] }) => {
   const provinceGroups = buildLocationGroups(normalizedRooms, 'province')
   const districtGroups = buildLocationGroups(normalizedRooms, 'district')
   const wardGroups = buildLocationGroups(normalizedRooms, 'ward')
-  const popularRooms = buildPopularRooms(normalizedRooms, 8)
+  const popularRooms = buildPopularRooms(normalizedRooms, 10)
   const readyRooms = buildReadyRooms(normalizedRooms, 8)
   const specialSuggestions = buildSpecialSuggestions(normalizedRooms, 4)
   const promotionRooms = [...normalizedRooms]

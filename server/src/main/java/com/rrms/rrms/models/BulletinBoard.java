@@ -92,6 +92,14 @@ public class BulletinBoard extends BaseEntity {
     @Column(columnDefinition = "BOOLEAN")
     private Boolean isActive;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "motel_id")
+    private Motel motel;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id")
+    private Room room;
+
     @OneToMany(mappedBy = "bulletinBoard", cascade = CascadeType.MERGE, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default

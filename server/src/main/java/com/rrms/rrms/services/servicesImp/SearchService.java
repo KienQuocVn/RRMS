@@ -1,5 +1,6 @@
 package com.rrms.rrms.services.servicesImp;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +44,24 @@ public class SearchService implements ISearchService {
     public List<BulletinBoardSearchResponse> getRooms() {
         List<BulletinBoard> bulletinBoards = bulletinBoardRepository.findAllByIsActive(true);
         return bulletinBoards.stream()
+                .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
+                .toList();
+    }
+
+    @Override
+    public List<BulletinBoardSearchResponse> searchRooms(
+            String query,
+            String district,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Integer minArea,
+            Integer maxArea,
+            String rentalCategory) {
+        List<BulletinBoard> bulletinBoards = bulletinBoardRepository.searchActiveBulletinBoards(
+                normalizeKeyword(query), normalizeKeyword(district), minPrice, maxPrice, minArea, maxArea);
+
+        return bulletinBoards.stream()
+                .filter(bulletinBoard -> matchesRentalCategory(bulletinBoard, rentalCategory))
                 .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
                 .toList();
     }
@@ -128,5 +147,39 @@ public class SearchService implements ISearchService {
         return searchRepository.findAllByIsActive(true).stream()
                 .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
                 .collect(Collectors.toList());
+    }
+
+    private String normalizeKeyword(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmedValue = value.trim();
+        return trimmedValue.isEmpty() ? null : trimmedValue;
+    }
+
+    private boolean matchesRentalCategory(BulletinBoard bulletinBoard, String rentalCategory) {
+        String normalizedCategory = normalizeKeyword(rentalCategory);
+
+        if (normalizedCategory == null) {
+            return true;
+        }
+
+        String sourceCategory = bulletinBoard.getRentalCategory() == null
+                ? ""
+                : bulletinBoard.getRentalCategory().trim().toLowerCase();
+
+        return switch (normalizedCategory) {
+            case "phong-tro-nha-tro" -> sourceCategory.contains("trọ");
+            case "ky-tuc-xa-sleepbox" -> sourceCategory.contains("ký túc") || sourceCategory.contains("sleepbox");
+            case "nha-cho-thue" -> sourceCategory.contains("nhà nguyên căn");
+            case "can-ho-chung-cu" -> sourceCategory.contains("chung cư")
+                    || sourceCategory.contains("căn hộ")
+                    || sourceCategory.contains("studio");
+            case "van-phong" -> sourceCategory.contains("officetel") || sourceCategory.contains("văn phòng");
+            case "kho-nha-xuong" -> sourceCategory.contains("kho") || sourceCategory.contains("xưởng");
+            case "o-ghep-pass-phong" -> sourceCategory.contains("ở ghép") || sourceCategory.contains("pass phòng");
+            default -> sourceCategory.contains(normalizedCategory.toLowerCase());
+        };
     }
 }

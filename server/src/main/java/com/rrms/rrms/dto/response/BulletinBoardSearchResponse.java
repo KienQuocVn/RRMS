@@ -42,6 +42,8 @@ public class BulletinBoardSearchResponse implements Serializable {
     LocalDate moveInDate;
     String address;
     Boolean isActive;
+    MotelResponse motel;
+    RoomResponse room;
     List<BulletinBoardImage> bulletinBoardImages;
     List<BulletinBoardReviewsResponse> bulletinBoardReviews;
     List<BulletinBoardRule> bulletinBoardRules;

@@ -1,9 +1,9 @@
 import publicHttpClient from './publicHttpClient'
 
 export const searchByName = async (keyword) => {
-  return publicHttpClient.get('/api/v1/search/by-address', {
+  return publicHttpClient.get('/api/v1/search', {
     params: {
-      address: keyword
+      query: keyword
     }
   })
 }
@@ -18,8 +18,8 @@ export const roomASC = async (sortOrder = 'ASC') => {
   return response.data
 }
 
-export const getSearchRooms = async () => {
-  const response = await publicHttpClient.get('/api/v1/search')
+export const getSearchRooms = async (params = {}) => {
+  const response = await publicHttpClient.get('/api/v1/search', { params })
   return response.data
 }
 

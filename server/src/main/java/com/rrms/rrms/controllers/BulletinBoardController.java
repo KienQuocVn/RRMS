@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.request.BulletinBoardRequest;
@@ -51,6 +52,7 @@ public class BulletinBoardController {
 
     @Operation(summary = "Create bulletin board")
     @PostMapping("")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     public ApiResponse<BulletinBoardResponse> createBulletinBoard(
             @RequestBody BulletinBoardRequest bulletinBoardRequest) {
         BulletinBoardResponse bulletinBoardResponse = bulletinBoardService.createBulletinBoard(bulletinBoardRequest);
@@ -63,6 +65,7 @@ public class BulletinBoardController {
 
     @Operation(summary = "Update bulletin board")
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     public ApiResponse<BulletinBoardResponse> updateBulletinBoard(
             @RequestBody BulletinBoardRequest bulletinBoardRequest, @PathVariable("id") UUID id) {
         BulletinBoardResponse bulletinBoardResponse =
@@ -76,6 +79,7 @@ public class BulletinBoardController {
 
     @Operation(summary = "Get bulletin board table")
     @GetMapping("/table/{username}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     public ApiResponse<List<BulletinBoardTableResponse>> getBulletinBoardTable(@PathVariable String username) {
         List<BulletinBoardTableResponse> bulletinBoardResponse = bulletinBoardService.getBulletinBoardTable(username);
         return ApiResponse.<List<BulletinBoardTableResponse>>builder()
@@ -87,6 +91,7 @@ public class BulletinBoardController {
 
     @Operation(summary = "Get inactive bulletin boards")
     @GetMapping("/inactive")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ApiResponse<List<BulletinBoardResponse>> getInactiveBulletinBoards() {
         List<BulletinBoardResponse> inactiveBulletinBoards = bulletinBoardService.getBulletinBoard();
         return ApiResponse.<List<BulletinBoardResponse>>builder()
@@ -98,6 +103,7 @@ public class BulletinBoardController {
 
     @Operation(summary = "Approve bulletin board")
     @PutMapping("/{id}/approve")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ApiResponse<BulletinBoardResponse> approveBulletinBoard(@PathVariable UUID id) {
         BulletinBoardResponse updatedBoard = bulletinBoardService.approveBulletinBoard(id);
         return ApiResponse.<BulletinBoardResponse>builder()
@@ -109,6 +115,7 @@ public class BulletinBoardController {
 
     @Operation(summary = "Delete bulletin board")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     public ApiResponse<Void> deleteBulletinBoard(@PathVariable UUID id) {
         bulletinBoardService.deleteBulletinBoard(id);
         return ApiResponse.<Void>builder()

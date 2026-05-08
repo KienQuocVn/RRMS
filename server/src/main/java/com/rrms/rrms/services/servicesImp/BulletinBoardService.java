@@ -2,6 +2,7 @@ package com.rrms.rrms.services.servicesImp;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,7 +23,9 @@ import com.rrms.rrms.models.BulletinBoard;
 import com.rrms.rrms.models.BulletinBoardImage;
 import com.rrms.rrms.models.BulletinBoardRentalAmenity;
 import com.rrms.rrms.models.BulletinBoardRule;
+import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.models.RentalAmenities;
+import com.rrms.rrms.models.Room;
 import com.rrms.rrms.models.Rule;
 import com.rrms.rrms.repositories.AccountRepository;
 import com.rrms.rrms.repositories.BulletinBoardElasticsearchRepository;
@@ -30,7 +33,9 @@ import com.rrms.rrms.repositories.BulletinBoardImageRepository;
 import com.rrms.rrms.repositories.BulletinBoardRentalAmenityRepository;
 import com.rrms.rrms.repositories.BulletinBoardRepository;
 import com.rrms.rrms.repositories.BulletinBoardRuleRepository;
+import com.rrms.rrms.repositories.MotelRepository;
 import com.rrms.rrms.repositories.RentalAmenitiesRepository;
+import com.rrms.rrms.repositories.RoomRepository;
 import com.rrms.rrms.repositories.RuleRepository;
 import com.rrms.rrms.services.IBulletinBoard;
 
@@ -53,6 +58,8 @@ public class BulletinBoardService implements IBulletinBoard {
     RentalAmenitiesRepository rentalAmenitiesRepository;
     RuleRepository ruleRepository;
     AccountRepository accountRepository;
+    MotelRepository motelRepository;
+    RoomRepository roomRepository;
     BulletinBoardElasticsearchRepository bulletinBoardElasticsearchRepository;
 
     BulletinBoardMapper bulletinBoardMapper;
@@ -77,6 +84,7 @@ public class BulletinBoardService implements IBulletinBoard {
 
         BulletinBoard bulletinBoard = bulletinBoardMapper.toBulletinBoard(bulletinBoardRequest);
         bulletinBoard.setAccount(account);
+        applyRoomAndMotelReferences(bulletinBoard, bulletinBoardRequest);
         bulletinBoard = bulletinBoardRepository.save(bulletinBoard);
 
         saveImages(bulletinBoard, bulletinBoardRequest.getBulletinBoardImages());
@@ -94,6 +102,7 @@ public class BulletinBoardService implements IBulletinBoard {
         log.debug("Updating bulletin board id: {}", bulletinBoard.getBulletinBoardId());
 
         bulletinBoardMapper.updateBulletinBoardFromRequest(bulletinBoardRequest, bulletinBoard);
+        applyRoomAndMotelReferences(bulletinBoard, bulletinBoardRequest);
         bulletinBoardRepository.save(bulletinBoard);
 
         if (bulletinBoardRequest.getBulletinBoardImages() != null) {
@@ -223,6 +232,81 @@ public class BulletinBoardService implements IBulletinBoard {
         return bulletinBoardRepository
                 .findById(bulletinBoardId)
                 .orElseThrow(() -> new AppException(ErrorCode.BULLETIN_BOARD_NOT_FOUND));
+    }
+
+    private void applyRoomAndMotelReferences(BulletinBoard bulletinBoard, BulletinBoardRequest bulletinBoardRequest) {
+        Room room = null;
+        if (bulletinBoardRequest.getRoomId() != null) {
+            room = roomRepository
+                    .findById(bulletinBoardRequest.getRoomId())
+                    .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
+        }
+
+        Motel motel = null;
+        if (bulletinBoardRequest.getMotelId() != null) {
+            motel = motelRepository
+                    .findById(bulletinBoardRequest.getMotelId())
+                    .orElseThrow(() -> new AppException(ErrorCode.MOTEL_NOT_FOUND));
+        }
+
+        if (room != null) {
+            Motel roomMotel = room.getMotel();
+            if (motel != null && roomMotel != null && !roomMotel.getMotelId().equals(motel.getMotelId())) {
+                throw new IllegalArgumentException("Room does not belong to the provided motel");
+            }
+            motel = roomMotel;
+        }
+
+        if (motel == null) {
+            motel = inferMotelFromBulletinBoard(bulletinBoard);
+        }
+
+        if (room == null && motel != null) {
+            room = inferRoomFromBulletinBoard(bulletinBoard, motel);
+        }
+
+        bulletinBoard.setRoom(room);
+        bulletinBoard.setMotel(motel);
+    }
+
+    private Motel inferMotelFromBulletinBoard(BulletinBoard bulletinBoard) {
+        if (bulletinBoard.getAccount() == null
+                || bulletinBoard.getAccount().getUsername() == null
+                || bulletinBoard.getAddress() == null
+                || bulletinBoard.getAddress().isBlank()) {
+            return null;
+        }
+
+        return motelRepository
+                .findMotelByAccount_Username(bulletinBoard.getAccount().getUsername())
+                .stream()
+                .filter(motel -> motel.getAddress() != null)
+                .filter(motel -> matchesAddress(motel.getAddress(), bulletinBoard.getAddress()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Room inferRoomFromBulletinBoard(BulletinBoard bulletinBoard, Motel motel) {
+        List<Room> candidateRooms = roomRepository.findByMotel(motel).stream()
+                .filter(room -> room.getPrice() != null && bulletinBoard.getRentPrice() != null)
+                .filter(room -> Objects.equals(room.getArea(), bulletinBoard.getArea()))
+                .filter(room ->
+                        Math.abs(room.getPrice() - bulletinBoard.getRentPrice().doubleValue()) < 1.0)
+                .toList();
+
+        if (candidateRooms.size() == 1) {
+            return candidateRooms.get(0);
+        }
+
+        return null;
+    }
+
+    private boolean matchesAddress(String left, String right) {
+        String normalizedLeft = left.trim().toLowerCase();
+        String normalizedRight = right.trim().toLowerCase();
+        return normalizedLeft.equals(normalizedRight)
+                || normalizedLeft.contains(normalizedRight)
+                || normalizedRight.contains(normalizedLeft);
     }
 
     private <T> List<T> safeList(List<T> values) {

@@ -21,6 +21,7 @@ const DetailContactSection = ({ item }) => {
   const [showPhone, setShowPhone] = useState(false);
 
   const owner = item?.account || {};
+  const ownerName = owner.fullName || owner.fullname || owner.username || 'Chủ tin đăng';
   const phoneNumber = owner.phone || item?.phone;
 
   const handleOpenZalo = () => {
@@ -44,7 +45,7 @@ const DetailContactSection = ({ item }) => {
     if (!showPhone) {
       try {
         await navigator.clipboard.writeText(phoneNumber);
-        toast.success('Da sao chep so dien thoai');
+        toast.success('Đã sao chép số điện thoại');
       } catch (error) {
         console.error(error);
       }
@@ -70,19 +71,19 @@ const DetailContactSection = ({ item }) => {
       <Stack spacing={2.5} alignItems="center">
         <Avatar
           src={owner.avatar}
-          alt={owner.fullname}
+          alt={ownerName}
           sx={{
             width: 92,
             height: 92,
             border: '4px solid',
             borderColor: alpha(theme.palette.primary.main, 0.14),
           }}>
-          {owner.fullname?.[0]}
+          {ownerName?.[0]}
         </Avatar>
 
         <Stack spacing={0.5} alignItems="center">
           <Typography variant="h6" sx={{ fontWeight: 800 }}>
-            {owner.fullname || 'Chủ tin đăng'}
+            {ownerName}
           </Typography>
           <Chip
             icon={<VerifiedRoundedIcon />}

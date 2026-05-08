@@ -33,12 +33,12 @@ function PopularRoomsSection({ rooms, loading, onViewAll }) {
 
       <Grid container spacing={3}>
         {loading
-          ? Array.from({ length: 4 }).map((_, index) => (
+          ? Array.from({ length: 10 }).map((_, index) => (
               <Grid item xs={12} md={6} xl={3} key={index}>
                 <RoomSkeleton />
               </Grid>
             ))
-          : rooms.slice(0, 4).map((room) => (
+          : rooms.slice(0, 8).map((room) => (
               <Grid item xs={12} md={6} xl={3} key={room.bulletinBoardId}>
                 <NowRoomCard item={room} />
               </Grid>

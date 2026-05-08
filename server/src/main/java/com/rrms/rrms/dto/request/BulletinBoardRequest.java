@@ -3,6 +3,7 @@ package com.rrms.rrms.dto.request;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import com.rrms.rrms.models.BulletinBoardImage;
 import com.rrms.rrms.models.BulletinBoardRentalAmenity;
@@ -37,6 +38,8 @@ public class BulletinBoardRequest {
     Double latitude;
     Boolean status;
     Boolean isActive;
+    UUID motelId;
+    UUID roomId;
     List<BulletinBoardImage> bulletinBoardImages;
     List<BulletinBoardRule> bulletinBoardRules;
     List<BulletinBoardRentalAmenity> bulletinBoardRentalAmenities;

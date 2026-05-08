@@ -24,6 +24,16 @@ import { formatterAmount } from '~/utils/formatterAmount';
 const overviewItems = (detail) => [
   {
     icon: <HomeWorkRoundedIcon color="primary" />,
+    label: 'Nhà nghỉ',
+    value: detail.motel?.motelName || 'Đang cập nhật',
+  },
+  {
+    icon: <CheckCircleRoundedIcon color="primary" />,
+    label: 'Phòng thuộc',
+    value: detail.room?.name || 'Đang cập nhật',
+  },
+  {
+    icon: <HomeWorkRoundedIcon color="primary" />,
     label: 'Chuyên mục',
     value: detail.rentalCategory || 'Đang cập nhật',
   },
@@ -40,7 +50,7 @@ const overviewItems = (detail) => [
   {
     icon: <AccessTimeRoundedIcon color="primary" />,
     label: 'Bắt đầu cho thuê',
-    value: detail.rentalStartTime || 'Đang cập nhật',
+    value: detail.moveInDate || 'Đang cập nhật',
   },
   {
     icon: <SecurityRoundedIcon color={detail.isActive ? 'success' : 'warning'} />,
@@ -79,7 +89,7 @@ const pricingItems = (detail) => [
 
 const DetailSummarySection = ({ detail, rating }) => {
   const theme = useTheme();
-  const amenities = detail?.bulletinBoards_RentalAm || [];
+  const amenities = detail?.bulletinBoardRentalAmenities || [];
   const displayedPrice = detail.promotionalRentalPrice || detail.rentPrice;
 
   return (
@@ -102,6 +112,12 @@ const DetailSummarySection = ({ detail, rating }) => {
             <Typography variant="body1" color="text.secondary">
               {detail.address}
             </Typography>
+
+            {detail.motel?.address && detail.motel.address !== detail.address ? (
+              <Typography variant="body2" color="text.secondary">
+                Thuộc nhà nghỉ tại: {detail.motel.address}
+              </Typography>
+            ) : null}
 
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
               <Chip label={detail.rentalCategory} color="primary" variant="outlined" />

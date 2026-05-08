@@ -58,6 +58,7 @@ public class SecurityConfig {
         "/searchs/**",
         "/search/**",
         "/api/v1/search/**",
+        "/api/v1/bulletin-boards/**",
         "/detail/**",
         "/bulletin-board/*",
         "/motels/get-motel-id",
