@@ -1,23 +1,22 @@
 import httpClient from './httpClient'
 
 export const createMotel = async (Motel) => {
-  return await httpClient.post('/motels/create', Motel)
+  return await httpClient.post('/api/v1/motels', Motel)
 }
 export const getMotelByname = async (motelName) => {
-  return await httpClient.get(`/motels/${motelName}`)
+  return await httpClient.get(`/api/v1/motels/${motelName}`)
 }
 export const updateMotel = async (motelId, Motel) => {
-  return await httpClient.put(`/motels/${motelId}`, Motel)
+  return await httpClient.put(`/api/v1/motels/${motelId}`, Motel)
 }
 export const deleteMotel = async (motelId) => {
-  return await httpClient.delete(`/motels/${motelId}`)
+  return await httpClient.delete(`/api/v1/motels/${motelId}`)
 }
 
 export const getMotelByUsername = async (username) => {
-  return await httpClient.get(`/motels/get-motel-account?username=${username}`)
+  return await httpClient.get(`/api/v1/motels/account/${username}`)
 }
 
 export const getMotelById = async (Id) => {
-  return await httpClient.get(`/motels/get-motel-id?id=${Id}`)
+  return await httpClient.get(`/api/v1/motels/${Id}`)
 }
-

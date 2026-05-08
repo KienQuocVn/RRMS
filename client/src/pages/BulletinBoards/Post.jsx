@@ -15,7 +15,9 @@ const Post = () => {
 
   const refreshBulletinBoards = () => {
     introspect().then((res) => {
-      getBulletinBoardTable(res.data.issuer).then((res) => {
+      if (!res?.issuer) return
+
+      getBulletinBoardTable(res.issuer).then((res) => {
         const newRows = Array.from(res.result).map((item) =>
           createData(
             item.title,
@@ -39,7 +41,9 @@ const Post = () => {
 
   useEffect(() => {
     introspect().then((res) => {
-      getBulletinBoardTable(res.data.issuer).then((res) => {
+      if (!res?.issuer) return
+
+      getBulletinBoardTable(res.issuer).then((res) => {
         const newRows = Array.from(res.result).map((item) =>
           createData(
             item.title,

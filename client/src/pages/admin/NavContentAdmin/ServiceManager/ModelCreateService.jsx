@@ -7,6 +7,7 @@ import 'flatpickr/dist/plugins/monthSelect/style.css'
 import 'react-tabulator/lib/styles.css'
 import 'react-tabulator/lib/css/tabulator.min.css'
 import { Modal } from 'bootstrap' // Import Bootstrap Modal API
+import { isValidRouteParam } from '~/utils/apiAdapters'
 const ModelCreateService = ({ motelId, refreshServices }) => {
   const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
   const [formData, setFormData] = useState({
@@ -21,12 +22,12 @@ const ModelCreateService = ({ motelId, refreshServices }) => {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const response = await axios.get(`${env.API_URL}/room/motel/${motelId}`, {
+        const response = await axios.get(`${env.API_URL}/api/v1/rooms/motel/${motelId}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         setFormData((prevState) => ({
           ...prevState,
-          rooms: response.data
+          rooms: response.data?.result || []
         }))
       } catch (error) {
         console.error('Error fetching rooms:', error)
@@ -38,7 +39,7 @@ const ModelCreateService = ({ motelId, refreshServices }) => {
       }
     }
 
-    if (motelId) fetchRooms()
+    if (isValidRouteParam(motelId)) fetchRooms()
   }, [motelId, token])
 
   const handleChange = (e) => {
@@ -99,7 +100,7 @@ const ModelCreateService = ({ motelId, refreshServices }) => {
       const selectedRoomIds = Object.keys(formData.selectedRooms).filter((roomId) => formData.selectedRooms[roomId])
 
       const response = await axios.post(
-        `${env.API_URL}/motel-services/create`,
+        `${env.API_URL}/api/v1/motel-services`,
         {
           motelId: motelId,
           nameService: formData.nameService,
@@ -112,7 +113,7 @@ const ModelCreateService = ({ motelId, refreshServices }) => {
         }
       )
 
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 201) {
         Swal.fire({
           icon: 'success',
           title: 'Thành công',

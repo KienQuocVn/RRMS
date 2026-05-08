@@ -1,32 +1,50 @@
-import axios from 'axios'
-import { env } from '~/configs/environment'
 import httpClient from './httpClient'
+import {
+  extractEntityId,
+  normalizeRoomCollection,
+  normalizeRoomPayload,
+  normalizeRoomResponse,
+  toBackendContractStatus,
+  unwrapApiResult
+} from '~/utils/apiAdapters'
 
 //Room
 export const getRoomByMotelId = async (id) => {
-  const response = await httpClient.get(`/room/motel/${id}`)
-  return response.data
+  const motelId = extractEntityId(id, ['motelId', 'id'])
+  if (!motelId) return []
+
+  const response = await httpClient.get(`/api/v1/rooms/motel/${motelId}`)
+  return normalizeRoomCollection(unwrapApiResult(response, []))
 }
 
 export const createRoom = async (data) => {
-  const response = await httpClient.post('/room', data)
-  return response.data
+  const response = await httpClient.post('/api/v1/rooms', normalizeRoomPayload(data))
+  return unwrapApiResult(response)
 }
 
 export const getRoomById = async (id) => {
-  const response = await httpClient.get(`/room/${id}`)
-  return response.data
+  const roomId = extractEntityId(id, ['roomId', 'id'])
+  if (!roomId) return null
+
+  const response = await httpClient.get(`/api/v1/rooms/${roomId}`)
+  return normalizeRoomResponse(unwrapApiResult(response))
 }
 
 export const updateRoom = async (id, data) => {
-  const response = await httpClient.put(`/room/${id}`, data)
-  return response.data
+  const roomId = extractEntityId(id, ['roomId', 'id'])
+  const response = await httpClient.put(`/api/v1/rooms/${roomId}`, normalizeRoomPayload(data))
+  return unwrapApiResult(response)
 }
 
 export const updateContractStatus = async (roomId, newStatus, reportCloseDate) => {
   try {
+    const normalizedRoomId = extractEntityId(roomId, ['roomId', 'id'])
     const response = await httpClient.put('/contracts/update-status', null, {
-      params: { roomId, newStatus, reportCloseDate }
+      params: {
+        roomId: normalizedRoomId,
+        newStatus: toBackendContractStatus(newStatus),
+        reportCloseDate
+      }
     })
     return response.data
   } catch (error) {
@@ -36,45 +54,55 @@ export const updateContractStatus = async (roomId, newStatus, reportCloseDate) =
 }
 
 export const postRoom = async (data) => {
-  return await httpClient.post('/room', data)
+  return await httpClient.post('/api/v1/rooms', normalizeRoomPayload(data))
 }
 
 export const getPostRoomTable = async (username) => {
-  return await httpClient.get(`/room/post-room-table?username=${username}`)
+  return await httpClient.get(`/api/v1/rooms/post-room-table?username=${username}`)
 }
 
 //Room Serivce
 export const createRoomService = async (data) => {
-  const response = await httpClient.post('/room-service', data)
-  return response.data
+  const response = await httpClient.post('/api/v1/room-services', data)
+  return unwrapApiResult(response)
 }
 
 export const getServiceRoombyRoomId = async (id) => {
-  const response = await httpClient.get(`/room-service/room/${id}`)
-  return response.data
+  const roomId = extractEntityId(id, ['roomId', 'id'])
+  if (!roomId) return []
+
+  const response = await httpClient.get(`/api/v1/room-services/room/${roomId}`)
+  return unwrapApiResult(response, [])
 }
 
 export const DeleteRoomServiceByid = async (id) => {
-  const response = await httpClient.delete(`/room-service/${id}`)
+  const response = await httpClient.delete(`/api/v1/room-services/${id}`)
   return response.data
 }
 
 export const updateSerivceRoom = async (id, data) => {
-  const response = await httpClient.put(`/room-service/${id}`, data)
-  return response.data
+  const response = await httpClient.put(`/api/v1/room-services/${id}`, data)
+  return unwrapApiResult(response)
 }
 
 export const DeleteRoomByid = async (id) => {
-  const response = await httpClient.delete(`/room/${id}`)
+  const roomId = extractEntityId(id, ['roomId', 'id'])
+  const response = await httpClient.delete(`/api/v1/rooms/${roomId}`)
   return response.data
 }
 
 export const getRoomByMotelIdWContract = async (id) => {
-  const response = await httpClient.get(`/room/motel/W-Contract/${id}`)
-  return response.data
+  const motelId = extractEntityId(id, ['motelId', 'id'])
+  if (!motelId) return []
+
+  const response = await httpClient.get(`/api/v1/rooms/motel/${motelId}/with-contract`)
+  return normalizeRoomCollection(unwrapApiResult(response, []))
 }
 
 export const getRoomByMotelIdYContract = async (id) => {
-  const response = await httpClient.get(`/room/motel/Y-Contract/${id}`)
-  return response.data
+  const motelId = extractEntityId(id, ['motelId', 'id'])
+  if (!motelId) return []
+
+  const response = await httpClient.get(`/api/v1/rooms/motel/${motelId}/without-contract`)
+  return normalizeRoomCollection(unwrapApiResult(response, []))
 }

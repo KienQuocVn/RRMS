@@ -10,6 +10,7 @@ import ModelUpdateService from './ModelUpdateService'
 import { env } from '~/configs/environment'
 import { useParams } from 'react-router-dom'
 import Swal from 'sweetalert2'
+import { isValidRouteParam } from '~/utils/apiAdapters'
 
 import 'flatpickr/dist/themes/material_blue.css'
 import 'flatpickr/dist/plugins/monthSelect/style.css'
@@ -65,22 +66,31 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
 
   const fetchMotelServicesWithCount = async (id) => {
     try {
-      const serviceResponse = await axios.get(`${env.API_URL}/motels/get-motel-id?id=${id}`, {
+      if (!isValidRouteParam(id)) {
+        setMotelServices([]);
+        setRoomData([]);
+        return;
+      }
+
+      const serviceResponse = await axios.get(`${env.API_URL}/api/v1/motels/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const roomResponse = await axios.get(`${env.API_URL}/room/motel/${id}`, {
+      const roomResponse = await axios.get(`${env.API_URL}/api/v1/rooms/motel/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (serviceResponse.data?.code === 200 && serviceResponse.data.result.motelServices) {
+      if (serviceResponse.data?.code === 200 && serviceResponse.data.result?.motelServices) {
         const motelServices = serviceResponse.data?.result?.motelServices || [];
-        const rooms = roomResponse.data || [];
+        const rooms = roomResponse.data?.result || [];
 
         const serviceCounts = {};
         rooms.forEach((room) => {
           const services = room.services || [];
           services.forEach((service) => {
-            serviceCounts[service.serviceId] = (serviceCounts[service.serviceId] || 0) + 1;
+            const serviceId = service.service?.motelServiceId || service.serviceId;
+            if (serviceId) {
+              serviceCounts[serviceId] = (serviceCounts[serviceId] || 0) + 1;
+            }
           });
         });
 
@@ -94,8 +104,11 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         // Chuẩn bị dữ liệu phòng cho bảng
         const roomDataFormatted = rooms.map((room) => {
           const roomServices = (room.services || []).reduce((acc, service) => {
-            acc[`usage_${service.serviceId}`] = service.usage;
-            acc[`total_${service.serviceId}`] = service.total;
+            const serviceId = service.service?.motelServiceId || service.serviceId;
+            if (serviceId) {
+              acc[`usage_${serviceId}`] = service.quantity || 0;
+              acc[`total_${serviceId}`] = (service.quantity || 0) * (service.service?.price || 0);
+            }
             return acc;
           }, {});
           
@@ -148,27 +161,18 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
 
     try {
       // Thực hiện yêu cầu xóa dịch vụ
-      const response = await axios.delete(`${env.API_URL}/motel-services/delete/${serviceId}`, {
+      await axios.delete(`${env.API_URL}/api/v1/motel-services/${serviceId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       })
 
-      // Kiểm tra phản hồi và hiển thị thông báo tương ứng
-      if (response.data.status) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Thành công',
-          text: 'Dịch vụ đã được xóa thành công!'
-        })
-        fetchMotelServicesWithCount(motelId)
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Thất bại',
-          text: response.data.message || 'Không thể xóa dịch vụ.'
-        })
-      }
+      Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: 'Dịch vụ đã được xóa thành công!'
+      })
+      fetchMotelServicesWithCount(motelId)
     } catch (error) {
       console.error('Lỗi khi xóa dịch vụ:', error)
       Swal.fire({

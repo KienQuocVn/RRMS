@@ -35,8 +35,8 @@ function ModalListCar({ toggleModal, modalOpen, roomId }) {
       try {
         const response = await getCarByRoomId(roomId) // Lấy dữ liệu phòng từ API
 
-        if (response.data) {
-          setCars(response.data)
+        if (response) {
+          setCars(response)
         }
       } catch (error) {
         console.log(error)

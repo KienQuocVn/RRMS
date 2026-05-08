@@ -249,7 +249,7 @@ const ImportFileExcel = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
                 columns={columns1}
                 data={data1}
                 options={options}
-                placeholder={<h1></h1>} // Sử dụng placeholder tùy chỉnh
+                placeholder="Không tìm thấy dữ liệu!"
               />
               {/* Thêm div cho hình ảnh và chữ nếu không có dữ liệu */}
               {data.length === 0 && (
@@ -271,7 +271,7 @@ const ImportFileExcel = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
                 columns={columns}
                 data={data}
                 options={options}
-                placeholder={<h1></h1>} // Sử dụng placeholder tùy chỉnh
+                placeholder="Không tìm thấy dữ liệu!"
               />
               {/* Thêm div cho hình ảnh và chữ nếu không có dữ liệu */}
               {data.length === 0 && (

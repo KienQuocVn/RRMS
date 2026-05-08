@@ -16,8 +16,8 @@ const ManagerMyAccount = ({ setIsAdmin, TaiKhoan }) => {
 
   const fetchAccountByUsername = async (username) => {
     try {
-      const res = await getAccountByUsername(username)
-      setAccount(res.data)
+      const accountResponse = await getAccountByUsername(username)
+      setAccount(accountResponse ?? {})
     } catch (error) {
       console.error('Error fetching account:', error)
     }

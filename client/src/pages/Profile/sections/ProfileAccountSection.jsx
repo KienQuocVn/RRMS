@@ -21,9 +21,9 @@ function ProfileAccountSection({ profile, formik, updateFieldValue }) {
           <TextField
             label={t('profile.account.fullName')}
             fullWidth
-            value={formik.values.fullname || ''}
-            onChange={(event) => updateFieldValue('fullname', event.target.value)}
-            InputLabelProps={{ shrink: Boolean(formik.values.fullname) }}
+            value={formik.values.fullName || ''}
+            onChange={(event) => updateFieldValue('fullName', event.target.value)}
+            InputLabelProps={{ shrink: Boolean(formik.values.fullName) }}
           />
         </Grid>
         <Grid item xs={12} md={6}>

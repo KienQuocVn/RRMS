@@ -1,14 +1,5 @@
-import axios from 'axios'
-import { env } from '~/configs/environment'
+import publicHttpClient from './publicHttpClient'
 
 export const ValidCaptchaAPI = async (token) => {
-  return await axios.post(
-    `${env.API_URL}/api/verify-captcha`,
-    { token },
-    {
-      headers: {
-        'ngrok-skip-browser-warning': '69420'
-      }
-    }
-  )
+  return await publicHttpClient.post('/api/v1/verify-captcha', { token })
 }

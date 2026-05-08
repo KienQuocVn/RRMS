@@ -148,13 +148,15 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
 
       // Lấy thông tin tài khoản khi không có bulletinBoardId
       introspect().then((res) => {
-        getAccountByUsername(res.data.issuer).then((accountRes) => {
-          setAccount(accountRes.data) // Set account từ API
+        if (!res?.issuer) return
+
+        getAccountByUsername(res.issuer).then((accountRes) => {
+          setAccount(accountRes) // Set account từ API
 
           // Cập nhật username sau khi có tài khoản
           setBulletinBoard((prevBulletinBoard) => ({
             ...prevBulletinBoard, // Giữ nguyên các giá trị cũ
-            username: accountRes.data.username // Chỉ thay đổi trường username
+            username: accountRes?.username || '' // Chỉ thay đổi trường username
           }))
         })
       })

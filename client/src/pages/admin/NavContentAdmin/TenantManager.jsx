@@ -129,7 +129,14 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         console.log('Fetched Data:', fetchedData)
 
         if (Array.isArray(fetchedData)) {
-          setRows(fetchedData)
+          setRows(
+            fetchedData.map((item) => ({
+              ...item,
+              fullname: item.fullName,
+              type_of_tenant: item.typeOfTenant,
+              placeOfLicense: item.placeOfLicense
+            }))
+          )
           console.log('State rows set to:', fetchedData)
         }
       }

@@ -102,7 +102,7 @@ const totalAddition = calculateTotalAddition(); // Tổng cộng/trừ phát sin
       };
   
       const response = await axios.put(
-        `${env.API_URL}/invoices/update/${invoice.invoiceId}`,
+        `${env.API_URL}/api/v1/invoices/update/${invoice.invoiceId}`,
         payload,
         {
           headers: {

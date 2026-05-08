@@ -20,12 +20,12 @@ const AdminManagerBoard = ({ setIsAdmin }) => {
   const fetchBulletinBoards = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${env.API_URL}/bulletin-board/inactive`, {
+      const response = await axios.get(`${env.API_URL}/api/v1/bulletin-boards/inactive`, {
         headers: {
           Authorization: `Bearer ${token}`, // Thêm token vào header
         },
       });
-      setBulletinBoards(response.data);
+      setBulletinBoards(response.data?.result || []);
       console.log(response.data);
     } catch (err) {
       setError(err.message);
@@ -70,7 +70,7 @@ const AdminManagerBoard = ({ setIsAdmin }) => {
     if (isConfirmed) {
       try {
 
-        await axios.put(`${env.API_URL}/bulletin-board/${boardId}/approve`, {}, {
+        await axios.put(`${env.API_URL}/api/v1/bulletin-boards/${boardId}/approve`, {}, {
           headers: {
             Authorization: `Bearer ${token}`, // Thêm token vào header
           },
@@ -101,7 +101,7 @@ const AdminManagerBoard = ({ setIsAdmin }) => {
 
     if (isConfirmed) {
       try {
-        await axios.delete(`${env.API_URL}/bulletin-board/${boardId}`);
+        await axios.delete(`${env.API_URL}/api/v1/bulletin-boards/${boardId}`);
         Swal.fire('Thành công!', 'Bảng tin đã bị hủy!', 'success');
 
         // Cập nhật lại danh sách bảng tin sau khi xóa

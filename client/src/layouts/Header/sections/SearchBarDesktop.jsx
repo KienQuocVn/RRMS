@@ -29,33 +29,33 @@ const CATEGORY_KEYS = ['wantRent', 'forRent', 'project']
 const CATEGORY_MENU_ITEMS = [
   {
     key: 'wantRent',
-    icon: 'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2FPTY_lv1_cat_muban.png?alt=media&token=0a78f985-f7dc-4211-b14c-cc64c9892136',
+    icon: '/public/PTY_lv1_cat_muban.png',
     to: '#',
     active: true
   },
   {
     key: 'forRent',
-    icon: 'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2FPTY_lv1_cat_chothue.png?alt=media&token=6ebeeb22-5d71-45e9-b02c-3c03499ce555',
+    icon: '/public/PTY_lv1_cat_chothue.png',
     to: '#'
   },
   {
     key: 'project',
-    icon: 'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2FPTY_lv1_cat_duan.png?alt=media&token=88b33caf-3f11-4025-a18c-653c0a6056c4',
+    icon: '/public/PTY_lv1_cat_duan.png',
     to: '#'
   },
   {
     key: 'findBroker',
-    icon: 'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2FPTY_lv1_cat_timmoigioi.png?alt=media&token=a08d9169-cf8a-4fdd-aa1c-200a888b0abd',
+    icon: '/public/PTY_lv1_cat_timmoigioi.png',
     to: '#'
   },
   {
     key: 'priceChart',
-    icon: 'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2FPTY_lv1_cat_bieudogia.png?alt=media&token=e62c4212-ee82-4985-b2a5-02e225c1e4d1',
+    icon: '/public/PTY_lv1_cat_bieudogia.png',
     to: '/chart'
   },
   {
     key: 'homeLoan',
-    icon: 'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2FPTY_lv1_cat_vaymuanha.png?alt=media&token=ec55ddd5-2e94-408d-b167-d8f02582ac73',
+    icon: '/public/PTY_lv1_cat_vaymuanha.png',
     to: '#'
   }
 ]
@@ -115,7 +115,7 @@ export default function SearchBarDesktop({ onSearchKeywordChange }) {
         >
           <Box
             component="img"
-            src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Flogo.png?alt=media&token=719c4675-1dc4-42d2-af36-ec52626519e4"
+            src="../../../../public/RRMS.png"
             alt={t('header.search.logoAlt')}
             sx={{ width: '100%', height: 34, objectFit: 'contain', objectPosition: 'left center' }}
           />

@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import { Box } from '@mui/material'
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { useTheme } from '@emotion/react'
 import { useTranslation } from 'react-i18next'
 import Swal from 'sweetalert2'
-import { env } from '~/configs/environment'
+import { getStoredAuthUser, logout as logoutRequest } from '~/apis/accountAPI'
 import TopBar from './sections/TopBar'
 import SearchBarDesktop from './sections/SearchBarDesktop'
 import DesktopActionsDesktop from './sections/DesktopActionsDesktop'
@@ -15,6 +15,7 @@ import WarningEmailNotExits from './WarningEmailNotExits'
 const Header = ({
   username,
   avatar,
+  token,
   setUsername,
   setAvatar,
   setToken,
@@ -29,44 +30,54 @@ const Header = ({
   const [isNotifyOpen, setIsNotifyOpen] = useState(false)
   const [isMobileAccountOpen, setIsMobileAccountOpen] = useState(false)
 
-  const tokenExists = useMemo(() => sessionStorage.getItem('user') !== null, [])
+  const tokenExists = Boolean(token)
+
+  const resetClientSession = useCallback(() => {
+    sessionStorage.removeItem('user')
+    setToken(null)
+    setUsername('')
+    setAvatar('')
+  }, [setAvatar, setToken, setUsername])
 
   const handleLogout = useCallback(async () => {
-    const token = sessionStorage.getItem('user')
-      ? JSON.parse(sessionStorage.getItem('user')).token
-      : null
+    const storedUser = getStoredAuthUser()
+    const nextToken = storedUser?.token ?? token ?? null
 
-    if (!token) {
+    if (!nextToken) {
+      resetClientSession()
+      navigate('/login')
       Swal.fire({ icon: 'warning', title: t('header.alerts.noticeTitle'), text: t('header.alerts.tokenMissing') })
       return
     }
 
     try {
-      const response = await fetch(`${env.API_URL}/authen/logout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ token })
+      const response = await logoutRequest(nextToken)
+      resetClientSession()
+      navigate('/login')
+      Swal.fire({
+        icon: 'success',
+        title: t('header.alerts.logoutSuccessTitle'),
+        text: response?.message || t('header.alerts.logoutSuccessText')
       })
-
-      if (response.ok) {
-        sessionStorage.removeItem('user')
-        setToken(null)
-        setUsername('')
-        setAvatar('')
+    } catch (error) {
+      if (error?.response?.status === 401) {
+        resetClientSession()
         navigate('/login')
-        Swal.fire({ icon: 'success', title: t('header.alerts.logoutSuccessTitle'), text: t('header.alerts.logoutSuccessText') })
-      } else {
-        const errorData = await response.json()
-        Swal.fire({ icon: 'error', title: t('header.alerts.logoutFailedTitle'), text: `Error: ${errorData.message}` })
+        Swal.fire({
+          icon: 'success',
+          title: t('header.alerts.logoutSuccessTitle'),
+          text: t('header.alerts.logoutSuccessText')
+        })
+        return
       }
-    } catch {
+
       Swal.fire({
         icon: 'error',
-        title: t('header.alerts.errorTitle'),
-        text: t('header.alerts.logoutErrorText')
+        title: t('header.alerts.logoutFailedTitle'),
+        text: error?.response?.data?.message || t('header.alerts.logoutErrorText')
       })
     }
-  }, [navigate, setAvatar, setToken, setUsername, t])
+  }, [navigate, resetClientSession, t, token])
 
   return (
     <Box component="header" sx={{ fontFamily: 'Helvetica, Arial, Roboto, sans-serif' }}>

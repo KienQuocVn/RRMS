@@ -41,7 +41,7 @@ function ModalCollectMoneyInvoice({ toggleModal, modalOpen, invoice,fetchInvoice
       // Chọn chuyển khoản: tạo và hiển thị mã QR
       try {
         const response = await axios.get(
-          `${env.API_URL}/invoices/${invoice.invoiceId}/generate-qr`,
+          `${env.API_URL}/api/v1/invoices/${invoice.invoiceId}/generate-qr`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -64,7 +64,7 @@ function ModalCollectMoneyInvoice({ toggleModal, modalOpen, invoice,fetchInvoice
       // Chọn tiền mặt: xử lý thanh toán ngay
       try {
         await axios.patch(
-          `${env.API_URL}/invoices/${invoice.invoiceId}/collect-payment`,
+          `${env.API_URL}/api/v1/invoices/${invoice.invoiceId}/collect-payment`,
           requestData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -117,7 +117,7 @@ function ModalCollectMoneyInvoice({ toggleModal, modalOpen, invoice,fetchInvoice
 
     try {
       await axios.patch(
-        `${env.API_URL}/invoices/${invoice.invoiceId}/collect-payment`,
+        `${env.API_URL}/api/v1/invoices/${invoice.invoiceId}/collect-payment`,
         requestData,
         { headers: { Authorization: `Bearer ${token}` } }
       );

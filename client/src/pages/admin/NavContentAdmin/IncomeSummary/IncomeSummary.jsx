@@ -60,9 +60,9 @@ const IncomeSummary = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       console.log("Tên tài khoản:", username); // **** In ra tên tài khoản
 
       const [transactionsResponse, paymentsResponse, summaryResponse] = await Promise.all([
-        axios.get(`${env.API_URL}/transactions/${username}`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${env.API_URL}/payment/list_payment`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${env.API_URL}/transactions/summary`, { headers: { Authorization: `Bearer ${token}` }, params: { username } }),
+        axios.get(`${env.API_URL}/api/v1/transactions/${username}`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${env.API_URL}/api/v1/payment/list_payment`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${env.API_URL}/api/v1/transactions/summary`, { headers: { Authorization: `Bearer ${token}` }, params: { username } }),
       ]);
 
       // **** Cập nhật trạng thái với dữ liệu lấy được
@@ -93,7 +93,7 @@ console.log(typeof transactions);
 
     if (isConfirmed) {
       try {
-        await axios.delete(`${env.API_URL}/transactions/${id}`, { headers: { Authorization: `Bearer ${token}` }, params: { username } });
+        await axios.delete(`${env.API_URL}/api/v1/transactions/${id}`, { headers: { Authorization: `Bearer ${token}` }, params: { username } });
         Swal.fire('Thành công!', 'Giao dịch đã được xóa.', 'success');
         fetchData(); // **** Cập nhật lại dữ liệu sau khi xóa
       } catch (error) {
@@ -168,8 +168,8 @@ console.log(typeof transactions);
       try {
         const url =
           transactionType === 'receipt'
-            ? `${env.API_URL}/transactions/receipts`
-            : `${env.API_URL}/transactions/expenses`
+            ? `${env.API_URL}/api/v1/transactions/receipts`
+            : `${env.API_URL}/api/v1/transactions/expenses`
 
         const response = await axios.post(url, data, {
           headers: {

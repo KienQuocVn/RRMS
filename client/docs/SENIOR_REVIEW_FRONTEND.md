@@ -84,7 +84,7 @@ src/
 // ❌ Token hardcode pattern lặp lại HÀNG CHỤC LẦN
 const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
 
-return await axios.post(`${env.API_URL}/motels/create`, Motel, {
+return await axios.post(`${env.API_URL}/api/v1/motels/create`, Motel, {
   headers: {
     Authorization: `Bearer ${token}`
   }
@@ -207,7 +207,7 @@ const AdminManage = lazy(() => import('./pages/admin/AdminManage/AdminManage'))
 // Pattern lặp lại 30+ lần:
 export const someAPI = async (data) => {
   const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
-  return await axios.post(`${env.API_URL}/endpoint`, data, {
+  return await axios.post(`${env.API_URL}/api/v1/endpoint`, data, {
     headers: { Authorization: `Bearer ${token}` }
   })
 }

@@ -7,6 +7,7 @@ import 'flatpickr/dist/themes/material_blue.css'
 import 'flatpickr/dist/plugins/monthSelect/style.css'
 import 'react-tabulator/lib/styles.css'
 import 'react-tabulator/lib/css/tabulator.min.css'
+import { isValidRouteParam } from '~/utils/apiAdapters'
 
 const ModelUpdateService = ({ serviceData, refreshServices }) => {
   const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
@@ -23,16 +24,16 @@ const ModelUpdateService = ({ serviceData, refreshServices }) => {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const response = await axios.get(`${env.API_URL}/room/motel/${serviceData.motelId}`, {
+        const response = await axios.get(`${env.API_URL}/api/v1/rooms/motel/${serviceData.motelId}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
-        const roomsData = response.data
+        const roomsData = response.data?.result || []
 
         const selectedRooms = {}
         roomsData.forEach(room => {
           if (room.services && Array.isArray(room.services)) {
             room.services.forEach(service => {
-              if (service.serviceId === serviceData.motelServiceId) {
+              if ((service.service?.motelServiceId || service.serviceId) === serviceData.motelServiceId) {
                 selectedRooms[room.roomId] = true;
               }
             });
@@ -54,7 +55,7 @@ const ModelUpdateService = ({ serviceData, refreshServices }) => {
       }
     }
 
-    if (serviceData) {
+    if (serviceData && isValidRouteParam(serviceData.motelId)) {
       const modalElement = document.getElementById('updateModelService')
       const modal = new Modal(modalElement, { backdrop: true })
       modal.show()
@@ -118,7 +119,7 @@ const ModelUpdateService = ({ serviceData, refreshServices }) => {
     try {
       const selectedRoomIds = Object.keys(formData.selectedRooms).filter((roomId) => formData.selectedRooms[roomId])
       const response = await axios.put(
-        `${env.API_URL}/motel-services/update/${serviceData.motelServiceId}`,
+        `${env.API_URL}/api/v1/motel-services/${serviceData.motelServiceId}`,
         {
           nameService: formData.nameService,
           price: formData.price,

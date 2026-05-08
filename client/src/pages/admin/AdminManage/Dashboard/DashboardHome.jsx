@@ -19,27 +19,27 @@ const DashboardHome = () => {
   useEffect(() => {
     const fetchCardData = async () => {
       try {
-        const totalAccountsResponse = await axios.get(`${env.API_URL}/statistics/total-accounts`, {
+        const totalAccountsResponse = await axios.get(`${env.API_URL}/api/v1/statistics/total-accounts`, {
           headers: {
             Authorization: `Bearer ${token}` // Thêm token vào header
           }
         })
-        const totalTenantsResponse = await axios.get(`${env.API_URL}/statistics/total-tenants`, {
+        const totalTenantsResponse = await axios.get(`${env.API_URL}/api/v1/statistics/total-tenants`, {
           headers: {
             Authorization: `Bearer ${token}` // Thêm token vào header
           }
         })
-        const totalHostAccountsResponse = await axios.get(`${env.API_URL}/statistics/total-host-accounts`, {
+        const totalHostAccountsResponse = await axios.get(`${env.API_URL}/api/v1/statistics/total-host-accounts`, {
           headers: {
             Authorization: `Bearer ${token}` // Thêm token vào header
           }
         })
-        const totalMotelsResponse = await axios.get(`${env.API_URL}/statistics/total-motels`, {
+        const totalMotelsResponse = await axios.get(`${env.API_URL}/api/v1/statistics/total-motels`, {
           headers: {
             Authorization: `Bearer ${token}` // Thêm token vào header
           }
         })
-        const totalAccWeekresponse = await axios.get(`${env.API_URL}/statistics/total-account-last-week`, {
+        const totalAccWeekresponse = await axios.get(`${env.API_URL}/api/v1/statistics/total-account-last-week`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -47,7 +47,7 @@ const DashboardHome = () => {
         console.log('Dữ liệu nhận được từ API:', totalAccWeekresponse.data) // Kiểm tra dữ liệu
 
         // Gọi API tổng số nhà trọ theo từng tháng
-        const monthlyMotelsResponse = await axios.get(`${env.API_URL}/statistics/total-motel-by-month`, {
+        const monthlyMotelsResponse = await axios.get(`${env.API_URL}/api/v1/statistics/total-motel-by-month`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
@@ -80,15 +80,15 @@ const DashboardHome = () => {
         ])
 
         // Fetch dữ liệu tài khoản theo tháng
-        const monthlyAccountsThisYearResponse = await axios.get(`${env.API_URL}/statistics/accounts-total-this-year`, {
+        const monthlyAccountsThisYearResponse = await axios.get(`${env.API_URL}/api/v1/statistics/accounts-total-this-year`, {
           headers: { Authorization: `Bearer ${token}` }
         })
-        const monthlyAccountsLastYearResponse = await axios.get(`${env.API_URL}/statistics/accounts-total-last-year`, {
+        const monthlyAccountsLastYearResponse = await axios.get(`${env.API_URL}/api/v1/statistics/accounts-total-last-year`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
         // Fetch dữ liệu chủ trọ trong 7 ngày gần đây
-        const recentHostsResponse = await axios.get(`${env.API_URL}/statistics/account-recent-hosts`, {
+        const recentHostsResponse = await axios.get(`${env.API_URL}/api/v1/statistics/account-recent-hosts`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 

@@ -63,23 +63,23 @@ const AddUsers = () => {
     if (accountId) {
       try {
         const response = await axios.get(
-          `${env.API_URL}/api-accounts/${accountId}`,
+          `${env.API_URL}/api/v1/accounts/${accountId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
-        if (response.data) {
+        if (response.data?.result) {
           setForm({
-            username: response.data.username || '',
-            fullname: response.data.fullname || '',
-            phone: response.data.phone || '',
-            email: response.data.email || '',
-            avatar: response.data.avatar || '',
-            birthday: response.data.birthday ? response.data.birthday.split('T')[0] : '',
-            gender: response.data.gender || '',
-            role: response.data.role || '',
-            cccd: response.data.cccd || '',
+            username: response.data.result.username || '',
+            fullname: response.data.result.fullName || '',
+            phone: response.data.result.phone || '',
+            email: response.data.result.email || '',
+            avatar: response.data.result.avatar || '',
+            birthday: response.data.result.birthday ? response.data.result.birthday.split('T')[0] : '',
+            gender: response.data.result.gender || '',
+            role: response.data.result.role?.[0] || '',
+            cccd: response.data.result.cccd || '',
             password: '',
             comfirmpassword: '',
           });
@@ -118,17 +118,17 @@ const AddUsers = () => {
       return
     }
     try {
-      const response = await axios.post(`${env.API_URL}/api-accounts/createAccount`, {
+      await axios.post(`${env.API_URL}/api/v1/accounts`, {
         username: form.username,
         password: form.password,
-        fullname: form.fullname,
+        fullName: form.fullname,
         phone: form.phone,
         email: form.email,
         avatar: form.avatar,
         birthday: form.birthday,
         gender: form.gender,
         cccd: form.cccd,
-        role: form.role
+        role: form.role ? [form.role] : []
       },
       {
         headers: {
@@ -136,20 +136,12 @@ const AddUsers = () => {
         },
       })
 
-      if (response.data.status) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Thành công',
-          text: 'Tạo tài khoản thành công!'
-        })
-        ClearInputFields()
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Thất bại',
-          text: response.data.message || 'Tạo tài khoản không thành công.'
-        })
-      }
+      Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: 'Tạo tài khoản thành công!'
+      })
+      ClearInputFields()
     } catch (error) {
       console.error('Error creating account:', error)
       if (error.response) {
@@ -198,17 +190,17 @@ const AddUsers = () => {
   
     try {
       const response = await axios.put(
-        `${env.API_URL}/api-accounts/updateAccount/${form.username}`,
+        `${env.API_URL}/api/v1/accounts/${form.username}`,
         {
           username: form.username,
-          fullname: form.fullname,
+          fullName: form.fullname,
           phone: form.phone,
           email: form.email,
           avatar: form.avatar,
           birthday: form.birthday,
           gender: form.gender,
           cccd: form.cccd,
-          role: form.role,
+          role: form.role ? [form.role] : [],
         },
         {
           headers: {
@@ -217,20 +209,12 @@ const AddUsers = () => {
         }
       );
   
-      if (response.data.status) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Thành công',
-          text: 'Cập nhật tài khoản thành công!'
-        });
-        ClearInputFields();
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Thất bại',
-          text: response.data.message || 'Cập nhật tài khoản không thành công.'
-        });
-      }
+      Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: 'Cập nhật tài khoản thành công!'
+      });
+      ClearInputFields();
     } catch (error) {
       console.error('Error updating account:', error.response?.data || error.message);
       Swal.fire({
@@ -265,26 +249,18 @@ const AddUsers = () => {
     }
 
     try {
-      const response = await axios.delete(`${env.API_URL}/api-accounts/deleteAccount/${form.username}`, {
+      await axios.delete(`${env.API_URL}/api/v1/accounts/${form.username}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (response.data.status) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Thành công',
-          text: 'Tài khoản đã được xóa thành công!'
-        })
-        ClearInputFields()
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Thất bại',
-          text: response.data.message || 'Không thể xóa tài khoản.'
-        })
-      }
+      Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: 'Tài khoản đã được xóa thành công!'
+      })
+      ClearInputFields()
     } catch (error) {
       console.error('Error deleting account:', error)
       Swal.fire({

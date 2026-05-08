@@ -9,13 +9,15 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { updateProfile } from '~/apis/profileAPI'
 import { storage } from '~/configs/firebaseConfig'
+import { useAuth } from '~/hooks/useAuth'
 import ProfileAccountSection from './sections/ProfileAccountSection'
 import ProfilePersonalSection from './sections/ProfilePersonalSection'
 import ProfileSaveSection from './sections/ProfileSaveSection'
 
-function ProfileTab({ profile, setProfile, selectedImage, setSelectedImage }) {
+function ProfileTab({ profile, setProfile, selectedImage, setSelectedImage, username }) {
   const { t } = useTranslation()
   const [isSaving, setIsSaving] = useState(false)
+  const { setAccount, setAvatar } = useAuth()
 
   const validationSchema = Yup.object({
     email: Yup.string()
@@ -32,7 +34,7 @@ function ProfileTab({ profile, setProfile, selectedImage, setSelectedImage }) {
 
   const formik = useFormik({
     initialValues: {
-      fullname: profile.fullname || '',
+      fullName: profile.fullName || profile.fullname || '',
       email: profile.email || '',
       birthday: profile.birthday ? profile.birthday.split('T')[0] : '',
       gender: profile.gender || '',
@@ -44,14 +46,14 @@ function ProfileTab({ profile, setProfile, selectedImage, setSelectedImage }) {
 
   useEffect(() => {
     formik.setValues({
-      fullname: profile.fullname || '',
+      fullName: profile.fullName || profile.fullname || '',
       email: profile.email || '',
       birthday: profile.birthday ? profile.birthday.split('T')[0] : '',
       gender: profile.gender || '',
       cccd: profile.cccd || ''
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile.fullname, profile.email, profile.birthday, profile.gender, profile.cccd])
+  }, [profile.fullName, profile.fullname, profile.email, profile.birthday, profile.gender, profile.cccd])
 
   const updateFieldValue = (field, value) => {
     formik.setFieldValue(field, value)
@@ -66,7 +68,7 @@ function ProfileTab({ profile, setProfile, selectedImage, setSelectedImage }) {
 
     if (Object.keys(validationErrors).length > 0) {
       formik.setTouched({
-        fullname: true,
+        fullName: true,
         email: true,
         birthday: true,
         gender: true,
@@ -79,7 +81,11 @@ function ProfileTab({ profile, setProfile, selectedImage, setSelectedImage }) {
     toast.info(t('profile.alerts.savingInfo'))
 
     try {
-      let nextProfile = profile
+      const profileToSave = {
+        ...profile,
+        username: profile.username || username
+      }
+      let nextProfile = profileToSave
 
       if (selectedImage) {
         const imageName = v4()
@@ -94,8 +100,7 @@ function ProfileTab({ profile, setProfile, selectedImage, setSelectedImage }) {
             async () => {
               try {
                 const avatarUrl = await getDownloadURL(uploadTask.snapshot.ref)
-                const updatedProfile = { ...profile, avatar: avatarUrl }
-                await updateProfile(updatedProfile)
+                const updatedProfile = await updateProfile({ ...profileToSave, avatar: avatarUrl })
                 setProfile(updatedProfile)
                 nextProfile = updatedProfile
                 resolve()
@@ -106,12 +111,27 @@ function ProfileTab({ profile, setProfile, selectedImage, setSelectedImage }) {
           )
         })
       } else {
-        await updateProfile(profile)
+        nextProfile = await updateProfile(profileToSave)
+        setProfile(nextProfile)
       }
+
+      const storedUser = JSON.parse(sessionStorage.getItem('user') || 'null')
+      if (storedUser) {
+        const nextStoredUser = {
+          ...storedUser,
+          username: nextProfile.username || storedUser.username,
+          avatar: nextProfile.avatar || storedUser.avatar
+        }
+
+        sessionStorage.setItem('user', JSON.stringify(nextStoredUser))
+        setAvatar(nextStoredUser.avatar || '')
+      }
+
+      setAccount(nextProfile)
 
       formik.resetForm({
         values: {
-          fullname: nextProfile.fullname || '',
+          fullName: nextProfile.fullName || nextProfile.fullname || '',
           email: nextProfile.email || '',
           birthday: nextProfile.birthday ? nextProfile.birthday.split('T')[0] : '',
           gender: nextProfile.gender || '',

@@ -1,7 +1,5 @@
 import CameraAltRoundedIcon from '@mui/icons-material/CameraAltRounded'
-import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded'
-import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded'
-import { Avatar, Box, Button, Divider, IconButton, InputBase, Paper, Stack, Typography, styled } from '@mui/material'
+import { Avatar, Box, Divider, IconButton, Paper, Stack, Typography, styled } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 
 const VisuallyHiddenInput = styled('input')({
@@ -16,8 +14,9 @@ const VisuallyHiddenInput = styled('input')({
   width: 1
 })
 
-function ProfileSidebarCard({ profile, avatarPreview, metrics, profileLink, onImageChange, onCopyLink }) {
+function ProfileSidebarCard({ profile, avatarPreview, metrics, onImageChange }) {
   const { t } = useTranslation()
+  const displayName = profile.fullName || profile.fullname || t('profile.sidebar.anonymous')
 
   return (
     <Paper
@@ -35,7 +34,7 @@ function ProfileSidebarCard({ profile, avatarPreview, metrics, profileLink, onIm
     >
       <Box sx={{ position: 'relative', width: 'fit-content', mx: 'auto' }}>
         <Avatar
-          alt={profile.fullname || t('profile.sidebar.anonymous')}
+          alt={displayName}
           src={avatarPreview}
           sx={{
             width: 108,
@@ -68,9 +67,7 @@ function ProfileSidebarCard({ profile, avatarPreview, metrics, profileLink, onIm
       </Box>
 
       <Box sx={{ mt: 2, textAlign: 'center' }}>
-        <Typography sx={{ fontSize: 22, fontWeight: 800, color: '#101828' }}>
-          {profile.fullname || t('profile.sidebar.anonymous')}
-        </Typography>
+        <Typography sx={{ fontSize: 22, fontWeight: 800, color: '#101828' }}>{displayName}</Typography>
         <Typography sx={{ mt: 0.4, fontSize: 14, color: '#667085' }}>@{profile.username || 'user'}</Typography>
       </Box>
 
@@ -97,46 +94,6 @@ function ProfileSidebarCard({ profile, avatarPreview, metrics, profileLink, onIm
       </Stack>
 
       <Divider sx={{ my: 2.25 }} />
-
-      <Button
-        fullWidth
-        href={profileLink}
-        target="_blank"
-        rel="noreferrer"
-        variant="outlined"
-        endIcon={<OpenInNewRoundedIcon />}
-        sx={{
-          height: 44,
-          borderRadius: 2.5,
-          fontWeight: 700
-        }}
-      >
-        {t('profile.sidebar.viewPublicProfile')}
-      </Button>
-
-      <Paper
-        variant="outlined"
-        sx={{
-          mt: 1.5,
-          px: 1.25,
-          py: 0.5,
-          display: 'flex',
-          alignItems: 'center',
-          borderRadius: 2.5,
-          borderColor: 'rgba(148, 163, 184, 0.2)',
-          boxShadow: 'none'
-        }}
-      >
-        <InputBase
-          sx={{ flex: 1, fontSize: 14, color: '#475467' }}
-          value={profileLink}
-          inputProps={{ 'aria-label': t('profile.sidebar.profileLinkAria'), readOnly: true }}
-        />
-        <Divider sx={{ height: 24, mx: 1 }} orientation="vertical" />
-        <IconButton color="primary" onClick={onCopyLink} aria-label={t('profile.sidebar.copyProfileLinkAria')}>
-          <ContentCopyRoundedIcon />
-        </IconButton>
-      </Paper>
     </Paper>
   )
 }

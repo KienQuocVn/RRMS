@@ -99,7 +99,9 @@ const RatingHistory = ({ setIsAdmin }) => {
   useEffect(() => {
     setIsAdmin(false)
     introspect().then((res) => {
-      getRatingHistory(res.data.issuer).then((response) => {
+      if (!res?.issuer) return
+
+      getRatingHistory(res.issuer).then((response) => {
         const newRows = Array.from(response.result).map((item) => ({
           nameRoom: item.bulletinBoard.title,
           typeRoom: item.bulletinBoard.rentalCategory,

@@ -380,7 +380,7 @@ const AssetManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
           columns={columns}
           data={device}
           options={options}
-          placeholder={<h1></h1>}
+          placeholder="Không tìm thấy dữ liệu!"
         />
       </div>
     </div>

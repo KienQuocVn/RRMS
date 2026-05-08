@@ -1,52 +1,14 @@
 import { Box, Container } from '@mui/material'
-import axios from 'axios'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
-import { searchBulletinBoardByAddress } from '~/apis/bulletinBoardAPI'
 import BannerHorizontal from '~/components/BannerHorizontal'
-import { env } from '~/configs/environment'
+import { getSearchRooms, searchByName } from '~/apis/searchAPI'
 import DistrictList from './DistrictList'
 import FilterSearch from './FilterSearch'
 import ItemSearch from './ItemSearch'
 import Name from './Name'
 import RoomList from './RoomList'
 import Text from './Text'
-
-const queryKeywordMap = {
-  hcm: 'Hồ Chí Minh',
-  hn: 'Hà Nội',
-  bd: 'Bình Dương',
-  ct: 'Cần Thơ',
-  dn: 'Đà Nẵng',
-  'đn': 'Đồng Nai',
-  'Quận 1': 'Quận 1',
-  'Quận 12': 'Quận 12',
-  'Quận Tân Bình': 'Quận Tân Bình',
-  'Quận Gò Vấp': 'Quận Gò Vấp',
-  'Quận Tân Phú': 'Quận Tân Phú',
-  'Quận 3': 'Quận 3',
-  'Quận 4': 'Quận 4',
-  'Quận 10': 'Quận 10',
-  'Quận 5': 'Quận 5',
-  'Quận 11': 'Quận 11',
-  'Quận 6': 'Quận 6',
-  'Thành Phố Thủ Đức': 'Thành Phố Thủ Đức',
-  'Quận Phú Nhuận': 'Quận Phú Nhuận',
-  'Tân Định': 'Tân Định',
-  'Đa Kao': 'Đa Kao',
-  'Bến Nghé': 'Bến Nghé',
-  'Bến Thành': 'Bến Thành',
-  'Nguyễn Thái Bình': 'Nguyễn Thái Bình',
-  'Phạm Ngũ Lão': 'Phạm Ngũ Lão',
-  'Cầu Ông Lãnh': 'Cầu Ông Lãnh',
-  'Cô Giang': 'Cô Giang',
-  'Nguyễn Cư Trinh': 'Nguyễn Cư Trinh',
-  'Cầu Kho': 'Cầu Kho',
-  'Thu Dau 1': 'Thu Dau 1',
-  'Dong An Ba': 'Dong An Ba',
-  'Ngoc To': 'Ngoc To',
-  'Quận Bình Thạnh': 'Quận Bình Thạnh'
-}
 
 function Search({ setIsAdmin }) {
   const [searchData, setSearchData] = useState([])
@@ -57,16 +19,14 @@ function Search({ setIsAdmin }) {
   const { searchKeyWord } = location.state || {}
   const [searchParams] = useSearchParams()
 
-  const queryKeyword = searchParams.get('query')
   const resolvedKeyword = useMemo(() => {
-    if (searchKeyWord) return searchKeyWord
-    return queryKeywordMap[queryKeyword] || ''
-  }, [queryKeyword, searchKeyWord])
+    const keywordFromQuery = searchParams.get('query')
+    return searchKeyWord || keywordFromQuery || ''
+  }, [searchKeyWord, searchParams])
 
   useEffect(() => {
     setIsAdmin(false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [setIsAdmin])
 
   useEffect(() => {
     setKeyword(resolvedKeyword)
@@ -78,27 +38,17 @@ function Search({ setIsAdmin }) {
 
       try {
         if (resolvedKeyword) {
-          const res = await searchBulletinBoardByAddress(resolvedKeyword)
-          const result = Array.isArray(res.result) ? res.result : []
+          const response = await searchByName(resolvedKeyword)
+          const result = Array.isArray(response?.data?.result) ? response.data.result : []
           setSearchData(result)
           setTotalRooms(result.length)
           return
         }
 
-        const response = await axios.get(`${env.API_URL}/searchs`, {
-          headers: {
-            'ngrok-skip-browser-warning': '69420'
-          }
-        })
-
-        if (response.status === 200) {
-          const fetchedData = Array.isArray(response.data.result) ? response.data.result : []
-          setSearchData(fetchedData)
-          setTotalRooms(fetchedData.length)
-        } else {
-          setSearchData([])
-          setTotalRooms(0)
-        }
+        const response = await getSearchRooms()
+        const result = Array.isArray(response?.result) ? response.result : []
+        setSearchData(result)
+        setTotalRooms(result.length)
       } catch (error) {
         console.error('Error fetching search data:', error)
         setSearchData([])
@@ -118,8 +68,7 @@ function Search({ setIsAdmin }) {
         minHeight: '100vh',
         py: { xs: 2.5, md: 4 },
         background: 'linear-gradient(180deg, #f8fbff 0%, #eef5ff 28%, #ffffff 100%)'
-      }}
-    >
+      }}>
       <Container maxWidth="xl">
         <Box sx={{ maxWidth: 1240, mx: 'auto' }}>
           <FilterSearch
@@ -137,8 +86,7 @@ function Search({ setIsAdmin }) {
               gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 320px' },
               gap: 3,
               alignItems: 'start'
-            }}
-          >
+            }}>
             <RoomList searchData={searchData} totalRooms={totalRooms} keyword={keyword} isLoading={isLoading} />
 
             <Box sx={{ display: 'grid', gap: 2.25 }}>

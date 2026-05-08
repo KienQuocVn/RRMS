@@ -1,94 +1,81 @@
-import axios from 'axios';
-import { env } from '~/configs/environment'; // Đảm bảo rằng env.API_URL chứa URL API của bạn
+import httpClient from './httpClient'
+import {
+  extractEntityId,
+  normalizeReservationResponse,
+  toBackendContractStatus,
+  unwrapApiResult
+} from '~/utils/apiAdapters'
 
-// Lấy token từ sessionStorage
-const getAuthToken = () => {
-  const user = sessionStorage.getItem('user');
-  return user ? JSON.parse(user).token : null;
-};
-
-// API Client
-const apiClient = axios.create({
-  baseURL: `${env.API_URL}/reserve-a-place`,
-  headers: {
-    'ngrok-skip-browser-warning': '69420' // Nếu bạn dùng ngrok trong môi trường phát triển
+const normalizeReservationPayload = (data = {}) => {
+  return {
+    ...data,
+    roomId: extractEntityId(data.roomId, ['roomId', 'id']),
+    status: toBackendContractStatus(data.status)
   }
-});
+}
 
-// Thiết lập interceptor để tự động thêm Authorization header cho các yêu cầu
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = getAuthToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Hàm API để tạo mới ReserveAPlace
 export const createReserveAPlace = async (data) => {
   try {
-    const response = await apiClient.post('', data);
-    return response.data;
+    const response = await httpClient.post('/room-reservations', normalizeReservationPayload(data))
+    return normalizeReservationResponse(unwrapApiResult(response))
   } catch (error) {
-    console.error('Error creating ReserveAPlace:', error);
-    throw error;
+    console.error('Error creating ReserveAPlace:', error)
+    throw error
   }
-};
+}
 
-// Hàm API để lấy thông tin ReserveAPlace theo ID
 export const getReserveAPlaceById = async (id) => {
   try {
-    const response = await apiClient.get(`/${id}`);
-    return response.data;
+    const reservationId = extractEntityId(id, ['reserveAPlaceId', 'roomReservationId', 'id'])
+    const response = await httpClient.get(`/room-reservations/${reservationId}`)
+    return normalizeReservationResponse(unwrapApiResult(response))
   } catch (error) {
-    console.error('Error fetching ReserveAPlace by ID:', error);
-    throw error;
+    console.error('Error fetching ReserveAPlace by ID:', error)
+    throw error
   }
-};
+}
 
-// Hàm API để lấy danh sách tất cả ReserveAPlaces
 export const getAllReserveAPlaces = async () => {
   try {
-    const response = await apiClient.get('/');
-    return response.data;
+    const response = await httpClient.get('/room-reservations')
+    return (unwrapApiResult(response, []) || []).map(normalizeReservationResponse)
   } catch (error) {
-    console.error('Error fetching all ReserveAPlaces:', error);
-    throw error;
+    console.error('Error fetching all ReserveAPlaces:', error)
+    throw error
   }
-};
+}
 
-// Hàm API để cập nhật thông tin ReserveAPlace theo ID
 export const updateReserveAPlace = async (id, data) => {
   try {
-    const response = await apiClient.put(`/${id}`, data);
-    return response.data;
+    const reservationId = extractEntityId(id, ['reserveAPlaceId', 'roomReservationId', 'id'])
+    const response = await httpClient.put(
+      `/room-reservations/${reservationId}`,
+      normalizeReservationPayload(data)
+    )
+    return normalizeReservationResponse(unwrapApiResult(response))
   } catch (error) {
-    console.error('Error updating ReserveAPlace:', error);
-    throw error;
+    console.error('Error updating ReserveAPlace:', error)
+    throw error
   }
-};
+}
 
-// Hàm API để xóa ReserveAPlace theo ID
 export const deleteReserveAPlace = async (id) => {
   try {
-    await apiClient.delete(`/${id}`);
-    return;
+    const reservationId = extractEntityId(id, ['reserveAPlaceId', 'roomReservationId', 'id'])
+    await httpClient.delete(`/room-reservations/${reservationId}`)
   } catch (error) {
-    console.error('Error deleting ReserveAPlace:', error);
-    throw error;
+    console.error('Error deleting ReserveAPlace:', error)
+    throw error
   }
-};
+}
 
-// Hàm API để lấy ReserveAPlace theo Room ID
 export const getReserveAPlacesByRoomId = async (roomId) => {
   try {
-    const response = await apiClient.get(`/room/${roomId}`);
-    return response.data;
+    const normalizedRoomId = extractEntityId(roomId, ['roomId', 'id'])
+    const response = await httpClient.get(`/room-reservations/room/${normalizedRoomId}`)
+    return (unwrapApiResult(response, []) || []).map(normalizeReservationResponse)
   } catch (error) {
-    console.error('Error fetching ReserveAPlaces by Room ID:', error);
-    throw error;
+    console.error('Error fetching ReserveAPlaces by Room ID:', error)
+    throw error
   }
-};
+}

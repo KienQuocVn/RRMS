@@ -13,7 +13,7 @@ const Login = ({ setUsername, setAvatar }) => {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
-  const { phone, setPhone, password, setPassword, validCaptcha, setValidCaptcha, handleSubmit, loginWithGoogle, loginWithFacebook } =
+  const { phone, setPhone, password, setPassword, validCaptcha, setValidCaptcha, captchaResetKey, handleSubmit, loginWithGoogle, loginWithFacebook } =
     useLogin({ setUsername, setAvatar })
 
   useEffect(() => {
@@ -73,6 +73,7 @@ const Login = ({ setUsername, setAvatar }) => {
                   setPassword={setPassword}
                   validCaptcha={validCaptcha}
                   setValidCaptcha={setValidCaptcha}
+                  captchaResetKey={captchaResetKey}
                   handleSubmit={handleSubmit}
                 />
 

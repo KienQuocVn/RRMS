@@ -29,6 +29,7 @@ import { storage } from '~/configs/firebaseConfig'
 import { v4 } from 'uuid'
 import { toast } from 'react-toastify'
 import { env } from '~/configs/environment'
+import { normalizeTenantPayload } from '~/utils/apiAdapters'
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -281,7 +282,7 @@ const EditTenantModal = ({ open, onClose, reloadData }) => {
     tenant.gender = tenant.gender?.trim() || 'MALE'
 
     try {
-      const response = await axios.post(`${env.API_URL}/tenant/insert`, tenant, {
+      const response = await axios.put(`${env.API_URL}/tenant/${tenant.tenantId}`, normalizeTenantPayload(tenant), {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',

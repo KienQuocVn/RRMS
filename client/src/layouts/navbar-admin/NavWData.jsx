@@ -4,6 +4,7 @@ import { Box } from '@mui/material'
 import Swal from 'sweetalert2'
 import { deleteMotel, getMotelById } from '~/apis/motelAPI'
 import ModalCreateHome from '~/pages/admin/ManagerHome/ModelCreateHome'
+import { isValidRouteParam } from '~/utils/apiAdapters'
 import MotelManagerCard from './components/MotelManagerCard'
 import MotelListModal from './components/MotelListModal'
 import NavMenuItems from './components/NavMenuItems'
@@ -21,7 +22,7 @@ const NavWData = ({ motels }) => {
 
   // Resolve active motel
   useEffect(() => {
-    if (motelId) {
+    if (isValidRouteParam(motelId)) {
       getMotelById(motelId)
         .then((res) => setMotel(res.data.result))
         .catch((err) => console.error('Error fetching motel:', err))
@@ -61,7 +62,7 @@ const NavWData = ({ motels }) => {
   return (
     <Box sx={{ minHeight: 125, display: 'flex', p: '0 10px 0 0' }}>
       {/* Left: Motel selector card */}
-      <Box sx={{ display: 'flex', alignItems: 'center', width: 220, flexShrink: 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
         <MotelManagerCard
           motel={motel}
           motelCount={motels.length}

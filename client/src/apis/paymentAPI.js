@@ -4,7 +4,7 @@ import { env } from '~/configs/environment'
 
 export const paymentPaypal = async (totalPrice) => {
   const username = JSON.parse(sessionStorage.getItem('user')).username
-  return await axios.post(`${env.API_URL}/payment/payment-paypal?totalPrice=${totalPrice}&userName=${username}`)
+  return await axios.post(`${env.API_URL}/api/v1/payment/payment-paypal?totalPrice=${totalPrice}&userName=${username}`)
 }
 
 export const paymentVNPay = async () => {
@@ -12,7 +12,7 @@ export const paymentVNPay = async () => {
   const totalPrice = 1000000
 
   try {
-    const response = await axios.post(`${env.API_URL}/payment/create_payment`, {
+    const response = await axios.post(`${env.API_URL}/api/v1/payment/create_payment`, {
       userName: username,
       totalPrice: totalPrice
     })
@@ -37,7 +37,7 @@ export const paymentMoMo = async () => {
       totalPrice,
       username
     }
-    const response = await axios.post(`${env.API_URL}/payment/payMoMo`, requestData)
+    const response = await axios.post(`${env.API_URL}/api/v1/payment/payMoMo`, requestData)
 
     if (response.data && response.data.payUrl) {
       window.location.href = response.data.payUrl
@@ -49,5 +49,5 @@ export const paymentMoMo = async () => {
   }
 }
 export const paymentStripe = async (stripe) => {
-  return await axios.post(`${env.API_URL}/payment/payment-stripe`, stripe)
+  return await axios.post(`${env.API_URL}/api/v1/payment/payment-stripe`, stripe)
 }

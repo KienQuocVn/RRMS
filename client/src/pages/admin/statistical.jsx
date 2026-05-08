@@ -99,24 +99,24 @@ const HouseRentalTable = ({ username }) => {
         console.log(userData);
 
         // gọi các nhà trọ của ac
-        const housesResponse = await axios.get(`${env.API_URL}/motels/get-motel-account?username=${username}`, {
+        const housesResponse = await axios.get(`${env.API_URL}/api/v1/motels/account/${username}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         // Sửa đổi: Gọi API để lấy tổng số phòng cho từng nhà trọ
         const updatedHouses = await Promise.all(housesResponse.data.result.map(async (house) => {
-          const totalRoomsResponse = await axios.get(`${env.API_URL}/report/total-rooms?motelId=${house.motelId}&username=${username}`, {
+          const totalRoomsResponse = await axios.get(`${env.API_URL}/api/v1/reports/total-rooms?motelId=${house.motelId}&username=${username}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
           // Cập nhật tổng phòng, nếu null thì gán bằng 0
-          const totalRooms = totalRoomsResponse.data || 0; // Nếu null, gán bằng 0
+          const totalRooms = totalRoomsResponse.data?.result || 0; // Nếu null, gán bằng 0
 
-          const totalTenantsResponse = await axios.get(`${env.API_URL}/report/${house.motelId}/tenants/count`, {
+          const totalTenantsResponse = await axios.get(`${env.API_URL}/api/v1/reports/${house.motelId}/tenants/count`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
-          const totalTenants = totalTenantsResponse.data || 0; // Nếu null, gán bằng 0
+          const totalTenants = totalTenantsResponse.data?.result || 0; // Nếu null, gán bằng 0
 
           return {
             ...house,
@@ -125,11 +125,11 @@ const HouseRentalTable = ({ username }) => {
           };
         }));
 
-        const roomCountsResponse = await axios.get(`${env.API_URL}/report/room-counts`, {
+        const roomCountsResponse = await axios.get(`${env.API_URL}/api/v1/reports/room-counts`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const tenantSummaryResponse = await axios.get(`${env.API_URL}/report/tenant/summary`, {
+        const tenantSummaryResponse = await axios.get(`${env.API_URL}/api/v1/reports/tenant/summary`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -138,8 +138,8 @@ const HouseRentalTable = ({ username }) => {
 
         if (housesResponse.data.result) {
           setHouses(updatedHouses);
-          setRoomCounts(roomCountsResponse.data);
-          setTenantSummaries(tenantSummaryResponse.data);
+          setRoomCounts(roomCountsResponse.data?.result || []);
+          setTenantSummaries(tenantSummaryResponse.data?.result || []);
         } else {
           alert('lỗi');
         }
@@ -306,7 +306,7 @@ const ContractEndingTable = ({ username }) => {
 
       try {
 
-        const housesResponse = await axios.get(`${env.API_URL}/motels/get-motel-account?username=${username}`, {
+        const housesResponse = await axios.get(`${env.API_URL}/api/v1/motels/account/${username}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -341,11 +341,11 @@ const ContractEndingTable = ({ username }) => {
     const token = userData?.token;
 
     try {
-      const response = await axios.get(`${env.API_URL}/transactions/${username}`, {
+      const response = await axios.get(`${env.API_URL}/api/v1/transactions/${username}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('Dữ liệu giao dịch:', response.data);
-      setTransactions(response.data || []); // Cập nhật danh sách giao dịch
+      setTransactions(response.data?.result?.items || []); // Cập nhật danh sách giao dịch
     } catch (err) {
       setError('Failed to fetch transactions'); // Thông báo lỗi khi gọi API không thành công
       console.error(err);
@@ -364,17 +364,17 @@ const ContractEndingTable = ({ username }) => {
 
     try {
       // Gọi API để lấy tổng tiền cọc
-      const depositResponse = await axios.get(`${env.API_URL}/report/${motelId}/deposits`, {
+      const depositResponse = await axios.get(`${env.API_URL}/api/v1/reports/${motelId}/deposits`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       // Gọi API để lấy tổng tiền giữ chân
-      const reserveResponse = await axios.get(`${env.API_URL}/report/${motelId}/reserve-deposits`, {
+      const reserveResponse = await axios.get(`${env.API_URL}/api/v1/reports/${motelId}/reserve-deposits`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       return {
-        totalDeposit: depositResponse.data || 0,
-        totalReserveDeposit: reserveResponse.data || 0,
+        totalDeposit: depositResponse.data?.result || 0,
+        totalReserveDeposit: reserveResponse.data?.result || 0,
       };
     } catch (err) {
       console.error('Failed to fetch deposit data:', err);
@@ -423,16 +423,16 @@ const ContractEndingTable = ({ username }) => {
       const token = userData?.token;
 
       try {
-        const invoicesResponse = await axios.get(`${env.API_URL}/report/${motelId}/total-paid-invoices`, {
+        const invoicesResponse = await axios.get(`${env.API_URL}/api/v1/reports/${motelId}/total-paid-invoices`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const roomPriceResponse = await axios.get(`${env.API_URL}/report/${motelId}/total-paid-room-price`, {
+        const roomPriceResponse = await axios.get(`${env.API_URL}/api/v1/reports/${motelId}/total-paid-room-price`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setTotalInvoices(invoicesResponse.data || 0); // Lưu tổng tiền hóa đơn
-        setTotalRoomPrices(roomPriceResponse.data || 0); // Lưu tổng tiền phòng
+        setTotalInvoices(invoicesResponse.data?.result || 0); // Lưu tổng tiền hóa đơn
+        setTotalRoomPrices(roomPriceResponse.data?.result || 0); // Lưu tổng tiền phòng
       } catch (err) {
         console.error('Failed to fetch financial data:', err);
       }

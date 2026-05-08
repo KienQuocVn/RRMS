@@ -2,63 +2,63 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { env } from '~/configs/environment'
 
+const CHAT_SCRIPT_SELECTOR = 'script[src*="fptai-livechat.js"]'
+const CHAT_STYLESHEET_SELECTOR = 'link[href*="fptai-livechat.css"]'
+
 function ChatAI() {
   useEffect(() => {
     const liveChatBaseUrl = `${document.location.protocol}//livechat.fpt.ai/v36/src`
-    const LiveChatSocketUrl = 'livechat.fpt.ai:443'
-    const FptAppCode = env.FPT_APP_CODE
-    const FptAppName = 'rrms3'
+    const liveChatSocketUrl = 'livechat.fpt.ai:443'
+    const fptAppCode = env.FPT_APP_CODE
+    const fptAppName = 'rrms3'
 
-    const CustomStyles = {
+    const customStyles = {
       headerBackground: 'linear-gradient(86.7deg, #3353a2ff 0.85%, #31b7b7ff 98.94%)',
       headerLogoLink: 'https://your-logo-url.com/logo.png',
       headerTextColor: '#fff',
       headerLogoEnable: false,
       headerText: 'Hệ thống hỗ trợ nhà trọ RRMS',
       avatarBot:
-        'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Fpty-chatbot-white-new.png?alt=media&token=ba6209c0-3ff3-4bdd-835e-677275d8b37e',
-      sendMessagePlaceholder: 'Nhập tin nhắn...',
+        '/iconAI.png',
+      sendMessagePlaceholder: 'Nhập tin nhắn của bạn...',
       floatButtonLogo:
-        'https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Fpty-chatbot-white-new.png?alt=media&token=ba6209c0-3ff3-4bdd-835e-677275d8b37e',
+        '/iconAI.png',
       floatButtonTooltip: 'Hỗ trợ trực tuyến nhà trọ RRMS',
       customerWelcomeText: 'Vui lòng nhập tên của bạn',
-      customerButtonText: 'Bắt đầu',
+      customerButtonText: 'Bắt đầu trò chuyện',
       prefixEnable: false,
-      prefixOptions: ['Anh', 'Chị'],
+      prefixOptions: ['Anh', 'Chi'],
       floatButtonTooltipEnable: true,
       prefixPlaceholder: 'Danh xưng'
     }
 
-    const FptLiveChatConfigs = {
-      appName: FptAppName,
-      appCode: FptAppCode,
+    const fptLiveChatConfigs = {
+      appName: fptAppName,
+      appCode: fptAppCode,
       themes: '',
-      styles: CustomStyles
-    }
-
-    const initializeChat = () => {
-      window.fpt_ai_render_chatbox(FptLiveChatConfigs, liveChatBaseUrl, LiveChatSocketUrl)
-      window.fpt_ai_chatbox_rendered = true
-      adjustLiveChatButtonMargin()
+      styles: customStyles
     }
 
     const adjustLiveChatButtonMargin = () => {
       const button = document.getElementById('fpt_ai_livechat_button')
-      const div = document.getElementById('fpt_ai_livechat_button_tooltip')
+      const tooltip = document.getElementById('fpt_ai_livechat_button_tooltip')
 
-      if (button) {
-        if (window.innerWidth <= 800) {
-          div.style.setProperty('bottom', '80px', 'important')
-          button.style.setProperty('bottom', '80px', 'important')
+      if (!button || !tooltip || window.innerWidth > 800) return
 
-          console.log('Lề đã được điều chỉnh cho màn hình nhỏ.')
-        }
-      }
+      tooltip.style.setProperty('bottom', '80px', 'important')
+      button.style.setProperty('bottom', '80px', 'important')
     }
 
-    // Kiểm tra nếu script đã tồn tại và chỉ thêm nếu cần thiết
+    const initializeChat = () => {
+      if (typeof window.fpt_ai_render_chatbox !== 'function') return
+
+      window.fpt_ai_render_chatbox(fptLiveChatConfigs, liveChatBaseUrl, liveChatSocketUrl)
+      window.fpt_ai_chatbox_rendered = true
+      adjustLiveChatButtonMargin()
+    }
+
     if (!window.fpt_ai_chatbox_rendered) {
-      const existingScript = document.querySelector('script[src*="fptai-livechat.js"]')
+      const existingScript = document.querySelector(CHAT_SCRIPT_SELECTOR)
       if (!existingScript) {
         const script = document.createElement('script')
         script.src = `${liveChatBaseUrl}/static/fptai-livechat.js`
@@ -69,22 +69,22 @@ function ChatAI() {
         initializeChat()
       }
 
-      const link = document.createElement('link')
-      link.rel = 'stylesheet'
-      link.href = `${liveChatBaseUrl}/static/fptai-livechat.css`
-      document.body.appendChild(link)
+      const existingStylesheet = document.querySelector(CHAT_STYLESHEET_SELECTOR)
+      if (!existingStylesheet) {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = `${liveChatBaseUrl}/static/fptai-livechat.css`
+        document.body.appendChild(link)
+      }
 
-      // Initial adjustment
       adjustLiveChatButtonMargin()
-
-      // Adjust on window resize
       window.addEventListener('resize', adjustLiveChatButtonMargin)
 
       return () => {
         window.removeEventListener('resize', adjustLiveChatButtonMargin)
+
         if (window.fpt_ai_chatbox_rendered) {
-          const chatContainer = document.getElementById('fpt-chat-container')
-          if (chatContainer) chatContainer.innerHTML = '' // Dọn dẹp nội dung chat
+          document.getElementById('fpt-chat-container')?.replaceChildren()
           window.fpt_ai_chatbox_rendered = false
         }
       }

@@ -7,7 +7,7 @@ import SecurityDangerZoneSection from './sections/SecurityDangerZoneSection'
 import SecurityOptionsSection from './sections/SecurityOptionsSection'
 import SecurityPasswordSection from './sections/SecurityPasswordSection'
 
-function SecurityTab() {
+function SecurityTab({ username }) {
   const { t } = useTranslation()
   const [passwordData, setPasswordData] = useState({
     oldPassword: '',
@@ -25,6 +25,8 @@ function SecurityTab() {
 
   const handleChangePassword = async () => {
     const { oldPassword, newPassword, confirmPassword } = passwordData
+    const storedUser = JSON.parse(sessionStorage.getItem('user') || 'null')
+    const effectiveUsername = username || storedUser?.username || ''
 
     if (!oldPassword || !newPassword || !confirmPassword) {
       toast.info(t('profile.alerts.passwordMissing'))
@@ -36,8 +38,17 @@ function SecurityTab() {
       return
     }
 
+    if (!effectiveUsername) {
+      toast.error(t('profile.alerts.passwordError'))
+      return
+    }
+
     try {
-      await changePassword(passwordData)
+      await changePassword({
+        username: effectiveUsername,
+        oldPassword,
+        newPassword
+      })
       toast.success(t('profile.alerts.passwordSuccess'))
       setPasswordData({
         oldPassword: '',

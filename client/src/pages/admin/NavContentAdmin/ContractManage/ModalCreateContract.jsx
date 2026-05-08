@@ -63,7 +63,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
     collectioncycle: '1',
     createdate: new Date().toISOString().slice(0, 10),
     signcontract: 'Khách chưa ký',
-    language: 'Tiếng Việt',
+    language: 'Viêt Nam',
     countTenant: 1,
     status: 'ACTIVE' // Giá trị có thể là 'ACTIVE', 'ENDED', hoặc 'IATExpire'
   })

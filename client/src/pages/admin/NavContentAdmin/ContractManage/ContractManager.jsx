@@ -1794,7 +1794,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
           columns={columns}
           options={options}
           data={contracts}
-          placeholder={<h1></h1>} // Sử dụng placeholder tùy chỉnh
+          placeholder="Không tìm thấy dữ liệu!"
         />
         {showMenu && (
           <div

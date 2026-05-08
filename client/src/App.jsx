@@ -1,5 +1,5 @@
 import { Routes, useLocation } from 'react-router-dom'
-import { useEffect, Suspense, useRef, useMemo, useCallback } from 'react'
+import { useEffect, Suspense, useRef, useMemo, useCallback, useState } from 'react'
 import Header from './layouts/Header/Header'
 import Footer from './layouts/Footer/Footer'
 import { getMotelByUsername } from './apis/motelAPI'
@@ -13,6 +13,8 @@ import { AuthProvider } from './contexts/AuthContext'
 import { MotelProvider } from './contexts/MotelContext'
 import { useAuth } from './hooks/useAuth'
 import { useMotel } from './hooks/useMotel'
+import { normalizeProfileResponse } from './apis/profileAPI'
+import ChatAI from './pages/ai/ChatAI.jsx'
 
 function AppShell() {
   const location = useLocation()
@@ -21,7 +23,11 @@ function AppShell() {
   const { username, setUsername, avatar, setAvatar, account, setAccount, token, setToken, isAdmin } = auth
   const { motels, setMotels } = motel
   const lastFetchedUsernameRef = useRef(null)
-  const languageRef = useRef(localStorage.getItem('language') || i18n.language)
+  const [currentLanguage, setCurrentLanguage] = useState(() => {
+    const storedLanguage = localStorage.getItem('language')
+    const activeLanguage = storedLanguage || i18n.resolvedLanguage || i18n.language || 'vi'
+    return activeLanguage.startsWith('vi') ? 'vi' : 'en'
+  })
   const authRoutesWithoutChrome = ['/login', '/register', '/forgot-password']
   const shouldHidePublicChrome = authRoutesWithoutChrome.includes(location.pathname)
 
@@ -31,19 +37,47 @@ function AppShell() {
     })
   }, [setMotels])
 
-  const toggleLanguage = () => {
-    const newLanguage = languageRef.current === 'vi' ? 'en' : 'vi'
+  const toggleLanguage = useCallback(() => {
+    const newLanguage = currentLanguage === 'vi' ? 'en' : 'vi'
     i18n.changeLanguage(newLanguage)
-    languageRef.current = newLanguage
-    localStorage.setItem('language', newLanguage)
-  }
+  }, [currentLanguage])
+
+  useEffect(() => {
+    const normalizedLanguage = currentLanguage.startsWith('vi') ? 'vi' : 'en'
+
+    if ((i18n.resolvedLanguage || i18n.language) !== normalizedLanguage) {
+      i18n.changeLanguage(normalizedLanguage)
+    }
+
+    localStorage.setItem('language', normalizedLanguage)
+  }, [currentLanguage])
+
+  useEffect(() => {
+    const handleLanguageChanged = (language) => {
+      setCurrentLanguage(language?.startsWith('vi') ? 'vi' : 'en')
+    }
+
+    i18n.on('languageChanged', handleLanguageChanged)
+
+    return () => {
+      i18n.off('languageChanged', handleLanguageChanged)
+    }
+  }, [])
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem('user')
-    if (!storedUser) return
+    if (!storedUser) {
+      lastFetchedUsernameRef.current = null
+      setAccount(undefined)
+      return
+    }
 
     const user = JSON.parse(storedUser)
-    if (!user?.username) return
+    if (!user?.username) {
+      lastFetchedUsernameRef.current = null
+      setAccount(undefined)
+      return
+    }
 
     setUsername(user.username)
     setAvatar(user.avatar)
@@ -52,8 +86,8 @@ function AppShell() {
     if (lastFetchedUsernameRef.current === user.username) return
 
     lastFetchedUsernameRef.current = user.username
-    getAccountByUsername(user.username).then((res) => {
-      setAccount(res.data)
+    getAccountByUsername(user.username).then((accountResponse) => {
+      setAccount(normalizeProfileResponse(accountResponse ?? {}))
     })
     fetchMotelsByUsername(user.username)
   }, [fetchMotelsByUsername, location.pathname, setAccount, setAvatar, setToken, setUsername])
@@ -62,6 +96,7 @@ function AppShell() {
 
   return (
     <Box>
+      {!isAdmin && !shouldHidePublicChrome ? <ChatAI /> : null}
       {!isAdmin && !shouldHidePublicChrome ? (
         <Header
           account={account}
@@ -72,7 +107,7 @@ function AppShell() {
           setAvatar={setAvatar}
           setToken={setToken}
           toggleLanguage={toggleLanguage}
-          currentLanguage={languageRef.current}
+          currentLanguage={currentLanguage}
           motelId={motels[0]?.motelId}
         />
       ) : null}

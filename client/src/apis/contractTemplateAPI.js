@@ -1,5 +1,6 @@
 import dayjs from 'dayjs' // Sử dụng thư viện dayjs để định dạng ngày
 import httpClient from './httpClient'
+import { extractEntityId, normalizeContractResponse, toBackendContractStatus } from '~/utils/apiAdapters'
 
 // muc mau hop dong
 // Tạo mới một Contract Template
@@ -44,8 +45,10 @@ export const deleteContractTemplate = async (id) => {
 //update hop dong
 export const updateContractDetail = async (ContractId,roomId, deposit, price,debt) => {
   try {
+    const contractId = extractEntityId(ContractId, ['contractId', 'id'])
+    const normalizedRoomId = extractEntityId(roomId, ['roomId', 'id'])
     const response = await httpClient.put('/contracts/update-contract', null, {
-      params: { ContractId, roomId, deposit, price, debt }
+      params: { ContractId: contractId, roomId: normalizedRoomId, deposit, price, debt }
     })
     return response.data
   } catch (error) {
@@ -60,7 +63,7 @@ export const updateContractDetail = async (ContractId,roomId, deposit, price,deb
 export const updateContractStatusClose = async (newStatus,thresholdDays) => {
   try {
     const response = await httpClient.put('/contracts/update-status-by-days-difference', null, {
-      params: { newStatus, thresholdDays }
+      params: { newStatus: toBackendContractStatus(newStatus), thresholdDays }
     })
     return response.data
   } catch (error) {
@@ -74,7 +77,7 @@ export const updateContractStatusClose = async (newStatus,thresholdDays) => {
 export const updateContractStatusClose2 = async (newStatus,thresholdDays) => {
   try {
     const response = await httpClient.put('/contracts/update-status-by-days-difference2', null, {
-      params: { newStatus, thresholdDays }
+      params: { newStatus: toBackendContractStatus(newStatus), thresholdDays }
     })
     return response.data
   } catch (error) {
@@ -89,10 +92,11 @@ export const updateExtendContractStatusClose = async (contractId, newCloseContra
   try {
     // Định dạng ngày thành dd-MM-yyyy trước khi gửi
  
+    const normalizedContractId = extractEntityId(contractId, ['contractId', 'id'])
     const formattedDate = dayjs(newCloseContract).format('DD-MM-YYYY')
 
     const response = await httpClient.put('/contracts/update-close-contract', null, {
-      params: { contractId, newCloseContract: formattedDate }
+      params: { contractId: normalizedContractId, newCloseContract: formattedDate }
     })
 
     return response.data
@@ -105,48 +109,63 @@ export const updateExtendContractStatusClose = async (contractId, newCloseContra
 
 // Xóa hợp đồng
 export const deleteContract = async (id) => {
-  await httpClient.delete(`/contracts/${id}`)
+  const contractId = extractEntityId(id, ['contractId', 'id'])
+  await httpClient.delete(`/contracts/${contractId}`)
 }
 
 // Xóa hợp đồng theo roomId
 export const deleteContractByRoomId = async (id) => {
-  await httpClient.delete(`/contracts/room/${id}`)
+  const roomId = extractEntityId(id, ['roomId', 'id'])
+  await httpClient.delete(`/contracts/room/${roomId}`)
 }
 
 // Tạo hợp đồng
 export const createContract = async (contractData) => {
   const response = await httpClient.post('/contracts', contractData)
-  return response.data
+  return normalizeContractResponse(response.data)
 }
 
 // Lấy hợp đồng theo ID
 export const getContractById = async (id) => {
-  const response = await httpClient.get(`/contracts/${id}`)
-  return response.data
+  const contractId = extractEntityId(id, ['contractId', 'id'])
+  if (!contractId) return null
+
+  const response = await httpClient.get(`/contracts/${contractId}`)
+  return normalizeContractResponse(response.data)
 }
 
 // Lấy hợp đồng theo ID Room
 export const getContractByIdRoom = async (roomId) => {
-  const response = await httpClient.get(`/contracts/room/${roomId}`)
-  return response.data
+  const normalizedRoomId = extractEntityId(roomId, ['roomId', 'id'])
+  if (!normalizedRoomId) return null
+
+  const response = await httpClient.get(`/contracts/room/${normalizedRoomId}`)
+  return normalizeContractResponse(response.data)
 }
 
 // Lấy hợp đồng theo ID Room
 export const getContractByIdRoom2= async (roomId) => {
-  const response = await httpClient.get(`/contracts/room/${roomId}`)
-  return response.data
+  const normalizedRoomId = extractEntityId(roomId, ['roomId', 'id'])
+  if (!normalizedRoomId) return null
+
+  const response = await httpClient.get(`/contracts/room/${normalizedRoomId}`)
+  return normalizeContractResponse(response.data)
 }
 
 // Lấy hợp đồng theo ID motel
 export const getContractByIdMotel = async (motelId) => {
-  const response = await httpClient.get(`/contracts/motel/${motelId}`)
-  return response.data
+  const normalizedMotelId = extractEntityId(motelId, ['motelId', 'id'])
+  if (!normalizedMotelId) return []
+
+  const response = await httpClient.get(`/contracts/motel/${normalizedMotelId}`)
+  return Array.isArray(response.data) ? response.data.map(normalizeContractResponse) : []
 }
 
 // Cập nhật hợp đồng
 export const updateContract = async (id, contractData) => {
-  const response = await httpClient.put(`/contracts/${id}`, contractData)
-  return response.data
+  const contractId = extractEntityId(id, ['contractId', 'id'])
+  const response = await httpClient.put(`/contracts/${contractId}`, contractData)
+  return normalizeContractResponse(response.data)
 }
 
 // ---------------------------------------- hop dong dich vu

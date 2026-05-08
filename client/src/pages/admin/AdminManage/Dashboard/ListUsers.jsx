@@ -26,6 +26,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { format } from 'date-fns'; 
 import axios from 'axios';
 import { env } from '~/configs/environment';
+import { unwrapPageItems } from '~/utils/apiAdapters';
 
 const ListUsers = () => {  
   const [page, setPage] = useState(0)
@@ -51,9 +52,9 @@ const ListUsers = () => {
       if (query) {
         const params = new URLSearchParams();
         params.append("search", query);
-        url = `${env.API_URL}/api-accounts/search?${params.toString()}`;
+        url = `${env.API_URL}/api/v1/accounts/search?${params.toString()}`;
       } else {
-        url = `${env.API_URL}/api-accounts/get-all-account`;
+        url = `${env.API_URL}/api/v1/accounts/get-all-account`;
       }
 
       const response = await axios.get(url, {
@@ -62,8 +63,8 @@ const ListUsers = () => {
         },
       });
   
-      if (response.data && response.data.status) {  
-        setAccounts(response.data.data);  
+      if (response.data?.result) {  
+        setAccounts(unwrapPageItems(response));  
       } else {  
         setNoResults(true);  
       }  
@@ -247,7 +248,7 @@ const ListUsers = () => {
                   .map((account,index) => (  
                     <TableRow key={account.id || index}> 
                       <TableCell>{account.username}</TableCell>  
-                      <TableCell>{account.fullname}</TableCell>  
+                      <TableCell>{account.fullName}</TableCell>  
                       <TableCell>{account.phone}</TableCell>  
                       <TableCell>{account.email}</TableCell>  
                       <TableCell>{account.cccd}</TableCell>  
@@ -262,7 +263,7 @@ const ListUsers = () => {
                           style={{ width: '50px', height: '50px', borderRadius: '2px' }}  
                         />  
                       </TableCell> 
-                      <TableCell>{account.role}</TableCell> 
+                      <TableCell>{Array.isArray(account.role) ? account.role.join(', ') : account.role}</TableCell> 
                       <TableCell>  
                         <IconButton color="primary" size="small" onClick={() => handleEdit(account.username)}>  
                           <EditNoteIcon />  

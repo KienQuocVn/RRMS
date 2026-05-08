@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Captcha Controller")
 @RestController
-@RequestMapping("/api")
+@RequestMapping({"/api", "/api/v1", "/api/v1/api"})
 @Slf4j
 public class CaptchaController {
 
@@ -35,6 +35,10 @@ public class CaptchaController {
     @PostMapping("/verify-captcha")
     public ResponseEntity<Map<String, Object>> verifyCaptcha(@RequestBody Map<String, String> requestBody) {
         String token = requestBody.get("token");
+
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", "Captcha token is required"));
+        }
 
         String url = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
         HttpHeaders headers = new HttpHeaders();
@@ -58,7 +62,7 @@ public class CaptchaController {
                 return ResponseEntity.ok(Collections.singletonMap("success", false));
             }
         } catch (Exception e) {
-            // Log error if needed
+            log.error("Captcha verification failed", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.singletonMap("error", "Captcha verification failed"));
         }

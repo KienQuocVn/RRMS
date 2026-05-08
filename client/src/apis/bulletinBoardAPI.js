@@ -27,6 +27,6 @@ export const deleteBulletinBoard = async (id) => {
 }
 
 export const searchBulletinBoardByAddress = async (address) => {
-  const response = await httpClient.get(`/bulletin-board/search?address=${address}`)
+  const response = await httpClient.get(`/api/v1/bulletin-boards/search?address=${address}`)
   return response.data
 }

@@ -16,6 +16,7 @@ import { env } from '~/configs/environment'
 import ModalEditInvoice from './ModalEditInvoice'
 import ModalCollectMoneyInvoice from './ModalCollectMoneyInvoice'
 import Swal from 'sweetalert2';
+import { isValidRouteParam } from '~/utils/apiAdapters';
 
 const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
@@ -46,13 +47,18 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
 
   const fetchInvoices = async (motelId) => {
     try {  
-      const response = await axios.get(`${env.API_URL}/invoices/motel/${motelId}`, {
+      if (!isValidRouteParam(motelId)) {
+        setInvoices([]);
+        return;
+      }
+
+      const response = await axios.get(`${env.API_URL}/api/v1/invoices/motel/${motelId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       console.log("Invoices from API:", response.data);
-      setInvoices(response.data);
+      setInvoices(response.data?.result?.items || []);
     } catch (err) {
       console.error(err);
     }
@@ -73,16 +79,21 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   useEffect(() => {
     setIsAdmin(true)
     fetchInvoices(motelId)
-  }, [])
+  }, [motelId])
 
   const fetchMotelServices = async (motelId) => {
     try {
-        const response = await axios.get(`${env.API_URL}/motels/get-motel-id?id=${motelId}`, {
+        if (!isValidRouteParam(motelId)) {
+            setServices([]);
+            return;
+        }
+
+        const response = await axios.get(`${env.API_URL}/api/v1/motels/${motelId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        const motelData = response.data.result;
+        const motelData = response.data?.result;
 
         if (motelData?.motelServices) {
             const serviceNames = motelData.motelServices.map((service) => service.nameService);
@@ -305,7 +316,7 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
     if (result.isConfirmed) {
       try {
         await axios.put(
-          `${env.API_URL}/invoices/${invoiceId}/cancel`,
+          `${env.API_URL}/api/v1/invoices/${invoiceId}/cancel`,
           {}, // API không yêu cầu body
           {
             headers: {
@@ -338,7 +349,7 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const deleteInvoice = async (invoiceId) => {
     try {
       // Gọi API DELETE
-      await axios.delete(`${env.API_URL}/invoices/delete/${invoiceId}`, {
+      await axios.delete(`${env.API_URL}/api/v1/invoices/delete/${invoiceId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -699,7 +710,7 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
           columns={columns}
           options={options}
           data={data}
-          placeholder={<h1></h1>} // Sử dụng placeholder tùy chỉnh
+          placeholder="Không tìm thấy dữ liệu!"
         />
         {showMenu && invoice && invoice.status && (
           <div

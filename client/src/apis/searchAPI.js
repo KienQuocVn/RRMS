@@ -1,27 +1,29 @@
-import axios from 'axios'
-import { env } from '~/configs/environment'
+import publicHttpClient from './publicHttpClient'
 
 export const searchByName = async (keyword) => {
-  return await axios.get(`${env.API_URL}/searchs/addressBullet?address=${keyword}`, {
-    headers: {
-      'ngrok-skip-browser-warning': '69420'
+  return publicHttpClient.get('/api/v1/search/by-address', {
+    params: {
+      address: keyword
     }
   })
 }
 
 export const roomASC = async (sortOrder = 'ASC') => {
-  try {
-    const response = await axios.get(`${env.API_URL}/searchs/asc`, {
-      params: {
-        sortOrder: sortOrder
-      },
-      headers: {
-        'ngrok-skip-browser-warning': '69420'
-      }
-    })
-    return response.data
-  } catch (error) {
-    console.error('Error fetching data:', error)
-    throw error
-  }
+  const response = await publicHttpClient.get('/api/v1/search/sort', {
+    params: {
+      sortOrder
+    }
+  })
+
+  return response.data
+}
+
+export const getSearchRooms = async () => {
+  const response = await publicHttpClient.get('/api/v1/search')
+  return response.data
+}
+
+export const getLatestSearchRooms = async () => {
+  const response = await publicHttpClient.get('/api/v1/search/latest')
+  return response.data
 }

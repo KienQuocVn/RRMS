@@ -6,7 +6,6 @@ const MotelSelector = ({ motelName = 'Nhà trọ RRMS' }) => (
     variant="contained"
     sx={{
       bgcolor: 'white',
-      width: '100%',
       height: 100,
       color: 'black',
       display: 'flex',
@@ -21,7 +20,6 @@ const MotelSelector = ({ motelName = 'Nhà trọ RRMS' }) => (
       sx={{
         background: '#5eb7ff',
         borderRadius: '50%',
-        width: 50,
         height: 50,
         display: 'flex',
         alignItems: 'center',

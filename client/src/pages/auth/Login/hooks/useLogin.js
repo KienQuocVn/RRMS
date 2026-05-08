@@ -9,24 +9,32 @@ import { env } from '~/configs/environment'
 import { checkRegister } from '~/apis/accountAPI'
 
 export const useLogin = ({ setUsername, setAvatar }) => {
+  const LOGIN_ENDPOINT = `${env.API_URL}/authen/login`
+  const REGISTER_ENDPOINT = `${env.API_URL}/authen/register`
   const { t } = useTranslation()
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [validCaptcha, setValidCaptcha] = useState(false)
+  const [captchaResetKey, setCaptchaResetKey] = useState(0)
   const navigate = useNavigate()
 
   const showError = (text) => Swal.fire({ icon: 'error', title: t('auth.login.alerts.errorTitle'), text })
+  const resetCaptcha = () => {
+    setValidCaptcha(false)
+    setCaptchaResetKey((previous) => previous + 1)
+  }
 
   const saveSessionAndNavigate = ({ phone, username, avatar, token, roles }) => {
     sessionStorage.setItem('user', JSON.stringify({ phone, username, avatar, token, roles }))
     setUsername(username)
     setAvatar(avatar)
+    resetCaptcha()
     navigate('/RRMS')
   }
 
   const loginSocial = async (phoneValue, pass) => {
     try {
-      const response = await axios.post(`${env.API_URL}/authen/login`, {
+      const response = await axios.post(LOGIN_ENDPOINT, {
         phone: phoneValue,
         password: pass
       })
@@ -38,13 +46,14 @@ export const useLogin = ({ setUsername, setAvatar }) => {
           text: t('auth.login.alerts.successText')
         })
 
-        const { username, avatar, token } = response.data.data
+        const { username, avatar, token } = response.data.result
 
         if (!username) throw new Error(t('auth.login.alerts.usernameMissing'))
 
         saveSessionAndNavigate({ phone: phoneValue, username, avatar, token })
       }
     } catch {
+      resetCaptcha()
       showError(t('auth.login.alerts.genericError'))
     }
   }
@@ -52,7 +61,7 @@ export const useLogin = ({ setUsername, setAvatar }) => {
   const registerAndLoginSocial = async (id) => {
     try {
       const response = await axios.post(
-        `${env.API_URL}/authen/register`,
+        REGISTER_ENDPOINT,
         { username: id, phone: id, password: id },
         { headers: { 'ngrok-skip-browser-warning': '69420' } }
       )
@@ -108,12 +117,16 @@ export const useLogin = ({ setUsername, setAvatar }) => {
     }
 
     if (!phone || !password) {
-      Swal.fire({ icon: 'warning', title: t('auth.login.alerts.noticeTitle'), text: t('auth.login.alerts.missingFields') })
+      Swal.fire({
+        icon: 'warning',
+        title: t('auth.login.alerts.noticeTitle'),
+        text: t('auth.login.alerts.missingFields')
+      })
       return
     }
 
     try {
-      const response = await axios.post(`${env.API_URL}/authen/login`, { phone, password })
+      const response = await axios.post(LOGIN_ENDPOINT, { phone, password })
 
       if (response.status === 200) {
         Swal.fire({
@@ -122,17 +135,22 @@ export const useLogin = ({ setUsername, setAvatar }) => {
           text: t('auth.login.alerts.successText')
         })
 
-        const { username, avatar, token, roles } = response.data.data
+        const { username, avatar, token, roles } = response.data.result
 
         if (!username) throw new Error(t('auth.login.alerts.usernameMissing'))
 
         saveSessionAndNavigate({ phone, username, avatar, token, roles })
       }
     } catch (error) {
+      resetCaptcha()
       if (error.response) {
         const status = error.response.status
-        if (status === 401) {
+        const backendMessage = String(error.response?.data?.message || '').toLowerCase()
+
+        if (status === 400 && backendMessage.includes('password')) {
           showError(t('auth.login.alerts.passwordWrong'))
+        } else if (status === 401) {
+          showError(t('auth.login.alerts.accountMissing'))
         } else if (status === 404) {
           showError(t('auth.login.alerts.accountMissing'))
         } else {
@@ -151,6 +169,7 @@ export const useLogin = ({ setUsername, setAvatar }) => {
     setPassword,
     validCaptcha,
     setValidCaptcha,
+    captchaResetKey,
     handleSubmit,
     loginWithGoogle,
     loginWithFacebook

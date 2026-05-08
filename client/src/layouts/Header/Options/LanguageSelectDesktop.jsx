@@ -2,11 +2,23 @@ import { Box } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 
 const LanguageSelectDesktop = ({ toggleLanguage, currentLanguage }) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const activeLanguage = (currentLanguage || i18n.resolvedLanguage || i18n.language || 'vi').startsWith('vi') ? 'vi' : 'en'
+
+  const handleToggleLanguage = () => {
+    if (toggleLanguage) {
+      toggleLanguage()
+      return
+    }
+
+    const nextLanguage = activeLanguage === 'vi' ? 'en' : 'vi'
+    i18n.changeLanguage(nextLanguage)
+    localStorage.setItem('language', nextLanguage)
+  }
 
   return (
     <Box
-      onClick={toggleLanguage}
+      onClick={handleToggleLanguage}
       sx={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -22,23 +34,23 @@ const LanguageSelectDesktop = ({ toggleLanguage, currentLanguage }) => {
         }
       }}
     >
-      {currentLanguage === 'vi' ? (
+      {activeLanguage === 'vi' ? (
         <img
-          src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Fvietnam.png?alt=media&token=9e4a0137-2346-4190-b71b-147842b01ff7"
+          src="/vietnam.png"
           alt="Vietnam"
           width={24}
           height={24}
         />
       ) : (
         <img
-          src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Funited-kingdom.png?alt=media&token=82b89dec-9bfa-4b78-a551-5149518d4068"
-          alt="English"
+          src="/american.jpg"
+          alt="American"
           width={24}
           height={24}
         />
       )}
       <Box component="span" sx={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>
-        {currentLanguage === 'vi' ? t('header.language.vi') : t('header.language.en')}
+        {activeLanguage === 'vi' ? t('header.language.vi') : t('header.language.en')}
       </Box>
     </Box>
   )

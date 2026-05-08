@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @RestController
-@RequestMapping({"/api-accounts", "/api/v1/accounts"})
+@RequestMapping({"/api-accounts", "/api/v1/accounts", "/api/v1/api-accounts"})
 public class AccountController {
     IAccountService accountService;
 

@@ -35,6 +35,7 @@ import { env } from '~/configs/environment'
 import { getRoomById } from '~/apis/roomAPI'
 import { getRoomByMotelIdWContract, getRoomByMotelIdYContract } from '~/apis/roomAPI'
 import { useParams } from 'react-router-dom'
+import { normalizeTenantPayload } from '~/utils/apiAdapters'
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -346,7 +347,7 @@ const AddTenantModal = ({ open, onClose, reloadData, avatar, editId }) => {
     try {
       console.log(selectedRoom.roomId)
 
-      const response = await axios.post(`${env.API_URL}/tenant/insert/${rom}`, tenant, {
+      const response = await axios.post(`${env.API_URL}/tenant/insert/${rom}`, normalizeTenantPayload(tenant), {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -394,7 +395,11 @@ const AddTenantModal = ({ open, onClose, reloadData, avatar, editId }) => {
     })
     if (editId) {
       getByIdTenant(editId).then((res) => {
-        setTenant(res.result)
+        setTenant({
+          ...res.result,
+          fullname: res.result.fullName,
+          type_of_tenant: res.result.typeOfTenant
+        })
       })
     }
   }, [editId])
@@ -414,7 +419,11 @@ const AddTenantModal = ({ open, onClose, reloadData, avatar, editId }) => {
 
     updateTenant(editId, tenant)
       .then((res) => {
-        setTenant(res.result)
+        setTenant({
+          ...res.result,
+          fullname: res.result.fullName,
+          type_of_tenant: res.result.typeOfTenant
+        })
         Swal.fire({ icon: 'success', title: 'Thành công', text: 'Cập nhật khách hàng thành công!' })
         onClose()
         reloadData()

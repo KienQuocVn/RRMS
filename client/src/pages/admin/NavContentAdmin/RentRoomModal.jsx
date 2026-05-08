@@ -24,7 +24,7 @@ function RentRoomModal({ toggleModal, modalOpen, motelId }) {
     setAvatar(!avatar)
   }
 
-  const loadDataTenantRoomId = async () => {
+  const loadDataTenantRoomId = async (targetRoomId = roomId) => {
     try {
       const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
 
@@ -33,7 +33,7 @@ function RentRoomModal({ toggleModal, modalOpen, motelId }) {
         return
       }
 
-      const response = await axios.get(`${env.API_URL}/tenant/roomId/${roomId}`, {
+      const response = await axios.get(`${env.API_URL}/tenant/roomId/${targetRoomId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'ngrok-skip-browser-warning': '69420'
@@ -106,7 +106,7 @@ function RentRoomModal({ toggleModal, modalOpen, motelId }) {
     if (motelId) {
       fetchMotelContract(motelId)
     }
-  }, [roomId])
+  }, [motelId])
 
   return (
     <div>

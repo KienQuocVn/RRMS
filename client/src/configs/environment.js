@@ -2,7 +2,7 @@ export const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhos
 export const apiBaseUrl = import.meta.env.VITE_APP_API_URL || 'http://localhost:7000'
 
 export const env = {
-  API_URL: import.meta.env.VITE_APP_API_URL,
+  API_URL: import.meta.env.VITE_APP_API_URL || apiBaseUrl,
   PORT: import.meta.env.VITE_PORT,
   SITE_KEY: import.meta.env.VITE_SITE_KEY_CAPTCHA,
   FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY,

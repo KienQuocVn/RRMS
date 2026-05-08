@@ -2,6 +2,7 @@ package com.rrms.rrms.configs;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import java.util.Arrays;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -17,8 +18,11 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.util.AntPathMatcher;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,6 +31,17 @@ import lombok.extern.slf4j.Slf4j;
 @EnableMethodSecurity
 @Slf4j
 public class SecurityConfig {
+
+    private static final String[] CAPTCHA_PUBLIC_ENDPOINTS = {
+        "/api/verify-captcha",
+        "/api/verify-captcha/**",
+        "/api/v1/verify-captcha",
+        "/api/v1/verify-captcha/**",
+        "/api/v1/api/verify-captcha",
+        "/api/v1/api/verify-captcha/**"
+    };
+
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private static final String[] PUBLIC_ENDPOINTS = {
         "/oauth2/authorization/google",
@@ -37,6 +52,7 @@ public class SecurityConfig {
         "/authen/error",
         "/authen/success",
         "/authen/**",
+        "/api/v1/authen/**",
         "/swagger-ui/**",
         "/v3/api-docs/**",
         "/searchs/**",
@@ -51,7 +67,12 @@ public class SecurityConfig {
         "/payment/vnpay-callback/**",
         "/payment/paymentSuccess/**",
         "/payment/paymentFailed/**",
+        "/api/verify-captcha",
         "/api/verify-captcha/**",
+        "/api/v1/verify-captcha",
+        "/api/v1/verify-captcha/**",
+        "/api/v1/api/verify-captcha",
+        "/api/v1/api/verify-captcha/**",
         "/support/**",
         "/supports/**",
         "/api/v1/supports/**"
@@ -79,14 +100,21 @@ public class SecurityConfig {
                     response.sendRedirect("/authen/error");
                 }));
 
-        http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer ->
-                jwtConfigurer.decoder(jwtDecoder()).jwtAuthenticationConverter(jwtAuthenticationConverter())));
+        http.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(publicAwareBearerTokenResolver())
+                .jwt(jwtConfigurer ->
+                        jwtConfigurer.decoder(jwtDecoder()).jwtAuthenticationConverter(jwtAuthenticationConverter())));
 
         http.exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint));
 
         http.csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .ignoringRequestMatchers(PUBLIC_ENDPOINTS));
         return http.build();
+    }
+
+    @Bean
+    public BearerTokenResolver publicAwareBearerTokenResolver() {
+        DefaultBearerTokenResolver delegate = new DefaultBearerTokenResolver();
+        return request -> isCaptchaPublicEndpoint(request.getServletPath()) ? null : delegate.resolve(request);
     }
 
     @Bean
@@ -117,5 +145,13 @@ public class SecurityConfig {
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
+    }
+
+    private boolean isCaptchaPublicEndpoint(String servletPath) {
+        if (servletPath == null || servletPath.isBlank()) {
+            return false;
+        }
+
+        return Arrays.stream(CAPTCHA_PUBLIC_ENDPOINTS).anyMatch(pattern -> PATH_MATCHER.match(pattern, servletPath));
     }
 }

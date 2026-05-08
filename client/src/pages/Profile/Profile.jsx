@@ -23,6 +23,8 @@ function Profile({ setIsAdmin, username }) {
   const [previewUrl, setPreviewUrl] = useState('')
   const [profile, setProfile] = useState({})
   const [loading, setLoading] = useState(true)
+  const storedUser = typeof window !== 'undefined' ? JSON.parse(sessionStorage.getItem('user') || 'null') : null
+  const effectiveUsername = username || storedUser?.username || ''
 
   const tabs = [
     { value: '1', label: t('profile.tabs.profile'), icon: <PersonRoundedIcon fontSize="small" /> },
@@ -44,15 +46,15 @@ function Profile({ setIsAdmin, username }) {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!username) {
+      if (!effectiveUsername) {
         setLoading(false)
         return
       }
 
       setLoading(true)
       try {
-        const res = await getProfile(username)
-        setProfile(res.data.result || {})
+        const nextProfile = await getProfile(effectiveUsername)
+        setProfile(nextProfile)
       } catch (error) {
         console.error('Failed to fetch profile:', error)
         toast.error(t('profile.alerts.loadFailed'))
@@ -62,7 +64,7 @@ function Profile({ setIsAdmin, username }) {
     }
 
     fetchProfile()
-  }, [t, username])
+  }, [effectiveUsername, t])
 
   useEffect(() => {
     if (!selectedImage) {
@@ -143,7 +145,7 @@ function Profile({ setIsAdmin, username }) {
     >
       <Container maxWidth="xl">
         <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
-          <ProfilePageHeader profile={profile} username={username} />
+          <ProfilePageHeader profile={profile} username={effectiveUsername} />
 
           <Box
             sx={{
@@ -220,13 +222,14 @@ function Profile({ setIsAdmin, username }) {
                     setProfile={setProfile}
                     selectedImage={selectedImage}
                     setSelectedImage={setSelectedImage}
+                    username={effectiveUsername}
                   />
                 </TabPanel>
                 <TabPanel value="2" sx={{ p: { xs: 2, md: 3 } }}>
                   <BillingTab />
                 </TabPanel>
                 <TabPanel value="3" sx={{ p: { xs: 2, md: 3 } }}>
-                  <SecurityTab />
+                  <SecurityTab username={profile.username || effectiveUsername} />
                 </TabPanel>
                 <TabPanel value="4" sx={{ p: { xs: 2, md: 3 } }}>
                   <NotificationTab />

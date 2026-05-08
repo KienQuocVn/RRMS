@@ -1,4 +1,5 @@
 import httpClient from './httpClient'
+import { normalizeTenantPayload } from '~/utils/apiAdapters'
 
 export const getByIdTenant = async (editId) => {
   const response = await httpClient.get(`/tenant/tenant-id?id=${editId}`)
@@ -13,7 +14,7 @@ export const deleteTenant = async (tenantId) => {
 
 export const updateTenant = async (id, tenant) => {
   try {
-    const response = await httpClient.put(`/tenant/${id}`, tenant)
+    const response = await httpClient.put(`/tenant/${id}`, normalizeTenantPayload(tenant))
     return response.data
   } catch (error) {
     console.error('Error updating tenant:', error.response?.data || error.message)

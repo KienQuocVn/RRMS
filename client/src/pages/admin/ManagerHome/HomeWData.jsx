@@ -12,6 +12,7 @@ import axios from 'axios'
 import { env } from '~/configs/environment'
 import Swal from 'sweetalert2'
 import ExportToExcel from './ExportToExcel' // Import component ExportToExcel
+import { getMotelById } from '~/apis/motelAPI'
 import {
   getRoomByMotelId,
   createRoom,
@@ -33,6 +34,7 @@ import {
   getAllMotelDevices,
   insertRoomDevice
 } from '~/apis/deviceAPT'
+import { isValidRouteParam } from '~/utils/apiAdapters'
 import RentRoomModal from '../NavContentAdmin/RentRoomModal'
 import ModalCreateContract from '../NavContentAdmin/ContractManage/ModalCreateContract'
 import ReserveAPlaceModal from './ReserveAPlace/ReserveAPlaceModal'
@@ -45,6 +47,7 @@ import ModalExtendContract from '../NavContentAdmin/ContractManage/ModalExtendCo
 import ModalListCar from './ManagerCar/ModalListCar'
 const HomeWData = ({ Motel }) => {
   const { motelId, roomId } = useParams()
+  const activeMotelId = isValidRouteParam(motelId) ? motelId : Motel?.[0]?.motelId
   const [rooms, setRooms] = useState([])
   // State quản lý trạng thái của checkbox
   const [motelServices, setMotelServices] = useState([])
@@ -61,7 +64,7 @@ const HomeWData = ({ Motel }) => {
     serviceDetails: []
   })
   const [formData, setFormData] = useState({
-    motelId: motelId ? motelId : Motel[0].motelId,
+    motelId: activeMotelId,
     deposit: null,
     debt: null,
     moveInDate: null,
@@ -590,14 +593,13 @@ const HomeWData = ({ Motel }) => {
   }
   const fetchRooms = async () => {
     try {
-      let dataRoom
+      if (!activeMotelId) {
+        setRooms([])
+        return
+      }
 
       // Lấy danh sách phòng dựa trên motelId
-      if (motelId) {
-        dataRoom = await getRoomByMotelId(motelId)
-      } else {
-        dataRoom = await getRoomByMotelId(Motel[0]?.motelId)
-      }
+      const dataRoom = await getRoomByMotelId(activeMotelId)
 
       if (dataRoom) {
         // Cập nhật state
@@ -610,16 +612,13 @@ const HomeWData = ({ Motel }) => {
 
   const fetchMotelServices = async (id) => {
     try {
-      const response = await axios.get(`${env.API_URL}/motels/get-motel-id?id=${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      if (response.data && response.data.code === 200 && response.data.result && response.data.result.motelServices) {
-        setMotelServices(response.data.result.motelServices)
-      } else {
+      if (!isValidRouteParam(id)) {
         setMotelServices([])
+        return
       }
+
+      const response = await getMotelById(id)
+      setMotelServices(response.data?.result?.motelServices || [])
     } catch (error) {
       console.error('Error fetching motel services:', error)
       setMotelServices([])
@@ -627,7 +626,12 @@ const HomeWData = ({ Motel }) => {
   }
   const fetchDevices = async () => {
     try {
-      const response = await getAllMotelDevices(motelId)
+      if (!activeMotelId) {
+        setdevice([])
+        return
+      }
+
+      const response = await getAllMotelDevices(activeMotelId)
       setdevice(response.result)
     } catch (error) {
       console.error('Error fetching device services:', error)
@@ -637,10 +641,10 @@ const HomeWData = ({ Motel }) => {
 
   // Call this function when opening the "Add Room" modal
   useEffect(() => {
-    if (motelId) {
-      fetchMotelServices(motelId)
+    if (activeMotelId) {
+      fetchMotelServices(activeMotelId)
     }
-  }, [motelId])
+  }, [activeMotelId])
 
   // Định dạng tiền tệ Việt Nam (VND)
   const currencyFormatter = (cell) => {
@@ -860,7 +864,8 @@ const HomeWData = ({ Motel }) => {
   }
 
   const handleDetailClick = (e, rowId) => {
-    window.open(`/quanlytro/${motelId ? motelId : Motel[0].motelId}/Chi-tiet-phong/${rowId}`, '_blank')
+    if (!activeMotelId) return
+    window.open(`/quanlytro/${activeMotelId}/Chi-tiet-phong/${rowId}`, '_blank')
   }
   const [deviceByRoom, setdeviceByRoom] = useState([])
   const fetchDeviceByRoom = async (roomId) => {
@@ -894,7 +899,7 @@ const HomeWData = ({ Motel }) => {
   }
 
   const handlePrintContract = () => {
-    const contractUrl = `/quanlytro/${motelId}/Contract-Preview/${contract.contractId}`
+    const contractUrl = activeMotelId ? `/quanlytro/${activeMotelId}/Contract-Preview/${contract.contractId}` : '#'
 
     // Mở cửa sổ mới để in nội dung hợp đồng
     const printWindow = window.open(contractUrl, '_blank')
@@ -910,7 +915,8 @@ const HomeWData = ({ Motel }) => {
     if (label === 'Đóng menu') {
       setShowMenu(null) // Đóng menu
     } else if (label === 'Chi tiết phòng') {
-      window.open(`/quanlytro/${motelId}/Chi-tiet-phong/${showMenu}`, '_blank')
+      if (!activeMotelId) return
+      window.open(`/quanlytro/${activeMotelId}/Chi-tiet-phong/${showMenu}`, '_blank')
     } else if (label === 'Cài đặt dịch vụ') {
       fetchDataServiceRooms(showMenu)
       fetchDataRooms(showMenu)
@@ -942,11 +948,12 @@ const HomeWData = ({ Motel }) => {
       setShowMenu(null) // Đóng menu
     } else if (label === 'Xem văn bản hợp đồng') {
       fetchDataRooms(showMenu)
-      window.open(`/quanlytro/${motelId}/Contract-Preview/${contract.contractId}`, '_blank')
+      if (!activeMotelId) return
+      window.open(`/quanlytro/${activeMotelId}/Contract-Preview/${contract.contractId}`, '_blank')
       setShowMenu(null) // Đóng menu
     } else if (label === 'Chia sẻ văn bản hợp đồng') {
       const baseUrl = 'http://localhost:5173'
-      const shareLink = `${baseUrl}/quanlytro/${motelId}/Contract-Preview/${contract.contractId}`
+      const shareLink = `${baseUrl}/quanlytro/${activeMotelId}/Contract-Preview/${contract.contractId}`
 
       // Sao chép liên kết vào clipboard
       navigator.clipboard
@@ -1435,7 +1442,7 @@ const HomeWData = ({ Motel }) => {
         throw new Error('Thiếu thông tin hợp đồng, dịch vụ hoặc thiết bị.')
       }
 
-      const response = await axios.post(`${env.API_URL}/invoices/create`, updatedInvoiceData, {
+      const response = await axios.post(`${env.API_URL}/api/v1/invoices/create`, updatedInvoiceData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -2005,7 +2012,7 @@ const HomeWData = ({ Motel }) => {
                 columns={visibleColumns} // Chỉ truyền các cột được chọn
                 data={filteredRooms}
                 options={options}
-                placeholder={<h1></h1>} // Sử dụng placeholder tùy chỉnh
+                placeholder="Không tìm thấy dữ liệu!"
               />
               {/* Thêm div cho hình ảnh và chữ nếu không có dữ liệu */}
               {rooms.length === 0 && (
@@ -3477,53 +3484,53 @@ const HomeWData = ({ Motel }) => {
       ) : (
         <> </>
       )}
-      <RentRoomModal modalOpen={modalOpen} toggleModal={toggleModal} motelId={motelId} />
+      <RentRoomModal modalOpen={modalOpen} toggleModal={toggleModal} motelId={activeMotelId} />
       <ModalEndContract
         modalOpen={modalOpenEndContract}
         toggleModal={toggleEndContract}
-        roomId={room ? room.roomId : <></>}
+        roomId={room?.roomId ?? null}
       />
 
       <ModalChangeRoom
         modalOpen={modalOpenChangeRoom}
         toggleModal={toggleChangeRoom}
-        roomId={room ? room.roomId : <></>}
+        roomId={room?.roomId ?? null}
       />
 
       <ModalExtendContract
         modalOpen={modalOpenExtendContract}
         toggleModal={toggleEntendContract}
-        roomId={room ? room.roomId : <></>}
+        roomId={room?.roomId ?? null}
       />
 
       <ReserveAPlaceModal
         modalOpen={modalOpenReAPlace}
         toggleModal={toggleModalReAPlace}
-        roomId={room ? room.roomId : <></>}
+        roomId={room?.roomId ?? null}
       />
       <ReserveAPlaceDetail
         modalOpen={detailOpenReAPlace}
         toggleModal={toggleDetailReAPlace}
-        roomId={room ? room.roomId : <></>}
+        roomId={room?.roomId ?? null}
       />
       <ModalCreateContract
         modalOpen={modalOpenContract}
         toggleModal={toggleModalContract}
-        motelId={motelId ? motelId : <></>}
-        roomId={room ? room.roomId : <></>}
+        motelId={activeMotelId ?? null}
+        roomId={room?.roomId ?? null}
       />
       <ModalReportContract
         modalOpen={modalOpenReportContract}
         toggleModal={toggleReportContract}
-        roomId={room ? room.roomId : <></>}
+        roomId={room?.roomId ?? null}
       />
       <ModalCancelReportContract
         modalOpen={modalOpenCancelReportContract}
         toggleModal={toggleCancelReportContract}
-        roomId={room ? room.roomId : <></>}
+        roomId={room?.roomId ?? null}
       />
 
-      <ModalListCar modalOpen={modalOpenCar} toggleModal={toggleCar} roomId={room ? room.roomId : <></>} />
+      <ModalListCar modalOpen={modalOpenCar} toggleModal={toggleCar} roomId={room?.roomId ?? null} />
     </div>
   )
 }

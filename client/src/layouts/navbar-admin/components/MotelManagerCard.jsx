@@ -15,7 +15,7 @@ const MotelManagerCard = ({ motel, motelCount, onOpenManager, onOpenAdd, setSele
         p: '8px 10px',
         border: '5px solid rgba(51,100,169,.22)',
         cursor: 'pointer',
-        minWidth: 160,
+        minWidth: 270,
         flex: 1,
       }}
     >
@@ -63,7 +63,7 @@ const MotelManagerCard = ({ motel, motelCount, onOpenManager, onOpenAdd, setSele
             fontSize: 18,
             color: '#20a9e7',
             whiteSpace: 'nowrap',
-            maxWidth: 150,
+            maxWidth: 270,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             fontWeight: 'bold',

@@ -54,8 +54,16 @@ export const useAuth = create<AuthState>()(
           }
         } catch (err: any) {
           console.error('Login error:', err);
+          const timeoutError = err?.code === 'ECONNABORTED';
+          const networkError = err?.message === 'Network Error';
           set({ 
-            error: err.response?.data?.message || 'Lỗi kết nối máy chủ', 
+            error:
+              err.response?.data?.message ||
+              (timeoutError
+                ? 'Kết nối máy chủ quá thời gian chờ. Kiểm tra EXPO_PUBLIC_API_URL và mạng nội bộ.'
+                : networkError
+                ? 'Không thể kết nối máy chủ. Kiểm tra backend đang chạy và thiết bị cùng mạng.'
+                : 'Lỗi kết nối máy chủ'),
             isLoading: false 
           });
           return false;

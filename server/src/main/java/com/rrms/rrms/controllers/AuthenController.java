@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@RequestMapping("/authen")
+@RequestMapping({"/authen", "/api/v1/authen"})
 @Slf4j
 public class AuthenController {
     private final IAccountService accountService;

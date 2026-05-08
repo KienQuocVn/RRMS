@@ -78,7 +78,7 @@ const MainManagement = ({ setIsAdmin, motels }) => {
                   justifyContent: 'space-between'
                 }}>
                 <i className="bi bi-bar-chart fs-3 text-warning me-2 fw-bold"></i>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start',textDecoration: 'none' }}>
                   <span>Tổng số tiền cọc giữ chổ phòng</span>
                   <b className="text-warning" style={{ fontSize: '30px' }}>
                     0đ

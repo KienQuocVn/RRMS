@@ -9,6 +9,7 @@ import * as XLSX from 'xlsx'
 import { createRoom } from '~/apis/roomAPI'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { isValidRouteParam } from '~/utils/apiAdapters'
 
 const ModelCreateHome = ({ username, MotelId }) => {
   const [selectedOption, setSelectedOption] = useState('')
@@ -61,7 +62,7 @@ const ModelCreateHome = ({ username, MotelId }) => {
   }, [])
 
   useEffect(() => {
-    if (MotelId !== 'Create') {
+    if (isValidRouteParam(MotelId) && MotelId !== 'Create') {
       fetchDataWhenEdit(MotelId)
     } else {
       setMotel({
@@ -122,7 +123,7 @@ const ModelCreateHome = ({ username, MotelId }) => {
 
   //nhan vao nut edit
   const fetchDataWhenEdit = async (id) => {
-    if (username) {
+    if (username && isValidRouteParam(id)) {
       try {
         const response = await getMotelById(id)
         setMotel({
@@ -144,7 +145,7 @@ const ModelCreateHome = ({ username, MotelId }) => {
         setSelectedDistrict(Number(district))
         setSelectedProvince(Number(province))
         const backdropElements = document.querySelectorAll('.modal-backdrop')
-        for (let index = 0; index < 2; index++) {
+        for (let index = 0; index < Math.min(2, backdropElements.length); index++) {
           backdropElements[index].remove()
         }
       } catch (error) {

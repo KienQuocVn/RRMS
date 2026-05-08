@@ -26,6 +26,7 @@ import { env } from '~/configs/environment'
 import Swal from 'sweetalert2'
 
 const AddLandlords = () => {
+  const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
   const [form, setForm] = useState({
     username: '',
     password: '',
@@ -55,22 +56,24 @@ const AddLandlords = () => {
     const fetchAccountData = async () => {
       if (accountId) {
         try {
-          const response = await axios.get(`${env.API_URL}/api-accounts/${accountId}`)
+          const response = await axios.get(`${env.API_URL}/api/v1/accounts/${accountId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
 
-          if (response.data) {
+          if (response.data?.result) {
             setForm({
-              username: response.data.username || '',
-              fullname: response.data.fullname || '',
-              phone: response.data.phone || '',
-              email: response.data.email || '',
-              avatar: response.data.avatar || '',
-              birthday: response.data.birthday ? response.data.birthday.split('T')[0] : '',
-              gender: response.data.gender || '',
-              cccd: response.data.cccd || '',
-              password: response.data.password,
+              username: response.data.result.username || '',
+              fullname: response.data.result.fullName || '',
+              phone: response.data.result.phone || '',
+              email: response.data.result.email || '',
+              avatar: response.data.result.avatar || '',
+              birthday: response.data.result.birthday ? response.data.result.birthday.split('T')[0] : '',
+              gender: response.data.result.gender || '',
+              cccd: response.data.result.cccd || '',
+              password: '',
               comfirmpassword: ''
             })
-            console.log('Username:', response.data.username)
+            console.log('Username:', response.data.result.username)
           } else {
             console.error('Unexpected response structure:', response.data)
           }
@@ -103,32 +106,27 @@ const AddLandlords = () => {
     }
 
     try {
-      const response = await axios.post(`${env.API_URL}/api-accounts/createHostAccount`, {
+      await axios.post(`${env.API_URL}/api/v1/accounts`, {
         username: form.username,
         password: form.password,
-        fullname: form.fullname,
+        fullName: form.fullname,
         phone: form.phone,
         email: form.email,
         avatar: form.avatar,
         birthday: form.birthday,
         gender: form.gender,
-        cccd: form.cccd
+        cccd: form.cccd,
+        role: ['HOST']
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       })
 
-      if (response.data.status) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Thành công',
-          text: 'Tạo tài khoản thành công!'
-        })
-        ClearInputFields()
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Thất bại',
-          text: response.data.message || 'Tạo tài khoản không thành công.'
-        })
-      }
+      Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: 'Tạo tài khoản thành công!'
+      })
+      ClearInputFields()
     } catch (error) {
       console.error('Error creating account:', error)
       Swal.fire({
@@ -158,32 +156,27 @@ const AddLandlords = () => {
     }
 
     try {
-      const response = await axios.put(`${env.API_URL}/api-accounts/updateAccount/${form.username}`, {
+      await axios.put(`${env.API_URL}/api/v1/accounts/${form.username}`, {
         username: form.username,
         password: form.password,
-        fullname: form.fullname,
+        fullName: form.fullname,
         phone: form.phone,
         email: form.email,
         avatar: form.avatar,
         birthday: form.birthday,
         gender: form.gender,
-        cccd: form.cccd
+        cccd: form.cccd,
+        role: ['HOST']
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       })
 
-      if (response.data.status) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Thành công',
-          text: 'Cập nhật tài khoản thành công!'
-        })
-        ClearInputFields()
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Thất bại',
-          text: response.data.message || 'Cập nhật tài khoản không thành công.'
-        })
-      }
+      Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: 'Cập nhật tài khoản thành công!'
+      })
+      ClearInputFields()
     } catch (error) {
       console.error('Error updating account:', error)
       Swal.fire({
@@ -217,22 +210,16 @@ const AddLandlords = () => {
     }
 
     try {
-      const response = await axios.delete(`${env.API_URL}/api-accounts/deleteAccount/${form.username}`)
+      await axios.delete(`${env.API_URL}/api/v1/accounts/${form.username}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
 
-      if (response.data.status) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Thành công',
-          text: 'Tài khoản đã được xóa thành công!'
-        })
-        ClearInputFields()
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Thất bại',
-          text: response.data.message || 'Không thể xóa tài khoản.'
-        })
-      }
+      Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: 'Tài khoản đã được xóa thành công!'
+      })
+      ClearInputFields()
     } catch (error) {
       console.error('Error deleting account:', error)
       Swal.fire({

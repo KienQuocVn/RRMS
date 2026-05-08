@@ -1,144 +1,209 @@
-import { useTranslation } from 'react-i18next'
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded'
+import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded'
+import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded'
+import SquareFootRoundedIcon from '@mui/icons-material/SquareFootRounded'
+import VerifiedRoundedIcon from '@mui/icons-material/VerifiedRounded'
+import { Avatar, Box, Button, Card, CardContent, CardMedia, Chip, Divider, Stack, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { Link } from 'react-router-dom'
 import { formatterAmount } from '~/utils/formatterAmount'
+import { getEffectivePrice, getMoveInLabel, getPromotionPercent, hasPromotionalPrice } from './rrmsData'
 
-const BookmarkIcon = () => (
-  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-  </svg>
+const cardShellSx = {
+  height: '100%',
+  borderRadius: 6,
+  border: '1px solid rgba(15, 23, 42, 0.06)',
+  boxShadow: '0 20px 55px rgba(15, 23, 42, 0.08)',
+  overflow: 'hidden',
+  textDecoration: 'none',
+  transition: 'transform 180ms ease, box-shadow 180ms ease',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: '0 24px 68px rgba(15, 23, 42, 0.12)'
+  }
+}
+
+const RoomMeta = ({ icon, text }) => (
+  <Stack direction="row" spacing={0.8} alignItems="center" sx={{ minWidth: 0, color: '#64748b' }}>
+    {icon}
+    <Typography sx={{ fontSize: 13.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{text}</Typography>
+  </Stack>
 )
 
-const UserIcon = () => (
-  <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-)
+const getPrimaryImage = (room) => room?.bulletinBoardImages?.[0]?.imageLink || '/room1.jpg'
+
+const getOwnerName = (room) => room?.account?.fullName || room?.account?.username || 'Chủ trọ xác thực'
+
+const getShortDescription = (room) => {
+  if (room?.description) return room.description
+  if (room?.address) return room.address
+  return 'Thông tin đang được cập nhật thêm từ bài đăng.'
+}
 
 export const NowRoomCard = ({ item }) => {
-  const { t } = useTranslation()
+  const room = item
+  const effectivePrice = getEffectivePrice(room)
+  const hasPromotion = hasPromotionalPrice(room)
 
   return (
-    <div className="grid-item" style={{ maxWidth: '280px' }}>
-      <article className="i-column" style={{ marginBottom: '14px' }}>
-        <Link to={`/detail/${item.bulletinBoardId}`} className="inner-item" style={{ textDecoration: 'none', color: 'black' }}>
-          <div style={{ position: 'relative', overflow: 'hidden', width: '100%', height: '150px', borderRadius: '8px' }}>
-            <img
-              alt={item.address}
-              src={item.bulletinBoardImages?.[0]?.imageLink || 'default_image_url.jpg'}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-              className="lazy"
+    <Card component={Link} to={`/detail/${room?.bulletinBoardId}`} elevation={0} sx={cardShellSx}>
+      <Box sx={{ position: 'relative' }}>
+        <CardMedia component="img" image={getPrimaryImage(room)} alt={room?.title || room?.address} sx={{ height: 240 }} />
+
+        <Stack direction="row" spacing={1} sx={{ position: 'absolute', top: 16, left: 16, right: 16, justifyContent: 'space-between' }}>
+          <Chip
+            label="Đề xuất nổi bật"
+            size="small"
+            sx={{
+              bgcolor: '#f97316',
+              color: '#fff',
+              fontWeight: 800,
+              boxShadow: '0 10px 24px rgba(249, 115, 22, 0.34)'
+            }}
+          />
+
+          <Chip
+            icon={<VerifiedRoundedIcon sx={{ color: '#fff !important' }} />}
+            label="Đang hiển thị"
+            size="small"
+            sx={{
+              bgcolor: 'rgba(15, 23, 42, 0.72)',
+              color: '#fff',
+              backdropFilter: 'blur(8px)'
+            }}
+          />
+        </Stack>
+      </Box>
+
+      <CardContent sx={{ p: 2.5 }}>
+        <Typography sx={{ minHeight: 56, fontSize: 21, fontWeight: 800, lineHeight: 1.32, color: '#0f172a' }}>
+          {room?.title || room?.address}
+        </Typography>
+
+        <Typography sx={{ mt: 1, minHeight: 52, color: '#475569', lineHeight: 1.7 }}>{getShortDescription(room)}</Typography>
+
+        <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1.5 }}>
+          <Chip
+            icon={<SquareFootRoundedIcon sx={{ color: '#0f766e !important' }} />}
+            label={`${room?.area || 0} m²`}
+            sx={{ bgcolor: alpha('#0f766e', 0.08), color: '#0f766e', fontWeight: 700 }}
+          />
+          <Chip
+            icon={<AccessTimeRoundedIcon sx={{ color: '#2563eb !important' }} />}
+            label={getMoveInLabel(room)}
+            sx={{ bgcolor: alpha('#2563eb', 0.08), color: '#2563eb', fontWeight: 700 }}
+          />
+          {hasPromotion ? (
+            <Chip
+              icon={<LocalOfferRoundedIcon sx={{ color: '#dc2626 !important' }} />}
+              label={`Giảm ${getPromotionPercent(room)}%`}
+              sx={{ bgcolor: alpha('#dc2626', 0.08), color: '#dc2626', fontWeight: 700 }}
             />
-            <div className="images-count">4</div>
-            <div className="bookmark-item bookmark">
-              <BookmarkIcon />
-            </div>
-          </div>
-          <div className="read">
-            <div className="title cut-text-2" style={{ fontSize: '14px', marginTop: 10 }}>
-              <span className="lable-now">{t('rrms.card.now')}</span> {item?.address}
-            </div>
-            <div className="address cut-text">
-              <span className="icon-user-small">
-                <UserIcon />
-              </span>
-              <strong style={{ textTransform: 'capitalize', paddingLeft: '5px' }}>{item.account.username}</strong>
-              <span className="zone" style={{ fontSize: '11px' }}>
-                {' '}
-                {item?.title}
-              </span>
-            </div>
-          </div>
-          <div className="info" style={{ flexDirection: 'row', justifyContent: 'space-between', display: 'flex', padding: '5px' }}>
-            <b className="text-danger">
-              {formatterAmount(item.rentPrice)} /{t('rrms.card.month')}
-            </b>
-            <div className="i area" style={{ justifyContent: 'center', alignItems: 'center', display: 'flex' }}>
-              <b>{item?.area}</b> m²
-            </div>
-          </div>
-        </Link>
-      </article>
-    </div>
+          ) : null}
+        </Stack>
+
+        <Divider sx={{ my: 2 }} />
+
+        <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+          <Box>
+            {hasPromotion ? (
+              <Typography sx={{ color: '#94a3b8', textDecoration: 'line-through', fontSize: 13 }}>{formatterAmount(room?.rentPrice || 0)}</Typography>
+            ) : null}
+            <Typography sx={{ color: '#ef4444', fontWeight: 900, fontSize: 22 }}>{formatterAmount(effectivePrice)}</Typography>
+            <Typography sx={{ color: '#64748b', fontSize: 13 }}>Giá thuê mỗi tháng</Typography>
+          </Box>
+
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+            <Avatar sx={{ bgcolor: '#0f766e', width: 38, height: 38 }}>{getOwnerName(room).charAt(0).toUpperCase()}</Avatar>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ fontWeight: 700, color: '#0f172a' }} noWrap>
+                {getOwnerName(room)}
+              </Typography>
+              <Typography sx={{ color: '#64748b', fontSize: 13 }} noWrap>
+                {room?.address}
+              </Typography>
+            </Box>
+          </Stack>
+        </Stack>
+      </CardContent>
+    </Card>
   )
 }
 
-const PinIcon = () => (
-  <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-    <circle cx="12" cy="10" r="3" />
-  </svg>
-)
-
-const PhoneIcon = () => (
-  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-  </svg>
-)
-
 export const LatestRoomCard = ({ room }) => {
-  const { t } = useTranslation()
+  const effectivePrice = getEffectivePrice(room)
+  const hasPromotion = hasPromotionalPrice(room)
 
   return (
-    <article className="item col-xs-12 col-md-12 col-lg-6">
-      <div className="inner-item flex">
-        <section className="list-img" style={{ width: '36%' }}>
-          <div style={{ position: 'relative', height: '100%' }}>
-            <Link
-              style={{ display: 'block', width: '100%', maxHeight: '205px', overflow: 'hidden', height: '100%' }}
-              title={room.title}
-              to={`/detail/${room.bulletinBoardId}`}
-              className="is-adss"
-            >
-              <img alt={room.title} src={room.bulletinBoardImages?.[0]?.imageLink || 'default_image_url.jpg'} className="lazy" />
-            </Link>
-            <div className="images-count">3</div>
-            <div className="bookmark-item bookmark">
-              <BookmarkIcon />
-            </div>
-          </div>
-        </section>
-        <section className="list-info" style={{ width: '64%' }}>
-          <div>
-            <div className="title">
-              <Link title={room.title} to={`/detail/${room.bulletinBoardId}`} className="cut-text-2" style={{ textDecoration: 'none', color: 'black' }}>
-                <span>{room.title}</span>
-              </Link>
-            </div>
-            <div className="adress cut-text">
-              <PinIcon /> {room.address}
-            </div>
-            <div className="mf">
-              <div className="i price">
-                <b className="text-danger">{formatterAmount(room.rentPrice)}</b>
-              </div>
-              <div className="i are">
-                <b> {room.area} m²</b>
-              </div>
-            </div>
-          </div>
-          <div className="author">
-            <div className="i info-author">
-              <img width="30px" src="/default-user.webp" alt="icon user" />
-              <div style={{ color: '#666', fontSize: '12px' }}>
-                <strong className="author-name" style={{ textTransform: 'capitalize' }}>
-                  {room.account.username}
-                </strong>
-                <div style={{ fontSize: '11px' }}>{t('rrms.card.dayAgo')}</div>
-              </div>
-            </div>
-            <div className="i info-author">
-              <Link rel="nofollow, noindex" to={`/detail/${room.bulletinBoardId}`} className="btn-quick-zalo" style={{ textDecoration: 'none' }}>
-                Zalo
-              </Link>
-              <span className="btn-quick-call">
-                <PhoneIcon />
-                <span>{t('rrms.card.viewPhone')}</span>
-              </span>
-            </div>
-          </div>
-        </section>
-      </div>
-    </article>
+    <Card elevation={0} sx={cardShellSx}>
+      <CardMedia component="img" image={getPrimaryImage(room)} alt={room?.title || room?.address} sx={{ height: 220 }} />
+
+      <CardContent sx={{ p: 2.5 }}>
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.25 }} useFlexGap flexWrap="wrap">
+          <Chip
+            size="small"
+            label="Tin mới"
+            sx={{
+              bgcolor: alpha('#0f766e', 0.09),
+              color: '#0f766e',
+              fontWeight: 700
+            }}
+          />
+          {hasPromotion ? (
+            <Chip
+              size="small"
+              label={`Ưu đãi ${getPromotionPercent(room)}%`}
+              sx={{
+                bgcolor: alpha('#dc2626', 0.08),
+                color: '#dc2626',
+                fontWeight: 700
+              }}
+            />
+          ) : null}
+        </Stack>
+
+        <Typography sx={{ minHeight: 54, fontSize: 20, fontWeight: 800, lineHeight: 1.35, color: '#0f172a' }}>
+          {room?.title || room?.address}
+        </Typography>
+
+        <Stack spacing={1.1} sx={{ mt: 1.4 }}>
+          <RoomMeta icon={<LocationOnRoundedIcon sx={{ fontSize: 17, color: '#0f766e' }} />} text={room?.address || 'Địa chỉ đang cập nhật'} />
+          <RoomMeta icon={<SquareFootRoundedIcon sx={{ fontSize: 17, color: '#2563eb' }} />} text={`${room?.area || 0} m²`} />
+          <RoomMeta icon={<AccessTimeRoundedIcon sx={{ fontSize: 17, color: '#f97316' }} />} text={getMoveInLabel(room)} />
+        </Stack>
+
+        <Divider sx={{ my: 2 }} />
+
+        <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+          <Box>
+            {hasPromotion ? (
+              <Typography sx={{ color: '#94a3b8', textDecoration: 'line-through', fontSize: 13 }}>{formatterAmount(room?.rentPrice || 0)}</Typography>
+            ) : null}
+            <Typography sx={{ fontSize: 22, fontWeight: 900, color: '#ef4444' }}>{formatterAmount(effectivePrice)}</Typography>
+            <Typography sx={{ color: '#64748b', fontSize: 13 }}>Thông tin giá và thời điểm vào ở</Typography>
+          </Box>
+
+          <Button
+            component={Link}
+            to={`/detail/${room?.bulletinBoardId}`}
+            variant="contained"
+            endIcon={<ArrowForwardRoundedIcon />}
+            sx={{
+              borderRadius: 999,
+              px: 2,
+              fontWeight: 800,
+              background: 'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)',
+              boxShadow: 'none',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)',
+                boxShadow: 'none'
+              }
+            }}>
+            Xem chi tiết
+          </Button>
+        </Stack>
+      </CardContent>
+    </Card>
   )
 }

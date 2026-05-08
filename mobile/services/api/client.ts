@@ -2,9 +2,17 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import { authStorage } from '../storage/auth.storage';
 
-// Cấu hình Base URL linh hoạt cho Android/iOS
-// IP 10.0.2.2 là địa chỉ của máy host trong Android Emulator
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:7000';
+const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL;
+const fallbackApiUrl =
+  Platform.OS === 'android' ? 'http://10.0.2.2:7000' : 'http://localhost:7000';
+const BASE_URL = configuredApiUrl?.trim() || fallbackApiUrl;
+
+if (!configuredApiUrl?.trim()) {
+  console.warn(
+    '[API] EXPO_PUBLIC_API_URL is missing. Fallback baseURL in use:',
+    BASE_URL
+  );
+}
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,

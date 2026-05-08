@@ -1,59 +1,66 @@
-import { Pagination } from '@mui/material'
-import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
-import LoadingPage from '~/components/LoadingPage/LoadingPage'
+import { Box, Grid, Pagination, Skeleton } from '@mui/material'
+import SectionHeading from './SectionHeading'
 import { LatestRoomCard } from './RoomCard'
 
-const SectionIcon = () => (
-  <div
-    style={{
-      width: 45,
-      height: 45,
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: '#ffebd5',
-      borderRadius: '100%',
-      marginRight: 10
-    }}
-  >
-    <img src="/feature_icon.webp" alt="icon lịch" style={{ width: 30, height: 30 }} />
-  </div>
+const LatestSkeleton = () => (
+  <Box
+    sx={{
+      height: '100%',
+      borderRadius: 6,
+      overflow: 'hidden',
+      border: '1px solid rgba(15, 23, 42, 0.06)',
+      boxShadow: '0 20px 55px rgba(15, 23, 42, 0.08)'
+    }}>
+    <Skeleton variant="rectangular" height={220} />
+    <Box sx={{ p: 2.5 }}>
+      <Skeleton variant="text" height={34} width="80%" />
+      <Skeleton variant="text" height={24} width="55%" />
+      <Skeleton variant="text" height={24} width="70%" />
+    </Box>
+  </Box>
 )
 
-const LatestRoomsSection = ({ items, totalCount, itemsPerPage, currentPage, onPageChange }) => {
-  const { t } = useTranslation()
-
+function LatestRoomsSection({ rooms, loading, currentPage, totalPages, onPageChange }) {
   return (
-    <section>
-      <div className="container section-posts">
-        <div className="header-item">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginLeft: -5 }}>
-              <SectionIcon />
-              <h2 className="title-section">
-                {t('rrms.latest.title')}
-                <div className="description">{t('rrms.latest.description')}</div>
-              </h2>
-            </div>
-            <div className="text-right" style={{ flex: 1, textAlign: 'right' }}>
-              <Link to="/thue-phong-tro-quan-1-id-760/ho-chi-minh-id-79">
-                <span>{t('rrms.latest.moreAtDistrict', { district: 'Quận 1' })}</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-        <div className="list-6 row">{items.length > 0 ? items.map((room, i) => <LatestRoomCard key={i} room={room} />) : <LoadingPage />}</div>
-      </div>
-      <Pagination
-        count={Math.ceil(totalCount / itemsPerPage)}
-        page={currentPage}
-        onChange={onPageChange}
-        variant="outlined"
-        color="primary"
-        sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}
+    <Box id="latest-rooms" sx={{ mt: 7 }}>
+      <SectionHeading
+        eyebrow="Room For Rent - Latest"
+        title="Phòng cho thuê mới nhất"
+        description="Danh sách cuối trang giữ vai trò như feed chính của RRMS, lấy trực tiếp từ API mới nhất và phân trang để dễ theo dõi."
       />
-    </section>
+
+      <Grid container spacing={3}>
+        {loading
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <Grid item xs={12} md={6} xl={4} key={index}>
+                <LatestSkeleton />
+              </Grid>
+            ))
+          : rooms.map((room) => (
+              <Grid item xs={12} md={6} xl={4} key={room.bulletinBoardId}>
+                <LatestRoomCard room={room} />
+              </Grid>
+            ))}
+      </Grid>
+
+      {!loading && totalPages > 1 ? (
+        <Pagination
+          count={totalPages}
+          page={currentPage}
+          onChange={(_, page) => onPageChange(page)}
+          color="primary"
+          shape="rounded"
+          sx={{
+            mt: 4,
+            display: 'flex',
+            justifyContent: 'center',
+            '& .MuiPaginationItem-root': {
+              fontWeight: 700
+            }
+          }}
+        />
+      ) : null}
+    </Box>
   )
 }
 

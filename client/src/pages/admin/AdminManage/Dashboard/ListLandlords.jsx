@@ -28,6 +28,7 @@ import InputAdornment from '@mui/material/InputAdornment'
 import { format } from 'date-fns'
 import axios from 'axios'
 import { env } from '~/configs/environment'
+import { unwrapPageItems } from '~/utils/apiAdapters'
 
 const ListLandlords = () => {
   const [page, setPage] = useState(0)
@@ -43,6 +44,7 @@ const ListLandlords = () => {
   const [search, setSearch] = useState('')
   const [noResults, setNoResults] = useState(false)
   const navigate = useNavigate()
+  const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
 
   const fetchAccounts = async (query) => {
     setLoading(true)
@@ -55,14 +57,16 @@ const ListLandlords = () => {
 
         // Thay vì gửi nhiều tham số trống, bạn chỉ định query tìm kiếm cho tất cả các trường cùng một lúc
         params.append('search', query) // gửi 1 tham số chung
-        url = `${env.API_URL}/api-accounts/search?${params.toString()}`
+        url = `${env.API_URL}/api/v1/accounts/search?${params.toString()}`
       } else {
-        url = `${env.API_URL}/api-accounts/by-host-role`
+        url = `${env.API_URL}/api/v1/accounts/by-host-role`
       }
 
-      const response = await axios.get(url)
-      if (response.data && response.data.status) {
-        setAccounts(response.data.data)
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (response.data?.result) {
+        setAccounts(unwrapPageItems(response))
       } else {
         setNoResults(true)
       }
@@ -239,7 +243,7 @@ const ListLandlords = () => {
               accounts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((account, index) => (
                 <TableRow key={account.id || index}>
                   <TableCell>{account.username}</TableCell>
-                  <TableCell>{account.fullname}</TableCell>
+                  <TableCell>{account.fullName}</TableCell>
                   <TableCell>{account.phone}</TableCell>
                   <TableCell>{account.email}</TableCell>
                   <TableCell>{account.cccd}</TableCell>

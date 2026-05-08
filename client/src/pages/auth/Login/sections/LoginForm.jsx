@@ -1,9 +1,12 @@
-import { Box, TextField, Button, Divider } from '@mui/material'
+import { useState } from 'react'
+import { Box, TextField, Button, Divider, IconButton, InputAdornment } from '@mui/material'
+import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import ValidCaptcha from '~/components/ValidCaptcha'
 
-const LoginForm = ({ phone, setPhone, password, setPassword, setValidCaptcha, handleSubmit }) => {
+const LoginForm = ({ phone, setPhone, password, setPassword, setValidCaptcha, captchaResetKey, handleSubmit }) => {
   const { t } = useTranslation()
+  const [showPassword, setShowPassword] = useState(false)
 
   return (
     <Box component="form" onSubmit={handleSubmit} noValidate>
@@ -36,10 +39,24 @@ const LoginForm = ({ phone, setPhone, password, setPassword, setValidCaptcha, ha
           fullWidth
           variant="outlined"
           placeholder={t('auth.login.passwordPlaceholder')}
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           inputProps={{ autoComplete: 'current-password' }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  edge="end"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  onClick={() => setShowPassword((previous) => !previous)}
+                  onMouseDown={(event) => event.preventDefault()}
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
           sx={{
             '& .MuiOutlinedInput-root': {
               borderRadius: 0,
@@ -70,7 +87,7 @@ const LoginForm = ({ phone, setPhone, password, setPassword, setValidCaptcha, ha
         {t('auth.login.submit')}
       </Button>
 
-      <ValidCaptcha setValidCaptcha={setValidCaptcha} />
+      <ValidCaptcha setValidCaptcha={setValidCaptcha} resetSignal={captchaResetKey} />
 
       <Divider sx={{ my: 1.5 }} />
     </Box>

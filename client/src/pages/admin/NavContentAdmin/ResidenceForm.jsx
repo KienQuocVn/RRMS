@@ -119,7 +119,7 @@ const ResidenceForm = () => {
           </Typography>
 
           <Typography variant="body1" sx={{ mt: 2 }}>
-            1. Họ, chữ đệm và tên: <strong>{tenant.fullname}</strong>
+            1. Họ, chữ đệm và tên: <strong>{tenant.fullName}</strong>
           </Typography>
           <Grid container spacing={2} sx={{ marginBottom: 2 }}>
             <Grid item xs={6}>

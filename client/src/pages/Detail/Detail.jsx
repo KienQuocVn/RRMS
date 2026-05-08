@@ -57,8 +57,13 @@ const Detail = ({ setIsAdmin }) => {
 
     try {
       const introspectResponse = await introspect();
-      const accountResponse = await getAccountByUsername(introspectResponse.data.issuer);
-      setAccount(accountResponse.data);
+      if (!introspectResponse?.issuer) {
+        setAccount(undefined);
+        return;
+      }
+
+      const accountResponse = await getAccountByUsername(introspectResponse.issuer);
+      setAccount(accountResponse ?? undefined);
     } catch {
       setAccount(undefined);
     }

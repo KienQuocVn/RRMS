@@ -28,19 +28,35 @@ export const useRegister = () => {
     const { username, phone, gmail, password, passwordConfirmation } = form
 
     if (!username || !phone || !gmail || !password || !passwordConfirmation) {
-      Swal.fire({ icon: 'warning', title: t('auth.register.alerts.warningTitle'), text: t('auth.register.alerts.missingFields') })
+      Swal.fire({
+        icon: 'warning',
+        title: t('auth.register.alerts.warningTitle'),
+        text: t('auth.register.alerts.missingFields')
+      })
       return false
     }
     if (!/^(0[3-9]{1}[0-9]{8})$/.test(phone)) {
-      Swal.fire({ icon: 'error', title: t('auth.register.alerts.errorTitle'), text: t('auth.register.alerts.invalidPhone') })
+      Swal.fire({
+        icon: 'error',
+        title: t('auth.register.alerts.errorTitle'),
+        text: t('auth.register.alerts.invalidPhone')
+      })
       return false
     }
     if (password.length < 8) {
-      Swal.fire({ icon: 'error', title: t('auth.register.alerts.errorTitle'), text: t('auth.register.alerts.passwordTooShort') })
+      Swal.fire({
+        icon: 'error',
+        title: t('auth.register.alerts.errorTitle'),
+        text: t('auth.register.alerts.passwordTooShort')
+      })
       return false
     }
     if (password !== passwordConfirmation) {
-      Swal.fire({ icon: 'error', title: t('auth.register.alerts.errorTitle'), text: t('auth.register.alerts.passwordMismatch') })
+      Swal.fire({
+        icon: 'error',
+        title: t('auth.register.alerts.errorTitle'),
+        text: t('auth.register.alerts.passwordMismatch')
+      })
       return false
     }
     return true
@@ -52,7 +68,7 @@ export const useRegister = () => {
 
     try {
       const { username, phone, gmail } = form
-      const response = await axios.post(`${env.API_URL}/authen/checkregister`, { username, phone, email: gmail })
+      const response = await axios.post(`${env.API_URL}/api/v1/authen/checkregister`, { username, phone, email: gmail })
       if (response.data.result) {
         requestEmailVerification()
       } else {
@@ -63,7 +79,11 @@ export const useRegister = () => {
         })
       }
     } catch {
-      Swal.fire({ icon: 'error', title: t('auth.register.alerts.errorTitle'), text: t('auth.register.alerts.checkInfoFailed') })
+      Swal.fire({
+        icon: 'error',
+        title: t('auth.register.alerts.errorTitle'),
+        text: t('auth.register.alerts.checkInfoFailed')
+      })
     }
   }
 
@@ -121,7 +141,7 @@ export const useRegister = () => {
     const { username, phone, gmail, password, userType } = form
     try {
       const response = await axios.post(
-        `${env.API_URL}/authen/register`,
+        `${env.API_URL}/api/v1/authen/register`,
         { username, phone, email: gmail, password, userType },
         { headers: { 'ngrok-skip-browser-warning': '69420' } }
       )

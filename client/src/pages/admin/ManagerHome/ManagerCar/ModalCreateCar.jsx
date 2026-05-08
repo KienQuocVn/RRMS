@@ -91,13 +91,13 @@ function ModalCreateCar({ open, onClose, roomId, carId }) {
     } else {
       try {
         if (roomId) {
-          if (carId === 'Create') {
-            setCar((prev) => ({
-              ...prev,
-              roomId: room.roomId
-            }))
+          const payload = {
+            ...car,
+            roomId: room.roomId
+          }
 
-            await createCar(car)
+          if (carId === 'Create') {
+            await createCar(payload)
 
             Swal.fire({
               icon: 'success',
@@ -110,12 +110,7 @@ function ModalCreateCar({ open, onClose, roomId, carId }) {
               window.location.reload() // Tải lại trang sau 1 giây
             }, 1000)
           } else {
-            setCar((prev) => ({
-              ...prev,
-              roomId: room.roomId
-            }))
-
-            await updateCar(carId, car)
+            await updateCar(carId, payload)
 
             Swal.fire({
               icon: 'success',
