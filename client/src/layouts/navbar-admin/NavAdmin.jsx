@@ -21,7 +21,7 @@ const NavAdmin = ({ setIsAdmin, isNavAdmin, setIsNavAdmin, motels, setmotels }) 
     } else if (isValidRouteParam(motelId)) {
       getMotelById(motelId)
         .then((res) => setMotel(res.data.result))
-        .catch((err) => console.error('KhÃ´ng thá»ƒ láº¥y thÃ´ng tin motel:', err))
+        .catch((err) => console.error('Không thể lấy thông tin motel:', err))
     } else if (motels?.length > 0) {
       setMotel(motels[0])
     }
@@ -33,7 +33,7 @@ const NavAdmin = ({ setIsAdmin, isNavAdmin, setIsNavAdmin, motels, setmotels }) 
     if (!token) {
       sessionStorage.removeItem('user')
       navigate('/login')
-      Swal.fire({ icon: 'warning', title: 'ThÃ´ng bÃ¡o', text: 'KhÃ´ng tÃ¬m tháº¥y token, vui lÃ²ng Ä‘Äƒng nháº­p láº¡i.' })
+      Swal.fire({ icon: 'warning', title: 'Thông báo', text: 'Không tìm thấy token, vui lòng đăng nhập lại.' })
       return
     }
 
@@ -41,19 +41,19 @@ const NavAdmin = ({ setIsAdmin, isNavAdmin, setIsNavAdmin, motels, setmotels }) 
       await logoutRequest(token)
       sessionStorage.removeItem('user')
       navigate('/login')
-      Swal.fire({ icon: 'success', title: 'ThÃ nh cÃ´ng', text: 'ÄÄƒng xuáº¥t thÃ nh cÃ´ng!' })
+      Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đăng xuất thành công!' })
     } catch (error) {
       if (error?.response?.status === 401) {
         sessionStorage.removeItem('user')
         navigate('/login')
-        Swal.fire({ icon: 'success', title: 'ThÃ nh cÃ´ng', text: 'ÄÄƒng xuáº¥t thÃ nh cÃ´ng!' })
+        Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đăng xuất thành công!' })
         return
       }
 
       Swal.fire({
         icon: 'error',
-        title: 'ÄÄƒng xuáº¥t tháº¥t báº¡i',
-        text: error?.response?.data?.message || 'ÄÃ£ xáº£y ra lá»—i khi thá»±c hiá»‡n Ä‘Äƒng xuáº¥t.'
+        title: 'Đăng xuất thất bại',
+        text: error?.response?.data?.message || 'Đã xảy ra lỗi khi thực hiện đăng xuất.'
       })
     }
   }
@@ -79,11 +79,11 @@ const NavAdmin = ({ setIsAdmin, isNavAdmin, setIsNavAdmin, motels, setmotels }) 
           {/* Logo + back arrow */}
           <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
             <Box component="span" onClick={() => setIsAdmin(false)} sx={{ mr: 1, color: '#fff', cursor: 'pointer' }}>
-              â†
+              ←
             </Box>
             <Box
               component="img"
-              src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Fbg2.png?alt=media&token=568627e1-bedb-4239-84f7-a67076d52af4"
+              src="/bg2.png"
               sx={{ width: 110, height: 54 }}
             />
           </Link>

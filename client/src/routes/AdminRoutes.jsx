@@ -4,7 +4,7 @@ import ProtectedRoute from '../components/ProtectedRoute'
 
 const AdminStatis = lazy(() => import('../pages/admin/statistical'))
 const DetailRoom = lazy(() => import('../pages/admin/ManagerHome/DetailRoom/DetailRoom'))
-const MainManagement = lazy(() => import('../pages/admin/ManagerHome/MainManagement'))
+const DashboardIndex = lazy(() => import('../pages/admin/ManagerHome/DashboardIndex'))
 const ManagerMyAccount = lazy(() => import('../pages/admin/ManagerMyAccount/ManagerMyAccount'))
 const ManagerCompanyAT = lazy(() => import('../pages/admin/ManagerCompanyAT/ManagerCompanyAT'))
 const ManagerSettings = lazy(() => import('../pages/admin/ManagerSettings/ManagerSettings'))
@@ -38,7 +38,7 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <MainManagement
+            <DashboardIndex
               motels={motels}
               setmotels={setMotels}
               setIsAdmin={setIsAdmin}
@@ -52,7 +52,7 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro/:motelId"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <MainManagement
+            <DashboardIndex
               motels={motels}
               setmotels={setMotels}
               setIsAdmin={setIsAdmin}

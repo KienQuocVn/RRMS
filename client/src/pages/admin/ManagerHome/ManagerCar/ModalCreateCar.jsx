@@ -1,14 +1,31 @@
-import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import { useState, useEffect } from 'react'
-import { getRoomById } from '~/apis/roomAPI'
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  Box,
+  Typography,
+  Avatar,
+  IconButton,
+  Divider,
+  Paper
+} from '@mui/material'
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import Swal from 'sweetalert2'
+import { getRoomById } from '~/apis/roomAPI'
 import { createCar, getCarByCarId, updateCar } from '~/apis/carAPI'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { storage } from '~/configs/firebaseConfig' // Đường dẫn đến file firebaseConfig.js
+import { storage } from '~/configs/firebaseConfig'
 
 function ModalCreateCar({ open, onClose, roomId, carId }) {
-  const [room, setRoom] = useState({})
+  const [room, setRoom] = useState(null)
   const [selectedImage, setSelectedImage] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState({})
 
   const [car, setCar] = useState({
     name: '',
@@ -17,314 +34,216 @@ function ModalCreateCar({ open, onClose, roomId, carId }) {
     roomId: roomId
   })
 
-  // Xử lý thay đổi input
+  // Handle Input
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    setCar((prev) => ({
-      ...prev,
-      [name]: value // Cập nhật giá trị tương ứng với name của input
-    }))
+    setCar((prev) => ({ ...prev, [name]: value }))
+    // Clear error
+    if (value.trim() !== '') {
+      setErrors((prev) => ({ ...prev, [name]: false }))
+    }
   }
 
+  // Handle Image Upload
   const handleImageChange = async (event) => {
     const file = event.target.files[0]
-
     if (file) {
-      // Tạo tham chiếu đến Firebase Storage
-      const storageRef = ref(storage, `cars/${file.name}`)
-
+      setLoading(true)
+      const storageRef = ref(storage, `cars/${Date.now()}_${file.name}`)
       try {
-        // Upload file lên Firebase Storage
         const snapshot = await uploadBytes(storageRef, file)
-
-        // Lấy URL của file vừa upload
         const downloadURL = await getDownloadURL(snapshot.ref)
-
-        // Cập nhật URL vào state
         setSelectedImage(downloadURL)
-        setCar((prev) => ({
-          ...prev,
-          image: downloadURL // Lưu URL ảnh vào đối tượng car
-        }))
-
-        console.log('Hình ảnh đã tải lên thành công:', downloadURL)
+        setCar((prev) => ({ ...prev, image: downloadURL }))
       } catch (error) {
         console.error('Lỗi khi tải lên hình ảnh:', error)
+        Swal.fire({ icon: 'error', title: 'Lỗi upload ảnh!', text: 'Vui lòng thử lại.' })
+      } finally {
+        setLoading(false)
       }
     }
   }
 
-  const fetchDataRoom = async (roomId) => {
-    if (roomId) {
-      try {
-        const response = await getRoomById(roomId) // Lấy dữ liệu phòng từ API
-        if (response) {
-          setRoom(response)
-        }
-      } catch (error) {
-        console.log(error)
-      }
+  const fetchDataRoom = async (id) => {
+    try {
+      const response = await getRoomById(id)
+      if (response) setRoom(response)
+    } catch (error) {
+      console.error(error)
     }
   }
 
-  const fetchDataCar = async (carId) => {
-    if (carId) {
-      try {
-        const response = await getCarByCarId(carId) // Lấy dữ liệu phòng từ API
-        console.log(response)
-
-        if (response) {
-          setCar(response.data)
-          setSelectedImage(response.data.image)
-        }
-      } catch (error) {
-        console.log(error)
+  const fetchDataCar = async (id) => {
+    try {
+      const response = await getCarByCarId(id)
+      if (response?.data) {
+        setCar(response.data)
+        setSelectedImage(response.data.image)
       }
+    } catch (error) {
+      console.error(error)
     }
   }
 
   const handleSubmit = async () => {
-    const form = document.getElementById('add-car-form')
+    // Validate
+    const newErrors = {
+      name: car.name.trim() === '',
+      number: car.number.trim() === ''
+    }
+    setErrors(newErrors)
 
-    if (!form.checkValidity()) {
-      form.classList.add('was-validated')
-    } else {
-      try {
-        if (roomId) {
-          const payload = {
-            ...car,
-            roomId: room.roomId
-          }
+    if (newErrors.name || newErrors.number) {
+      return
+    }
 
-          if (carId === 'Create') {
-            await createCar(payload)
+    try {
+      if (roomId) {
+        const payload = { ...car, roomId: room.roomId }
 
-            Swal.fire({
-              icon: 'success',
-              title: 'Tạo thành công!',
-              text: 'Bạn đã thêm thông tin xe thành công.',
-              confirmButtonText: 'Đóng'
-            })
-
-            setTimeout(() => {
-              window.location.reload() // Tải lại trang sau 1 giây
-            }, 1000)
-          } else {
-            await updateCar(carId, payload)
-
-            Swal.fire({
-              icon: 'success',
-              title: 'update thành công!',
-              text: 'Bạn đã update thông tin xe thành công.',
-              confirmButtonText: 'Đóng'
-            })
-
-            setTimeout(() => {
-              window.location.reload() // Tải lại trang sau 1 giây
-            }, 1000)
-          }
+        if (carId === 'Create') {
+          await createCar(payload)
+          Swal.fire({
+            icon: 'success',
+            title: 'Tạo thành công!',
+            text: 'Bạn đã thêm thông tin xe thành công.',
+            confirmButtonText: 'Đóng'
+          })
+        } else {
+          await updateCar(carId, payload)
+          Swal.fire({
+            icon: 'success',
+            title: 'Cập nhật thành công!',
+            text: 'Bạn đã cập nhật thông tin xe thành công.',
+            confirmButtonText: 'Đóng'
+          })
         }
-      } catch (error) {
-        console.log(error)
-
-        Swal.fire({
-          icon: 'error',
-          title: 'Có lỗi xảy ra!',
-          text: 'Không thể thêm thông tin xe, vui lòng thử lại sau.',
-          confirmButtonText: 'Đóng'
-        })
+        onClose()
       }
+    } catch (error) {
+      console.error(error)
+      Swal.fire({
+        icon: 'error',
+        title: 'Có lỗi xảy ra!',
+        text: 'Không thể xử lý, vui lòng thử lại sau.',
+        confirmButtonText: 'Đóng'
+      })
     }
   }
 
   useEffect(() => {
-    if (roomId) {
-      fetchDataRoom(roomId)
+    if (open) {
+      if (roomId) fetchDataRoom(roomId)
+      if (carId !== 'Create' && carId) {
+        fetchDataCar(carId)
+      } else {
+        setCar({ name: '', number: '', image: '', roomId: roomId })
+        setSelectedImage(null)
+        setErrors({})
+      }
     }
-    if (carId !== 'Create') {
-      fetchDataCar(carId)
-    } else {
-      setCar({
-        name: '',
-        number: '',
-        image: '',
-        roomId: roomId
-      })
-      setSelectedImage(null)
-    }
-    console.log(carId)
-  }, [roomId, carId])
+  }, [roomId, carId, open])
 
   return (
-    <div>
-      {room ? (
-        <>
-          <Modal isOpen={open} toggle={onClose}>
-            <ModalHeader toggle={onClose}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <div
-                  style={{
-                    marginRight: '15px',
-                    outline: '0',
-                    boxShadow: 'rgb(48 120 158 / 15%) 0px 0px 0px 0.25rem',
-                    opacity: '1',
-                    borderRadius: '100%',
-                    width: '36px',
-                    height: '36px',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    display: 'flex',
-                    backgroundColor: 'rgb(32, 169, 231)'
-                  }}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="feather feather-users">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                </div>
-                <h5 style={{ marginLeft: '10px' }}>Thêm thông tin xe - {room ? room.name : <>Không có</>}</h5>
-              </div>
-            </ModalHeader>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pb: 1 }}>
+        <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
+          <DirectionsCarIcon />
+        </Avatar>
+        <Typography variant="h6" fontWeight="bold">
+          {carId === 'Create' ? 'Thêm thông tin xe' : 'Cập nhật thông tin xe'} -{' '}
+          {room ? room.name : 'Đang tải...'}
+        </Typography>
+      </DialogTitle>
+      <Divider />
 
-            <ModalBody>
-              <form method="POST" className="needs-validation" id="add-car-form" noValidate>
-                <div className="row g-2">
-                  <div className="col-12 mt-2">
-                    <div className="form-floating">
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="name"
-                        id="car_name"
-                        placeholder="Nhập tên loại xe"
-                        value={car.name} // Liên kết với state
-                        onChange={handleInputChange} // Lắng nghe thay đổi
-                        required
-                      />
-                      <label htmlFor="car_name">
-                        Tên loại xe <span style={{ color: 'red' }}>*</span>
-                      </label>
-                      <div className="invalid-feedback">Vui lòng nhập tên loại xe</div>
-                    </div>
-                  </div>
+      <DialogContent sx={{ mt: 1 }}>
+        <Box component="form" noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          <TextField
+            fullWidth
+            label="Tên loại xe (vd: Honda Vision)"
+            name="name"
+            value={car.name}
+            onChange={handleInputChange}
+            error={errors.name}
+            helperText={errors.name ? 'Vui lòng nhập tên loại xe' : ''}
+            required
+            variant="outlined"
+          />
 
-                  <div className="col-12 mt-2">
-                    <div className="form-floating">
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="number"
-                        id="car_number_plate"
-                        placeholder="Nhập biển số xe"
-                        value={car.number} // Liên kết với state
-                        onChange={handleInputChange} // Lắng nghe thay đổi
-                        required
-                      />
-                      <label htmlFor="car_number_plate">
-                        Biển số xe <span style={{ color: 'red' }}>*</span>
-                      </label>
-                      <div className="invalid-feedback">Vui lòng nhập biển số xe</div>
-                    </div>
-                  </div>
+          <TextField
+            fullWidth
+            label="Biển số xe"
+            name="number"
+            value={car.number}
+            onChange={handleInputChange}
+            error={errors.number}
+            helperText={errors.number ? 'Vui lòng nhập biển số xe' : ''}
+            required
+            variant="outlined"
+          />
 
-                  <div className="col-12">
-                    <div className="title-item-small">
-                      <b>Hình ảnh</b>
-                      <i className="des">Hình ảnh</i>
-                    </div>
-                  </div>
-
-                  <div id="car-image" className="image-upload-simple">
-                    <input
-                      type="file"
-                      style={{ display: 'none' }}
-                      name="images"
-                      id="imageInput"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                    />
-                    <div className="container-upload" style={{ backgroundColor: '#eee' }}>
-                      <div
-                        className="placeholder __add-more-imge"
-                        style={{
-                          display: 'grid',
-                          cursor: 'pointer',
-                          width: '100%',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          height: '100%',
-                          margin: '-10px',
-                          backgroundColor: '#eee'
-                        }}
-                        onClick={() => document.getElementById('imageInput').click()}>
-                        {selectedImage ? (
-                          <img
-                            src={selectedImage}
-                            alt="Selected"
-                            style={{
-                              maxWidth: '100%',
-                              maxHeight: '100%',
-                              objectFit: 'cover',
-                              borderRadius: '8px'
-                            }}
-                          />
-                        ) : (
-                          <>
-                            <div className="icon-upload" style={{ margin: 'auto' }}>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="30"
-                                height="30"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="feather feather-upload-cloud">
-                                <polyline points="16 16 12 12 8 16"></polyline>
-                                <line x1="12" y1="12" x2="12" y2="21"></line>
-                                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
-                                <polyline points="16 16 12 12 8 16"></polyline>
-                              </svg>
-                            </div>
-                            <label style={{ textDecoration: 'underline', color: 'black' }} htmlFor="imageInput">
-                              Chọn tối đa 1 ảnh
-                            </label>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </ModalBody>
-
-            <ModalFooter>
-              <button onClick={handleSubmit} type="button" className="btn btn-info waves-effect text-white">
-                Tạo mới
-              </button>
-              <button onClick={onClose} className="btn btn-danger">
-                Hủy
-              </button>
-            </ModalFooter>
-          </Modal>
-        </>
-      ) : (
-        <></>
-      )}
-    </div>
+          <Box>
+            <Typography variant="subtitle2" fontWeight="600" mb={1}>
+              Hình ảnh xe (Tùy chọn)
+            </Typography>
+            <input
+              type="file"
+              style={{ display: 'none' }}
+              id="car-image-upload"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+            <label htmlFor="car-image-upload" style={{ width: '100%', display: 'block', cursor: 'pointer' }}>
+              <Paper
+                variant="outlined"
+                sx={{
+                  height: 180,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'grey.50',
+                  borderStyle: 'dashed',
+                  borderWidth: 2,
+                  borderColor: 'grey.300',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&:hover': {
+                    bgcolor: 'grey.100',
+                    borderColor: 'primary.main'
+                  }
+                }}>
+                {loading ? (
+                  <Typography color="text.secondary">Đang tải ảnh lên...</Typography>
+                ) : selectedImage ? (
+                  <Box
+                    component="img"
+                    src={selectedImage}
+                    alt="Car"
+                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <>
+                    <CloudUploadIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
+                    <Typography color="text.secondary">Nhấn để chọn 1 ảnh</Typography>
+                  </>
+                )}
+              </Paper>
+            </label>
+          </Box>
+        </Box>
+      </DialogContent>
+      <Divider />
+      <DialogActions sx={{ p: 2 }}>
+        <Button onClick={onClose} color="inherit" variant="text">
+          Hủy
+        </Button>
+        <Button onClick={handleSubmit} variant="contained" color="primary" disabled={loading}>
+          {carId === 'Create' ? 'Thêm mới' : 'Lưu cập nhật'}
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
 }
 

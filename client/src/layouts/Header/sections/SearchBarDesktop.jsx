@@ -115,7 +115,7 @@ export default function SearchBarDesktop({ onSearchKeywordChange }) {
         >
           <Box
             component="img"
-            src="../../../../public/RRMS.png"
+            src="/RRMS.png"
             alt={t('header.search.logoAlt')}
             sx={{ width: '100%', height: 34, objectFit: 'contain', objectPosition: 'left center' }}
           />

@@ -908,7 +908,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
         const element = document.createElement('div')
         element.innerHTML = `
           <div class="icon-first" style="background-color: #ED6004;">
-            <img width="30px" src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Froom.png?alt=media&token=9f1a69c1-ce2e-4586-ba90-94db53443d49">
+            <img width="30px" src="/room.png">
           </div>
         `
         // element.addEventListener('click', (e) => handleDetailClick(e, rowId))
@@ -1190,7 +1190,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
                                   ) : (
                                     <img
                                       width="20px"
-                                      src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Froom.png?alt=media&token=9f1a69c1-ce2e-4586-ba90-94db53443d49"
+                                      src="/room.png"
                                       alt=""
                                     />
                                   )}

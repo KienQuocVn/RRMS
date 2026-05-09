@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Box } from '@mui/material'
 import Swal from 'sweetalert2'
 import { deleteMotel, getMotelById } from '~/apis/motelAPI'
-import ModalCreateHome from '~/pages/admin/ManagerHome/ModelCreateHome'
+import ModalCreateMotel from '~/pages/admin/ManagerHome/ModalCreateMotel'
 import { isValidRouteParam } from '~/utils/apiAdapters'
 import MotelManagerCard from './components/MotelManagerCard'
 import MotelListModal from './components/MotelListModal'
@@ -88,7 +88,7 @@ const NavWData = ({ motels }) => {
       />
 
       {/* Create/Edit motel modal */}
-      <ModalCreateHome
+      <ModalCreateMotel
         username={username}
         MotelId={selectedMotelId}
         open={addOpen}

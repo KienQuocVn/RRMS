@@ -1144,7 +1144,7 @@ const HomeWData = ({ Motel }) => {
         const element = document.createElement('div')
         element.innerHTML = `
           <div class="icon-first" style="background-color: #ED6004;">
-            <img width="30px" src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Froom.png?alt=media&token=9f1a69c1-ce2e-4586-ba90-94db53443d49">
+            <img width="30px" src="/room.png">
           </div>
         `
         element.addEventListener('click', (e) => handleDetailClick(e, rowId))
@@ -1585,7 +1585,7 @@ const HomeWData = ({ Motel }) => {
                     <span className="icon-home">
                       <img
                         width="36px"
-                        src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Ficonadminql1.png?alt=media&token=283e596c-984a-495d-af79-ace3366b8403"
+                        src="/icon/iconadminql1.png"
                       />
                     </span>
                     <div>
@@ -1621,7 +1621,7 @@ const HomeWData = ({ Motel }) => {
                     <span className="icon-home">
                       <img
                         width="36px"
-                        src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Ficonadminql2.png?alt=media&token=f6f1cf18-4b2d-4d0d-bf44-aadc183fb3d3"
+                        src="/icon/iconadminql2.png"
                       />
                     </span>
                     <div>
@@ -1659,7 +1659,7 @@ const HomeWData = ({ Motel }) => {
                     <span className="icon-home">
                       <img
                         width="36px"
-                        src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Ficonadminql3.png?alt=media&token=254c3d4e-c118-4538-83ad-4270f1c823be"
+                        src="/icon/iconadminql3.png"
                       />
                     </span>
                     <div>
@@ -1697,7 +1697,7 @@ const HomeWData = ({ Motel }) => {
                     <span className="icon-home">
                       <img
                         width="36px"
-                        src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Ficonadminql4.png?alt=media&token=de3e82c1-407a-4b18-81f7-db64230d2f0f"
+                        src="/icon/iconadminql4.png"
                       />
                     </span>
                     <div>
@@ -1740,7 +1740,7 @@ const HomeWData = ({ Motel }) => {
                   <img
                     width="50px"
                     height="50px"
-                    src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Ficonadminql5.png?alt=media&token=4f52c0c9-ed2e-478f-911b-67df29e7208f"
+                    src="/icon/iconadminql5.png"
                   />
                 </Link>
                 <button className="add-round" data-bs-toggle="modal" data-bs-target="#addRoom">
@@ -2018,7 +2018,7 @@ const HomeWData = ({ Motel }) => {
               {rooms.length === 0 && (
                 <div className="custom-placeholder">
                   <img
-                    src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Fempty-box-4085812-3385481.webp?alt=media&token=eaf37b59-00e3-4d16-8463-5441f54fb60e"
+                    src="/empty-box.webp"
                     alt="Không có dữ liệu"
                     className="placeholder-image"
                   />

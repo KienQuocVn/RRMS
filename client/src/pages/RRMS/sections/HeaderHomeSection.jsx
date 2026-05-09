@@ -192,23 +192,27 @@ function HeaderHomeSection({ filters, onFiltersChange, onSearch, searchOptions, 
       />
 
       <Container maxWidth="xl" sx={{ position: 'relative', py: { xs: 7, md: 10 } }}>
-        <Grid container spacing={4} alignItems="center">
-          <Grid item xs={12} lg={7}>
-            <Chip
-              icon={<AutoAwesomeRoundedIcon sx={{ color: '#0f172a !important' }} />}
-              label="Nền tảng tìm phòng trọ, căn hộ mini và ký túc xá"
-              sx={{
-                mb: 2.5,
-                bgcolor: '#fef3c7',
-                color: '#0f172a',
-                fontWeight: 800
-              }}
-            />
+        <Grid container spacing={4} justifyContent="center">
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Chip
+                icon={<AutoAwesomeRoundedIcon sx={{ color: '#0f172a !important' }} />}
+                label="Nền tảng tìm phòng trọ, căn hộ mini và ký túc xá"
+                sx={{
+                  mb: 2.5,
+                  bgcolor: '#fef3c7',
+                  color: '#0f172a',
+                  fontWeight: 800
+                }}
+              />
+            </Box>
 
             <Typography
               variant="h2"
               sx={{
                 maxWidth: 760,
+                mx: 'auto',
+                textAlign: 'center',
                 fontSize: { xs: '2.3rem', md: '4rem' },
                 fontWeight: 900,
                 lineHeight: 1.05,
@@ -218,7 +222,7 @@ function HeaderHomeSection({ filters, onFiltersChange, onSearch, searchOptions, 
               Khám phá phòng cho thuê đúng khu vực, đúng mức giá và dễ ra quyết định hơn.
             </Typography>
 
-            <Typography sx={{ mt: 2, maxWidth: 720, color: 'rgba(255,255,255,0.84)', fontSize: { xs: 15, md: 17 }, lineHeight: 1.8 }}>
+            <Typography sx={{ mt: 2, maxWidth: 720, mx: 'auto', textAlign: 'center', color: 'rgba(255,255,255,0.84)', fontSize: { xs: 15, md: 17 }, lineHeight: 1.8 }}>
               Giao diện mới chia nhỏ theo từng section rõ ràng để người dùng tìm nhanh hơn, đồng thời giúp đội ngũ dễ quản lý và mở rộng sau này.
             </Typography>
 
@@ -226,6 +230,8 @@ function HeaderHomeSection({ filters, onFiltersChange, onSearch, searchOptions, 
               elevation={0}
               sx={{
                 mt: 3.5,
+                mx: 'auto',
+                maxWidth: 900,
                 p: { xs: 2, md: 2.25 },
                 borderRadius: 5,
                 bgcolor: 'rgba(255,255,255,0.14)',
@@ -238,19 +244,11 @@ function HeaderHomeSection({ filters, onFiltersChange, onSearch, searchOptions, 
                   display: 'grid',
                   gridTemplateColumns: {
                     xs: '1fr',
-                    lg: '190px minmax(0, 1.4fr) 130px 130px 140px 148px'
+                    lg: '1fr 148px'
                   },
                   gap: 1.25
                 }}
               >
-                <SearchActionButton
-                  title="Quận huyện"
-                  value={filters?.district || 'Toàn khu vực'}
-                  icon={<LocationOnRoundedIcon />}
-                  onClick={() => setDistrictDialogOpen(true)}
-                  wide
-                />
-
                 <Autocomplete
                   freeSolo
                   options={searchOptions}
@@ -271,7 +269,7 @@ function HeaderHomeSection({ filters, onFiltersChange, onSearch, searchOptions, 
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      placeholder="Nhập địa điểm nổi tiếng, tên đường hoặc nội dung cần tìm"
+                      placeholder="Nhập địa điểm, tên đường hoặc nội dung cần tìm..."
                       onKeyDown={(event) => {
                         if (event.key === 'Enter') {
                           event.preventDefault()
@@ -291,6 +289,42 @@ function HeaderHomeSection({ filters, onFiltersChange, onSearch, searchOptions, 
                       }}
                     />
                   )}
+                />
+
+                <Button
+                  variant="contained"
+                  onClick={handleSearchSubmit}
+                  sx={{
+                    minHeight: 58,
+                    borderRadius: 3,
+                    fontWeight: 800,
+                    fontSize: 18,
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #fb8c00 100%)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #ea580c 0%, #f59e0b 100%)'
+                    }
+                  }}
+                >
+                  Tìm kiếm
+                </Button>
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: '1fr 1fr',
+                    lg: '1fr 1fr 1fr 1fr'
+                  },
+                  gap: 1.25,
+                  mt: 1.25
+                }}
+              >
+                <SearchActionButton
+                  title="Quận huyện"
+                  value={filters?.district || 'Toàn khu vực'}
+                  icon={<LocationOnRoundedIcon />}
+                  onClick={() => setDistrictDialogOpen(true)}
                 />
 
                 <SearchActionButton title="Mức giá" value={priceLabel} onClick={(event) => setPriceAnchorEl(event.currentTarget)} />
@@ -317,23 +351,6 @@ function HeaderHomeSection({ filters, onFiltersChange, onSearch, searchOptions, 
                   }}
                 >
                   {getPropertyTypeLabel(filters?.rentalCategory)}
-                </Button>
-
-                <Button
-                  variant="contained"
-                  onClick={handleSearchSubmit}
-                  sx={{
-                    minHeight: 58,
-                    borderRadius: 3,
-                    fontWeight: 800,
-                    fontSize: 18,
-                    background: 'linear-gradient(135deg, #f59e0b 0%, #fb8c00 100%)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #ea580c 0%, #f59e0b 100%)'
-                    }
-                  }}
-                >
-                  Tìm kiếm
                 </Button>
               </Box>
             </Paper>
