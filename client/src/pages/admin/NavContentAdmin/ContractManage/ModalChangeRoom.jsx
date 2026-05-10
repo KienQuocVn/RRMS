@@ -1,308 +1,273 @@
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
-import { useState, useEffect } from 'react'
-import { getRoomById, getRoomByMotelIdWContract } from '~/apis/roomAPI'
-import { getContractByIdRoom2, updateContractDetail } from '~/apis/contractTemplateAPI'
-import Swal from 'sweetalert2'
-import { useParams } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Grid,
+  Typography,
+  Box,
+  Card,
+  CardActionArea,
+  CircularProgress
+} from '@mui/material';
+import Swal from 'sweetalert2';
+import { useParams } from 'react-router-dom';
+import { getRoomById, getRoomByMotelIdWContract } from '~/apis/roomAPI';
+import { getContractByIdRoom2, updateContractDetail } from '~/apis/contractTemplateAPI';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+
 function ModalChangeRoom({ toggleModal, modalOpen, roomId }) {
-  const { motelId } = useParams()
-  const [room, setRoom] = useState({})
-  const [roomSelect, setRoomSelect] = useState(null)
-  const [contract, setContract] = useState({})
-  const [rooms, setRooms] = useState([])
-  const [selectedRoomId, setSelectedRoomId] = useState(null)
-  // Hàm lấy dữ liệu phòng từ server
+  const { motelId } = useParams();
+  const [room, setRoom] = useState({});
+  const [roomSelect, setRoomSelect] = useState(null);
+  const [contract, setContract] = useState({});
+  const [rooms, setRooms] = useState([]);
+  const [selectedRoomId, setSelectedRoomId] = useState(null);
+  const [loading, setLoading] = useState(false);
+
   const fetchDataRoom = async (roomId) => {
     if (roomId) {
       try {
-        const response = await getRoomById(roomId) // Lấy dữ liệu phòng từ API
+        const response = await getRoomById(roomId);
         if (response) {
-          setRoom(response)
+          setRoom(response);
         }
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     }
-  }
+  };
 
   const fetchRooms = async () => {
-    //neu co motelId tren URL
     if (motelId) {
+      setLoading(true);
       try {
-        const dataRoom = await getRoomByMotelIdWContract(motelId)
-        setRooms(dataRoom)
+        const dataRoom = await getRoomByMotelIdWContract(motelId);
+        setRooms(dataRoom || []);
       } catch (error) {
-        console.log(error)
+        console.log(error);
+      } finally {
+        setLoading(false);
       }
     }
-  }
+  };
 
-  const handleRoomClick = async (roomId) => {
-    setSelectedRoomId(roomId === selectedRoomId ? null : roomId) // Nếu phòng đã chọn thì bỏ chọn, nếu không thì chọn phòng mới
-    if (roomId === selectedRoomId) {
-      setRoomSelect(null)
-      return
+  const handleRoomClick = async (clickedRoomId) => {
+    setSelectedRoomId(clickedRoomId === selectedRoomId ? null : clickedRoomId);
+    if (clickedRoomId === selectedRoomId) {
+      setRoomSelect(null);
+      return;
     }
-    if (roomId) {
+    if (clickedRoomId) {
       try {
-        const dataRoom = await getRoomById(roomId)
-        setRoomSelect(dataRoom)
+        const dataRoom = await getRoomById(clickedRoomId);
+        setRoomSelect(dataRoom);
         setContract((prevContract) => ({
           ...prevContract,
-          roomId: dataRoom.roomId, // Cập nhật dữ liệu phòng vào contract,
+          roomId: dataRoom.roomId,
           price: dataRoom.price,
           deposit: dataRoom.price
-        }))
-        console.log(dataRoom)
+        }));
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     } else {
-      // Nếu không chọn phòng nào, xóa thông tin phòng trong contract
-      setRoom(null)
+      setRoomSelect(null);
       setContract((prevContract) => ({
         ...prevContract,
         room: null
-      }))
+      }));
     }
-  }
+  };
 
-  // Hàm lấy dữ liệu phòng  từ server
   const fetchDataContract = async (roomId) => {
     if (roomId) {
       try {
-        const response = await getContractByIdRoom2(roomId) // Lấy dữ liệu phòng từ API
+        const response = await getContractByIdRoom2(roomId);
         if (response) {
-          setContract(response)
+          setContract(response);
         }
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     }
-  }
+  };
 
   useEffect(() => {
     const handlFristData = () => {
       if (roomId && motelId) {
-        fetchDataRoom(roomId)
-        fetchDataContract(roomId)
-        fetchRooms(motelId)
+        fetchDataRoom(roomId);
+        fetchDataContract(roomId);
+        fetchRooms();
       }
+    };
+    if (modalOpen) {
+      handlFristData();
     }
-
-    handlFristData()
-  }, [roomId, motelId]) // Chỉ chạy lại khi roomId hoặc motelId thay đổi
+  }, [roomId, motelId, modalOpen]);
 
   const handleSubmit = async () => {
     if (roomId) {
       try {
         if (roomSelect && contract) {
-          await updateContractDetail(contract.contractId, roomSelect.roomId, roomSelect.price, roomSelect.price, 0.0)
+          await updateContractDetail(contract.contractId, roomSelect.roomId, roomSelect.price, roomSelect.price, 0.0);
           Swal.fire({
             icon: 'success',
-            title: 'chuyển phòng thành công!',
-            text: 'bạn đã chuyển phòng thành công.',
-            confirmButtonText: 'OK'
-          })
+            title: 'Chuyển phòng thành công!',
+            text: 'Bạn đã chuyển phòng thành công.',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#20a9e7'
+          });
           setTimeout(() => {
-            window.location.reload() // Tải lại trang sau 1 giây
-          }, 1000)
+            window.location.reload();
+          }, 1000);
         } else {
           Swal.fire({
             icon: 'error',
-            title: 'chuyển phòng thất bại!',
+            title: 'Chuyển phòng thất bại!',
             text: 'Vui lòng chọn phòng để chuyển.',
-            confirmButtonText: 'OK'
-          })
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#20a9e7'
+          });
         }
       } catch (error) {
-        // Nếu có lỗi, hiển thị thông báo lỗi
         Swal.fire({
           icon: 'error',
-          title: 'chuyển phòng thất bại!',
+          title: 'Chuyển phòng thất bại!',
           text: error.message || 'Có lỗi xảy ra khi chuyển phòng.',
-          confirmButtonText: 'OK'
-        })
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#20a9e7'
+        });
       }
     }
-  }
+  };
+
+  if (!room || !contract) return null;
 
   return (
-    <div>
-      {room && contract ? (
-        <Modal isOpen={modalOpen} toggle={toggleModal} className="modal-dialog modal-dialog-centered modal-xl">
-          <ModalHeader toggle={toggleModal}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div
-                style={{
-                  marginRight: '15px',
-                  outline: '0',
-                  boxShadow: 'rgb(17 156 226 / 16%) 0px 0px 0px 0.25rem',
-                  opacity: '1',
-                  borderRadius: '100%',
-                  width: '36px',
-                  height: '36px',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  display: 'flex',
-                  backgroundColor: 'rgb(32, 169, 231)'
-                }}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="feather featherList">
-                  <line x1="8" y1="6" x2="21" y2="6"></line>
-                  <line x1="8" y1="12" x2="21" y2="12"></line>
-                  <line x1="8" y1="18" x2="21" y2="18"></line>
-                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                </svg>
-              </div>
-              <div>
-                <h5 className="modal-title title" style={{ fontSize: '19px' }}>
-                  Danh sách phòng
-                </h5>
-                <i className="description des" style={{ fontSize: '19px' }}>
-                  Chọn phòng để chuyển - &quot;{room ? room.name : <>ko co </>}&quot;
-                </i>
-              </div>
-            </div>
-          </ModalHeader>
-
-          <ModalBody>
-            <div className="row g-3">
-              <div className="col-12">
-                <div className="room-list row g-2">
-                  {rooms ? (
-                    rooms.map((room) => (
-                      <div
-                        key={room.roomId}
-                        className={`col-6 room-item ${selectedRoomId === room.roomId ? 'active' : ''}`}
-                        onClick={() => handleRoomClick(room.roomId)} // Chọn phòng khi click
-                      >
-                        <div className="d-flex room-item-inner align-items-center">
-                          <div className="flex-grow-0 icon-room">
-                            {selectedRoomId === room.roomId ? (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="feather feather-check">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                              </svg>
-                            ) : (
-                              <img
-                                width="20px"
-                                src="/room.png"
-                                alt=""
-                              />
-                            )}
-                          </div>
-                          <div className="flex-grow-1">
-                            <div>
-                              <b>{room.name}</b>
-                              <span
-                                style={{
-                                  backgroundColor: '#ED6004',
-                                  display: 'table',
-                                  fontSize: '12px',
-                                  borderRadius: '5px',
-                                  padding: '0 7px',
-                                  color: '#fff'
-                                }}>
-                                Đang trống
-                              </span>
-                            </div>
-                            <div className="d-flex justify-content-between align-items-center mt-1">
-                              <div>
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="18"
-                                  height="18"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  className="feather feather-dollar-sign">
-                                  <line x1="12" y1="1" x2="12" y2="23"></line>
-                                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                                </svg>{' '}
-                                {room.price.toLocaleString()}₫
-                              </div>
-                              <div>
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="18"
-                                  height="18"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  className="feather feather-user">
-                                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                  <circle cx="12" cy="7" r="4"></circle>
-                                </svg>{' '}
-                                0/1 người
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <>Loading........</>
-                  )}
-                </div>
-              </div>
-            </div>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button color="secondary" onClick={toggleModal}>
-              Đóng
-            </Button>
-            <Button color="primary " onClick={() => handleSubmit()}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="feather feather-plus">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              Xác nhận chuyển phòng
-            </Button>
-          </ModalFooter>
-        </Modal>
-      ) : (
-        <></>
-      )}
-    </div>
-  )
+    <Dialog open={modalOpen} onClose={toggleModal} maxWidth="md" fullWidth>
+      <DialogTitle sx={{ fontWeight: 'bold', borderBottom: '1px solid #eee', color: '#333', display: 'flex', alignItems: 'center', pb: 2 }}>
+        <Box sx={{
+          mr: 2,
+          bgcolor: '#20a9e7',
+          color: 'white',
+          borderRadius: '50%',
+          width: 40,
+          height: 40,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 2px 4px rgba(32, 169, 231, 0.3)'
+        }}>
+          <FormatListBulletedIcon />
+        </Box>
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>Danh sách phòng</Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+            Chọn phòng để chuyển - "{room?.name || 'Không có thông tin'}"
+          </Typography>
+        </Box>
+      </DialogTitle>
+      
+      <DialogContent sx={{ py: 3, bgcolor: '#f9fafc' }}>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+            <CircularProgress sx={{ color: '#20a9e7' }} />
+          </Box>
+        ) : (
+          <Grid container spacing={2}>
+            {rooms.length > 0 ? (
+              rooms.map((r) => (
+                <Grid item xs={12} sm={6} key={r.roomId}>
+                  <Card 
+                    sx={{ 
+                      borderRadius: 2, 
+                      border: selectedRoomId === r.roomId ? '2px solid #20a9e7' : '1px solid #e0e0e0',
+                      boxShadow: selectedRoomId === r.roomId ? '0 4px 12px rgba(32,169,231,0.2)' : 'none',
+                      transition: 'all 0.2s ease',
+                      bgcolor: selectedRoomId === r.roomId ? '#f0fbff' : '#fff'
+                    }}
+                  >
+                    <CardActionArea onClick={() => handleRoomClick(r.roomId)} sx={{ p: 2, height: '100%' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box sx={{ 
+                          width: 48, height: 48, borderRadius: '12px', 
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          bgcolor: selectedRoomId === r.roomId ? '#20a9e7' : '#f0f0f0',
+                          color: selectedRoomId === r.roomId ? '#fff' : '#888',
+                          mr: 2
+                        }}>
+                          {selectedRoomId === r.roomId ? <CheckCircleIcon fontSize="large" /> : <MeetingRoomIcon />}
+                        </Box>
+                        
+                        <Box sx={{ flex: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mr: 1 }}>
+                              {r.name}
+                            </Typography>
+                            <Box sx={{ 
+                              bgcolor: '#ED6004', color: '#fff', fontSize: '11px', 
+                              px: 1, py: 0.25, borderRadius: 1, fontWeight: 'medium' 
+                            }}>
+                              Đang trống
+                            </Box>
+                          </Box>
+                          
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', color: 'text.secondary' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <AttachMoneyIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                              <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                {r.price?.toLocaleString()}₫
+                              </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <PersonOutlineIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                              <Typography variant="body2">0/1 người</Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </CardActionArea>
+                  </Card>
+                </Grid>
+              ))
+            ) : (
+              <Grid item xs={12}>
+                <Typography sx={{ textAlign: 'center', py: 3, color: 'text.secondary' }}>
+                  Không có phòng trống nào trong khu trọ này.
+                </Typography>
+              </Grid>
+            )}
+          </Grid>
+        )}
+      </DialogContent>
+      
+      <DialogActions sx={{ p: 2, borderTop: '1px solid #eee' }}>
+        <Button onClick={toggleModal} sx={{ color: '#666', textTransform: 'none' }}>
+          Đóng
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          disabled={!selectedRoomId}
+          sx={{ 
+            bgcolor: '#20a9e7', 
+            '&:hover': { bgcolor: '#1988bd' }, 
+            textTransform: 'none',
+            '&.Mui-disabled': { bgcolor: '#bde3f4', color: '#fff' }
+          }}
+        >
+          Xác nhận chuyển phòng
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 }
 
-export default ModalChangeRoom
+export default ModalChangeRoom;

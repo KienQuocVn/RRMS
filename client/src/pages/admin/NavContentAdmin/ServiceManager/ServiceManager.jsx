@@ -1,9 +1,8 @@
-import axios from 'axios'
+﻿import axios from 'axios'
 import { useEffect, useState } from 'react'
-import Flatpickr from 'react-flatpickr'
-import monthSelectPlugin from 'flatpickr/dist/plugins/monthSelect'
-import { Vietnamese } from 'flatpickr/dist/l10n/vn'
-import { ReactTabulator } from 'react-tabulator'
+import { Box, Paper, Grid } from '@mui/material'
+import ServiceList from './components/ServiceList'
+import UsageReport from './components/UsageReport'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import ModelCreateService from './ModelCreateService'
 import ModelUpdateService from './ModelUpdateService'
@@ -12,10 +11,7 @@ import { useParams } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { isValidRouteParam } from '~/utils/apiAdapters'
 
-import 'flatpickr/dist/themes/material_blue.css'
-import 'flatpickr/dist/plugins/monthSelect/style.css'
-import 'react-tabulator/lib/styles.css'
-import 'react-tabulator/lib/css/tabulator.min.css'
+
 
 const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
@@ -204,7 +200,7 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   }
 
   return (
-    <div>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f7fa' }}>
       <NavAdmin
         setmotels={setmotels}
         motels={motels}
@@ -212,148 +208,40 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         setIsNavAdmin={setIsNavAdmin}
         isNavAdmin={true}
       />
-      <div
-        style={{
+
+      <Paper
+        elevation={0}
+        sx={{
+          mx: '10px',
+          mb: '10px',
+          borderRadius: '12px',
+          border: '1px solid #e8f4fd',
+          overflow: 'hidden',
           backgroundColor: '#fff',
-          padding: '15px 15px 15px 15px',
-          borderRadius: '10px',
-          margin: '0 10px 10px 10px',
-        }}>
-        <div className="page-price-item" id="managePriceItem">
-          <div className="row g-3" >
-            <div className="col-md-4" style={{marginTop:'-230px'}}>
-              <div className="header-item">
-                <h4 className="title-item">
-                  Quản lý dịch vụ
-                  <i className="des">Các dịch vụ khách thuê xài</i>
-                </h4>
-                <button className="add-round" data-bs-toggle="modal" data-bs-target="#addPriceItem">
-                  <span>
-                    <i className="bi bi-plus-lg" style={{ fontSize: '25px' }}></i>
-                  </span>
-                </button>
-              </div>
+          p: 2,
+        }}
+      >
+        <Grid container spacing={3}>
+          {/* Left Column: Service List */}
+          <Grid item xs={12} md={4}>
+            <ServiceList
+              motelServices={motelServices}
+              openEditModal={openEditModal}
+              deleteMotelService={deleteMotelService}
+            />
+          </Grid>
 
-              <div className="list-price-item">
-                {motelServices.length > 0 ? ( // Duyệt nếu list tồn tại và có dịch vụ
-                  motelServices.map((service) => (
-                    <div key={service.motelServiceId} className="mt-2">
-                      <div className="mb-3 inner-item item-feature d-flex align-items-center justify-content-between">
-                        <div className="btn-round">
-                          <i className="bi bi-tag" style={{ fontSize: '25px' }}></i>
-                        </div>
-                        <div style={{ display: 'grid', flex: '1' }}>
-                          <b className="price-item-name">{service.nameService}</b>
-                          <span className="price-item-price">
-                            <span>
-                              {service.price.toLocaleString('vi-VN')}đ/{service.chargetype}
-                            </span>
-                          </span>
-                          {service.count > 0 ? (
-                            <span className="price-item-status" style={{ color: '#28a745' }}>
-                              Đang áp dụng cho {service.count} phòng 
-                            </span>
-                          ) : (
-                            <i className="price-item-status">
-                              <span style={{ color: '#dc3545' }}>Không áp dụng cho phòng nào</span>
-                            </i>
-                          )}
-                        </div>
-                        
-                        <button
-                          className="btn-round btn-edit"
-                          style={{ border: 'none' }}
-                          onClick={() => openEditModal(service)}>
-                          <div
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                            data-bs-toggle="modal"
-                            data-bs-target="#updateModelService">
-                            <i className="bi bi-pencil-square" style={{ fontSize: '25px' }}></i>
-                          </div>
-                        </button>
-                        <div
-                          className="btn-round btn-delete"
-                          onClick={() => deleteMotelService(service.motelServiceId)}>
-                          <i className="bi bi-trash" style={{ fontSize: '25px' }}></i>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p>Chưa có dịch vụ nào.</p>
-                )}
-              </div>
-            </div>
+          {/* Right Column: Usage Report */}
+          <Grid item xs={12} md={8}>
+            <UsageReport
+              roomData={roomData}
+              columns={columns}
+              options={options}
+            />
+          </Grid>
+        </Grid>
+      </Paper>
 
-            <div className="col-md-8">
-              <div className="header-item">
-                <h4 className="title-item">
-                  Khách thuê sử dụng trong tháng
-                  <i className="des">Thống kê mỗi tháng khách thuê xài</i>
-                </h4>
-                <div className="input-group" style={{ width: '30%', marginTop: '20px' }}>
-                  <div className="form-floating">
-                    <Flatpickr
-                      className="form-control month-flat-picker flatpickr-input"
-                      name="month"
-                      id="month"
-                      placeholder="Nhập tháng"
-                      options={{
-                        locale: Vietnamese,
-                        plugins: [
-                          new monthSelectPlugin({
-                            shorthand: true,
-                            dateFormat: 'm/y'
-                          })
-                        ]
-                      }}
-                    />
-
-                    <label htmlFor="month">Tháng lập phiếu</label>
-                  </div>
-                  <label className="input-group-text" htmlFor="month">
-                    <i className="bi bi-calendar" style={{ fontSize: '25px' }}></i>
-                  </label>
-                </div>
-              </div>
-              <div className="header-table header-item text-end" style={{ justifyContent: 'right' }}>
-                <button id="download-excel" style={{ marginLeft: '10px' }} className="ml-2 btn btn-primary">
-                  <i className="bi bi-file-earmark-text" style={{ fontSize: '25px' }}></i>
-                  Xuất excel
-                </button>
-              </div>
-
-              <div style={{ overflowX: 'auto' }}>
-                <div style={{ height: '100%' }}> 
-                  <ReactTabulator
-                    className="my-custom-table"
-                    columns={columns}
-                    data={roomData.length > 0 ? roomData : [{ nameRoom: 'No data' }]}
-                    options={{ ...options, responsiveLayout: roomData.length > 0 ? 'collapse' : false }}
-                    placeholder={
-                      <div className="custom-placeholder">
-                        <img
-                          src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Fempty-box-4085812-3385481.webp?alt=media&token=eaf37b59-00e3-4d16-8463-5441f54fb60e"
-                          alt="Không có dữ liệu"
-                          className="placeholder-image"
-                        />
-                        <div className="placeholder-text">Không tìm thấy dữ liệu!</div>
-                      </div>
-                    }
-                  />
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
       {/* Modal them dich vu  */}
       <ModelCreateService motelId={motelId} refreshServices={refreshServices} />
 
@@ -364,7 +252,7 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
           refreshServices={() => fetchMotelServicesWithCount(motelId)}
         />
       )}
-    </div>
+    </Box>
   )
 }
 

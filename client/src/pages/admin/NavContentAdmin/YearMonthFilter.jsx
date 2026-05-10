@@ -18,6 +18,8 @@ const months = [
   { label: 'T.12', month: 12 },
 ]
 
+const PRIMARY = '#20a9e7'
+
 const MonthFilterContainer = styled('div')({
   backgroundColor: '#f0f0f0',
   borderRadius: '10px',
@@ -38,13 +40,11 @@ const YearButton = styled(Button)({
   color: 'black',
   border: '2px solid transparent',
   transition: 'border-color 0.3s, box-shadow 0.3s',
-
   '&.active': {
     backgroundColor: '#54a7ed6b',
     border: '2px solid #337ab7',
     boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)',
   },
-
   '&:hover': {
     border: '2px solid #337ab7',
     boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
@@ -60,35 +60,38 @@ const MonthButton = styled(Button)({
   color: 'black',
   border: '2px solid transparent',
   transition: 'border-color 0.3s, box-shadow 0.3s',
-
   '&.active': {
-    backgroundColor: '#c7e2f96b',
-    border: '2px solid #8fc8f9',
+    backgroundColor: '#20a9e722',
+    border: '2px solid #20a9e7',
     boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)',
+    color: '#20a9e7',
+    fontWeight: 700,
   },
-
   '&:hover': {
-    border: '2px solid #337ab7',
+    border: '2px solid #20a9e7',
     boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
   },
 })
 
-const YearMonthFilter = () => {
+const YearMonthFilter = ({ onMonthChange }) => {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1) // Tháng hiện tại (tháng 0 là tháng 1)
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
 
-  // xử lý khi nhấp vào một tháng
   const handleMonthClick = (month) => {
-    setSelectedMonth(month) // Cập nhật tháng đã chọn
-    console.log(`Tháng đã chọn: ${month}, Năm: ${currentYear}`)
+    setSelectedMonth(month)
+    if (onMonthChange) onMonthChange(month, currentYear)
   }
 
   const handlePreviousYear = () => {
-    setCurrentYear(currentYear - 1) // Giảm năm hiện tại đi 1
+    const newYear = currentYear - 1
+    setCurrentYear(newYear)
+    if (onMonthChange) onMonthChange(selectedMonth, newYear)
   }
 
   const handleNextYear = () => {
-    setCurrentYear(currentYear + 1) // Tăng năm hiện tại lên 1
+    const newYear = currentYear + 1
+    setCurrentYear(newYear)
+    if (onMonthChange) onMonthChange(selectedMonth, newYear)
   }
 
   return (
@@ -97,25 +100,20 @@ const YearMonthFilter = () => {
         <YearButton onClick={handlePreviousYear} startIcon={<ArrowBack />}>
           Năm trước
         </YearButton>
-
-        {/* Lặp qua danh sách các tháng để tạo nút cho từng tháng */}
         {months.map((month) => (
           <Tooltip
             key={month.month}
-            title={`Xem lịch sử hóa đơn Zalo tháng ${month.label}/${currentYear}`}
+            title={`Xem lich su hoa don thang ${month.label}/${currentYear}`}
             placement="bottom">
             <MonthButton
               onClick={() => handleMonthClick(month.month)}
-              className={selectedMonth === month.month ? 'active' : ''} // 'active' nếu tháng được chọn
+              className={selectedMonth === month.month ? 'active' : ''}
             >
-              <div className="text">
-                <b>{month.label}</b> {/* Hiển thị tên tháng */}
-              </div>
-              <span>{currentYear}</span> {/* Hiển thị năm hiện tại */}
+              <div className="text"><b>{month.label}</b></div>
+              <span>{currentYear}</span>
             </MonthButton>
           </Tooltip>
         ))}
-
         <YearButton onClick={handleNextYear} endIcon={<ArrowForward />}>
           Năm tới
         </YearButton>

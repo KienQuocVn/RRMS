@@ -1,302 +1,229 @@
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
-import { useState, useEffect } from 'react'
-import { getRoomById } from '~/apis/roomAPI'
-import { getContractByIdRoom2, updateExtendContractStatusClose } from '~/apis/contractTemplateAPI'
-import Flatpickr from 'react-flatpickr'
-import Swal from 'sweetalert2'
+import React, { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Grid,
+  TextField,
+  Box
+} from '@mui/material';
+import Swal from 'sweetalert2';
+import { getRoomById } from '~/apis/roomAPI';
+import { getContractByIdRoom2, updateExtendContractStatusClose } from '~/apis/contractTemplateAPI';
 
 function ModalExtendContract({ toggleModal, modalOpen, roomId }) {
-  const [room, setRoom] = useState({})
-  const [contract, setContract] = useState({})
-  // State lưu trữ ngày kết thúc hợp đồng
-  const [dateTerminate, setDateTerminate] = useState('')
-  // Hàm lấy dữ liệu phòng từ server
+  const [room, setRoom] = useState({});
+  const [contract, setContract] = useState({});
+  const [dateTerminate, setDateTerminate] = useState('');
+
   const fetchDataRoom = async (roomId) => {
     if (roomId) {
       try {
-        const response = await getRoomById(roomId) // Lấy dữ liệu phòng từ API
+        const response = await getRoomById(roomId);
         if (response) {
-          setRoom(response)
+          setRoom(response);
         }
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     }
-  }
+  };
 
-  // Hàm xử lý khi người dùng thay đổi ngày kết thúc hợp đồng
-  const handleDateChange = (date) => {
-    // Flatpickr trả về mảng, ta lấy phần tử đầu tiên (là một đối tượng Date)
-    const formattedDate = formatDate(date[0]) // Chuyển đối tượng Date thành chuỗi với định dạng dd-mm-yyyy
-    // Kiểm tra nếu ngày chọn nhỏ hơn hoặc bằng ngày hiện tại
-    if (formattedDate <= formatDate(contract.closeContract)) {
+  const handleDateChange = (e) => {
+    const selectedDateStr = e.target.value; // YYYY-MM-DD
+    if (!selectedDateStr) {
+        setDateTerminate('');
+        return;
+    }
+
+    const selectedDate = new Date(selectedDateStr);
+    const closeContractDate = new Date(contract.closeContract); // contract.closeContract is ISO or Date string
+
+    // Normalize both dates to midnight for fair comparison
+    selectedDate.setHours(0,0,0,0);
+    closeContractDate.setHours(0,0,0,0);
+
+    if (selectedDate <= closeContractDate) {
       Swal.fire({
         icon: 'error',
         title: 'Cập nhật thất bại!',
         text: 'Ngày gia hạn phải lớn hơn ngày hiện tại!',
-        confirmButtonText: 'OK'
-      })
-      setDateTerminate('')
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#20a9e7'
+      });
+      setDateTerminate('');
     } else {
-      setDateTerminate(formattedDate)
+      setDateTerminate(selectedDateStr);
     }
-  }
+  };
 
-  // Hàm lấy dữ liệu phòng từ server
   const fetchDataContract = async (roomId) => {
     if (roomId) {
       try {
-        const response = await getContractByIdRoom2(roomId) // Lấy dữ liệu phòng từ API
+        const response = await getContractByIdRoom2(roomId);
         if (response) {
-          setContract(response)
+          setContract(response);
         }
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     }
-  }
+  };
 
-  const formatDate = (isoDate) => {
-    const date = new Date(isoDate) // Chuyển đổi chuỗi ISO thành đối tượng Date
-    const day = String(date.getDate()).padStart(2, '0') // Lấy ngày, thêm số 0 nếu cần
-    const month = String(date.getMonth() + 1).padStart(2, '0') // Lấy tháng (tăng thêm 1 vì tháng trong JS bắt đầu từ 0)
-    const year = date.getFullYear() // Lấy năm
-
-    return `${month}/${day}/${year}` // Trả về chuỗi theo định dạng DD/MM/YYYY
-  }
+  const formatDateForInput = (isoDate) => {
+    if (!isoDate) return '';
+    const date = new Date(isoDate);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
+  };
 
   useEffect(() => {
     const handlFristData = () => {
       if (roomId) {
-        fetchDataRoom(roomId)
-        fetchDataContract(roomId)
+        fetchDataRoom(roomId);
+        fetchDataContract(roomId);
       }
-    }
-
-    handlFristData()
-  }, [roomId]) // Chỉ chạy lại khi roomId hoặc motelId thay đổi
+    };
+    handlFristData();
+  }, [roomId]);
 
   const handleSubmit = async () => {
-    if (roomId && contract) {
+    if (roomId && contract && dateTerminate) {
       try {
-        const selectedDate = new Date(
-          dateTerminate.split('/').reverse().join('-') // Chuyển "DD/MM/YYYY" thành "MM/DD/YYYY"
-        )
-        const closeContractDate = new Date(formatDate(contract.closeContract).split('/').reverse().join('-'))
+        const selectedDate = new Date(dateTerminate);
+        const closeContractDate = new Date(contract.closeContract);
+        selectedDate.setHours(0,0,0,0);
+        closeContractDate.setHours(0,0,0,0);
 
-        // So sánh ngày
         if (selectedDate <= closeContractDate) {
           Swal.fire({
             icon: 'error',
             title: 'Cập nhật thất bại!',
             text: 'Ngày gia hạn phải lớn hơn ngày hiện tại!',
-            confirmButtonText: 'OK'
-          })
-          return
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#20a9e7'
+          });
+          return;
         }
 
-        // Gọi API cập nhật
-        await updateExtendContractStatusClose(contract.contractId, dateTerminate)
+        await updateExtendContractStatusClose(contract.contractId, dateTerminate);
 
         Swal.fire({
           icon: 'success',
           title: 'Cập nhật thành công!',
           text: 'Trạng thái hợp đồng đã được cập nhật thành công.',
-          confirmButtonText: 'OK'
-        })
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#20a9e7'
+        });
 
         setTimeout(() => {
-          window.location.reload()
-        }, 1000)
+          window.location.reload();
+        }, 1000);
       } catch (error) {
         Swal.fire({
           icon: 'error',
           title: 'Cập nhật thất bại!',
           text: error.message || 'Có lỗi xảy ra khi cập nhật trạng thái hợp đồng.',
-          confirmButtonText: 'OK'
-        })
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#20a9e7'
+        });
       }
+    } else {
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi',
+            text: 'Vui lòng chọn ngày gia hạn.',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#20a9e7'
+        });
     }
-  }
+  };
+
+  if (!room || !contract) return null;
 
   return (
-    <div>
-      {room && contract ? (
-        <Modal isOpen={modalOpen} toggle={toggleModal}>
-          <ModalHeader toggle={toggleModal}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div
-                style={{
-                  marginRight: '15px',
-                  outline: '0',
-                  boxShadow: '0 0 0 .25rem rgba(76, 175, 80, 0.16)',
-                  opacity: '1',
-                  borderRadius: '100%',
-                  width: '36px',
-                  height: '36px',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  display: 'flex',
-                  backgroundColor: 'rgb(32, 169, 231)'
-                }}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="feather feather-log-out">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                  <polyline points="16 17 21 12 16 7"></polyline>
-                  <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-              </div>
-              <h5 style={{ marginLeft: '10px' }}>Gia hạn hợp đồng - {room ? room.name : <>ko co </>}</h5>
-            </div>
-          </ModalHeader>
-
-          <ModalBody>
-            <form method="POST" className="needs-validation" id="extend-form" noValidate>
-              <input type="hidden" name="_token" value="Rnugp3YmswGzKc2B0QhX2KMwQE5DcqUCiRdKXQtJ" />
-              <div className="row g-2">
-                {/* Input Ngày gia hạn */}
-                <div className="col-6">
-                  <div className="input-group">
-                    <div className="form-floating">
-                      <input
-                        className="form-control date-flat-picker flatpickr-input active"
-                        name="date_contract"
-                        id="date_contract"
-                        placeholder="Gia hạn đền ngày"
-                        data-format="date"
-                        value={formatDate(contract.closeContract)}
-                        readOnly
-                        required
-                      />
-                      <label htmlFor="date_contract">Ngày gia hạn</label>
-                    </div>
-                    <label className="input-group-text" htmlFor="date_contract">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="feather feather-calendar">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
-                    </label>
-                  </div>
-                  <div className="invalid-feedback">Vui lòng nhập ngày gia hạn</div>
-                </div>
-
-                {/* Input Gia hạn đến */}
-                <div className="col-6">
-                  <div className="input-group">
-                    <div className="form-floating">
-                      <Flatpickr
-                        className="form-control date-flat-picker flatpickr-input"
-                        name="date_terminate"
-                        id="date_terminate"
-                        placeholder="Gia hạn đền ngày"
-                        data-format="date"
-                        required
-                        value={dateTerminate}
-                        onChange={handleDateChange}
-                        options={{
-                          allowInput: true,
-                          dateFormat: 'm-d-Y'
-                        }}
-                      />
-
-                      <label htmlFor="date_terminate">Gia hạn đến</label>
-                    </div>
-                    <label className="input-group-text" htmlFor="date_terminate">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="feather feather-calendar">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
-                    </label>
-                  </div>
-                  <div className="invalid-feedback">Vui lòng nhập ngày muốn gia hạn</div>
-                </div>
-
-                {/* Input Giá thuê */}
-                <div className="col-12">
-                  <div className="input-group">
-                    <div className="form-floating">
-                      <input
-                        className="form-control currency"
-                        name="room_amount"
-                        id="room_amount"
-                        data-format="numeric"
-                        min="0"
-                        placeholder="Nhập giá thuê"
-                        required
-                        readOnly
-                        value={contract.price?.toLocaleString('vi-VN')}
-                      />
-
-                      <label htmlFor="room_amount">Giá thuê (đ)</label>
-                      <div className="invalid-feedback">Vui lòng nhập giá thuê</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </form>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button color="secondary" onClick={toggleModal}>
-              Đóng
-            </Button>
-            <Button color="primary " onClick={() => handleSubmit()}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="feather feather-plus">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              Gia hạn
-            </Button>
-          </ModalFooter>
-        </Modal>
-      ) : (
-        <></>
-      )}
-    </div>
-  )
+    <Dialog open={modalOpen} onClose={toggleModal} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ fontWeight: 'bold', borderBottom: '1px solid #eee', color: '#333', display: 'flex', alignItems: 'center' }}>
+        <Box sx={{
+          mr: 2,
+          bgcolor: '#20a9e7',
+          color: 'white',
+          borderRadius: '50%',
+          width: 36,
+          height: 36,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 2px 4px rgba(32, 169, 231, 0.3)'
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </Box>
+        Gia hạn hợp đồng - {room.name || 'Không có thông tin'}
+      </DialogTitle>
+      <DialogContent sx={{ py: 3 }}>
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth
+              label="Ngày kết thúc hiện tại"
+              type="date"
+              value={formatDateForInput(contract.closeContract)}
+              InputProps={{ readOnly: true }}
+              InputLabelProps={{ shrink: true }}
+              sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#f5f5f5' }, '& label.Mui-focused': { color: '#20a9e7' } }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth
+              label="Gia hạn đến"
+              type="date"
+              value={dateTerminate}
+              onChange={handleDateChange}
+              InputLabelProps={{ shrink: true }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '&.Mui-focused fieldset': { borderColor: '#20a9e7' },
+                },
+                '& label.Mui-focused': { color: '#20a9e7' }
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Giá thuê (đ)"
+              value={contract.price ? contract.price.toLocaleString('vi-VN') : ''}
+              InputProps={{ readOnly: true }}
+              InputLabelProps={{ shrink: true }}
+              sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#f5f5f5' }, '& label.Mui-focused': { color: '#20a9e7' } }}
+            />
+          </Grid>
+        </Grid>
+      </DialogContent>
+      <DialogActions sx={{ p: 2, borderTop: '1px solid #eee' }}>
+        <Button onClick={toggleModal} sx={{ color: '#666', textTransform: 'none' }}>
+          Đóng
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          sx={{ bgcolor: '#20a9e7', '&:hover': { bgcolor: '#1988bd' }, textTransform: 'none', display: 'flex', gap: 1 }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Gia hạn
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 }
 
-export default ModalExtendContract
+export default ModalExtendContract;

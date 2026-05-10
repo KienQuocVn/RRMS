@@ -390,6 +390,8 @@ const ProtectedRoute = ({ children, requiredRoles }) => {
 ### UX/UI
 
 - [x] Thêm Error Boundary component
+- [x] Nâng cấp giao diện ContractManage sử dụng MUI (2026-05-10)
+- [x] Sửa lỗi 404 khi lấy danh sách hợp đồng trống (Backend/InvoiceManager) (2026-05-10)
 - [ ] Thêm Loading states cho async operations
 - [ ] Thêm Empty states cho danh sách trống
 - [ ] Cải thiện responsive design

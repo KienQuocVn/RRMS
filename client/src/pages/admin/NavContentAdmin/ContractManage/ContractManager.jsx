@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import { Box } from '@mui/material'
 import { useParams } from 'react-router-dom'
 import { ReactTabulator } from 'react-tabulator'
-import { useState } from 'react'
+import ContractHeader from './components/ContractHeader'
+import ContractFilters from './components/ContractFilters'
 
 import { Modal, Button, Form } from 'react-bootstrap'
 import { getPhuongXa, getQuanHuyen, getTinhThanh } from '~/apis/addressAPI'
@@ -778,13 +779,13 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
     const financeValue = cell.getValue()
     // Nếu giá trị tài chính là "Đang trống", hiển thị badge với màu cam
     if (financeValue === 'ACTIVE') {
-      return `<span class="badge mt-2 " style="background-color: #7dc242; white-space: break-spaces;">Trong thời hạn hợp đồng</span>`
+      return `<span class="badge mt-2" style="background-color: #7dc242; padding: 6px 12px; border-radius: 20px; font-weight: normal;">Trong thời hạn hợp đồng</span>`
     }
     if (financeValue === 'IATExpire') {
-      return `<span class="badge mt-2 " style="background-color: #ED6004; white-space: break-spaces;">Đang trống</span>`
+      return `<span class="badge mt-2" style="background-color: #ED6004; padding: 6px 12px; border-radius: 20px; font-weight: normal;">Đang trống</span>`
     }
     if (financeValue === 'ENDED') {
-      return `<span class="badge mt-2 " style="background-color: #ED6004; white-space: break-spaces;">Đang trống</span>`
+      return `<span class="badge mt-2" style="background-color: #ED6004; padding: 6px 12px; border-radius: 20px; font-weight: normal;">Đang trống</span>`
     }
 
     // Nếu không phải "Đang trống", hiển thị giá trị tài chính
@@ -900,36 +901,28 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
   const columns = [
     { title: 'id', field: 'contractId', hozAlign: 'center', minWidth: 40, visible: false },
     {
-      title: '',
-      field: 'detail',
-      hozAlign: 'center',
-      minWidth: 20,
-      formatter: () => {
-        const element = document.createElement('div')
-        element.innerHTML = `
-          <div class="icon-first" style="background-color: #ED6004;">
-            <img width="30px" src="/room.png">
-          </div>
-        `
-        // element.addEventListener('click', (e) => handleDetailClick(e, rowId))
-        return element
-      }
-    },
-    {
-      title: 'Tên Phòng',
+      title: 'Phòng & người đại diện',
       field: 'room.name',
-      hozAlign: 'center',
-      minWidth: 150,
-      editor: 'input',
-      cssClass: 'bold-text'
-    },
-    {
-      title: 'Tổng thành viên',
-      field: 'countTenant',
-      hozAlign: 'center',
-      minWidth: 100,
-      editor: 'input',
-      formatter: tenantFormatter
+      hozAlign: 'left',
+      minWidth: 250,
+      formatter: (cell) => {
+        const data = cell.getData();
+        const roomName = data.room ? data.room.name : 'Unknown';
+        const tenantName = data.tenant ? data.tenant.fullname : (data.tenantName || 'Khách chưa ký');
+        const countTenant = data.countTenant || 0;
+        return `
+          <div style="display: flex; align-items: center; padding: 4px 0;">
+            <div style="position: relative; background-color: #4caf50; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0;">
+              <img width="20px" src="/room.png" style="filter: brightness(0) invert(1);">
+              <span style="position: absolute; top: -5px; right: -5px; background-color: #ff9800; border: 1.5px solid white; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center;">${countTenant}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; text-align: left;">
+              <span style="font-weight: bold; color: #333;">${roomName}</span>
+              <span style="color: #4caf50; font-size: 12px;">${tenantName}</span>
+            </div>
+          </div>
+        `;
+      }
     },
     {
       title: 'Giá Thuê',
@@ -992,6 +985,13 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
       formatter: (cell) => formatDate(cell.getValue())
     },
     {
+      title: 'Hình ảnh chứng từ',
+      field: 'documentImage',
+      hozAlign: 'center',
+      minWidth: 150,
+      formatter: () => 'Chưa ghi nhận'
+    },
+    {
       title: 'Ký Hợp Đồng',
       field: 'signcontract',
       hozAlign: 'center',
@@ -1009,19 +1009,22 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
       formatter: StatusFormatter
     },
     {
-      title: 'Action',
+      title: '',
       field: 'Action',
       hozAlign: 'center',
+      minWidth: 60,
       formatter: (cell) => {
         const rowId = cell.getRow().getData().contractId
         const element = document.createElement('div')
         element.classList.add('icon-menu-action')
         element.innerHTML = `
-          <svg    xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="feather feather-more-vertical">
-            <circle cx="12" cy="12" r="1"></circle>
-            <circle cx="12" cy="5" r="1"></circle>
-            <circle cx="12" cy="19" r="1"></circle>
-          </svg>
+          <div style="border: 1px solid #ccc; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical">
+              <circle cx="12" cy="12" r="1"></circle>
+              <circle cx="12" cy="5" r="1"></circle>
+              <circle cx="12" cy="19" r="1"></circle>
+            </svg>
+          </div>
         `
 
         element.addEventListener('click', (e) => handleActionClick(e, rowId))
@@ -1067,85 +1070,14 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
         setIsNavAdmin={setIsNavAdmin}
         isNavAdmin={true}
       />
-      <div
-        style={{
-          backgroundColor: '#fff',
-          padding: '15px 15px 15px 15px',
-          borderRadius: '10px',
-          margin: '0 10px 10px 10px'
-        }}></div>
-
-      <div style={{ marginLeft: '15px', marginRight: '10px' }}>
-        <Box className="header-item">
-          <h4 className="title-item">
-            Tất Cả Hợp Đồng
-            <i className="des">Danh sách hợp đồng được tạo khi thêm phiên bản ở mới</i>
-          </h4>
-          <Box display="flex" alignItems="center" style={{ width: '20%' }}></Box>
-        </Box>
+      <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '10px', margin: '0 10px 10px 10px' }}>
+        <ContractHeader onAddContract={handleShow} />
+        <ContractFilters />
       </div>
 
-      <div
-        className="header-table header-item"
-        style={{ padding: '10px 10px', marginLeft: '15px', marginRight: '10px' }}>
-        <div className="d-flex">
-          <div className="icon">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="feather feather-filter">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-            </svg>
-            <span id="filter-count">0</span>
-          </div>
-          <div className="d-flex" style={{ flexWrap: 'wrap' }}>
-            <div className="form-check form-check-inline">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="is_active"
-                data-value="status"
-                value="is_active"
-              />
-              <label className="form-check-label" htmlFor="is_active">
-                Trong thời hạn hợp đồng
-              </label>
-              <span className="count-filter active success">0</span>
-            </div>
-            <div className="form-check form-check-inline">
-              <input className="form-check-input" type="checkbox" id="is_empty" data-value="status" value="is_empty" />
-              <label className="form-check-label" htmlFor="is_empty">
-                Đang báo kết thúc
-              </label>
-              <span className="count-filter empty warning">0</span>
-            </div>
-            <div className="form-check form-check-inline">
-              <input className="form-check-input" type="checkbox" id="is_empty" data-value="status" value="is_empty" />
-              <label className="form-check-label" htmlFor="is_empty">
-                Sắp hết hạn
-              </label>
-              <span className="count-filter empty error">0</span>
-            </div>
-            <div className="form-check form-check-inline">
-              <input className="form-check-input" type="checkbox" id="is_empty" data-value="status" value="is_empty" />
-              <label className="form-check-label" htmlFor="is_empty">
-                Đã quá hạn
-              </label>
-              <span className="count-filter empty ">0</span>
-            </div>
-          </div>
-        </div>
+      <div style={{ marginLeft: '15px', marginRight: '10px' }}>
         <Box display="flex" justifyContent="flex-end">
-          <Button variant="primary" onClick={handleShow}>
-            Thiết lập hợp đồng
-          </Button>
+          {/* Nút này được ẩn đi vì đã có trên ContractHeader, nhưng giữ lại Modal để không gãy logic */}
 
           <Modal show={show} onHide={handleClose} dialogClassName="custom-modal" size="xl">
             {/* size modal*/}

@@ -1,22 +1,24 @@
-import { useEffect, useState, useRef,useMemo  } from 'react'
+﻿import { useEffect, useState, useRef, useMemo } from 'react'
+import { Box, Paper } from '@mui/material'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import YearMonthFilter from '../YearMonthFilter'
 import Flatpickr from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_blue.css'
 import 'flatpickr/dist/plugins/monthSelect/style.css'
 import monthSelectPlugin from 'flatpickr/dist/plugins/monthSelect'
-import { Vietnamese } from 'flatpickr/dist/l10n/vn' 
+import { Vietnamese } from 'flatpickr/dist/l10n/vn'
 import AdditionItem from './AdditionItem'
-import 'react-tabulator/lib/styles.css'
-import 'react-tabulator/lib/css/tabulator.min.css' 
-import { ReactTabulator } from 'react-tabulator'
-import { Link,useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import axios from 'axios'
 import { env } from '~/configs/environment'
 import ModalEditInvoice from './ModalEditInvoice'
 import ModalCollectMoneyInvoice from './ModalCollectMoneyInvoice'
-import Swal from 'sweetalert2';
-import { isValidRouteParam } from '~/utils/apiAdapters';
+import Swal from 'sweetalert2'
+import { isValidRouteParam } from '~/utils/apiAdapters'
+import InvoiceHeader from './components/InvoiceHeader'
+import InvoiceFilterBar from './components/InvoiceFilterBar'
+import InvoiceTable from './components/InvoiceTable'
+import InvoiceActionMenu from './components/InvoiceActionMenu'
 
 const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
@@ -34,9 +36,13 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   // chuyen doi cac buoc
   const [step, setStep] = useState(1) // Bước mặc định là bước 1
   const menuRef = useRef(null) // Tham chiếu đến menu
-  const [modalOpenInvoice, setModalOpenInvoice] = useState(false) //mo modal 
+  const [modalOpenInvoice, setModalOpenInvoice] = useState(false)
   const [modalOpenCollectMoney, setModalOpenCollectMoney] = useState(false)
-  const [filterStatus, setFilterStatus] = useState({ done: false, new: false }); // Trạng thái bộ lọc
+  const [filterStatus, setFilterStatus] = useState({ done: false, new: false })
+  const [sortValue, setSortValue] = useState('room-asc')
+  const [searchText, setSearchText] = useState('')
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
 
   const toggleModalInvoice = () => {
     setModalOpenInvoice(!modalOpenInvoice)
@@ -560,7 +566,7 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   }, [invoices, services, filterStatus]);
 
   return (
-    <div className="page-bills">
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f7fa' }}>
       <NavAdmin
         setmotels={setmotels}
         motels={motels}
@@ -568,297 +574,72 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         setIsNavAdmin={setIsNavAdmin}
         isNavAdmin={true}
       />
-      <div
-        style={{
-          backgroundColor: '#fff',
-          padding: '15px 15px 15px 15px',
-          borderRadius: '10px',
-          margin: '0 10px 10px 10px'
-        }}>
-        <YearMonthFilter />
-        <div className="header-item">
-          <h4 className="title-item">
-            Tất cả hóa đơn - 10/2024
-            <i style={{ fontSize: '14px', fontWeight: 'normal' }}>Tất cả hóa đơn thu tiền nhà xuất hiện ở đây</i>
-          </h4>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <div data-bs-toggle="modal" data-bs-target="#billSeries">
-              <div
-                className="add-round"
-                data-bs-toggle="tooltip"
-                data-bs-placement="left"
-                title=""
-                data-bs-original-title="Tạo hóa đơn mới">
-                <i className="bi bi-plus-lg" style={{ fontSize: '25px' }}></i>
-              </div>
-            </div>
-            <Link
-              to="/quan-ly/6891/cai-dat-nha-tro#bill_setting"
-              className="btn btn-primary"
-              data-bs-toggle="tooltip"
-              data-bs-placement="left"
-              title=""
-              style={{
-                boxShadow: '0 0.5rem 1rem rgba(0, 0, 0, .15) !important',
-                marginLeft: '25px',
-                padding: '11px 20px'
-              }}
-              data-bs-original-title="Cài đặt hiển thị hóa đơn. Xuất, gửi hóa đơn tự động...">
-              <i className="bi bi-gear-fill m-1" style={{ fontSize: '24px' }}></i>
-              <span>Cài đặt hóa đơn</span>
-            </Link>
-            <div className="d-flex">
-              <div style={{ width: '2px', borderLeft: '2px solid #ccc', margin: '3px 0px', marginLeft: '10px' }}></div>
-              <button
-                style={{ marginLeft: '10px', marginRight: '10px', padding: '13px 20px' }}
-                id="print"
-                className="btn btn-primary">
-                <i className="bi bi-printer" style={{ fontSize: '24px' }}></i> In h.đơn
-              </button>
-              <button
-                style={{ marginRight: '10px', padding: '13px 20px' }}
-                id="download-excel-template-2"
-                className="btn btn-primary">
-                <i className="bi bi-file-earmark-text" style={{ fontSize: '24px' }}></i> Xuất excel(Rút gọn)
-              </button>
-              <button id="download-excel-template-1" style={{ padding: '13px 20px' }} className="btn btn-primary">
-                <i className="bi bi-file-earmark-text" style={{ fontSize: '24px' }}></i> Xuất excel(Đầy đủ)
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="header-table header-item">
-          <div className="d-flex">
-            <div className="icon">
-              <i className="bi bi-funnel" style={{ fontSize: '24px' }}></i>
-              <span id="filter-count">{filteredData.length}</span>
-            </div>
-            <div className="d-flex">
-              <div className="form-check form-check-inline">
-                <input className="form-check-input" 
-                type="checkbox" id="filter_done" 
-                data-value="status" value="done" 
-                checked={filterStatus.done}
-                onChange={handleFilterChange} />
-                <label className="form-check-label" htmlFor="filter_done">
-                  Hóa đơn đã thu
-                </label>
-                <span className="count-filter done success">{invoices.filter((invoice) => invoice.paymentStatus === "PAID").length}</span>
-              </div>
 
-              <div className="form-check form-check-inline">
-                <input className="form-check-input" 
-                type="checkbox" id="filter_new" 
-                data-value="status" 
-                value="new"
-                checked={filterStatus.new}
-                onChange={handleFilterChange} />
-                <label className="form-check-label" htmlFor="filter_new">
-                  Hóa đơn chưa thu
-                </label>
-                <span className="count-filter new warning">
-                  {invoices.filter((invoice) => invoice.paymentStatus !== "PAID").length}
-                </span>
-              </div>
+      {/* Main content card */}
+      <Paper
+        elevation={0}
+        sx={{
+          mx: '10px',
+          mb: '10px',
+          borderRadius: '12px',
+          border: '1px solid #e8f4fd',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Year/Month filter bar */}
+        <Box sx={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #eee' }}>
+          <YearMonthFilter
+            onMonthChange={(month, year) => {
+              setSelectedMonth(month)
+              setSelectedYear(year)
+            }}
+          />
+        </Box>
 
-              <div className="form-check form-check-inline">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="filter_customer_debt"
-                  data-value="status"
-                  value="customer_debt"
-                />
-                <label className="form-check-label" htmlFor="filter_customer_debt">
-                  Hóa đơn đang nợ
-                </label>
-                <span className="count-filter debt error">0</span>
-              </div>
+        {/* Header + filter section */}
+        <Box sx={{ p: '14px 16px 10px' }}>
+          <InvoiceHeader
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            onCreateInvoice={() => {
+              const el = document.getElementById('billSeries')
+              if (el) {
+                el.style.display = 'block'
+                el.classList.add('show')
+              }
+            }}
+          />
+          <InvoiceFilterBar
+            invoices={invoices}
+            filterStatus={filterStatus}
+            handleFilterChange={handleFilterChange}
+            filteredData={filteredData}
+            sortValue={sortValue}
+            onSortChange={setSortValue}
+            searchText={searchText}
+            onSearchChange={setSearchText}
+          />
+        </Box>
 
-              <div className="form-check form-check-inline">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="filter_cancel"
-                  data-value="status"
-                  value="cancel"
-                />
-                <label className="form-check-label" htmlFor="filter_cancel">
-                  Hóa đơn đã hủy
-                </label>
-                <span className="count-filter cancel disable">0</span>
-              </div>
-            </div>
-          </div>
-          <div className="d-flex" style={{ alignItems: 'center' }}>
-            <select className="sort-bill" style={{ height: '35px', borderRadius: '7px', marginRight: '10px' }}>
-              <option value="room-asc">Thứ tự phòng tăng dần</option>
-              <option value="room-desc">Thứ tự phòng giảm dần</option>
+        {/* Table */}
+        <Box sx={{ px: '10px', pb: '16px', position: 'relative' }}>
+          <InvoiceTable
+            columns={columns}
+            data={filteredData}
+            options={options}
+          />
+          {showMenu && invoice && invoice.status && (
+            <InvoiceActionMenu
+              menuRef={menuRef}
+              menuPosition={menuPosition}
+              invoice={invoice}
+              onItemClick={handleItemClick}
+            />
+          )}
+        </Box>
+      </Paper>
 
-              <option value="date-desc">Sắp xếp theo ngày giảm dần</option>
-              <option value="date-asc">Sắp xếp theo ngày tăng dần</option>
-            </select>
-            <i className="bi bi-bar-chart" style={{ fontSize: '24px' }}></i>
-          </div>
-        </div>
-      </div>
-
-      {/* Table va xu ly menu o duoi*/}
-      <div className="mt-3" style={{ marginLeft: '15px', marginRight: '10px', position: 'relative',marginBottom:'50px' }}>
-        <ReactTabulator
-          className="my-custom-table rounded" // Thêm lớp tùy chỉnh nếu cần
-          columns={columns}
-          options={options}
-          data={data}
-          placeholder="Không tìm thấy dữ liệu!"
-        />
-        {showMenu && invoice && invoice.status && (
-          <div
-            className="tabulator-menu tabulator-popup-container "
-            ref={menuRef} // Gán ref đúng cách cho menu
-            style={{
-              position: 'absolute',
-              top: menuPosition.y - 676,
-              left: menuPosition.x - 350,
-              transform: 'translateX(-50%)'
-            }}>
-            {/* menu thay doi theo trang trai */}
-            {(invoice.status === 'Chưa thu' ? menuItemsThu : menuItems).map((item) => (
-              <div
-                key={item.id}
-                // Gắn ref vào tag này
-                className={`tabulator-menu-item ${item.textClass || ''}`}
-                onClick={() => handleItemClick(item.label)} // Đóng menu khi chọn item
-                {...(item.label === 'Thiết lập tài sản' && {
-                  'data-bs-toggle': 'modal',
-                  'data-bs-target': '#assetSelect'
-                })}>
-                {item.icon && (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className={`feather feather-${item.icon}`}>
-                    {item.icon === 'dollar-sign' && (
-                      <>
-                        <line x1="12" y1="1" x2="12" y2="23" />
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                      </>
-                    )}
-                    {item.icon === 'arrow-right-circle' && (
-                      <>
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 16 16 12 12 8" />
-                        <line x1="8" y1="12" x2="16" y2="12" />
-                      </>
-                    )}
-                    {item.icon === 'user' && (
-                      <>
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </>
-                    )}
-                    {item.icon === 'refresh-ccw' && (
-                      <>
-                        <polyline points="1 4 1 10 7 10" />
-                        <polyline points="23 20 23 14 17 14" />
-                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
-                      </>
-                    )}
-                    {item.icon === 'bell' && (
-                      <>
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                      </>
-                    )}
-                    {item.icon === 'settings' && (
-                      <>
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                      </>
-                    )}
-                    {item.icon === 'log-out' && (
-                      <>
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                      </>
-                    )}
-                    {item.icon === 'trello' && (
-                      <>
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <rect x="7" y="7" width="3" height="9"></rect>
-                        <rect x="14" y="7" width="3" height="5"></rect>
-                      </>
-                    )}
-                    {item.icon === 'printer' && (
-                      <>
-                        <polyline points="6 9 6 2 18 2 18 9" />
-                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                        <rect x="6" y="14" width="12" height="8" />
-                      </>
-                    )}
-                    {item.icon === 'edit-3' && (
-                      <>
-                        <path d="M12 20h9" />
-                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                      </>
-                    )}
-                    {item.icon === 'share' && (
-                      <>
-                        <path d="M4 12v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
-                        <polyline points="16 6 12 2 8 6" />
-                        <line x1="12" y1="2" x2="12" y2="15" />
-                      </>
-                    )}
-                    {item.icon === 'trash-2' && (
-                      <>
-                        <polyline points="3 6 5 6 21 6" />
-                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m5 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-                        <line x1="10" y1="11" x2="10" y2="17" />
-                        <line x1="14" y1="11" x2="14" y2="17" />
-                      </>
-                    )}
-                    {item.icon === 'share-2' && (
-                      <>
-                        <circle cx="18" cy="5" r="3" />
-                        <circle cx="6" cy="12" r="3" />
-                        <circle cx="18" cy="19" r="3" />
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                      </>
-                    )}
-                    {item.icon === 'x-circle' && (
-                      <>
-                        <circle cx="12" cy="12" r="10" />
-                        <line x1="15" y1="9" x2="9" y2="15" />
-                        <line x1="9" y1="9" x2="15" y2="15" />
-                      </>
-                    )}
-                    {item.icon === 'truck' && (
-                      <>
-                        <rect x="1" y="3" width="15" height="13" />
-                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-                        <circle cx="5.5" cy="18.5" r="2.5" />
-                        <circle cx="18.5" cy="18.5" r="2.5" />
-                      </>
-                    )}
-                    {/* Thêm các biểu tượng khác nếu cần */}
-                  </svg>
-                )}
-                {item.label}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      {/* Modal add block  */}
+      {/* Modal lập hóa đơn nhanh */}
       <div
         className="modal fade"
         data-bs-backdrop="static"
@@ -987,11 +768,11 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                                     placeholder="Ngày lập hóa đơn"
                                     pattern="\d{1,2}\/\d{1,2}\/\d{4}"
                                     options={{
-                                      locale: Vietnamese, // Cấu hình ngôn ngữ tiếng Việt
+                                      locale: Vietnamese,
                                       plugins: [
                                         new monthSelectPlugin({
-                                          shorthand: true, //defaults to false
-                                          dateFormat: 'm.y' //defaults to "F Y"
+                                          shorthand: true,
+                                          dateFormat: 'm.y'
                                         })
                                       ]
                                     }}
@@ -1014,7 +795,6 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                                   required>
                                   <option value="1">Thu tiền hàng tháng </option>
                                 </select>
-
                                 <label htmlFor="reason_id">Lý do thu tiền</label>
                               </div>
                             </div>
@@ -1027,20 +807,19 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                                     className="form-control date-flat-picker flatpickr-input active"
                                     name="date"
                                     data-format="date"
-                                    id="date-add-bill"
+                                    id="date-add-bill-2"
                                     placeholder="Ngày lập hóa đơn"
                                     pattern="\d{1,2}\/\d{1,2}\/\d{4}"
                                     options={{ locale: Vietnamese }}
                                   />
-                                  <label htmlFor="date-add-bill">Ngày lập hóa đơn</label>
+                                  <label htmlFor="date-add-bill-2">Ngày lập hóa đơn</label>
                                 </div>
-                                <label className="input-group-text" htmlFor="date-add-bill">
+                                <label className="input-group-text" htmlFor="date-add-bill-2">
                                   <i className="bi bi-calendar" style={{ fontSize: '24px' }}></i>
                                 </label>
                               </div>
                               <div className="invalid-feedback">Vui lòng nhập Ngày lập hóa đơn</div>
                             </div>
-
                             <div className="col-6">
                               <div className="input-group">
                                 <div className="form-floating">
@@ -1053,7 +832,6 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                                     pattern="\d{1,2}\/\d{1,2}\/\d{4}"
                                     options={{ locale: Vietnamese }}
                                   />
-
                                   <label htmlFor="deadline_bill_date">Hạn đóng tiền</label>
                                 </div>
                                 <label className="input-group-text" htmlFor="deadline_bill_date">
@@ -1070,45 +848,6 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                                 <i className="des">Nhập thông tin từ ngày đến ngày</i>
                               </div>
                             </div>
-
-                            {/* Số tháng, ngày  layout  */}
-                            <div className="row g-2 month-amount-layout" style={{ marginTop: '5px', display: 'none' }}>
-                              <div className="col-6 mt-2">
-                                <div className="form-floating">
-                                  <Flatpickr
-                                    data-format="numeric"
-                                    type="text"
-                                    min="0"
-                                    className="form-control"
-                                    value="1"
-                                    name="month_amount"
-                                    id="month_amount"
-                                    placeholder="Nhập số tháng"
-                                  />
-                                  <label htmlFor="month_amount">Số tháng</label>
-                                  <div className="invalid-feedback">Vui lòng nhập số tháng tính tiền</div>
-                                </div>
-                              </div>
-
-                              <div className="col-6 mt-2">
-                                <div className="form-floating">
-                                  <input
-                                    data-format="numeric"
-                                    type="text"
-                                    min="0"
-                                    className="form-control"
-                                    value="0"
-                                    name="day_amount"
-                                    id="day_amount"
-                                    placeholder="Nhập số tháng"
-                                  />
-                                  <label htmlFor="day_amount">Số ngày lẻ</label>
-                                  <div className="invalid-feedback">Vui lòng nhập số ngày lẻ</div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Từ ngày, đến ngày  layout  */}
                             <div className="row g-2 circle-month-layout" style={{ marginTop: '5px' }}>
                               <div className="col-6 mt-2">
                                 <div className="form-floating">
@@ -1126,7 +865,6 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                                   <label htmlFor="date_from">Từ ngày</label>
                                 </div>
                               </div>
-
                               <div className="col-6 mt-2">
                                 <div className="form-floating">
                                   <input
@@ -1134,8 +872,8 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                                     className="form-control date-flat-picker"
                                     name="date_to"
                                     id="date_to"
-                                    value={toDate} // Gán giá trị từ ngày "Từ ngày" + 1 tháng
-                                    readOnly // Chỉ cho phép đọc
+                                    value={toDate}
+                                    readOnly
                                   />
                                   <label htmlFor="date_to">Đến ngày</label>
                                 </div>
@@ -1150,7 +888,6 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                               <b>Thông tin:</b> Các phòng/giường lập hóa đơn mặc định tính <strong>tròn 1 tháng</strong>
                             </div>
                           </div>
-
                           <div className="addition-layount">
                             <div className="col-12 mt-2 mb-2">
                               <div className="title-item-small">
@@ -1164,8 +901,7 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                                   <i className="bi bi-info-circle" style={{ fontSize: '24px' }}></i>
                                 </div>
                                 <div className="des flex-1">
-                                  Chú ý: Cộng thêm / giảm trừ không nên là tiền cọc. Hãy chọn lý do có tiền cọc để nếu
-                                  cần
+                                  Chú ý: Cộng thêm / giảm trừ không nên là tiền cọc. Hãy chọn lý do có tiền cọc để nếu cần
                                 </div>
                               </div>
                               {items.map((_, index) => (
@@ -1201,32 +937,25 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                           <i className="bi bi-info-circle" style={{ fontSize: '24px' }}></i>
                         </div>
                         <div className="des flex-1">
-                          Để gửi hóa đơn tự đơn qua Zalo cho khách bạn phải tạo từng hóa đơn một. Việc gửi tự động cho
-                          khách khi lập hóa đơn nhanh chỉ áp dụng khi khách thuê đang dùng app RRMS
+                          Để gửi hóa đơn tự đơn qua Zalo cho khách bạn phải tạo từng hóa đơn một.
                         </div>
                       </div>
                     </div>
                     <div className="col-6">
-                      <div>
-                        <span style={{ fontSize: '16px', color: '#4ebced' }}>
-                          <b className="count-deal-price-item badge " style={{ backgroundColor: '#4ebced' }}>
-                            0
-                          </b>{' '}
-                          phòng đã được chốt dịch vụ và sẵn sàng lập hóa đơn
-                        </span>
-                      </div>
+                      <span style={{ fontSize: '16px', color: '#4ebced' }}>
+                        <b className="count-deal-price-item badge " style={{ backgroundColor: '#4ebced' }}>0</b>{' '}
+                        phòng đã được chốt dịch vụ và sẵn sàng lập hóa đơn
+                      </span>
                     </div>
                     <div className="col-6 text-end">
                       <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
-                        <i className="bi bi-x" style={{ fontSize: '17px' }}></i>
-                        Đóng
+                        <i className="bi bi-x" style={{ fontSize: '17px' }}></i> Đóng
                       </button>
                       {step === 2 && (
                         <button type="button" className="btn btn-primary m-1" onClick={handlePreviousStep}>
                           <i className="bi bi-arrow-left" style={{ fontSize: '17px' }}></i> Bước 1: Chốt dịch vụ
                         </button>
                       )}
-                      {/* Nút chuyển đến bước tiếp theo hoặc nút lập hóa đơn (tùy theo bước hiện tại) */}
                       {step === 1 ? (
                         <button type="button" className="btn btn-primary m-1" onClick={handleNextStep}>
                           Bước 2: Lập hóa đơn <i className="bi bi-arrow-right" style={{ fontSize: '17px' }}></i>
@@ -1250,9 +979,9 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         toggleModal={toggleModalInvoice}
         invoice={invoice}
         onUpdateInvoice={(updatedInvoice) => {
-            setInvoices((prevInvoices) => prevInvoices.map(inv => 
-                inv.invoiceId === updatedInvoice.invoiceId ? updatedInvoice : inv
-            ));
+          setInvoices((prevInvoices) => prevInvoices.map(inv =>
+            inv.invoiceId === updatedInvoice.invoiceId ? updatedInvoice : inv
+          ))
         }}
       />
       <ModalCollectMoneyInvoice
@@ -1262,7 +991,7 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         fetchInvoices={() => fetchInvoices(motelId)}
         updateInvoiceStatus={updateInvoiceStatus}
       />
-    </div>
+    </Box>
   )
 }
 

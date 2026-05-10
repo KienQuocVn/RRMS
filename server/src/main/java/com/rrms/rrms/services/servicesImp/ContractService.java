@@ -148,9 +148,6 @@ public class ContractService implements IContractService {
     @Override
     public List<ContractResponse> getAllContractsByMotelId(UUID motelId) {
         List<Contract> contracts = contractRepository.findByRoom_Motel_MotelId(motelId);
-        if (contracts.isEmpty()) {
-            throw new EntityNotFoundException("No contracts found for motelId: " + motelId);
-        }
 
         return contracts.stream()
                 .map(contract -> {
