@@ -11,7 +11,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 
-import org.springframework.data.elasticsearch.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.ContractRequest;
@@ -41,6 +40,8 @@ public class ContractService implements IContractService {
     private final AccountRepository accountRepository;
 
     private final ContractTemplateRepository contractTemplateRepository;
+
+    private final ContractOccupantRepository contractOccupantRepository;
 
     private final ContractMapper contractMapper;
 
@@ -103,6 +104,14 @@ public class ContractService implements IContractService {
         // Save the contract
         contract = contractRepository.save(contract);
 
+        // Đăng ký người thuê chính vào danh sách người ở của phòng
+        ContractOccupant occupant = new ContractOccupant();
+        occupant.setContract(contract);
+        occupant.setTenant(tenant);
+        occupant.setMoveInDate(new java.sql.Date(contract.getMoveinDate().getTime()).toLocalDate());
+        occupant.setIsActive(true);
+        contractOccupantRepository.save(occupant);
+
         // Return the response after saving the contract
         return contractMapper.toResponse(contract);
     }
@@ -111,7 +120,7 @@ public class ContractService implements IContractService {
     public ContractResponse getContractById(UUID contractId) {
         Contract contract = contractRepository
                 .findById(contractId)
-                .orElseThrow(() -> new ResourceNotFoundException("Contract not found with id " + contractId));
+                .orElseThrow(() -> new EntityNotFoundException("Contract not found with id " + contractId));
         return contractMapper.toResponse(contract);
     }
 
@@ -119,9 +128,9 @@ public class ContractService implements IContractService {
     public ContractResponse updateContract(UUID contractId, ContractRequest request) {
         Contract existingContract = contractRepository
                 .findById(contractId)
-                .orElseThrow(() -> new ResourceNotFoundException("Contract not found with id " + contractId));
+                .orElseThrow(() -> new EntityNotFoundException("Contract not found with id " + contractId));
 
-        // Cáº­p nháº­t cÃ¡c trÆ°á»ng cá»§a há»£p Ä‘á»“ng dá»±a trÃªn request
+        // Cáº­p nháº­t cÃ¡c trÆ°á» ng cá»§a há»£p Ä‘á»“ng dá»±a trÃªn request
         Contract updatedContract = contractMapper.toEntity(request);
         updatedContract.setContractId(existingContract.getContractId());
 
@@ -132,7 +141,7 @@ public class ContractService implements IContractService {
     @Override
     public void deleteContract(UUID contractId) {
         if (!contractRepository.existsById(contractId)) {
-            throw new ResourceNotFoundException("Contract not found with id " + contractId);
+            throw new EntityNotFoundException("Contract not found with id " + contractId);
         }
         contractRepository.deleteById(contractId);
     }
@@ -140,7 +149,7 @@ public class ContractService implements IContractService {
     @Override
     public void deleteContractByRoomId(UUID RoomId) {
         if (!roomRepository.existsById(RoomId)) {
-            throw new ResourceNotFoundException("Contract not found with id " + RoomId);
+            throw new EntityNotFoundException("Contract not found with id " + RoomId);
         }
         contractRepository.deleteByRoomId(RoomId);
     }
@@ -218,10 +227,16 @@ public class ContractService implements IContractService {
 
     @Override
     public ContractResponse getAllContractsByRoomId(UUID roomId) {
-        Contract contract = contractRepository.findByRoom_RoomId(roomId);
-        if (contract == null) {
-            throw new ResourceNotFoundException("Contract not found for room with id " + roomId);
+        // Ưu tiên lấy hợp đồng đang hoạt động (ACTIVE/EXPIRING/DEPOSITED) mới nhất
+        List<Contract> activeContracts = contractRepository.findActiveContractsByRoomId(roomId);
+        if (!activeContracts.isEmpty()) {
+            return contractMapper.toResponse(activeContracts.get(0));
         }
-        return contractMapper.toResponse(contract);
+        // Nếu không có hợp đồng đang hoạt động, lấy hợp đồng bất kỳ (mới nhất)
+        List<Contract> allContracts = contractRepository.findContractsByRoomId(roomId);
+        if (!allContracts.isEmpty()) {
+            return contractMapper.toResponse(allContracts.get(0));
+        }
+        throw new EntityNotFoundException("Không tìm thấy hợp đồng cho phòng với id: " + roomId);
     }
 }

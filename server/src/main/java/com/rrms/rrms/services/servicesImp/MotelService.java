@@ -44,26 +44,26 @@ public class MotelService implements IMotelService {
     @Override
     public Optional<Integer> getTotalRooms(UUID motelId, String username) {
         Optional<Motel> motel = motelRepository.findByMotelNameAndUsername(motelId, username);
-        return motel.map(m -> m.getRooms().size()); // Tráº£ vá» sá»‘ lÆ°á»£ng phÃ²ng
+        return motel.map(m -> m.getRooms().size()); // Trả về số lượng phòng
     }
 
     @Override
     public MotelResponse insert(MotelRequest motel) {
-        // LÆ°u motel vÃ  láº¥y entity Ä‘Ã£ lÆ°u cÃ¹ng vá»›i ID Ä‘Æ°á»£c táº¡o
+        // Lưu motel và lấy entity đã lưu cùng với ID được tạo
         Motel savedMotel = motelRepository.save(motelMapper.motelRequestToMotel(motel));
 
-        // Táº¡o ContractTemplateRequest vá»›i ID cá»§a Motel vá»«a lÆ°u
+        // Tạo ContractTemplate mặc định với ID của Motel vừa lưu
         ContractTemplate contractTemplate = new ContractTemplate();
-        contractTemplate.setMotel(savedMotel); // Sá»­ dá»¥ng ID tá»« entity Ä‘Ã£ lÆ°u
-        contractTemplate.setTemplatename("Máº«u máº·c Ä‘á»‹nh");
-        contractTemplate.setNamecontract("Máº«u máº·c Ä‘á»‹nh");
+        contractTemplate.setMotel(savedMotel); // Sử dụng ID từ entity đã lưu
+        contractTemplate.setTemplatename("Mẫu mặc định");
+        contractTemplate.setNamecontract("Mẫu mặc định");
         contractTemplate.setSortorder(1);
-        contractTemplate.setContent("Máº«u máº·c Ä‘á»‹nh");
+        contractTemplate.setContent("Mẫu mặc định");
 
-        // LÆ°u contract template
+        // Lưu contract template
         contractTemplateRepository.save(contractTemplate);
 
-        // Tráº£ vá» response
+        // Trả về response
         return motelMapper.motelToMotelResponse(savedMotel);
     }
 
@@ -145,10 +145,10 @@ public class MotelService implements IMotelService {
                     .findContractsByMotelIdAndStatus(motel.getMotelId(), ContractStatus.TERMINATED)
                     .size();
 
-            // Äáº¿m sá»‘ phÃ²ng khÃ´ng cÃ³ há»£p Ä‘á»“ng vÃ  sá»‘ phÃ²ng Ä‘Ã£ Ä‘áº·t cá»c
+            // Đếm số phòng không có hợp đồng và số phòng đã đặt cọc
             List<Room> rooms = roomRepository.findByMotelMotelId(motel.getMotelId());
             int noContractCount = 0;
-            int reservedCount = 0; // Biáº¿n Ä‘á»ƒ Ä‘áº¿m sá»‘ phÃ²ng Ä‘Ã£ Ä‘áº·t cá»c
+            int reservedCount = 0; // Biến để đếm số phòng đã đặt cọc
 
             for (Room room : rooms) {
                 boolean hasContract = contractRepository
@@ -158,9 +158,9 @@ public class MotelService implements IMotelService {
                 if (!hasContract) {
                     noContractCount++;
                 }
-                // Kiá»ƒm tra phÃ²ng cÃ³ Ä‘áº·t cá»c
+                // Kiểm tra phòng có đặt cọc
                 List<Reserve_a_place> reserves = roomReservationRepository.findByRoom_RoomId(room.getRoomId());
-                reservedCount += reserves.size(); // Tá»•ng sá»‘ phÃ²ng Ä‘Ã£ Ä‘áº·t cá»c
+                reservedCount += reserves.size(); // Tổng số phòng đã đặt cọc
             }
 
             MotelRoomCountResponse response = new MotelRoomCountResponse(
@@ -172,7 +172,7 @@ public class MotelService implements IMotelService {
                     stakeCount,
                     reportEndCount,
                     noContractCount,
-                    reservedCount // ThÃªm sá»‘ phÃ²ng Ä‘Ã£ Ä‘áº·t cá»c
+                    reservedCount // Thêm số phòng đã đặt cọc
                     );
 
             responseList.add(response);
@@ -196,25 +196,24 @@ public class MotelService implements IMotelService {
         List<Object[]> results = motelRepository.getTotalPaidInvoicesByMotelId(motelId);
 
         if (!results.isEmpty() && results.get(0)[2] != null) {
-            Object value = results.get(0)[2]; // Cá»™t "Total_Paid_Amount" trong stored procedure
+            Object value = results.get(0)[2]; // Cột "Total_Paid_Amount" trong stored procedure
 
-            // Kiá»ƒm tra kiá»ƒu dá»¯ liá»‡u tráº£ vá»
+            // Kiểm tra kiểu dữ liệu trả về
             if (value instanceof BigDecimal) {
-                return (BigDecimal) value; // Náº¿u lÃ  BigDecimal, tráº£ vá» trá»±c tiáº¿p
+                return (BigDecimal) value; // Nếu là BigDecimal, trả về trực tiếp
             }
             if (value instanceof String) {
                 try {
-                    return new BigDecimal((String) value); // Chuyá»ƒn Ä‘á»•i tá»« String
+                    return new BigDecimal((String) value); // Chuyển đổi từ String
                 } catch (NumberFormatException e) {
-                    throw new IllegalStateException("GiÃ¡ trá»‹ tráº£ vá» khÃ´ng há»£p lá»‡: " + value, e);
+                    throw new IllegalStateException("Giá trị trả về không hợp lệ: " + value, e);
                 }
             }
             if (value instanceof Number) {
-                return BigDecimal.valueOf(
-                        ((Number) value).doubleValue()); // Chuyá»ƒn Ä‘á»•i tá»« cÃ¡c kiá»ƒu sá»‘ khÃ¡c
+                return BigDecimal.valueOf(((Number) value).doubleValue()); // Chuyển đổi từ các kiểu số khác
             }
         }
-        return BigDecimal.ZERO; // Tráº£ vá» 0 náº¿u khÃ´ng cÃ³ káº¿t quáº£
+        return BigDecimal.ZERO; // Trả về 0 nếu không có kết quả
     }
 
     @Override
@@ -223,18 +222,18 @@ public class MotelService implements IMotelService {
         if (!results.isEmpty() && results.get(0)[1] != null) {
             Object value = results.get(0)[1];
 
-            // Xá»­ lÃ½ káº¿t quáº£ tráº£ vá»
+            // Xử lý kết quả trả về
             if (value instanceof String) {
                 try {
-                    return new BigDecimal((String) value); // Chuyá»ƒn tá»« String sang BigDecimal
+                    return new BigDecimal((String) value); // Chuyển từ String sang BigDecimal
                 } catch (NumberFormatException e) {
-                    return BigDecimal.ZERO; // Tráº£ vá» 0 náº¿u khÃ´ng chuyá»ƒn Ä‘Æ°á»£c
+                    return BigDecimal.ZERO; // Trả về 0 nếu không chuyển được
                 }
             }
             if (value instanceof BigDecimal) {
-                return (BigDecimal) value; // Náº¿u lÃ  BigDecimal, tráº£ vá» trá»±c tiáº¿p
+                return (BigDecimal) value; // Nếu là BigDecimal, trả về trực tiếp
             }
         }
-        return BigDecimal.ZERO; // Tráº£ vá» 0 náº¿u khÃ´ng cÃ³ káº¿t quáº£
+        return BigDecimal.ZERO; // Trả về 0 nếu không có kết quả
     }
 }

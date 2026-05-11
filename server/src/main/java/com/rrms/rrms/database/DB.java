@@ -259,6 +259,8 @@ public class DB {
                     contractServiceRepository,
                     contractDeviceRepository,
                     contractDeviceHandoverRepository,
+                    motelServiceRepository,
+                    motelDeviceRepository,
                     contracts,
                     tenants,
                     deviceCatalog);
@@ -623,15 +625,16 @@ public class DB {
             List<ContractTemplate> templates,
             List<Broker> brokers) {
         List<Contract> contracts = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            Room r = rooms.get(i);
+        // Seed 10 contracts, mỗi motel lấy 1 phòng đầu tiên (index = i * 5 vì mỗi motel có 5 phòng)
+        for (int i = 0; i < 10; i++) {
+            Room r = rooms.get(i * 5); // Phòng đầu tiên của motel thứ i
             Tenant t = tenants.get(i);
             Contract c = repo.save(Contract.builder()
                     .room(r)
                     .tenant(t)
                     .account(host)
-                    .contractTemplate(templates.get(0))
-                    .broker(brokers.isEmpty() ? null : brokers.get(0))
+                    .contractTemplate(templates.get(i % templates.size()))
+                    .broker(brokers.isEmpty() ? null : brokers.get(i % brokers.size()))
                     .price(r.getPrice())
                     .actualPrice(r.getPrice())
                     .deposit(r.getDeposit())
@@ -656,9 +659,15 @@ public class DB {
             ContractServiceRepository csRepo,
             ContractDeviceRepository cdRepo,
             ContractDeviceHandoverRepository chRepo,
+            MotelServiceRepository msRepo,
+            MotelDeviceRepository mdRepo,
             List<Contract> contracts,
             List<Tenant> tenants,
             List<Device> devices) {
+
+        List<MotelService> allMotelServices = msRepo.findAll();
+        List<MotelDevice> allMotelDevices = mdRepo.findAll();
+
         for (Contract c : contracts) {
             coRepo.save(ContractOccupant.builder()
                     .contract(c)
@@ -682,6 +691,31 @@ public class DB {
                         .damageFee(0.0)
                         .build());
             });
+
+            // Seed ContractService
+            allMotelServices.stream()
+                    .filter(ms -> ms.getMotel()
+                            .getMotelId()
+                            .equals(c.getRoom().getMotel().getMotelId()))
+                    .forEach(ms -> {
+                        csRepo.save(ContractService.builder()
+                                .contract(c)
+                                .service(ms)
+                                .build());
+                    });
+
+            // Seed ContractDevice
+            allMotelDevices.stream()
+                    .filter(md -> md.getMotel()
+                            .getMotelId()
+                            .equals(c.getRoom().getMotel().getMotelId()))
+                    .forEach(md -> {
+                        cdRepo.save(ContractDevice.builder()
+                                .contract(c)
+                                .motelDevice(md)
+                                .quantity(1)
+                                .build());
+                    });
         }
     }
 

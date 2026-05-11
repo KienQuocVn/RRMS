@@ -392,6 +392,12 @@ const ProtectedRoute = ({ children, requiredRoles }) => {
 - [x] Thêm Error Boundary component
 - [x] Nâng cấp giao diện ContractManage sử dụng MUI (2026-05-10)
 - [x] Sửa lỗi 404 khi lấy danh sách hợp đồng trống (Backend/InvoiceManager) (2026-05-10)
+- [x] Sửa lỗi khởi động Server: AccountMapper bean not found (2026-05-10)
+- [x] Sửa lỗi encoding UTF-8 trong MotelService.java: các chuỗi tiếng Việt bị mã hóa sai (2026-05-10)
+- [x] Sửa lỗi 500 GET /contracts/room/{roomId}: NonUniqueResultException khi phòng có nhiều hợp đồng lịch sử (2026-05-10)
+- [x] Sửa lỗi tạo hợp đồng: field name sai contracttemplateId→contractTemplateId và lỗi tenantId undefined (2026-05-10)
+- [x] Sửa lỗi CSS warning boxShadow có dấu chấm phẩy trong InvoiceManager.jsx (2026-05-10)
+- [x] Sửa triệt để lỗi logic API Contract và hoàn thiện file seed data tạo liên kết ContractService, ContractDevice (2026-05-10)
 - [ ] Thêm Loading states cho async operations
 - [ ] Thêm Empty states cho danh sách trống
 - [ ] Cải thiện responsive design

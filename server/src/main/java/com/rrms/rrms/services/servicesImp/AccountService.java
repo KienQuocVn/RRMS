@@ -40,6 +40,7 @@ public class AccountService implements IAccountService {
     private final AccountMapper accountMapper;
     private final BCryptPasswordEncoder passwordEncoder;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public AccountService(
             AccountRepository accountRepository,
             AuthRepository authRepository,

@@ -16,7 +16,6 @@ import com.rrms.rrms.dto.response.BrokerResponse;
 import com.rrms.rrms.models.Account;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-// một Bean
 public interface AccountMapper {
 
     // Nhận một AccountRequest và trả về đối tượng Account

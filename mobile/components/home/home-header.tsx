@@ -48,7 +48,7 @@ export default function HomeHeader({
 
   const handleSettingsPress = () => {
     closeMenu(() => {
-      router.push('/rental-settings');
+      router.push('/motel-settings');
     });
   };
 

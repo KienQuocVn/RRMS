@@ -77,8 +77,13 @@ public class ContractController {
     // Lấy hợp đồng theo roomId
     @GetMapping("room/{roomId}")
     public ResponseEntity<ContractResponse> getContractByRoomId(@PathVariable UUID roomId) {
-        ContractResponse response = contractService.getAllContractsByRoomId(roomId);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        try {
+            ContractResponse response = contractService.getAllContractsByRoomId(roomId);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (jakarta.persistence.EntityNotFoundException e) {
+            // Khi phòng trống không có hợp đồng, trả về 200 OK với body rỗng để UI không bị văng lỗi Axios 404
+            return ResponseEntity.ok().build();
+        }
     }
 
     @PutMapping("/update-status")

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef, useMemo } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { Box, Paper } from '@mui/material'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import YearMonthFilter from '../YearMonthFilter'
@@ -657,7 +657,7 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                     style={{
                       marginRight: '15px',
                       outline: 0,
-                      boxShadow: 'rgba(112, 175, 237, 0.16) 0px 0px 0px 0.25rem;',
+                      boxShadow: 'rgba(112, 175, 237, 0.16) 0px 0px 0px 0.25rem',
                       opacity: 1,
                       borderRadius: '100%',
                       width: '36px',

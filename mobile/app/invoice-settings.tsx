@@ -1,9 +1,3 @@
-/**
- * InvoiceSettingsScreen - Cài đặt hóa đơn
- * Dùng cho: Cấu hình ngày lập, hạn đóng, hình thức thanh toán, gửi Zalo, mã QR, làm tròn...
- * Điều hướng từ: ManagementMenu > "Cài đặt hóa đơn"
- */
-
 import React, { useState } from 'react';
 import {
   View,
@@ -12,260 +6,172 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Switch,
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+import {
+  Colors,
+  Spacing,
+  FontWeights,
+  Shadows,
+} from '@/constants/theme';
 
-// ── Component ──
+function Toggle({
+  value,
+  onPress,
+}: {
+  value: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress}
+      style={[styles.toggle, value && styles.toggleActive]}
+    >
+      <View style={[styles.toggleThumb, value && styles.toggleThumbActive]} />
+    </TouchableOpacity>
+  );
+}
+
 export default function InvoiceSettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-
   const [showInvoiceDate, setShowInvoiceDate] = useState(false);
+  const [sendZalo, setSendZalo] = useState(true);
   const [invoiceDay, setInvoiceDay] = useState('1');
   const [paymentDeadline, setPaymentDeadline] = useState('5');
   const [noteText, setNoteText] = useState(
     '* Ví dụ: Vui lòng chụp đồng hồ điện nước và gửi lên group trước ngày thanh toán tiền'
   );
-  const [sendZalo, setSendZalo] = useState(true);
-  const [showQR, setShowQR] = useState(true);
-  const [roundInvoice, setRoundInvoice] = useState(true);
-  const [classifyInvoice, setClassifyInvoice] = useState(false);
 
   return (
     <View style={styles.container}>
-      {/* ── Header ── */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : Spacing.xl }]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          accessibilityLabel="Quay lại"
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Cài đặt hóa đơn</Text>
       </View>
 
-      {/* ── Scrollable Content ── */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Section 1: Hiển thị ngày lập hóa đơn ── */}
-        <View style={styles.section}>
-          <View style={styles.toggleRow}>
-            <View style={styles.toggleContent}>
-              <Text style={styles.toggleTitle}>Hiển thị ngày lập hóa đơn</Text>
-              <Text style={styles.toggleDesc}>
-                Hiển thị ngày lập hóa đơn trong danh sách phòng. Giúp bạn biết được ngày chốt tiền điện nước, tiền thuê nhà... của phòng.
+        <View style={styles.whiteSection}>
+          <View style={styles.topToggleRow}>
+            <View style={styles.flexContent}>
+              <Text style={styles.sectionTitle}>Hiển thị ngày lập hóa đơn</Text>
+              <Text style={styles.sectionDescription}>
+                Hiển thị ngày lập hóa đơn trong danh sách phòng. Giúp bạn biết được
+                ngày chốt tiền điện nước, tiền thuê nhà... của phòng.
               </Text>
             </View>
-            <Switch
-              value={showInvoiceDate}
-              onValueChange={setShowInvoiceDate}
-              trackColor={{ false: Colors.gray300, true: '#4CAF50' }}
-              thumbColor={Colors.white}
-              ios_backgroundColor={Colors.gray300}
-            />
+            <Toggle value={showInvoiceDate} onPress={() => setShowInvoiceDate((prev) => !prev)} />
           </View>
-        </View>
 
-        {/* ── Section 2: Ngày lập & Hạn đóng ── */}
-        <View style={styles.section}>
-          <View style={styles.dateRow}>
-            <View style={styles.dateCol}>
-              <Text style={styles.dateLabel}>
+          <View style={styles.divider} />
+
+          <View style={styles.inputGrid}>
+            <View style={styles.inputColumn}>
+              <Text style={styles.inputLabel}>
                 Ngày lập hóa đơn <Text style={styles.required}>*</Text>
               </Text>
-              <View style={styles.dateInputWrap}>
-                <TextInput
-                  style={styles.dateInput}
-                  value={invoiceDay}
-                  onChangeText={setInvoiceDay}
-                  keyboardType="number-pad"
-                  accessibilityLabel="Ngày lập hóa đơn"
-                />
-              </View>
+              <TextInput
+                style={styles.dayInput}
+                value={invoiceDay}
+                onChangeText={setInvoiceDay}
+                keyboardType="number-pad"
+              />
             </View>
-            <View style={styles.dateCol}>
-              <Text style={styles.dateLabel}>
+
+            <View style={styles.inputColumn}>
+              <Text style={styles.inputLabel}>
                 Hạn đóng tiền <Text style={styles.required}>*</Text>
               </Text>
-              <View style={styles.deadlineInputRow}>
+              <View style={styles.deadlineWrap}>
                 <TextInput
-                  style={[styles.dateInput, { flex: 1 }]}
+                  style={styles.deadlineInput}
                   value={paymentDeadline}
                   onChangeText={setPaymentDeadline}
                   keyboardType="number-pad"
-                  accessibilityLabel="Hạn đóng tiền"
                 />
-                <View style={styles.dayBadge}>
-                  <Text style={styles.dayBadgeText}>Ngày</Text>
+                <View style={styles.unitBadge}>
+                  <Text style={styles.unitBadgeText}>Ngày</Text>
                 </View>
               </View>
             </View>
           </View>
-        </View>
 
-        {/* ── Section 3: Hình thức thanh toán ── */}
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.paymentMethodRow}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            accessibilityLabel="Chọn hình thức thanh toán"
-          >
+          <View style={styles.divider} />
+
+          <TouchableOpacity style={styles.paymentCard} activeOpacity={0.85}>
             <View style={styles.paymentIcon}>
-              <Ionicons name="people-outline" size={20} color={Colors.textSecondary} />
+              <Ionicons name="people" size={20} color={Colors.black} />
             </View>
+
             <View style={styles.paymentContent}>
               <Text style={styles.paymentLabel}>Mặc định hình thức thanh toán</Text>
               <Text style={styles.paymentValue}>Tiền mặt</Text>
             </View>
-            <TouchableOpacity
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              accessibilityLabel="Xóa hình thức thanh toán"
-            >
-              <Ionicons name="close-circle-outline" size={24} color={Colors.textSecondary} />
-            </TouchableOpacity>
+
+            <View style={styles.closeCircle}>
+              <Ionicons name="close" size={20} color={Colors.black} />
+            </View>
           </TouchableOpacity>
         </View>
 
-        {/* ── Section 4: Ghi chú hóa đơn ── */}
-        <View style={styles.sectionDivider} />
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Ghi chú thêm cho hóa đơn</Text>
-          <Text style={styles.sectionHint}>
-            Ghi chú cho khách thuê lúc in phiếu thu (hóa đơn)
+        <View style={styles.graySpacer} />
+
+        <View style={styles.whiteSection}>
+          <Text style={styles.sectionTitle}>Ghi chú thêm cho hóa đơn</Text>
+          <Text style={styles.sectionDescription}>
+            Ghi chú cho khách thuê lúc in phiếu thu (hoá đơn)
           </Text>
-          <View style={styles.textAreaWrap}>
-            <TextInput
-              style={styles.textArea}
-              value={noteText}
-              onChangeText={setNoteText}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              accessibilityLabel="Ghi chú hóa đơn"
-            />
-          </View>
+
+          <TextInput
+            style={styles.noteInput}
+            value={noteText}
+            onChangeText={setNoteText}
+            multiline
+            textAlignVertical="top"
+          />
         </View>
 
-        {/* ── Section 5: Gửi hóa đơn qua ZALO ── */}
-        <View style={styles.sectionDivider} />
-        <View style={styles.section}>
+        <View style={styles.graySpacer} />
+
+        <View style={styles.whiteSection}>
           <View style={styles.zaloCard}>
-            <View style={styles.zaloHeader}>
-              <View style={styles.zaloIconWrap}>
-                <Text style={styles.zaloIcon}>Zalo</Text>
+            <View style={styles.zaloTopRow}>
+              <View style={styles.zaloLogo}>
+                <Text style={styles.zaloLogoText}>Zalo</Text>
               </View>
-              <View style={styles.zaloContent}>
-                <Text style={styles.zaloTitle}>Gửi hóa đơn qua ZALO</Text>
-                <Text style={styles.zaloDesc}>
+
+              <View style={styles.flexContent}>
+                <Text style={styles.sectionTitle}>Gửi hóa đơn qua ZALO</Text>
+                <Text style={styles.zaloDescription}>
                   Khi bật tính năng này hóa đơn sẽ được gửi tự cho khách thuê qua Zalo
                 </Text>
                 <Text style={styles.zaloNote}>- Tính năng này có áp dụng phí dịch vụ.</Text>
-                <Text style={styles.zaloNote}>- Gửi theo thương hiệu RRMS</Text>
+                <Text style={styles.zaloNote}>- Gửi theo thương hiệu LOZIDO</Text>
                 <Text style={styles.zaloNote}>- Không gửi được khung giờ:</Text>
-                <Text style={styles.zaloNote}>  10h PM - 6h AM</Text>
-                <Text style={styles.zaloNote}>- Gửi qua APP RRMS sẽ không bị bất cứ hạn chế nào từ ZALO</Text>
+                <Text style={styles.zaloNote}>10h PM - 6h AM</Text>
+                <Text style={styles.zaloNote}>
+                  - Gửi qua APP LOZIDO sẽ không bị bất cứ hạn chế nào từ ZALO
+                </Text>
               </View>
-              <Switch
-                value={sendZalo}
-                onValueChange={setSendZalo}
-                trackColor={{ false: Colors.gray300, true: '#4CAF50' }}
-                thumbColor={Colors.white}
-                ios_backgroundColor={Colors.gray300}
-              />
-            </View>
-            <View style={styles.zaloActions}>
-              <TouchableOpacity
-                style={styles.previewBtn}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                accessibilityLabel="Gửi xem trước"
-              >
-                <Ionicons name="send-outline" size={14} color={Colors.white} style={{ marginRight: 4 }} />
-                <Text style={styles.previewBtnText}>Gửi xem trước</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.learnMoreBtn}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                accessibilityLabel="Tìm hiểu thêm"
-              >
-                <Ionicons name="help-circle-outline" size={14} color={Colors.textSecondary} style={{ marginRight: 4 }} />
-                <Text style={styles.learnMoreText}>Tìm hiểu thêm</Text>
-              </TouchableOpacity>
+
+              <Toggle value={sendZalo} onPress={() => setSendZalo((prev) => !prev)} />
             </View>
           </View>
-        </View>
-
-        {/* ── Section 6: Hiển thị mã QR ── */}
-        <View style={styles.toggleRowBordered}>
-          <View style={styles.toggleIconBox}>
-            <Ionicons name="qr-code-outline" size={22} color={Colors.textPrimary} />
-          </View>
-          <View style={styles.toggleContent}>
-            <Text style={styles.toggleTitle}>Hiển thị mã QR</Text>
-            <Text style={styles.toggleDesc}>
-              Bạn muốn hiển thị thông tin tài khoản & số tiền hóa đơn bằng mã QR giúp khách thuê thanh toán chuyển khoản nhanh hơn?
-            </Text>
-          </View>
-          <Switch
-            value={showQR}
-            onValueChange={setShowQR}
-            trackColor={{ false: Colors.gray300, true: '#4CAF50' }}
-            thumbColor={Colors.white}
-            ios_backgroundColor={Colors.gray300}
-          />
-        </View>
-
-        {/* ── Section 7: Làm tròn hóa đơn ── */}
-        <View style={styles.toggleRowBordered}>
-          <View style={styles.toggleContent}>
-            <Text style={styles.toggleTitle}>Làm tròn hóa đơn tới đơn vị 1.000đ</Text>
-            <Text style={styles.roundExample}>4.300 đ -{'>'} 4.000 đ</Text>
-            <Text style={styles.roundExample}>4.500 đ -{'>'} 4.000 đ</Text>
-            <Text style={styles.roundExample}>4.600 đ -{'>'} 5.000đ</Text>
-          </View>
-          <Switch
-            value={roundInvoice}
-            onValueChange={setRoundInvoice}
-            trackColor={{ false: Colors.gray300, true: '#4CAF50' }}
-            thumbColor={Colors.white}
-            ios_backgroundColor={Colors.gray300}
-          />
-        </View>
-
-        {/* ── Section 8: Phân loại thu/chi ── */}
-        <View style={styles.toggleRowBordered}>
-          <View style={styles.toggleContent}>
-            <Text style={styles.toggleTitle}>Phân loại thu/chi từ hóa đơn</Text>
-            <Text style={styles.toggleDesc}>
-              Khi thu tiền hóa đơn bạn muốn phân tách các phiếu thu chi rõ ràng như: Tiền phòng/giường, tiền dịch vụ, giảm trừ, cộng thêm?
-            </Text>
-          </View>
-          <Switch
-            value={classifyInvoice}
-            onValueChange={setClassifyInvoice}
-            trackColor={{ false: Colors.gray300, true: '#4CAF50' }}
-            thumbColor={Colors.white}
-            ios_backgroundColor={Colors.gray300}
-          />
         </View>
       </ScrollView>
 
-      {/* ── Save Button ── */}
-      <View style={styles.saveButtonWrap}>
-        <TouchableOpacity
-          style={styles.saveButton}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          accessibilityLabel="Lưu thay đổi"
-        >
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 14) }]}>
+        <TouchableOpacity style={styles.saveButton}>
           <Text style={styles.saveButtonText}>Lưu thay đổi</Text>
         </TouchableOpacity>
       </View>
@@ -273,11 +179,10 @@ export default function InvoiceSettingsScreen() {
   );
 }
 
-// ── Styles ──
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: '#EEF2F3',
   },
   header: {
     flexDirection: 'row',
@@ -286,294 +191,255 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: '#E5E7EB',
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: '#D1D5DB',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: Spacing.md,
+    marginRight: Spacing.sm,
+    backgroundColor: '#FAFAFA',
   },
   headerTitle: {
-    fontSize: FontSizes.base,
+    fontSize: 18,
+    lineHeight: 24,
     fontWeight: FontWeights.bold,
     color: Colors.textPrimary,
   },
-
-  // Scroll
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: Spacing['2xl'],
+    paddingBottom: 150,
   },
-
-  // Sections
-  section: {
+  whiteSection: {
+    backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.base,
   },
-  sectionDivider: {
-    height: 8,
-    backgroundColor: Colors.gray100,
+  graySpacer: {
+    height: 12,
+    backgroundColor: '#EEF2F3',
   },
-  sectionLabel: {
-    fontSize: FontSizes.md,
-    fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
-    marginBottom: 2,
-  },
-  sectionHint: {
-    fontSize: FontSizes.sm,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.md,
-  },
-
-  // Toggle row
-  toggleRow: {
+  topToggleRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
-  toggleRowBordered: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.base,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  toggleContent: {
+  flexContent: {
     flex: 1,
-    marginRight: Spacing.md,
+    paddingRight: 12,
   },
-  toggleTitle: {
-    fontSize: FontSizes.md,
+  sectionTitle: {
+    fontSize: 16,
+    lineHeight: 22,
     fontWeight: FontWeights.bold,
     color: Colors.textPrimary,
     marginBottom: 4,
   },
-  toggleDesc: {
-    fontSize: FontSizes.sm,
-    color: Colors.textSecondary,
-    lineHeight: 18,
+  sectionDescription: {
+    fontSize: 13,
+    lineHeight: 20,
+    color: '#555',
   },
-  toggleIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: Colors.gray100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Spacing.md,
-    marginTop: 2,
+  divider: {
+    height: 1,
+    backgroundColor: '#D9DDE2',
+    marginVertical: 16,
   },
-
-  // Date row
-  dateRow: {
+  inputGrid: {
     flexDirection: 'row',
-    gap: Spacing.base,
+    gap: 10,
   },
-  dateCol: {
+  inputColumn: {
     flex: 1,
   },
-  dateLabel: {
-    fontSize: FontSizes.md,
+  inputLabel: {
+    fontSize: 16,
+    lineHeight: 22,
     fontWeight: FontWeights.bold,
     color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
+    marginBottom: 8,
   },
   required: {
-    color: Colors.error,
+    color: '#F24B3A',
   },
-  dateInputWrap: {
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.gray50,
-  },
-  dateInput: {
+  dayInput: {
     height: 48,
-    paddingHorizontal: Spacing.md,
-    fontSize: FontSizes.lg,
-    fontWeight: FontWeights.bold,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#FAFAFA',
+    fontSize: 16,
     color: Colors.textPrimary,
   },
-  deadlineInputRow: {
+  deadlineWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 48,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    backgroundColor: '#FAFAFA',
+    overflow: 'hidden',
+  },
+  deadlineInput: {
+    flex: 1,
+    height: '100%',
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: Colors.textPrimary,
+  },
+  unitBadge: {
+    backgroundColor: '#EEF6E7',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginRight: 8,
+  },
+  unitBadgeText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: Colors.textPrimary,
+  },
+  paymentCard: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.borderLight,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.gray50,
-  },
-  dayBadge: {
-    backgroundColor: Colors.gray200,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    borderTopRightRadius: BorderRadius.md,
-    borderBottomRightRadius: BorderRadius.md,
-  },
-  dayBadgeText: {
-    fontSize: FontSizes.sm,
-    fontWeight: FontWeights.medium,
-    color: Colors.textSecondary,
-  },
-
-  // Payment method
-  paymentMethodRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: Spacing.sm,
+    borderColor: '#D1D5DB',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    backgroundColor: Colors.white,
   },
   paymentIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.gray100,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: Spacing.md,
+    marginRight: 12,
   },
   paymentContent: {
     flex: 1,
   },
   paymentLabel: {
-    fontSize: FontSizes.sm,
-    color: Colors.textSecondary,
+    fontSize: 15,
+    lineHeight: 20,
+    color: Colors.textPrimary,
   },
   paymentValue: {
-    fontSize: FontSizes.md,
+    fontSize: 16,
+    lineHeight: 22,
     fontWeight: FontWeights.bold,
     color: Colors.textPrimary,
   },
-
-  // TextArea
-  textAreaWrap: {
+  closeCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noteInput: {
+    minHeight: 120,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.gray50,
-  },
-  textArea: {
-    minHeight: 100,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    fontSize: FontSizes.md,
-    color: Colors.textPrimary,
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: Colors.white,
+    fontSize: 14,
     lineHeight: 22,
+    color: '#6B7280',
   },
-
-  // Zalo card
   zaloCard: {
     borderWidth: 1,
-    borderColor: Colors.borderLight,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.base,
+    borderColor: '#D1D5DB',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 16,
     backgroundColor: Colors.white,
     ...Shadows.sm,
   },
-  zaloHeader: {
+  zaloTopRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
-  zaloIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#0068FF',
+  zaloLogo: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#E4EEFF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: Spacing.md,
-    marginTop: 2,
+    marginRight: 12,
   },
-  zaloIcon: {
-    color: Colors.white,
-    fontSize: FontSizes.xs,
+  zaloLogoText: {
+    fontSize: 16,
     fontWeight: FontWeights.bold,
+    color: '#2979FF',
   },
-  zaloContent: {
-    flex: 1,
-    marginRight: Spacing.sm,
-  },
-  zaloTitle: {
-    fontSize: FontSizes.md,
-    fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+  zaloDescription: {
+    fontSize: 13,
+    lineHeight: 20,
+    color: '#555',
     marginBottom: 4,
   },
-  zaloDesc: {
-    fontSize: FontSizes.sm,
-    color: Colors.textSecondary,
-    lineHeight: 18,
-    marginBottom: Spacing.xs,
-  },
   zaloNote: {
-    fontSize: FontSizes.sm,
-    color: '#FF9800',
+    fontSize: 12,
     lineHeight: 18,
+    color: '#F07F2F',
   },
-  zaloActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  toggle: {
+    width: 52,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#5B5B5B',
     justifyContent: 'center',
-    gap: Spacing.base,
-    marginTop: Spacing.md,
+    paddingHorizontal: 2,
+  },
+  toggleActive: {
+    backgroundColor: '#DFF5E3',
+  },
+  toggleThumb: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#BDBDBD',
+  },
+  toggleThumbActive: {
+    backgroundColor: '#7ED321',
+    alignSelf: 'flex-end',
+  },
+  footer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.base,
     paddingTop: Spacing.md,
     borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-  },
-  previewBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-  },
-  previewBtnText: {
-    fontSize: FontSizes.sm,
-    fontWeight: FontWeights.bold,
-    color: Colors.white,
-  },
-  learnMoreBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  learnMoreText: {
-    fontSize: FontSizes.sm,
-    color: Colors.textSecondary,
-    textDecorationLine: 'underline',
-  },
-
-  // Round examples
-  roundExample: {
-    fontSize: FontSizes.sm,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-  },
-
-  // Save button
-  saveButtonWrap: {
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.white,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
+    borderTopColor: '#E5E7EB',
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
-    borderRadius: BorderRadius.lg,
-    paddingVertical: Spacing.base,
+    backgroundColor: '#13AA47',
+    borderRadius: 12,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Shadows.md,
   },
   saveButtonText: {
-    fontSize: FontSizes.base,
+    fontSize: 16,
+    lineHeight: 22,
     fontWeight: FontWeights.bold,
     color: Colors.white,
   },

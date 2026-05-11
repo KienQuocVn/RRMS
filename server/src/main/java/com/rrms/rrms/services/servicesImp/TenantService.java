@@ -45,26 +45,29 @@ public class TenantService implements ITenantService {
 
     @Override
     public TenantResponse insert(UUID roomId, TenantRequest tenant) {
+        // Luôn tạo Tenant mới
+        Tenant newt = tenantMapper.tenantRequestToTenant(tenant);
+        Tenant savedTenant = tenantRepository.save(newt);
+
+        // Tìm xem phòng đã có hợp đồng đang active không (trường hợp thêm người vào phòng đang thuê)
         List<Contract> contracts = contractRepository.findByRoomRoomId(roomId);
         Contract activeContract = contracts.stream()
                 .filter(c -> c.getStatus() == ContractStatus.ACTIVE)
                 .findFirst()
                 .orElse(null);
 
+        // Nếu có hợp đồng active, tự động thêm khách thuê này làm người ở (ContractOccupant)
         if (activeContract != null) {
-            Tenant newt = tenantMapper.tenantRequestToTenant(tenant);
-            Tenant savedTenant = tenantRepository.save(newt);
-
             ContractOccupant occupant = new ContractOccupant();
             occupant.setContract(activeContract);
             occupant.setTenant(savedTenant);
             occupant.setMoveInDate(LocalDate.now());
             occupant.setIsActive(true);
             contractOccupantRepository.save(occupant);
-
-            return tenantMapper.toTenantResponse(savedTenant);
         }
-        return null;
+
+        // Luôn trả về thông tin khách thuê (để Frontend lấy tenantId tạo hợp đồng nếu phòng đang trống)
+        return tenantMapper.toTenantResponse(savedTenant);
     }
 
     @Override

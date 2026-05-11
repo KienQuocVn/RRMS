@@ -53,9 +53,9 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
   const [roomDevices, setRoomDevices] = useState([]);
 
   const [tenant, setTenant] = useState({
-    fullname: '',
+    fullName: '',
     phone: '',
-    CCCD: '',
+    cccd: '',
     email: '',
     birthday: null,
     gender: 'OTHER',
@@ -319,7 +319,20 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
       await handleApplyDevice();
 
       const tenantResponse = await createTenant(room.roomId, tenant);
-      const updatedContract = { ...contract, tenantId: tenantResponse.result.tenantId };
+
+      // Kiểm tra response hợp lệ từ createTenant
+      if (!tenantResponse?.result?.tenantId) {
+        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể tạo thông tin khách thuê. Vui lòng kiểm tra lại!' });
+        return;
+      }
+
+      // Đổi contracttemplateId → contractTemplateId để khớp với backend DTO
+      const { contracttemplateId, ...rest } = contract;
+      const updatedContract = {
+        ...rest,
+        tenantId: tenantResponse.result.tenantId,
+        contractTemplateId: contracttemplateId
+      };
       await createContract(updatedContract);
 
       Swal.fire({ icon: 'success', title: 'Thành công', text: 'Tạo hợp đồng thành công!' });
@@ -418,7 +431,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
               <Grid item xs={6}>
                 <TextField
                   fullWidth label="Tên người ở"
-                  name="fullname" value={tenant.fullname} onChange={handleTenantChange}
+                  name="fullName" value={tenant.fullName} onChange={handleTenantChange}
                   size="small" required
                 />
               </Grid>

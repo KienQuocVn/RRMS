@@ -17,32 +17,14 @@ import {
   Shadows,
 } from '@/constants/theme';
 
-interface ServiceItem {
-  id: string;
-  name: string;
-  type: string;
-  price: string;
-  icon: keyof typeof Ionicons.glyphMap;
-}
-
-const SERVICES: ServiceItem[] = [
+const GROUPS = [
   {
-    id: 'electric',
-    name: 'Tiền điện',
-    type: 'Theo đồng hồ',
-    price: '1.700 Đồng / KWh',
-    icon: 'flash',
-  },
-  {
-    id: 'water',
-    name: 'Tiền nước',
-    type: 'Theo đồng hồ',
-    price: '18.000 Đồng / Khối',
-    icon: 'water',
+    id: 'ground-floor',
+    name: 'Tầng trệt',
   },
 ];
 
-export default function ServicesSettingsScreen() {
+export default function RoomGroupsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -52,7 +34,7 @@ export default function ServicesSettingsScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Cài đặt dịch vụ</Text>
+        <Text style={styles.headerTitle}>Gom nhóm</Text>
       </View>
 
       <ScrollView
@@ -60,25 +42,16 @@ export default function ServicesSettingsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {SERVICES.map((service) => (
-          <View key={service.id} style={styles.serviceCard}>
-            <View style={styles.serviceIconWrap}>
-              <Ionicons name={service.icon} size={24} color={Colors.black} />
+        {GROUPS.map((group) => (
+          <View key={group.id} style={styles.groupCard}>
+            <View style={styles.dragHandle}>
+              <Ionicons name="reorder-three" size={24} color={Colors.black} />
             </View>
 
-            <View style={styles.serviceContent}>
-              <Text style={styles.serviceName}>{service.name}</Text>
-              <Text style={styles.serviceType}>{service.type}</Text>
-              <Text style={styles.servicePrice}>{service.price}</Text>
+            <Text style={styles.groupName}>{group.name}</Text>
 
-              <View style={styles.badge}>
-                <View style={styles.badgeDot} />
-                <Text style={styles.badgeText}>Đang áp dụng tất cả phòng</Text>
-              </View>
-            </View>
-
-            <TouchableOpacity style={styles.removeButton}>
-              <Ionicons name="remove" size={20} color="#E24B2A" />
+            <TouchableOpacity style={styles.editButton}>
+              <Ionicons name="pencil" size={20} color={Colors.black} />
             </TouchableOpacity>
           </View>
         ))}
@@ -87,6 +60,16 @@ export default function ServicesSettingsScreen() {
       <TouchableOpacity style={styles.fab}>
         <Ionicons name="add" size={24} color={Colors.white} />
       </TouchableOpacity>
+
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 14) }]}>
+        <Text style={styles.noteText}>
+          Chú ý: Nhấp giữ sau đó kéo thả để sắp xếp thứ tự của nhóm
+        </Text>
+
+        <TouchableOpacity style={styles.saveButton}>
+          <Text style={styles.saveButtonText}>Lưu thay đổi</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -128,10 +111,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: Spacing.base,
     paddingTop: Spacing.base,
-    paddingBottom: 96,
-    gap: 12,
+    paddingBottom: 132,
   },
-  serviceCard: {
+  groupCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.white,
@@ -140,73 +122,35 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     ...Shadows.sm,
   },
-  serviceIconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#F0F2F4',
+  dragHandle: {
+    width: 48,
+    height: 64,
+    borderRadius: 8,
+    backgroundColor: '#D1D3D4',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
-  serviceContent: {
+  groupName: {
     flex: 1,
-    paddingRight: 12,
-  },
-  serviceName: {
     fontSize: 18,
     lineHeight: 24,
-    fontWeight: FontWeights.medium,
-    color: Colors.textPrimary,
-    marginBottom: 6,
-  },
-  serviceType: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#707070',
-    marginBottom: 8,
-  },
-  servicePrice: {
-    fontSize: 16,
-    lineHeight: 22,
     fontWeight: FontWeights.bold,
     color: Colors.textPrimary,
-    marginBottom: 10,
   },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: '#F2F4F5',
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  badgeDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#15B44A',
-    marginRight: 6,
-  },
-  badgeText: {
-    fontSize: 12,
-    lineHeight: 18,
-    fontWeight: FontWeights.semiBold,
-    color: Colors.textPrimary,
-  },
-  removeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#E5E7EB',
+  editButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: Colors.black,
     alignItems: 'center',
     justifyContent: 'center',
   },
   fab: {
     position: 'absolute',
     right: 20,
-    bottom: 24,
+    bottom: 118,
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -214,5 +158,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     ...Shadows.lg,
+  },
+  footer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.base,
+    paddingTop: Spacing.md,
+  },
+  noteText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#EF6A34',
+    marginBottom: 12,
+  },
+  saveButton: {
+    backgroundColor: '#13AA47',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveButtonText: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: FontWeights.bold,
+    color: Colors.white,
   },
 });

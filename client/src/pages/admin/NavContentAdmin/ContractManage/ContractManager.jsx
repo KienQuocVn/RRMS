@@ -10,6 +10,7 @@ import { Modal, Button, Form } from 'react-bootstrap'
 import { getPhuongXa, getQuanHuyen, getTinhThanh } from '~/apis/addressAPI'
 import {
   getRoomByMotelIdWContract,
+  getRoomByMotelIdYContract,
   getRoomById,
   getServiceRoombyRoomId,
   updateSerivceRoom,
@@ -49,9 +50,9 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
   const [rooms, setRooms] = useState([])
   const [room, setRoom] = useState(null)
   const [tenant, setTenant] = useState({
-    fullname: '',
+    fullName: '',
     phone: '',
-    CCCD: '',
+    cccd: '',
     email: '',
     birthday: null,
     gender: 'OTHER', // 'MALE', 'FEMALE', hoặc 'OTHER'
@@ -248,14 +249,14 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
     //neu co motelId tren URL
     if (motelId) {
       try {
-        const dataRoom = await getRoomByMotelIdWContract(motelId)
+        const dataRoom = await getRoomByMotelIdYContract(motelId)
         setRooms(dataRoom)
       } catch (error) {
         console.log(error)
       }
     } else {
       try {
-        const dataRoom = await getRoomByMotelIdWContract(motel[0].motelId)
+        const dataRoom = await getRoomByMotelIdYContract(motel[0].motelId)
         setRooms(dataRoom)
       } catch (error) {
         console.log(error)
@@ -1265,8 +1266,8 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
                         <div className="col-6 mt-3">
                           <Form.Control
                             type="text"
-                            name="fullname"
-                            value={tenant.fullname}
+                            name="fullName"
+                            value={tenant.fullName}
                             onChange={handleTenantChange}
                             placeholder="Tên người ở"
                             required
