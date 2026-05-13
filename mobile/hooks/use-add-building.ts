@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { RentType } from '@/types/building.types';
 import { useRouter } from 'expo-router';
+import { useAddBuildingFlow } from '@/hooks/use-add-building-flow';
 
 export function useAddBuilding() {
   const router = useRouter();
-  const [rentType, setRentType] = useState<RentType>('room');
-  const [isAutoInit, setIsAutoInit] = useState(true);
+  const rentType = useAddBuildingFlow((state) => state.rentType);
+  const setRentType = useAddBuildingFlow((state) => state.setRentType);
+  const isAutoInit = useAddBuildingFlow((state) => state.isAutoInit);
+  const setIsAutoInit = useAddBuildingFlow((state) => state.setIsAutoInit);
 
   const handleNext = () => {
-    // Logic cho việc lưu và chuyển bước tiếp theo
-    console.log('Next step with:', { rentType, isAutoInit });
+    router.push('/add-building-services');
   };
 
   const handleClose = () => {
