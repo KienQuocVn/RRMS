@@ -1,225 +1,366 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
-import { Box } from '@mui/material'
-import { ReactTabulator } from 'react-tabulator'
-import { useState } from 'react'
-import { Modal, Button, Form } from 'react-bootstrap'
+import {
+  Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, IconButton, Chip, Menu, MenuItem,
+  Dialog, DialogContent, DialogActions, TextField,
+  FormControl, InputLabel, Select, Button
+} from '@mui/material'
+import AddIcon from '@mui/icons-material/Add'
+import FilterListIcon from '@mui/icons-material/FilterList'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import CardGiftcardOutlined from '@mui/icons-material/CardGiftcardOutlined'
+import CloseIcon from '@mui/icons-material/Close'
+// MUI Icons for asset icon picker
+import SingleBedOutlined from '@mui/icons-material/SingleBedOutlined'
+import LocalLaundryServiceOutlined from '@mui/icons-material/LocalLaundryServiceOutlined'
+import TableBarOutlined from '@mui/icons-material/TableBarOutlined'
+import VpnKeyOutlined from '@mui/icons-material/VpnKeyOutlined'
+import NightlightOutlined from '@mui/icons-material/NightlightOutlined'
+import AcUnitOutlined from '@mui/icons-material/AcUnitOutlined'
+import LockOutlined from '@mui/icons-material/LockOutlined'
+import WeekendOutlined from '@mui/icons-material/WeekendOutlined'
+import DoorSlidingOutlined from '@mui/icons-material/DoorSlidingOutlined'
+import MenuBookOutlined from '@mui/icons-material/MenuBookOutlined'
+import KitchenOutlined from '@mui/icons-material/KitchenOutlined'
+import TvOutlined from '@mui/icons-material/TvOutlined'
+import ChairOutlined from '@mui/icons-material/ChairOutlined'
+import ShowerOutlined from '@mui/icons-material/ShowerOutlined'
+import MicrowaveOutlined from '@mui/icons-material/MicrowaveOutlined'
+
 import { deleteMotelDevice, getAllMotelDevices, insertMotelDevice } from '~/apis/deviceAPT'
 import { useParams } from 'react-router-dom'
 import Swal from 'sweetalert2'
 
-const AssetManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
-  const [show, setShow] = useState(false)
-  const [device, setDevice] = useState([])
-  const { motelId } = useParams('motelId')
-  const handleClose = () => setShow(false)
-  const handleShow = () => setShow(true)
-  const [selectedIcon, setSelectedIcon] = useState('') //tạo bảng chọn icon
-  const icons = [
-    { id: 'ban', icon: <img src="\icon-ban.png" style={{ width: '24px' }} /> },
-    { id: 'banan', icon: <img src="\icon-banan.png" style={{ width: '24px' }} /> },
-    { id: 'bed', icon: <img src="\icon-bed.png" style={{ width: '24px' }} /> },
-    { id: 'chiakhoa', icon: <img src="\icon-chiakhoa.png" style={{ width: '24px' }} /> },
-    { id: 'denngu', icon: <img src="\icon-denngu.png" style={{ width: '24px' }} /> },
-    { id: 'maygiat', icon: <img src="\icon-maygiat.png" style={{ width: '24px' }} /> },
-    { id: 'maylanh', icon: <img src="\icon-maylanh.png" style={{ width: '24px' }} /> },
-    { id: 'okhoa', icon: <img src="\icon-okhoa.png" style={{ width: '24px' }} /> },
-    { id: 'sofa', icon: <img src="\icon-sofa.png" style={{ width: '24px' }} /> },
-    { id: 'tuao', icon: <img src="\icon-tuao.png" style={{ width: '24px' }} /> },
-    { id: 'tusach', icon: <img src="\icon-tusach.png" style={{ width: '24px' }} /> }
-  ]
-  const handleIconClick = (iconId) => {
-    setSelectedIcon(iconId)
+const PRIMARY_COLOR = '#20a9e7'
+
+
+// Icon registry - maps backend icon IDs to MUI icon components
+const ASSET_ICONS = [
+  { id: 'ban', label: 'Bàn', Icon: TableBarOutlined },
+  { id: 'banan', label: 'Ghế', Icon: ChairOutlined },
+  { id: 'bed', label: 'Giường', Icon: SingleBedOutlined },
+  { id: 'chiakhoa', label: 'Chìa khóa', Icon: VpnKeyOutlined },
+  { id: 'denngu', label: 'Đèn ngủ', Icon: NightlightOutlined },
+  { id: 'maygiat', label: 'Máy giặt', Icon: LocalLaundryServiceOutlined },
+  { id: 'maylanh', label: 'Máy lạnh', Icon: AcUnitOutlined },
+  { id: 'okhoa', label: 'Ổ khóa', Icon: LockOutlined },
+  { id: 'sofa', label: 'Sofa', Icon: WeekendOutlined },
+  { id: 'tuao', label: 'Tủ áo', Icon: DoorSlidingOutlined },
+  { id: 'tusach', label: 'Tủ sách', Icon: MenuBookOutlined },
+  { id: 'tivi', label: 'Tivi', Icon: TvOutlined },
+  { id: 'bep', label: 'Bếp', Icon: KitchenOutlined },
+  { id: 'voisem', label: 'Vòi sen', Icon: ShowerOutlined },
+  { id: 'lovisong', label: 'Lò vi sóng', Icon: MicrowaveOutlined },
+]
+
+// Lookup map for quick icon access
+const ICON_MAP = ASSET_ICONS.reduce((map, item) => {
+  map[item.id] = item
+  return map
+}, {})
+
+// Render icon by ID
+const renderAssetIcon = (iconId, size = 28) => {
+  const found = ICON_MAP[iconId]
+  if (found) {
+    const { Icon } = found
+    return <Icon sx={{ fontSize: size, color: '#555' }} />
   }
-  const handleSubmit = async (e) => {
+  return <CardGiftcardOutlined sx={{ fontSize: size, color: '#555' }} />
+}
+
+// Format currency VND
+const formatCurrency = (value) => {
+  if (value === null || value === undefined) return '0 đ'
+  return `${Number(value).toLocaleString('vi-VN')} đ`
+}
+
+// Unit label mapping
+const getUnitLabel = (unit) => {
+  const map = { CAI: 'Cái', cai: 'Cái', CHIEC: 'Chiếc', chiec: 'Chiếc', BO: 'Bộ', bo: 'Bộ', CAP: 'Cặp', cap: 'Cặp' }
+  return map[unit] || unit || 'Cái'
+}
+
+// ==================== ADD ASSET MODAL ====================
+const AddAssetModal = ({ open, onClose, onSubmit }) => {
+  const [deviceName, setDeviceName] = useState('')
+  const [selectedIcon, setSelectedIcon] = useState('')
+  const [value, setValue] = useState('')
+  const [valueInput, setValueInput] = useState('')
+  const [quantity, setQuantity] = useState('')
+  const [unit, setUnit] = useState('cai')
+  const [supplier, setSupplier] = useState('')
+
+  const resetForm = () => {
+    setDeviceName('')
+    setSelectedIcon('')
+    setValue('')
+    setValueInput('')
+    setQuantity('')
+    setUnit('cai')
+    setSupplier('')
+  }
+
+  const handleClose = () => {
+    resetForm()
+    onClose()
+  }
+
+  const handleSubmit = (e) => {
     e.preventDefault()
-    if (validate()) {
-      const datarequest = {
-        motel: { motelId },
-        deviceName,
-        value,
-        icon: selectedIcon,
-        valueInput,
-        totalQuantity: quantity,
-        supplier,
-        unit
-      }
-      try {
-        await insertMotelDevice(datarequest)
-        Swal.fire('Thêm thành công', 'Đã thêm thành công!', 'success')
-        getAllMotelDevice()
-      } catch (error) {
-        Swal.fire('Thêm thất bại', 'Thử lại sau!', error)
-      }
-      handleClose()
-    } else {
-      Swal.fire('Vui lòng điền đủ thông tin', '', 'error')
+    if (!deviceName || !value || !quantity || !selectedIcon) {
+      Swal.fire('Vui lòng điền đủ thông tin bắt buộc (*)', '', 'error')
       return
     }
-  }
-  const remove = async (e, id) => {
-    e.stopPropagation()
-    const response = await deleteMotelDevice(id)
-    if (response.result === true) {
-      Swal.fire('Xóa thành công', 'Đã xóa thành công!', 'success')
-      getAllMotelDevice()
-    } else {
-      Swal.fire('Xóa thất bại', 'Có phòng đang sử dụng thiết bị, không thể xóa!', 'error')
-    }
-  }
-  const [deviceName, setdeviceName] = useState('')
-  const [value, setvalue] = useState('')
-  const [quantity, setquantity] = useState('')
-  const [valueInput, setvalueInput] = useState('')
-  const [unit, setunit] = useState('cai')
-  const [supplier, setsupplier] = useState('')
-  const validate = () => {
-    if (
-      deviceName === '' ||
-      value === '' ||
-      quantity === '' ||
-      valueInput === '' ||
-      supplier === '' ||
-      selectedIcon === ''
-    ) {
-      return false
-    }
-    return true
+    onSubmit({ deviceName, icon: selectedIcon, value, valueInput, totalQuantity: quantity, unit, supplier })
+    handleClose()
   }
 
-  // Định dạng tiền tệ Việt Nam (VND)
-  const currencyFormatter = (cell) => {
-    const value = cell.getValue()
-    if (value !== null && value !== undefined) {
-      return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-      }).format(value)
-    }
-    if (value === null || value === undefined) {
-      return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-      }).format(0)
-    }
-    return value
-  }
+  return (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: { borderRadius: '12px', overflow: 'hidden' }
+      }}
+    >
+      {/* Header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, pt: 2.5, pb: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{
+            width: 40, height: 40, borderRadius: '50%',
+            backgroundColor: '#e8f5e9', display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <CardGiftcardOutlined sx={{ color: PRIMARY_COLOR, fontSize: '1.4rem' }} />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: '#333', fontSize: '1.1rem' }}>
+            Thêm mới tài sản
+          </Typography>
+        </Box>
+        <IconButton onClick={handleClose} size="small" sx={{ color: '#999' }}>
+          <CloseIcon />
+        </IconButton>
+      </Box>
 
-  const columns = [
-    {
-      title: '',
-      field: 'icon',
-      hozAlign: 'center',
-      width: 60,
-      formatter: (cell) => {
-        const icon = cell.getRow().getData().icon
-        const element = document.createElement('div')
-        element.classList.add('icon-device')
-        element.innerHTML = `
-          <div style=" background-color: #eaeaea;
-          border-radius: 100%;
-          padding: 3px;
-          text-align: center;
-          cursor: pointer;
-          width: 39px;
-          height: 39px;
-          color: #fff;
-          margin: auto;">
-            <img src="\\icon-${icon}.png" style="width: 30px; height: 30px;" />
-          </div>
-        `
-        return element
-      }
-    },
-    { title: 'STT', field: 'STT', hozAlign: 'center', minWidth: 40, editor: 'input' },
-    {
-      title: 'Tên Tài Sản',
-      field: 'deviceName',
-      hozAlign: 'center',
-      minWidth: 40,
-      editor: 'input',
-      cssClass: 'bold-text'
-    },
-    {
-      title: 'Giá Trị Tài Sản',
-      field: 'value',
-      hozAlign: 'center',
-      minWidth: 40,
-      editor: 'input',
-      cssClass: 'bold-text',
-      formatter: currencyFormatter
-    },
-    {
-      title: 'Giá Trị Nhập Vào',
-      field: 'valueInput',
-      hozAlign: 'center',
-      minWidth: 40,
-      editor: 'input',
-      cssClass: 'bold-text',
-      formatter: currencyFormatter
-    },
-    { title: 'Tổng Số Lượng', field: 'totalQuantity', hozAlign: 'center', minWidth: 40, editor: 'input' },
-    { title: 'Đơn Vị', field: 'unitDescription', hozAlign: 'center', minWidth: 40, editor: 'input' },
-    { title: 'Tổng Số Lượng', field: 'totalQuantity', hozAlign: 'center', minWidth: 40, editor: 'input' },
-    { title: 'Đã Sử Dụng', field: 'totalUsing', hozAlign: 'center', minWidth: 40, editor: 'input' },
-    { title: 'Còn dư', field: 'totalNull', hozAlign: 'center', minWidth: 40, editor: 'input' },
-    { title: 'Đơn Vị Cung Cấp', field: 'supplier', hozAlign: 'center', minWidth: 40, editor: 'input' },
-    {
-      title: 'Thao tác',
-      field: 'delete',
-      hozAlign: 'center',
-      minWidth: 40,
-      formatter: (cell) => {
-        const rowId = cell.getRow().getData().motel_device_id
-        const element = document.createElement('div')
-        element.classList.add('icon-menu-action')
-        element.innerHTML = `
-       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-       <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-       <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-       </svg>
-        `
-        element.addEventListener('click', (e) => remove(e, rowId))
-        return element
-      }
-    }
-  ]
+      <DialogContent sx={{ px: 3, pt: 1 }}>
+        {/* Tên tài sản */}
+        <TextField
+          fullWidth
+          label="Tên tài sản"
+          required
+          value={deviceName}
+          onChange={(e) => setDeviceName(e.target.value)}
+          variant="outlined"
+          size="small"
+          sx={{ mb: 2.5 }}
+        />
 
-  const options = {
-    height: '500px', // Chiều cao của bảng
-    movableColumns: true, // Cho phép di chuyển cột
-    resizableRows: true, // Cho phép thay đổi kích thước hàng
-    movableRows: true,
-    resizableColumns: true, // Cho phép thay đổi kích thước cột
-    resizableColumnFit: true,
-    layout: 'fitColumns',
-    responsiveLayout: 'collapse',
-    rowHeader: {
-      formatter: 'responsiveCollapse',
-      width: 30,
-      minWidth: 30,
-      hozAlign: 'center',
-      resizable: false,
-      headerSort: false
-    }
-  }
+        {/* Chọn icon */}
+        <Box sx={{ mb: 2.5 }}>
+          <Box sx={{ borderLeft: `3px solid ${PRIMARY_COLOR}`, pl: 1.5, mb: 1.5 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#333', fontSize: '0.9rem' }}>
+              Chọn icon đại diện cho tài sản
+            </Typography>
+          </Box>
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: '8px',
+            border: '1px solid #e0e0e0',
+            borderRadius: '10px',
+            p: 1.5,
+          }}>
+            {ASSET_ICONS.map(({ id, Icon, label }) => (
+              <Box
+                key={id}
+                onClick={() => setSelectedIcon(id)}
+                title={label}
+                sx={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  p: 1.2, borderRadius: '8px', cursor: 'pointer',
+                  border: selectedIcon === id ? `2px solid ${PRIMARY_COLOR}` : '1px solid #e8e8e8',
+                  backgroundColor: selectedIcon === id ? '#e3f2fd' : 'transparent',
+                  transition: 'all 0.15s',
+                  '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#bbb' },
+                }}
+              >
+                <Icon sx={{ fontSize: 28, color: selectedIcon === id ? PRIMARY_COLOR : '#666' }} />
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Giá trị tài sản + Giá trị nhập vào */}
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <TextField
+            fullWidth
+            label="Giá trị tài sản (đ)"
+            required
+            type="number"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            variant="outlined"
+            size="small"
+
+          />
+          <TextField
+            fullWidth
+            label="Giá trị nhập vào (đ)"
+            type="number"
+            value={valueInput}
+            onChange={(e) => setValueInput(e.target.value)}
+            variant="outlined"
+            size="small"
+
+          />
+        </Box>
+
+        {/* Tổng số lượng + Đơn vị */}
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <TextField
+            fullWidth
+            label="Tổng số lượng"
+            required
+            type="number"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            variant="outlined"
+            size="small"
+
+          />
+          <FormControl fullWidth size="small">
+            <InputLabel>Đơn vị (chiếc/cái)</InputLabel>
+            <Select
+              value={unit}
+              label="Đơn vị (chiếc/cái)"
+              onChange={(e) => setUnit(e.target.value)}
+            >
+              <MenuItem value="cai">Cái</MenuItem>
+              <MenuItem value="chiec">Chiếc</MenuItem>
+              <MenuItem value="bo">Bộ</MenuItem>
+              <MenuItem value="cap">Cặp</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+
+        {/* Đơn vị cung cấp */}
+        <TextField
+          fullWidth
+          label="Đơn vị cung cấp"
+          value={supplier}
+          onChange={(e) => setSupplier(e.target.value)}
+          variant="outlined"
+          size="small"
+          multiline
+          minRows={1}
+
+        />
+      </DialogContent>
+
+      {/* Footer */}
+      <DialogActions sx={{ px: 3, pb: 2.5, pt: 1 }}>
+        <Button
+          onClick={handleClose}
+          variant="outlined"
+          sx={{
+            color: '#666', borderColor: '#ccc', textTransform: 'none', fontWeight: 600,
+            borderRadius: '8px', px: 3,
+            '&:hover': { borderColor: '#999', backgroundColor: '#f5f5f5' }
+          }}
+        >
+          Đóng
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          sx={{
+            backgroundColor: PRIMARY_COLOR, textTransform: 'none', fontWeight: 600,
+            borderRadius: '8px', px: 3,
+            '&:hover': { backgroundColor: '#2b7ed7' }
+          }}
+        >
+          Thêm tài sản
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+// ==================== MAIN COMPONENT ====================
+const AssetManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
+  const { motelId } = useParams()
+  const [device, setDevice] = useState([])
+  const [showModal, setShowModal] = useState(false)
+  // Action menu state
+  const [menuAnchor, setMenuAnchor] = useState(null)
+  const [menuRowId, setMenuRowId] = useState(null)
+
   const getAllMotelDevice = async () => {
-    const response = await getAllMotelDevices(motelId)
-    const customdata = response.result.map((item, index) => ({
-      ...item,
-      STT: index + 1,
-      unitDescription: item.unit == 'CAI' ? 'Cái' : item.unit == 'CHIEC' ? 'Chiếc' : item.unit == 'BO' ? 'Bộ' : 'Cặp',
-      delete: 'Xóa'
-    }))
-    setDevice(customdata)
-    console.log(device)
+    try {
+      const response = await getAllMotelDevices(motelId)
+      const customdata = (response.result || []).map((item, index) => ({
+        ...item,
+        STT: index + 1,
+        unitLabel: getUnitLabel(item.unit),
+        totalNull: (item.totalQuantity || 0) - (item.totalUsing || 0),
+      }))
+      setDevice(customdata)
+    } catch (error) {
+      console.error('Error fetching devices:', error)
+      setDevice([])
+    }
   }
+
+  const handleAddAsset = async (formData) => {
+    try {
+      await insertMotelDevice({
+        motel: { motelId },
+        ...formData
+      })
+      Swal.fire('Thêm thành công', 'Đã thêm tài sản mới!', 'success')
+      getAllMotelDevice()
+    } catch (error) {
+      console.error('Error adding device:', error)
+      Swal.fire('Thêm thất bại', 'Thử lại sau!', 'error')
+    }
+  }
+
+  const handleDelete = async (id) => {
+    setMenuAnchor(null)
+    const confirm = await Swal.fire({
+      title: 'Xóa tài sản?',
+      text: 'Hành động này không thể hoàn tác!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Có, xóa!',
+      cancelButtonText: 'Không'
+    })
+    if (!confirm.isConfirmed) return
+
+    try {
+      const response = await deleteMotelDevice(id)
+      if (response.result === true) {
+        Swal.fire('Xóa thành công', 'Đã xóa tài sản!', 'success')
+        getAllMotelDevice()
+      } else {
+        Swal.fire('Xóa thất bại', 'Có phòng đang sử dụng thiết bị, không thể xóa!', 'error')
+      }
+    } catch (error) {
+      Swal.fire('Xóa thất bại', 'Có lỗi xảy ra!', 'error')
+    }
+  }
+
   useEffect(() => {
     setIsAdmin(true)
     getAllMotelDevice()
   }, [])
+
   return (
-    <div>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f7fa' }}>
       <NavAdmin
         setmotels={setmotels}
         motels={motels}
@@ -227,163 +368,182 @@ const AssetManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         setIsNavAdmin={setIsNavAdmin}
         isNavAdmin={true}
       />
-      <div
-        style={{
-          backgroundColor: '#fff',
-          padding: '15px 15px 15px 15px',
-          borderRadius: '10px',
-          margin: '0 10px 10px 10px'
-        }}></div>
-      <div style={{ marginLeft: '15px', marginRight: '10px' }}>
-        <Box className="header-item">
-          <h4 className="title-item">
-            Tất Cả Tài Sản <i className="des">Danh sách tài sản đang có</i>
-          </h4>
-          <Box display="flex" alignItems="center" style={{ width: '20%' }}></Box>
-        </Box>
-      </div>
-      <div
-        className="header-table header-item"
-        style={{ padding: '10px 10px', marginLeft: '15px', marginRight: '10px' }}>
-        <div className="d-flex">
-          <div className="icon">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="feather feather-filter">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-            </svg>
-            <span id="filter-count">{device.length}</span>
-          </div>
-        </div>
-        <Box display="flex" justifyContent="flex-end">
-          <Button variant="primary" onClick={handleShow}>
-            Thêm tài sản
-          </Button>
 
-          <Modal show={show} onHide={handleClose} dialogClassName="custom-modal" size="lg">
-            {/* size modal*/}
-            <Modal.Header closeButton>
-              <Modal.Title>Thêm tài sản</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3" controlId="assetName">
-                  <Form.Label>Tên tài sản</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="name"
-                    value={deviceName}
-                    onChange={(e) => setdeviceName(e.target.value)}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3" controlId="assetIcon">
-                  <Form.Label>Chọn icon</Form.Label>
-                  <div
-                    className="icon-table"
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(5, 1fr)',
-                      gridGap: '10px'
-                    }}>
-                    {icons.map((icon) => (
-                      <div
-                        key={icon.id}
-                        className={`icon-cell ${selectedIcon === icon.id ? 'selected' : ''}`}
-                        onClick={() => handleIconClick(icon.id)}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          padding: '10px',
-                          border: '1px solid #ccc',
-                          cursor: 'pointer',
-                          backgroundColor: selectedIcon === icon.id ? '#e6f2ff' : 'transparent',
-                          borderColor: selectedIcon === icon.id ? '#007bff' : '#ccc'
+      <Paper
+        elevation={0}
+        sx={{
+          mx: '10px', mb: '10px', borderRadius: '12px',
+          border: '1px solid #e8f4fd', overflow: 'hidden',
+          backgroundColor: '#fff', p: 2.5,
+        }}
+      >
+        {/* Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Box sx={{ borderLeft: `4px solid ${PRIMARY_COLOR}`, pl: 1.5 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: '#333', fontSize: '1.2rem', lineHeight: 1.2 }}>
+              Tất cả tài sản
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#777', fontStyle: 'italic', fontSize: '0.85rem' }}>
+              Danh sách tài sản đang có
+            </Typography>
+          </Box>
+          <IconButton
+            onClick={() => setShowModal(true)}
+            sx={{
+              backgroundColor: PRIMARY_COLOR, color: '#fff',
+              width: 40, height: 40,
+              '&:hover': { backgroundColor: '#2b7ed7' },
+              boxShadow: '0 3px 8px rgba(67,160,71,0.3)',
+            }}
+          >
+            <AddIcon sx={{ fontSize: '1.4rem' }} />
+          </IconButton>
+        </Box>
+
+        {/* Filter row */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <Box sx={{
+            display: 'flex', alignItems: 'center', gap: 0.5,
+            border: '1px solid #e0e0e0', borderRadius: '8px', px: 1.5, py: 0.5,
+          }}>
+            <FilterListIcon sx={{ color: '#555', fontSize: '1.2rem' }} />
+            <Box sx={{
+              backgroundColor: PRIMARY_COLOR, color: '#fff', borderRadius: '50%',
+              width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '0.7rem', fontWeight: 700
+            }}>
+              {device.length}
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Table */}
+        <Paper elevation={0} sx={{ border: '1px solid #e0e0e0', borderRadius: '12px', overflow: 'hidden' }}>
+          <TableContainer sx={{ maxHeight: 500 }}>
+            <Table stickyHeader size="small">
+              <TableHead>
+                <TableRow>
+                  {['', 'Tên tài sản', 'Giá trị nhập vào', 'Giá trị tài sản', 'Tổng số lượng',
+                    'Tổng số đang sử dụng', 'Tổng số còn dư', 'Đơn vị', 'Tình trạng', ''].map((header, i) => (
+                    <TableCell
+                      key={i}
+                      align="center"
+                      sx={{
+                        backgroundColor: '#f8f9fa', fontWeight: 700, color: '#333',
+                        fontSize: '0.82rem', borderBottom: '2px solid #e0e0e0',
+                        whiteSpace: 'nowrap', py: 1.5,
+                      }}
+                    >
+                      {header}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {device.length > 0 ? (
+                  device.map((row, idx) => (
+                    <TableRow
+                      key={row.motel_device_id || idx}
+                      sx={{
+                        backgroundColor: idx % 2 === 0 ? '#fff' : '#fafafa',
+                        '&:hover': { backgroundColor: '#f0f7ff' },
+                        transition: 'background-color 0.15s',
+                      }}
+                    >
+                      {/* Icon */}
+                      <TableCell align="center" sx={{ py: 1.2 }}>
+                        <Box sx={{
+                          width: 38, height: 38, borderRadius: '50%', mx: 'auto',
+                          backgroundColor: '#e8f5e9', display: 'flex',
+                          alignItems: 'center', justifyContent: 'center',
                         }}>
-                        <span className="icon" style={{ fontSize: '24px' }}>
-                          {icon.icon}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </Form.Group>
-                <div className="row">
-                  <Form.Group className="mb-3 col-6" controlId="giatritaisan">
-                    <Form.Label>Giá trị tài sản</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="giatritaisan"
-                      value={value}
-                      onChange={(e) => setvalue(e.target.value)}
-                    />
-                  </Form.Group>
-                  <Form.Group className="mb-3 col-6" controlId="giatrinhapvao">
-                    <Form.Label>Giá trị nhập vào</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="giatrinhapvao"
-                      value={valueInput}
-                      onChange={(e) => setvalueInput(e.target.value)}
-                    />
-                  </Form.Group>
-                  <Form.Group className="mb-3 col-6" controlId="tongsoluong">
-                    <Form.Label>Tổng số lượng</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="tongsoluong"
-                      value={quantity}
-                      onChange={(e) => setquantity(e.target.value)}
-                    />
-                  </Form.Group>
-                  <Form.Group className="mb-3 col-6" controlId="donvinhapvao">
-                    <Form.Label>Đơn vị nhập vào</Form.Label>
-                    <Form.Control as="select" name="donvinhapvao" onChange={(e) => setunit(e.target.value)}>
-                      <option value="cai">Cái</option>
-                      <option value="chiec">Chiếc</option>
-                      <option value="bo">Bộ</option>
-                      <option value="cap">Cặp</option>
-                    </Form.Control>
-                  </Form.Group>
+                          {renderAssetIcon(row.icon, 22)}
+                        </Box>
+                      </TableCell>
+                      {/* Tên */}
+                      <TableCell sx={{ fontWeight: 600, color: '#333', fontSize: '0.85rem' }}>
+                        {row.deviceName}
+                      </TableCell>
+                      {/* Giá trị nhập vào */}
+                      <TableCell align="center" sx={{ fontSize: '0.85rem', color: '#555' }}>
+                        {formatCurrency(row.valueInput)}
+                      </TableCell>
+                      {/* Giá trị tài sản */}
+                      <TableCell align="center" sx={{ fontSize: '0.85rem', fontWeight: 600, color: PRIMARY_COLOR }}>
+                        {formatCurrency(row.value)}
+                      </TableCell>
+                      {/* Tổng số lượng */}
+                      <TableCell align="center" sx={{ fontSize: '0.85rem' }}>{row.totalQuantity || 0}</TableCell>
+                      {/* Đang sử dụng */}
+                      <TableCell align="center" sx={{ fontSize: '0.85rem' }}>{row.totalUsing || 0}</TableCell>
+                      {/* Còn dư */}
+                      <TableCell align="center" sx={{ fontSize: '0.85rem' }}>{row.totalNull || 0}</TableCell>
+                      {/* Đơn vị */}
+                      <TableCell align="center" sx={{ fontSize: '0.85rem' }}>{row.unitLabel}</TableCell>
+                      {/* Tình trạng */}
+                      <TableCell align="center">
+                        <Chip
+                          label={row.totalNull > 0 ? 'Đang hoạt động' : 'Hết hàng'}
+                          size="small"
+                          sx={{
+                            backgroundColor: row.totalNull > 0 ? '#e8f5e9' : '#ffebee',
+                            color: row.totalNull > 0 ? PRIMARY_COLOR : '#e53935',
+                            fontWeight: 600, fontSize: '0.75rem', borderRadius: '6px',
+                          }}
+                        />
+                      </TableCell>
+                      {/* Actions */}
+                      <TableCell align="center" sx={{ py: 1 }}>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => { setMenuAnchor(e.currentTarget); setMenuRowId(row.motel_device_id) }}
+                          sx={{ color: '#999', '&:hover': { color: '#555' } }}
+                        >
+                          <MoreVertIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={10} align="center" sx={{ py: 6 }}>
+                      <Typography variant="body2" sx={{ color: '#999', fontStyle: 'italic' }}>
+                        Không tìm thấy dữ liệu!
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
 
-                  <Form.Group className="mb-3 col-12" controlId="donvicungcap">
-                    <Form.Label>Đơn vị cung cấp</Form.Label>
-                    <textarea
-                      type="text"
-                      name="donvicungcap"
-                      value={supplier}
-                      onChange={(e) => setsupplier(e.target.value)}
-                      className="form-control"
-                    />
-                  </Form.Group>
-                </div>
-                <Box display="flex" justifyContent="flex-end">
-                  <Button variant="primary" type="submit">
-                    Thêm tài sản
-                  </Button>
-                </Box>
-              </Form>
-            </Modal.Body>
-          </Modal>
-        </Box>
-      </div>
-      <div className="mt-3" style={{ marginLeft: '15px', marginRight: '10px' }}>
-        <ReactTabulator
-          className="my-custom-table rounded"
-          columns={columns}
-          data={device}
-          options={options}
-          placeholder="Không tìm thấy dữ liệu!"
-        />
-      </div>
-    </div>
+        {/* Action Menu */}
+        <Menu
+          anchorEl={menuAnchor}
+          open={Boolean(menuAnchor)}
+          onClose={() => setMenuAnchor(null)}
+          PaperProps={{
+            sx: { borderRadius: '8px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', minWidth: 160 }
+          }}
+        >
+          <MenuItem
+            onClick={() => handleDelete(menuRowId)}
+            sx={{ color: '#e53935', fontSize: '0.85rem', gap: 1 }}
+          >
+            <DeleteOutlineIcon fontSize="small" />
+            Xóa tài sản
+          </MenuItem>
+        </Menu>
+      </Paper>
+
+      {/* Add Asset Modal */}
+      <AddAssetModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={handleAddAsset}
+      />
+    </Box>
   )
 }
 

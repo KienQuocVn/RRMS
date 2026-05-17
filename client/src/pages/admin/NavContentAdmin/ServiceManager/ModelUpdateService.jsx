@@ -1,16 +1,10 @@
 import { useState, useEffect } from 'react'
-import { env } from '~/configs/environment'
-import axios from 'axios'
 import { Modal } from 'bootstrap'
 import Swal from 'sweetalert2'
-import 'flatpickr/dist/themes/material_blue.css'
-import 'flatpickr/dist/plugins/monthSelect/style.css'
-import 'react-tabulator/lib/styles.css'
-import 'react-tabulator/lib/css/tabulator.min.css'
 import { isValidRouteParam } from '~/utils/apiAdapters'
+import { updateMotelService, getRoomsByMotelId } from '~/apis/motelServiceAPI'
 
 const ModelUpdateService = ({ serviceData, refreshServices }) => {
-  const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
   const [formData, setFormData] = useState({
     nameService: '',
     chargetype: '',
@@ -24,10 +18,8 @@ const ModelUpdateService = ({ serviceData, refreshServices }) => {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const response = await axios.get(`${env.API_URL}/api/v1/rooms/motel/${serviceData.motelId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        const roomsData = response.data?.result || []
+        const response = await getRoomsByMotelId(serviceData.motelId)
+        const roomsData = response?.result || []
 
         const selectedRooms = {}
         roomsData.forEach(room => {
@@ -74,7 +66,7 @@ const ModelUpdateService = ({ serviceData, refreshServices }) => {
         modal.hide()
       }
     }
-  }, [serviceData, token])
+  }, [serviceData])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -118,20 +110,14 @@ const ModelUpdateService = ({ serviceData, refreshServices }) => {
     e.preventDefault()
     try {
       const selectedRoomIds = Object.keys(formData.selectedRooms).filter((roomId) => formData.selectedRooms[roomId])
-      const response = await axios.put(
-        `${env.API_URL}/api/v1/motel-services/${serviceData.motelServiceId}`,
-        {
-          nameService: formData.nameService,
-          price: formData.price,
-          chargetype: formData.chargetype,
-          selectedRooms: selectedRoomIds
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      )
+      const response = await updateMotelService(serviceData.motelServiceId, {
+        nameService: formData.nameService,
+        price: formData.price,
+        chargetype: formData.chargetype,
+        selectedRooms: selectedRoomIds
+      })
 
-      if (response.status === 200) {
+      if (response?.code === 200) {
         await Swal.fire({
           icon: 'success',
           title: 'Success!',

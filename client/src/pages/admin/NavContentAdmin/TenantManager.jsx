@@ -34,6 +34,7 @@ import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import TenantMenuUpdate from './TenantMenuUpdate'
 import { env } from '~/configs/environment'
+import { Colors } from '~/theme'
 const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const [open, setOpen] = useState(false)
   const [snackbarOpen, setSnackbarOpen] = useState(false)

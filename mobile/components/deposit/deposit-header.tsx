@@ -32,7 +32,7 @@ export const DepositHeader = () => {
       ]}
     >
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={22} color={Colors.textSuccess} />
+        <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
       </TouchableOpacity>
       <View style={styles.headerTitleWrap}>
         <Text style={styles.headerTitle}>Có thể "Cọc giữ chỗ"</Text>
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
     marginBottom: 2,
   },
   headerSub: {

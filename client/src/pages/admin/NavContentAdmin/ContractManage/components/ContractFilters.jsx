@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Typography, Checkbox, FormControlLabel, InputBase, IconButton, Paper, Badge } from '@mui/material';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import SearchIcon from '@mui/icons-material/Search';
+import { Colors } from '~/theme';
 
 const ContractFilters = () => {
   return (

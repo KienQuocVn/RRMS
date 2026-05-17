@@ -108,7 +108,7 @@ export default function TransferHistoryScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Thêm booking"
         >
-          <Ionicons name="add-circle-outline" size={20} color="#4CAF50" style={{ marginRight: 6 }} />
+          <Ionicons name="add-circle-outline" size={20} color={Colors.textSuccess} style={{ marginRight: 6 }} />
           <Text style={styles.addBtnText}>Thêm</Text>
         </TouchableOpacity>
       </View>

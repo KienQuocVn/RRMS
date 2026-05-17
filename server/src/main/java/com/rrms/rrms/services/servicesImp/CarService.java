@@ -24,17 +24,27 @@ public class CarService implements ICarService {
 
     private final RoomRepository roomRepository;
 
+    private final com.rrms.rrms.repositories.TenantRepository tenantRepository;
+
     @Override
     public CarResponse createCar(CarRequest carRequest) {
         Room room = roomRepository
                 .findById(carRequest.getRoomId())
                 .orElseThrow(() -> new IllegalArgumentException("Room khÃ´ng tá»“n táº¡i"));
 
+        com.rrms.rrms.models.Tenant tenant = null;
+        if (carRequest.getTenantId() != null) {
+            tenant = tenantRepository
+                    .findById(carRequest.getTenantId())
+                    .orElseThrow(() -> new IllegalArgumentException("KhÃ¡ch thuÃª khÃ´ng tá»“n táº¡i"));
+        }
+
         Car car = new Car();
         car.setName(carRequest.getName());
         car.setNumber(carRequest.getNumber());
         car.setImage(carRequest.getImage());
         car.setRoom(room);
+        car.setTenant(tenant);
 
         Car savedCar = carRepository.save(car);
 
@@ -63,10 +73,18 @@ public class CarService implements ICarService {
                 .findById(carRequest.getRoomId())
                 .orElseThrow(() -> new IllegalArgumentException("Room khÃ´ng tá»“n táº¡i"));
 
+        com.rrms.rrms.models.Tenant tenant = null;
+        if (carRequest.getTenantId() != null) {
+            tenant = tenantRepository
+                    .findById(carRequest.getTenantId())
+                    .orElseThrow(() -> new IllegalArgumentException("KhÃ¡ch thuÃª khÃ´ng tá»“n táº¡i"));
+        }
+
         car.setName(carRequest.getName());
         car.setNumber(carRequest.getNumber());
         car.setImage(carRequest.getImage());
         car.setRoom(room);
+        car.setTenant(tenant);
 
         Car updatedCar = carRepository.save(car);
 
@@ -91,6 +109,11 @@ public class CarService implements ICarService {
         return cars.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
+    public List<CarResponse> getCarsByMotelId(UUID motelId) {
+        List<Car> cars = carRepository.findByRoom_Motel_MotelId(motelId);
+        return cars.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
     private CarResponse mapToResponse(Car car) {
         CarResponse response = new CarResponse();
         response.setCarId(car.getCarId());
@@ -98,6 +121,10 @@ public class CarService implements ICarService {
         response.setNumber(car.getNumber());
         response.setImage(car.getImage());
         response.setRoomId(car.getRoom().getRoomId());
+        if (car.getTenant() != null) {
+            response.setTenantId(car.getTenant().getTenantId());
+            response.setTenantName(car.getTenant().getFullName());
+        }
         return response;
     }
 }

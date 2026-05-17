@@ -398,6 +398,8 @@ const ProtectedRoute = ({ children, requiredRoles }) => {
 - [x] Sửa lỗi tạo hợp đồng: field name sai contracttemplateId→contractTemplateId và lỗi tenantId undefined (2026-05-10)
 - [x] Sửa lỗi CSS warning boxShadow có dấu chấm phẩy trong InvoiceManager.jsx (2026-05-10)
 - [x] Sửa triệt để lỗi logic API Contract và hoàn thiện file seed data tạo liên kết ContractService, ContractDevice (2026-05-10)
+- [x] Nâng cấp giao diện Quản lý Dịch vụ (ServiceManager): chuyển ReactTabulator sang MUI Table với grouped headers, MonthPicker tháng lọc, format tiền VN (xxx.xxx đ), refactor toàn bộ API calls dùng motelServiceAPI.js thay axios trực tiếp (2026-05-17)
+- [x] Nâng cấp giao diện Quản lý Tài sản (AssetManager): chuyển ReactTabulator sang MUI Table, react-bootstrap Modal sang MUI Dialog, PNG icons sang MUI Icons (15 icons), thêm status badge, three-dot menu, format tiền VN (2026-05-17)
 - [ ] Thêm Loading states cho async operations
 - [ ] Thêm Empty states cho danh sách trống
 - [ ] Cải thiện responsive design

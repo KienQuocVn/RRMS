@@ -11,8 +11,11 @@ export const API_ENDPOINTS = {
     LOGOUT: '/authen/logout',
     INTROSPECT: '/authen/introspect',
     REFRESH_TOKEN: '/authen/refreshToken',
+    CHECK_EMAIL: '/authen/checkMail',
     FORGOT_PASSWORD: '/authen/forgetpassword',
     CHANGE_PASSWORD: '/authen/acceptChangePassword',
+    REGISTER_REQUEST_OTP: '/authen/authenticationRegister',
+    REGISTER_VERIFY_OTP: '/authen/acceptAuthenticationRegister',
   },
 
   // 👤 Accounts

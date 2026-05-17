@@ -2,6 +2,7 @@ import type { TabOwnedScreen } from '../../types';
 
 export { default as MoreTabScreen } from '@/app/(tabs)/more';
 export { default as ProfileScreen } from '@/app/(account)/(profile)/profile';
+export { default as EditProfileScreen } from '@/app/(account)/(profile)/edit-profile';
 export { default as RepresentativeInfoScreen } from '@/app/(account)/(profile)/representative-info';
 export { default as DigitalSignatureScreen } from '@/app/(account)/(profile)/digital-signature';
 export { default as ChangePasswordScreen } from '@/app/(account)/(profile)/change-password';
@@ -31,6 +32,14 @@ export const moreAccountScreens: TabOwnedScreen[] = [
     label: 'Thong tin dai dien',
     route: '/representative-info',
     source: 'app/(account)/(profile)/representative-info.tsx',
+  },
+  {
+    id: 'edit-profile',
+    tab: 'more',
+    section: 'account',
+    label: 'Chinh sua ho so',
+    route: '/edit-profile',
+    source: 'app/(account)/(profile)/edit-profile.tsx',
   },
   {
     id: 'digital-signature',

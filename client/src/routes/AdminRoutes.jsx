@@ -27,6 +27,7 @@ const ImportFileExcel = lazy(() => import('../pages/admin/NavContentAdmin/Import
 const MotelSetting = lazy(() => import('../pages/admin/MotelSettings/MotelSetting'))
 const ResidenceForm = lazy(() => import('../pages/admin/NavContentAdmin/ResidenceForm'))
 const AppPromo = lazy(() => import('../pages/admin/NavContentAdmin/AppPromo'))
+const VehicleManager = lazy(() => import('../pages/admin/NavContentAdmin/VehicleManagement/VehicleManager'))
 
 const AdminRoutes = ({ auth, motel }) => {
   const { username, setUsername, setIsAdmin } = auth
@@ -277,6 +278,14 @@ const AdminRoutes = ({ auth, motel }) => {
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
             <ContractPreview setIsAdmin={setIsAdmin} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/quanlytro/:motelId/phuong-tien"
+        element={
+          <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
+            <VehicleManager motels={motels} setmotels={setMotels} setIsAdmin={setIsAdmin} isNavAdmin={isNavAdmin} setIsNavAdmin={setIsNavAdmin} />
           </ProtectedRoute>
         }
       />

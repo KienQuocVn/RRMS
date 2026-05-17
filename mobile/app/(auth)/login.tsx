@@ -1,9 +1,3 @@
-/**
- * Login Screen - Màn hình đăng nhập
- * Layout: ScrollView > KeyboardAvoidingView
- * Components: AuthLogo, AuthInput, PasswordHints, AuthButton, SupportFooter
- */
-
 import React, { useState } from 'react';
 import {
   View,
@@ -24,31 +18,32 @@ import {
 } from '@/components/auth';
 import { Colors, Spacing, FontSizes, FontWeights } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
+import { API_BASE_URL, API_BASE_URL_DIAGNOSTICS } from '@/services/api/client';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login, isLoading, error: authError } = useAuth();
-
-  // ── State ──
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const showDevNetworkHint = __DEV__ && API_BASE_URL_DIAGNOSTICS.isLanOnlyHost;
 
-  // ── Handlers ──
   const handleLogin = async () => {
-    if (!phone || !password) return;
-    const success = await login({ phone, password });
-    if (success) {
-      // Thành công sẽ tự động điều hướng nhờ Auth Guard trong Root Layout
-      console.log('Login successful');
+    const trimmedPhone = phone.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedPhone || !trimmedPassword) {
+      return;
     }
+
+    await login({ phone: trimmedPhone, password: trimmedPassword });
   };
 
   const handleLoginZalo = () => {
-    // TODO: Đăng nhập Zalo SDK
+    // TODO: Integrate Zalo SDK.
   };
 
   const handleLoginApple = () => {
-    // TODO: Apple Sign In
+    // TODO: Integrate Apple Sign In.
   };
 
   return (
@@ -62,10 +57,8 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Logo ── */}
         <AuthLogo size="normal" />
 
-        {/* ── Form ── */}
         <View style={styles.form}>
           <AuthInput
             label="Số điện thoại"
@@ -85,25 +78,33 @@ export default function LoginScreen() {
             onChangeText={setPassword}
           />
 
-          {/* Password hints */}
           <PasswordHints password={password} />
 
-          {/* Error Message */}
-          {authError && (
+          {showDevNetworkHint ? (
+            <View style={styles.devHintContainer}>
+              <Text style={styles.devHintTitle}>Dev API: {API_BASE_URL}</Text>
+              <Text style={styles.devHintText}>
+                Dia chi nay chi dung duoc khi dien thoai cung Wi-Fi/LAN voi may chay backend.
+                Neu status bar hien 4G hoac IP PC da doi, login se timeout. Neu bat buoc dung Expo
+                tunnel, chay npm run start:tunnel trong mobile.
+              </Text>
+            </View>
+          ) : null}
+
+          {authError ? (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{authError}</Text>
             </View>
-          )}
+          ) : null}
 
-          {/* Nút đăng nhập chính */}
           <AuthButton
             title="Đăng nhập tài khoản"
             variant="primary"
             onPress={handleLogin}
             loading={isLoading}
+            disabled={!phone.trim() || !password.trim()}
           />
 
-          {/* Social login */}
           <AuthButton
             title="Đăng nhập với ZALO"
             variant="social-zalo"
@@ -118,19 +119,17 @@ export default function LoginScreen() {
             onPress={handleLoginApple}
           />
 
-          {/* Links */}
           <View style={styles.linksRow}>
             <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
               <Text style={styles.linkText}>Tạo tài khoản</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
-              <Text style={styles.linkText}>Quên tài khoản ?</Text>
+              <Text style={styles.linkText}>Quên tài khoản?</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* ── Footer hỗ trợ ── */}
         <SupportFooter showSupportDetails />
       </ScrollView>
     </KeyboardAvoidingView>
@@ -149,6 +148,25 @@ const styles = StyleSheet.create({
   },
   form: {
     flex: 1,
+  },
+  devHintContainer: {
+    backgroundColor: '#EEF7FF',
+    padding: Spacing.sm,
+    borderRadius: 8,
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: '#C9E4FF',
+  },
+  devHintTitle: {
+    color: '#1565C0',
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.semiBold,
+    marginBottom: 4,
+  },
+  devHintText: {
+    color: '#1565C0',
+    fontSize: FontSizes.sm,
+    lineHeight: 20,
   },
   errorContainer: {
     backgroundColor: '#FFE5E5',

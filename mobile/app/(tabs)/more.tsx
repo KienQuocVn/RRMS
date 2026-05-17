@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Platform, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, FontSizes, FontWeights, Spacing, BorderRadius, Shadows } from '@/constants/theme';
+import { Colors, FontSizes, Spacing, BorderRadius } from '@/constants/theme';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -66,7 +66,7 @@ export default function MoreScreen() {
               style={styles.avatar}
             />
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>Xin chào! {user?.fullname || user?.username || 'Bạn'}</Text>
+              <Text style={styles.profileName}>Xin chào! {user?.fullName || user?.fullname || user?.username || 'Bạn'}</Text>
               <Text style={styles.profileGreeting}>Chúc bạn một ngày làm việc hiệu quả!</Text>
               <View style={styles.verifiedBadge}>
                 <View style={styles.verifiedDot} />

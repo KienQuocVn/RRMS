@@ -28,7 +28,7 @@ SPRING_PROFILES_ACTIVE=dev
 ```
 Sau đó chỉ cần chạy lệnh bình thường:
 ```bash
-.\mvnw.cmd spring-boot:run
+.\mvnw.cmd -Dmaven.test.skip=true spring-boot:run
 ```
 *(Lệnh này sẽ khởi chạy ứng dụng trực tiếp và bỏ qua việc chạy các bài test, giúp bạn vào app nhanh hơn)*
 
@@ -42,7 +42,7 @@ Nếu bạn muốn build dự án mà không bị lỗi do các bài test cũ, h
 #### Cách 2: Truyền tham số trực tiếp qua lệnh Maven
 Sử dụng flag `-Dspring-boot.run.profiles` (Dành cho Maven Spring Boot plugin):
 ```bash
-.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev
+.\mvnw.cmd -Dmaven.test.skip=true spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 **Tài khoản mẫu được tạo tự động:**
@@ -56,7 +56,7 @@ Sử dụng flag `-Dspring-boot.run.profiles` (Dành cho Maven Spring Boot plugi
 ### 3. Chạy môi trường Production/Staging
 Trong chế độ mặc định (không có profile `dev`), database sẽ không được insert dữ liệu mẫu để đảm bảo an toàn cho dữ liệu thật:
 ```bash
-./mvnw.cmd spring-boot:run
+./mvnw.cmd -Dmaven.test.skip=true spring-boot:run
 ```
 
 ## 🧪 Testing

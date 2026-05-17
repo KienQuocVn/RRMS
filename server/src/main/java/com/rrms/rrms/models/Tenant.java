@@ -92,4 +92,8 @@ public class Tenant extends BaseEntity {
     @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference(value = "Tenant-Occupants")
     private List<ContractOccupant> contractOccupants;
+
+    @OneToMany(mappedBy = "tenant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference(value = "Tenant-Car")
+    private List<Car> cars;
 }

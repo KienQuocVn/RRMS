@@ -1,11 +1,21 @@
 import { createTheme } from '@mui/material/styles'
 
+// Shared color constants used across components
+export const Colors = {
+  success: '#4caf50',
+  warning: '#ff9800',
+  error: '#f44336',
+  info: '#2196f3',
+  primary: '#20a9e7',
+  grey: '#757575',
+}
+
 const theme = createTheme({
   colorSchemes: {
     light: {
       palette: {
         primary: {
-          main: '#FF8800', // Header primary orange
+          main: '#20a9e7', // Brand blue
           contrastText: '#fff'
         },
         secondary: {
@@ -20,7 +30,7 @@ const theme = createTheme({
     dark: {
       palette: {
         primary: {
-          main: '#FF8800'
+          main: '#20a9e7'
         },
         secondary: {
           main: '#353b48'

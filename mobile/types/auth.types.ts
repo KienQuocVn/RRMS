@@ -8,22 +8,25 @@ export enum Gender {
   OTHER = 'OTHER',
 }
 
+export type UserType = 'CUSTOMER' | 'HOST' | 'BROKER';
+
 export interface LoginRequest {
   phone: string;
-  password?: string; // Tùy chọn nếu dùng OTP hoặc mật khẩu
+  password: string;
 }
 
 export interface LoginResponse {
   token: string;
   authenticated: boolean;
   username: string;
-  fullname: string;
+  fullName: string;
+  fullname?: string;
   phone: string;
   email: string;
-  avatar: string;
-  birthday: string; // LocalDate -> string
-  gender: Gender;
-  cccd: string;
+  avatar?: string | null;
+  birthday?: string | null;
+  gender?: Gender | null;
+  cccd?: string | null;
   roles: string[];
 }
 
@@ -34,9 +37,20 @@ export interface AuthState {
 }
 
 export interface RegisterRequest {
-  username?: string;
+  username: string;
   phone: string;
   email: string;
-  password?: string;
-  userType?: 'CUSTOMER' | 'HOST' | 'BROKER';
+  password: string;
+  userType: UserType;
+}
+
+export interface AuthenticationRegisterRequest {
+  gmail: string;
+  code?: string;
+}
+
+export interface ChangePasswordByEmailRequest {
+  email: string;
+  newPassword?: string;
+  code?: string;
 }

@@ -1,136 +1,93 @@
-﻿import axios from 'axios'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Box, Paper, Grid } from '@mui/material'
 import ServiceList from './components/ServiceList'
 import UsageReport from './components/UsageReport'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import ModelCreateService from './ModelCreateService'
 import ModelUpdateService from './ModelUpdateService'
-import { env } from '~/configs/environment'
 import { useParams } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { isValidRouteParam } from '~/utils/apiAdapters'
-
-
+import { getMotelDetail, getRoomsByMotelId, deleteMotelServiceAPI } from '~/apis/motelServiceAPI'
 
 const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
-  const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
-  const { motelId } = useParams() 
+  const { motelId } = useParams()
   const [motelServices, setMotelServices] = useState([])
   const [selectedService, setSelectedService] = useState(null)
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
-  const [roomData, setRoomData] = useState([]);
-  const generateColumns = () => {
-    const dynamicColumns = motelServices.map(service => ({
-      title: service.nameService, // Tiêu đề là tên dịch vụ
-      columns: [
-        { title: 'Sử dụng', field: `usage_${service.motelServiceId}`, hozAlign: 'right', sorter: 'number', width: 75 },
-        { title: 'Thành tiền', field: `total_${service.motelServiceId}`, hozAlign: 'center', width: 100 }
-      ]
-    }));
-    
-    return [
-      { title: 'Tên phòng', field: 'nameRoom', hozAlign: 'center', width: 100 },
-      ...dynamicColumns
-    ];
-  };
+  const [roomData, setRoomData] = useState([])
+  // State cho bộ lọc tháng - mặc định tháng hiện tại
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date()
+    return { month: now.getMonth() + 1, year: now.getFullYear() }
+  })
 
-  const columns = generateColumns();
-
-  const options = {
-    height: '400px', // Chiều cao của bảng
-    maxWidth: '100%',
-    movableColumns: true, // Cho phép di chuyển cột
-    resizableRows: true, // Cho phép thay đổi kích thước hàng
-    movableRows: true,
-    resizableColumns: true, // Cho phép thay đổi kích thước cột
-    resizableColumnFit: true,
-    layout: 'fitColumns',
-    responsiveLayout: 'collapse',
-    rowHeader: {
-      formatter: 'responsiveCollapse',
-      width: 10,
-      minWidth: 30,
-      hozAlign: 'center',
-      resizable: false,
-      headerSort: false
-    },
-    columnHeaderVertAlign: 'bottom'
-  }
-
-
-
-  const fetchMotelServicesWithCount = async (id) => {
+  const fetchMotelServicesWithCount = useCallback(async (id) => {
     try {
       if (!isValidRouteParam(id)) {
-        setMotelServices([]);
-        setRoomData([]);
-        return;
+        setMotelServices([])
+        setRoomData([])
+        return
       }
 
-      const serviceResponse = await axios.get(`${env.API_URL}/api/v1/motels/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const roomResponse = await axios.get(`${env.API_URL}/api/v1/rooms/motel/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const [serviceRes, roomRes] = await Promise.all([
+        getMotelDetail(id),
+        getRoomsByMotelId(id)
+      ])
 
-      if (serviceResponse.data?.code === 200 && serviceResponse.data.result?.motelServices) {
-        const motelServices = serviceResponse.data?.result?.motelServices || [];
-        const rooms = roomResponse.data?.result || [];
+      if (serviceRes?.code === 200 && serviceRes.result?.motelServices) {
+        const services = serviceRes.result.motelServices || []
+        const rooms = roomRes?.result || []
 
-        const serviceCounts = {};
+        // Đếm số phòng đang áp dụng dịch vụ
+        const serviceCounts = {}
         rooms.forEach((room) => {
-          const services = room.services || [];
-          services.forEach((service) => {
-            const serviceId = service.service?.motelServiceId || service.serviceId;
+          const roomServices = room.services || []
+          roomServices.forEach((rs) => {
+            const serviceId = rs.service?.motelServiceId || rs.serviceId
             if (serviceId) {
-              serviceCounts[serviceId] = (serviceCounts[serviceId] || 0) + 1;
+              serviceCounts[serviceId] = (serviceCounts[serviceId] || 0) + 1
             }
-          });
-        });
+          })
+        })
 
-        const servicesWithCount = motelServices.map((service) => ({
+        const servicesWithCount = services.map((service) => ({
           ...service,
           count: serviceCounts[service.motelServiceId] || 0,
-        }));
+        }))
 
-        setMotelServices(servicesWithCount);
+        setMotelServices(servicesWithCount)
 
-        // Chuẩn bị dữ liệu phòng cho bảng
+        // Chuẩn bị dữ liệu phòng cho bảng báo cáo
         const roomDataFormatted = rooms.map((room) => {
-          const roomServices = (room.services || []).reduce((acc, service) => {
-            const serviceId = service.service?.motelServiceId || service.serviceId;
+          const roomServices = (room.services || []).reduce((acc, rs) => {
+            const serviceId = rs.service?.motelServiceId || rs.serviceId
             if (serviceId) {
-              acc[`usage_${serviceId}`] = service.quantity || 0;
-              acc[`total_${serviceId}`] = (service.quantity || 0) * (service.service?.price || 0);
+              acc[`usage_${serviceId}`] = rs.quantity || 0
+              acc[`total_${serviceId}`] = (rs.quantity || 0) * (rs.service?.price || 0)
             }
-            return acc;
-          }, {});
-          
+            return acc
+          }, {})
 
           return {
             nameRoom: room.name,
             ...roomServices
-          };
-        });
+          }
+        })
 
-        setRoomData(roomDataFormatted);
+        setRoomData(roomDataFormatted)
       } else {
-        setMotelServices([]);
-        setRoomData([]);
+        setMotelServices([])
+        setRoomData([])
       }
     } catch (error) {
-      console.error('Lỗi khi gọi API:', error);
-      setMotelServices([]);
-      setRoomData([]);
+      console.error('Lỗi khi gọi API:', error)
+      setMotelServices([])
+      setRoomData([])
     }
-  };
-  
-  
+  }, [])
 
   const deleteMotelService = async (serviceId) => {
-    // Kiểm tra xem serviceId có tồn tại không
     if (!serviceId) {
       Swal.fire({
         icon: 'warning',
@@ -140,7 +97,6 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       return
     }
 
-    // Xác nhận xóa dịch vụ
     const confirmDelete = await Swal.fire({
       title: 'Bạn có chắc chắn muốn xóa dịch vụ này?',
       text: 'Hành động này không thể hoàn tác!',
@@ -150,19 +106,12 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       cancelButtonText: 'Không'
     })
 
-    // Nếu người dùng không xác nhận, thoát hàm
     if (!confirmDelete.isConfirmed) {
       return
     }
 
     try {
-      // Thực hiện yêu cầu xóa dịch vụ
-      await axios.delete(`${env.API_URL}/api/v1/motel-services/${serviceId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-
+      await deleteMotelServiceAPI(serviceId)
       Swal.fire({
         icon: 'success',
         title: 'Thành công',
@@ -187,11 +136,11 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
     if (motelId) {
       fetchMotelServicesWithCount(motelId)
     }
-  }, [motelId]) 
+  }, [motelId, fetchMotelServicesWithCount])
 
   const openEditModal = (service) => {
     setSelectedService(service)
-    setIsUpdateModalOpen(true) 
+    setIsUpdateModalOpen(true)
   }
 
   const closeUpdateModal = () => {
@@ -235,8 +184,9 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
           <Grid item xs={12} md={8}>
             <UsageReport
               roomData={roomData}
-              columns={columns}
-              options={options}
+              motelServices={motelServices}
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
             />
           </Grid>
         </Grid>

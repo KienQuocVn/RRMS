@@ -59,11 +59,11 @@ export default function AppInfoScreen() {
         <View style={styles.banner}>
           <View style={styles.logoContainer}>
             <Text style={styles.logoTextMain}>
-              <Text style={{ color: "#4CAF50" }}>// </Text>RRMS
+              <Text style={{ color: Colors.textSuccess }}>// </Text>RRMS
             </Text>
             <Text style={styles.logoTextSub}>
               Quản lý{" "}
-              <Text style={{ color: "#4CAF50", fontWeight: "bold" }}>
+              <Text style={{ color: Colors.textSuccess, fontWeight: "bold" }}>
                 NHÀ CHO THUÊ
               </Text>
             </Text>

@@ -106,7 +106,7 @@ const AdminManagerGroup = ({ setIsAdmin }) => {
                 <td>NV01</td>
                 <td>Nguyen Van A</td>
                 <td>012345678910</td>
-                <td>0987654321</td>
+                <td>0919925302</td>
                 <td>01/01/2000</td>
                 <td>Nam</td>
               </tr>
@@ -115,7 +115,7 @@ const AdminManagerGroup = ({ setIsAdmin }) => {
                 <td>NV01</td>
                 <td>Nguyen Van A</td>
                 <td>012345678910</td>
-                <td>0987654321</td>
+                <td>0919925302</td>
                 <td>01/01/2000</td>
                 <td>Nam</td>
               </tr>
@@ -124,7 +124,7 @@ const AdminManagerGroup = ({ setIsAdmin }) => {
                 <td>NV01</td>
                 <td>Nguyen Van A</td>
                 <td>012345678910</td>
-                <td>0987654321</td>
+                <td>0919925302</td>
                 <td>01/01/2000</td>
                 <td>Nam</td>
               </tr>

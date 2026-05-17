@@ -60,11 +60,11 @@ export default function ChangePasswordScreen() {
         {/* Logo Area */}
         <View style={styles.logoContainer}>
           <Text style={styles.logoTextMain}>
-            <Text style={{ color: "#4CAF50" }}>// </Text>RRMS
+            <Text style={{ color: Colors.textSuccess }}>// </Text>RRMS
           </Text>
           <Text style={styles.logoTextSub}>
             Quản lý{" "}
-            <Text style={{ color: "#4CAF50", fontWeight: "bold" }}>
+            <Text style={{ color: Colors.textSuccess, fontWeight: "bold" }}>
               NHÀ CHO THUÊ
             </Text>
           </Text>
@@ -158,7 +158,7 @@ export default function ChangePasswordScreen() {
             <Ionicons
               name="checkmark"
               size={16}
-              color="#4CAF50"
+              color={Colors.textSuccess}
               style={{ marginRight: 6 }}
             />
             <Text style={styles.hintText}>Mật khẩu phải lớn hơn 8 ký tự</Text>
@@ -167,7 +167,7 @@ export default function ChangePasswordScreen() {
             <Ionicons
               name="checkmark"
               size={16}
-              color="#4CAF50"
+              color={Colors.textSuccess}
               style={{ marginRight: 6 }}
             />
             <Text style={styles.hintText}>Chú ý đến hoa thường</Text>

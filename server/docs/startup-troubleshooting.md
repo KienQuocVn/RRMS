@@ -28,10 +28,11 @@ Use one of these commands from the `server` folder:
 or:
 
 ```powershell
-.\mvnw.cmd -DskipTests compile spring-boot:run -Dspring-boot.run.profiles=dev
+.\mvnw.cmd -Dmaven.test.skip=true spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-Both commands force compilation first, so MapStruct and Lombok run before Spring Boot starts.
+These commands still compile the main source set so MapStruct and Lombok run before Spring Boot starts,
+but they skip broken legacy test compilation.
 
 ## If you still want to run from the IDE
 

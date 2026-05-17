@@ -450,7 +450,7 @@ export default function AddBuildingServicesScreen() {
         <View style={styles.card}>
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => router.push("/add-building-address")}
+            onPress={() => router.push("/add-building/add-building-address")}
             style={styles.addressAction}
           >
             <View style={styles.addressActionIcon}>

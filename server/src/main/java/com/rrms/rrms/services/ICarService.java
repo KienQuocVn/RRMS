@@ -18,4 +18,6 @@ public interface ICarService {
     void deleteCar(UUID carId);
 
     List<CarResponse> getCarsByRoomId(UUID roomId);
+
+    List<CarResponse> getCarsByMotelId(UUID motelId);
 }

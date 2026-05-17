@@ -7,6 +7,7 @@ import {
   ScrollView,
   Platform,
   TextInput,
+  Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -53,12 +54,14 @@ export default function LinkPhoneScreen() {
       >
         {/* Logo Area */}
         <View style={styles.logoContainer}>
-          <Text style={styles.logoTextMain}>
-            <Text style={{ color: "#4CAF50" }}>// </Text>RRMS
-          </Text>
+          <Image
+            source={require("@/assets/images/logo.png")}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
           <Text style={styles.logoTextSub}>
             Quản lý{" "}
-            <Text style={{ color: "#4CAF50", fontWeight: "bold" }}>
+            <Text style={{ color: Colors.textSuccess, fontWeight: "bold" }}>
               NHÀ CHO THUÊ
             </Text>
           </Text>
@@ -154,12 +157,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: Spacing["3xl"],
   },
-  logoTextMain: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: Colors.textPrimary,
-    letterSpacing: 2,
-    marginBottom: 4,
+  logoImage: {
+    width: 96,
+    height: 96,
+    marginBottom: Spacing.sm,
   },
   logoTextSub: {
     fontSize: 14,

@@ -125,13 +125,13 @@ public class TenantControllerTest {
         TenantRequest tenantRequest = new TenantRequest();
         tenantRequest.setAddress("Updated Address");
         tenantRequest.setEmail("updated@example.com");
-        tenantRequest.setPhone("0987654321");
+        tenantRequest.setPhone("0919925302");
 
         TenantResponse tenantResponse = new TenantResponse();
         tenantResponse.setTenantId(tenantId);
         tenantResponse.setAddress("Updated Address");
         tenantResponse.setEmail("updated@example.com");
-        tenantResponse.setPhone("0987654321");
+        tenantResponse.setPhone("0919925302");
 
         // Giả lập tenantService.update trả về TenantResponse
         when(tenantService.update(eq(tenantId), any(TenantRequest.class))).thenReturn(tenantResponse);
@@ -146,7 +146,7 @@ public class TenantControllerTest {
                 .andExpect(jsonPath("$.result.tenantId").value(tenantId.toString())) // Kiểm tra tenantId
                 .andExpect(jsonPath("$.result.address").value("Updated Address")) // Kiểm tra địa chỉ
                 .andExpect(jsonPath("$.result.email").value("updated@example.com")) // Kiểm tra email
-                .andExpect(jsonPath("$.result.phone").value("0987654321")); // Kiểm tra phone
+                .andExpect(jsonPath("$.result.phone").value("0919925302")); // Kiểm tra phone
 
         // Kiểm tra rằng phương thức update của tenantService đã được gọi một lần
         verify(tenantService, times(1)).update(eq(tenantId), any(TenantRequest.class));
@@ -170,25 +170,29 @@ public class TenantControllerTest {
         // Kiểm tra rằng phương thức delete của tenantService đã được gọi một lần
         verify(tenantService, times(1)).delete(tenantId);
     }
-    //    @Test
-    //    void testDeleteTenant_Failure() throws Exception {
-    //        // Giả lập một UUID cho tenant
-    //        UUID tenantId = UUID.randomUUID();
+
+    // @Test
+    // void testDeleteTenant_Failure() throws Exception {
+    // // Giả lập một UUID cho tenant
+    // UUID tenantId = UUID.randomUUID();
     //
-    //        // Giả lập rằng phương thức delete sẽ ném ra một ngoại lệ
-    //        doThrow(new RuntimeException("Delete failed")).when(tenantService).delete(tenantId);
+    // // Giả lập rằng phương thức delete sẽ ném ra một ngoại lệ
+    // doThrow(new RuntimeException("Delete
+    // failed")).when(tenantService).delete(tenantId);
     //
-    //        // Thực hiện yêu cầu DELETE
-    //        mockMvc.perform(delete("/tenant/{id}", tenantId))
-    //                .andExpect(status().isBadRequest())  // Kiểm tra mã trạng thái trả về là 400 (Bad Request)
-    //                .andExpect(jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))  // Kiểm tra mã code trả về
+    // // Thực hiện yêu cầu DELETE
+    // mockMvc.perform(delete("/tenant/{id}", tenantId))
+    // .andExpect(status().isBadRequest()) // Kiểm tra mã trạng thái trả về là 400
+    // (Bad Request)
+    // .andExpect(jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value())) // Kiểm
+    // tra mã code trả về
     // là 400
-    //                .andExpect(jsonPath("$.message").value("error"))  // Kiểm tra thông báo lỗi
-    //                .andExpect(jsonPath("$.result").value(false));  // Kiểm tra kết quả là false
+    // .andExpect(jsonPath("$.message").value("error")) // Kiểm tra thông báo lỗi
+    // .andExpect(jsonPath("$.result").value(false)); // Kiểm tra kết quả là false
     //
-    //        // Kiểm tra rằng phương thức delete của tenantService đã được gọi một lần
-    //        verify(tenantService, times(1)).delete(tenantId);
-    //    }
+    // // Kiểm tra rằng phương thức delete của tenantService đã được gọi một lần
+    // verify(tenantService, times(1)).delete(tenantId);
+    // }
     @Test
     void testGetAllTenantsRoomId_Success() throws Exception {
         // Giả lập UUID cho roomId

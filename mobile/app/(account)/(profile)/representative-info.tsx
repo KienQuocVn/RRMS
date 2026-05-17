@@ -1,105 +1,416 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, TextInput } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { Colors, FontSizes, FontWeights, Spacing, BorderRadius } from '@/constants/theme';
+
+import { BorderRadius, Colors, FontSizes, FontWeights, Spacing } from '@/constants/theme';
+import { useAuth } from '@/hooks/use-auth';
+import { buildProfileUpdatePayload, profileService } from '@/services/api/profile.service';
+import { Profile } from '@/types/profile.types';
+
+type RepresentativeForm = {
+  fullName: string;
+  phone: string;
+  birthday: string;
+  job: string;
+  address: string;
+  cccd: string;
+  placeOfIssue: string;
+  dateOfIssue: string;
+};
+
+function formatDateForInput(value?: string | null) {
+  if (!value) {
+    return '';
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split('-');
+    return `${day}/${month}/${year}`;
+  }
+
+  return value;
+}
+
+function parseDateToApi(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  const match = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!match) {
+    return null;
+  }
+
+  const [, rawDay, rawMonth, year] = match;
+  const day = rawDay.padStart(2, '0');
+  const month = rawMonth.padStart(2, '0');
+  const isoValue = `${year}-${month}-${day}`;
+  const parsedDate = new Date(`${isoValue}T00:00:00`);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return null;
+  }
+
+  return isoValue;
+}
+
+function buildForm(profile: Profile): RepresentativeForm {
+  return {
+    fullName: profile.fullName || '',
+    phone: profile.phone || '',
+    birthday: formatDateForInput(profile.birthday),
+    job: profile.job || '',
+    address: profile.address || '',
+    cccd: profile.cccd || '',
+    placeOfIssue: profile.placeOfIssue || '',
+    dateOfIssue: formatDateForInput(profile.dateOfIssue),
+  };
+}
 
 export default function RepresentativeInfoScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const user = useAuth((state) => state.user);
+  const updateUserProfile = useAuth((state) => state.updateUserProfile);
 
-  const Header = () => (
-    <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : insets.top + Spacing.sm }]}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
-      </TouchableOpacity>
-      <View style={styles.headerTitleWrap}>
-        <Text style={styles.headerTitle}>Thông tin đại diện của tòa nhà</Text>
-      </View>
-    </View>
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [form, setForm] = useState<RepresentativeForm>({
+    fullName: '',
+    phone: '',
+    birthday: '',
+    job: '',
+    address: '',
+    cccd: '',
+    placeOfIssue: '',
+    dateOfIssue: '',
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const username = user?.username;
+
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      async function loadProfile() {
+        if (!username) {
+          if (isActive) {
+            setIsLoading(false);
+            Alert.alert('Thông báo', 'Không tìm thấy tài khoản đăng nhập.');
+          }
+          return;
+        }
+
+        setIsLoading(true);
+
+        try {
+          const response = await profileService.getProfile(username);
+          if (!isActive) {
+            return;
+          }
+
+          setProfile(response.result);
+          setForm(buildForm(response.result));
+        } catch (error: any) {
+          if (isActive) {
+            Alert.alert(
+              'Không thể tải thông tin',
+              error?.response?.data?.message || 'Vui lòng thử lại sau.',
+            );
+          }
+        } finally {
+          if (isActive) {
+            setIsLoading(false);
+          }
+        }
+      }
+
+      void loadProfile();
+
+      return () => {
+        isActive = false;
+      };
+    }, [username]),
   );
 
+  const setField = useCallback((key: keyof RepresentativeForm, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    if (!profile) {
+      return;
+    }
+
+    const trimmedValues = {
+      fullName: form.fullName.trim(),
+      phone: form.phone.trim(),
+      birthday: form.birthday.trim(),
+      job: form.job.trim(),
+      address: form.address.trim(),
+      cccd: form.cccd.trim(),
+      placeOfIssue: form.placeOfIssue.trim(),
+      dateOfIssue: form.dateOfIssue.trim(),
+    };
+
+    if (
+      !trimmedValues.fullName ||
+      !trimmedValues.phone ||
+      !trimmedValues.birthday ||
+      !trimmedValues.job ||
+      !trimmedValues.address ||
+      !trimmedValues.cccd ||
+      !trimmedValues.placeOfIssue ||
+      !trimmedValues.dateOfIssue
+    ) {
+      Alert.alert('Thiếu thông tin', 'Vui lòng điền đầy đủ các trường bắt buộc.');
+      return;
+    }
+
+    const birthday = parseDateToApi(trimmedValues.birthday);
+    const dateOfIssue = parseDateToApi(trimmedValues.dateOfIssue);
+
+    if (!birthday || !dateOfIssue) {
+      Alert.alert(
+        'Ngày chưa hợp lệ',
+        'Vui lòng nhập ngày theo định dạng dd/mm/yyyy hoặc yyyy-mm-dd.',
+      );
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const response = await profileService.updateProfile(
+        buildProfileUpdatePayload(profile, {
+          fullName: trimmedValues.fullName,
+          phone: trimmedValues.phone,
+          birthday,
+          job: trimmedValues.job,
+          address: trimmedValues.address,
+          cccd: trimmedValues.cccd,
+          placeOfIssue: trimmedValues.placeOfIssue,
+          dateOfIssue,
+        }),
+      );
+
+      setProfile(response.result);
+      setForm(buildForm(response.result));
+      await updateUserProfile({
+        fullName: response.result.fullName,
+        fullname: response.result.fullName,
+        phone: response.result.phone,
+        birthday: response.result.birthday ?? undefined,
+        cccd: response.result.cccd ?? undefined,
+      });
+
+      Alert.alert('Thành công', 'Thông tin đại diện chủ tòa nhà đã được lưu.');
+    } catch (error: any) {
+      Alert.alert(
+        'Lưu thất bại',
+        error?.response?.data?.message || 'Không thể lưu thông tin lúc này.',
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }, [form, profile, updateUserProfile]);
+
   return (
-    <View style={styles.container}>
-      <Header />
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        
-        {/* Alert Banner */}
-        <View style={styles.alertBanner}>
-          <Ionicons name="information-circle-outline" size={24} color="#E65100" style={{ marginRight: 8 }} />
-          <Text style={styles.alertText}>
-            Các thông tin này sẽ được hệ thống tạo ra các văn bản tự động như <Text style={styles.alertHighlight}>Văn bản hợp đồng, văn bản thông tin nhân khẩu...</Text>
-          </Text>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View
+        style={[
+          styles.header,
+          { paddingTop: Platform.OS === 'ios' ? insets.top : insets.top + Spacing.sm },
+        ]}
+      >
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
+        </TouchableOpacity>
+        <View style={styles.headerTitleWrap}>
+          <Text style={styles.headerTitle}>Thông tin đại diện của tòa nhà</Text>
         </View>
+      </View>
 
-        {/* Form */}
-        <View style={styles.row}>
-          <View style={[styles.inputGroup, { flex: 1, marginRight: Spacing.sm }]}>
-            <Text style={styles.label}>Tên người đại diện <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} placeholder="Nhập tên" placeholderTextColor={Colors.gray400} />
-          </View>
-          <View style={[styles.inputGroup, { flex: 1 }]}>
-            <Text style={styles.label}>Số điện thoại <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} placeholder="Nhập số điện thoại" placeholderTextColor={Colors.gray400} keyboardType="phone-pad" />
-          </View>
+      {isLoading ? (
+        <View style={styles.centerBox}>
+          <ActivityIndicator size="small" color={Colors.primary} />
+          <Text style={styles.centerText}>Đang tải thông tin đại diện...</Text>
         </View>
+      ) : (
+        <>
+          <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+            <View style={styles.alertBanner}>
+              <Ionicons
+                name="information-circle-outline"
+                size={24}
+                color="#E65100"
+                style={styles.alertIcon}
+              />
+              <Text style={styles.alertText}>
+                Các thông tin này sẽ được dùng làm dữ liệu mẫu cho hợp đồng, văn bản tạm trú và
+                các biểu mẫu liên quan đến khách thuê.
+              </Text>
+            </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Ngày sinh <Text style={styles.required}>*</Text></Text>
-          <TextInput style={styles.input} placeholder="16/06/1990" placeholderTextColor={Colors.textPrimary} value="16/06/1990" />
-        </View>
+            <View style={styles.row}>
+              <View style={[styles.inputGroup, styles.flexItem, styles.rowSpacing]}>
+                <Text style={styles.label}>
+                  Tên người đại diện <Text style={styles.required}>*</Text>
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  value={form.fullName}
+                  onChangeText={(value) => setField('fullName', value)}
+                  placeholder="Nhập họ và tên"
+                  placeholderTextColor={Colors.gray400}
+                />
+              </View>
+              <View style={[styles.inputGroup, styles.flexItem]}>
+                <Text style={styles.label}>
+                  Số điện thoại <Text style={styles.required}>*</Text>
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  value={form.phone}
+                  onChangeText={(value) => setField('phone', value)}
+                  placeholder="Nhập số điện thoại"
+                  placeholderTextColor={Colors.gray400}
+                  keyboardType="phone-pad"
+                />
+              </View>
+            </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Nghề nghiệp <Text style={styles.required}>*</Text></Text>
-          <TextInput style={styles.input} placeholder="Nghề nghiệp" placeholderTextColor={Colors.gray400} />
-        </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>
+                Ngày sinh <Text style={styles.required}>*</Text>
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={form.birthday}
+                onChangeText={(value) => setField('birthday', value)}
+                placeholder="dd/mm/yyyy hoặc yyyy-mm-dd"
+                placeholderTextColor={Colors.gray400}
+              />
+            </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Địa chỉ <Text style={styles.required}>*</Text></Text>
-          <TextInput style={styles.input} placeholder="Địa chỉ" placeholderTextColor={Colors.gray400} />
-        </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>
+                Nghề nghiệp <Text style={styles.required}>*</Text>
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={form.job}
+                onChangeText={(value) => setField('job', value)}
+                placeholder="Ví dụ: Quản lý tòa nhà"
+                placeholderTextColor={Colors.gray400}
+              />
+            </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Passport (Khách nước ngoài)</Text>
-          <View style={styles.inputWithAction}>
-            <TextInput 
-              style={[styles.input, { flex: 1, borderRightWidth: 0, borderTopRightRadius: 0, borderBottomRightRadius: 0 }]} 
-              placeholder="Ví dụ: 001304207098 hoặc 21232345..." 
-              placeholderTextColor={Colors.gray400} 
-            />
-            <TouchableOpacity style={styles.actionBtnInside}>
-              <Ionicons name="sync-outline" size={16} color="#4CAF50" style={{ marginRight: 4 }} />
-              <Text style={styles.actionBtnText}>Thẻ CCCD</Text>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>
+                Địa chỉ <Text style={styles.required}>*</Text>
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={form.address}
+                onChangeText={(value) => setField('address', value)}
+                placeholder="Nhập địa chỉ"
+                placeholderTextColor={Colors.gray400}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>
+                Số CCCD/Passport <Text style={styles.required}>*</Text>
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={form.cccd}
+                onChangeText={(value) => setField('cccd', value)}
+                placeholder="Nhập số CCCD hoặc passport"
+                placeholderTextColor={Colors.gray400}
+              />
+            </View>
+
+            <View style={styles.row}>
+              <View style={[styles.inputGroup, styles.flexItem, styles.rowSpacing]}>
+                <Text style={styles.label}>
+                  Nơi cấp <Text style={styles.required}>*</Text>
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  value={form.placeOfIssue}
+                  onChangeText={(value) => setField('placeOfIssue', value)}
+                  placeholder="Nhập nơi cấp"
+                  placeholderTextColor={Colors.gray400}
+                />
+              </View>
+              <View style={[styles.inputGroup, styles.flexItem]}>
+                <Text style={styles.label}>
+                  Ngày cấp <Text style={styles.required}>*</Text>
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  value={form.dateOfIssue}
+                  onChangeText={(value) => setField('dateOfIssue', value)}
+                  placeholder="dd/mm/yyyy"
+                  placeholderTextColor={Colors.gray400}
+                />
+              </View>
+            </View>
+          </ScrollView>
+
+          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, Spacing.md) }]}>
+            <TouchableOpacity style={styles.btnCancel} onPress={() => router.back()}>
+              <Ionicons name="close" size={18} color={Colors.textPrimary} style={styles.footerIcon} />
+              <Text style={styles.btnCancelText}>Đóng</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.btnSave, isSaving && styles.btnSaveDisabled]}
+              onPress={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <ActivityIndicator size="small" color={Colors.white} />
+              ) : (
+                <>
+                  <Ionicons
+                    name="save-outline"
+                    size={18}
+                    color={Colors.white}
+                    style={styles.footerIcon}
+                  />
+                  <Text style={styles.btnSaveText}>Lưu thông tin</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={[styles.inputGroup, { flex: 1, marginRight: Spacing.sm }]}>
-            <Text style={styles.label}>Nơi cấp <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} placeholder="" placeholderTextColor={Colors.gray400} />
-          </View>
-          <View style={[styles.inputGroup, { flex: 1 }]}>
-            <Text style={styles.label}>Ngày cấp <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} placeholder="" placeholderTextColor={Colors.gray400} />
-          </View>
-        </View>
-
-      </ScrollView>
-
-      {/* Footer Buttons */}
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, Spacing.md) }]}>
-        <TouchableOpacity style={styles.btnCancel} onPress={() => router.back()}>
-          <Ionicons name="close" size={18} color={Colors.textPrimary} style={{ marginRight: 6 }} />
-          <Text style={styles.btnCancelText}>Đóng</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.btnSave}>
-          <Ionicons name="add" size={18} color={Colors.white} style={{ marginRight: 6 }} />
-          <Text style={styles.btnSaveText}>Thêm thông tin</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+        </>
+      )}
+    </KeyboardAvoidingView>
   );
 }
 
@@ -140,6 +451,16 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: Spacing.base,
   },
+  centerBox: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+  },
+  centerText: {
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
+  },
   alertBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -150,27 +471,32 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     marginBottom: Spacing.xl,
   },
+  alertIcon: {
+    marginRight: 8,
+  },
   alertText: {
     flex: 1,
     fontSize: 14,
     color: Colors.textPrimary,
     lineHeight: 20,
   },
-  alertHighlight: {
-    color: '#E65100',
-    fontWeight: 'bold',
-  },
   row: {
     flexDirection: 'row',
+  },
+  flexItem: {
+    flex: 1,
+  },
+  rowSpacing: {
+    marginRight: Spacing.sm,
   },
   inputGroup: {
     marginBottom: Spacing.lg,
   },
   label: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
     marginBottom: 8,
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.textPrimary,
   },
   required: {
     color: Colors.error,
@@ -183,27 +509,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: FontSizes.md,
     color: Colors.textPrimary,
-  },
-  inputWithAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  actionBtnInside: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8F5E9',
-    paddingHorizontal: 12,
-    paddingVertical: 13,
-    borderTopRightRadius: BorderRadius.md,
-    borderBottomRightRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.gray300,
-    borderLeftWidth: 0,
-  },
-  actionBtnText: {
-    fontSize: 13,
-    color: '#4CAF50',
-    fontWeight: 'bold',
   },
   footer: {
     flexDirection: 'row',
@@ -224,7 +529,7 @@ const styles = StyleSheet.create({
   },
   btnCancelText: {
     fontSize: FontSizes.md,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: Colors.textPrimary,
   },
   btnSave: {
@@ -236,9 +541,15 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: BorderRadius.md,
   },
+  btnSaveDisabled: {
+    opacity: 0.7,
+  },
   btnSaveText: {
     fontSize: FontSizes.md,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: Colors.white,
+  },
+  footerIcon: {
+    marginRight: 6,
   },
 });

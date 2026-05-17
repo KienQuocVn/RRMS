@@ -66,7 +66,7 @@ export default function HelpCenterScreen() {
             <Text style={styles.optionText}>Video - Hướng dẫn sử dụng</Text>
           </TouchableOpacity>
           <View style={styles.optionItem}>
-            <Ionicons name="logo-android" size={24} color="#4CAF50" style={{ marginRight: Spacing.md }} />
+            <Ionicons name="logo-android" size={24} color={Colors.textSuccess} style={{ marginRight: Spacing.md }} />
             <View style={styles.optionInfo}>
               <Text style={styles.optionTitle}>Tắt - hiển thị icon hỗ trợ</Text>
               <Text style={styles.optionDesc}>Là icon được hiển thị ở các màn hình để giúp bạn hiểu phần mềm</Text>

@@ -15,4 +15,5 @@ public class CarRequest {
     private String number;
     private String image;
     private UUID roomId; // ID của Room để liên kết
+    private UUID tenantId;
 }

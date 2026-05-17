@@ -16,4 +16,6 @@ public class CarResponse {
     private String number;
     private String image;
     private UUID roomId;
+    private UUID tenantId;
+    private String tenantName;
 }

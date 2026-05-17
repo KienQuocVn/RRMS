@@ -22,7 +22,7 @@ export const DepositSearchBar = ({
         onChangeText={setSearchText}
       />
       <TouchableOpacity style={styles.searchIconBtn}>
-        <Ionicons name="search" size={22} color={Colors.textSuccess} />
+        <Ionicons name="search" size={22} color={Colors.textPrimary} />
       </TouchableOpacity>
     </View>
   </View>
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     paddingLeft: Spacing.lg,
     paddingRight: 48,
     fontSize: FontSizes.base,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
   searchIconBtn: {
     position: "absolute",

@@ -66,8 +66,8 @@ Không lấy được thông tin email hoặc tên
 
 ```json
 {
-  "phone": "0911000001",
-  "password": "12345678"
+  "phone": "0919925302",
+  "password": "123456789"
 }
 ```
 

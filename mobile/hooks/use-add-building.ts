@@ -9,7 +9,7 @@ export function useAddBuilding() {
   const setIsAutoInit = useAddBuildingFlow((state) => state.setIsAutoInit);
 
   const handleNext = () => {
-    router.push('/add-building-services');
+    router.push('/add-building/add-building-services');
   };
 
   const handleClose = () => {

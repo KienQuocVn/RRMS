@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     fontWeight: FontWeights.bold,
   },
   filterTextInactive: {
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
     fontSize: FontSizes.sm,
     fontWeight: FontWeights.medium,
   },

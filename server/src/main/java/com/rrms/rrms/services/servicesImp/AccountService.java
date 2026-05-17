@@ -224,6 +224,10 @@ public class AccountService implements IAccountService {
         account.setBirthday(accountRequest.getBirthday());
         account.setGender(accountRequest.getGender());
         account.setCccd(accountRequest.getCccd());
+        account.setAddress(accountRequest.getAddress());
+        account.setJob(accountRequest.getJob());
+        account.setPlaceOfIssue(accountRequest.getPlaceOfIssue());
+        account.setDateOfIssue(accountRequest.getDateOfIssue());
         account.setAvatar(accountRequest.getAvatar());
         account.setPassword(passwordEncoder.encode(accountRequest.getPassword()));
         account.setAuthorities(new ArrayList<>());
@@ -267,6 +271,10 @@ public class AccountService implements IAccountService {
         }
         response.setGender(account.getGender());
         response.setCccd(account.getCccd());
+        response.setAddress(account.getAddress());
+        response.setJob(account.getJob());
+        response.setPlaceOfIssue(account.getPlaceOfIssue());
+        response.setDateOfIssue(account.getDateOfIssue());
         response.setAvatar(account.getAvatar());
         response.setRole(account.getAuthorities().stream()
                 .map(auth -> auth.getRole().getRoleName().name())
@@ -290,6 +298,10 @@ public class AccountService implements IAccountService {
         account.setBirthday(accountRequest.getBirthday());
         account.setGender(accountRequest.getGender());
         account.setCccd(accountRequest.getCccd());
+        account.setAddress(accountRequest.getAddress());
+        account.setJob(accountRequest.getJob());
+        account.setPlaceOfIssue(accountRequest.getPlaceOfIssue());
+        account.setDateOfIssue(accountRequest.getDateOfIssue());
         account.setAvatar(accountRequest.getAvatar());
 
         if (accountRequest.getPassword() != null

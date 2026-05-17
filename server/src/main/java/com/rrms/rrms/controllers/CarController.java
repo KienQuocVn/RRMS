@@ -62,4 +62,10 @@ public class CarController {
         List<CarResponse> carResponses = carService.getCarsByRoomId(roomId);
         return ResponseEntity.ok(carResponses);
     }
+
+    @GetMapping("/motel/{motelId}")
+    public ResponseEntity<List<CarResponse>> getCarsByMotelId(@PathVariable UUID motelId) {
+        List<CarResponse> carResponses = carService.getCarsByMotelId(motelId);
+        return ResponseEntity.ok(carResponses);
+    }
 }

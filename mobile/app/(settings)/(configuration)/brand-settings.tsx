@@ -66,7 +66,7 @@ export default function BrandSettingsScreen() {
         {/* Upload Logo Area */}
         <View style={styles.uploadArea}>
           <TouchableOpacity style={styles.uploadBox}>
-            <Ionicons name="cloud-upload-outline" size={32} color="#4CAF50" />
+            <Ionicons name="cloud-upload-outline" size={32} color={Colors.textSuccess} />
             <Text style={styles.uploadText}>Logo thương hiệu</Text>
           </TouchableOpacity>
         </View>
@@ -94,7 +94,7 @@ export default function BrandSettingsScreen() {
           <View style={styles.marketingIconWrap}>
             <Ionicons name="megaphone-outline" size={30} color="#00BCD4" />
             <View style={styles.marketingGear}>
-              <Ionicons name="settings" size={14} color="#4CAF50" />
+              <Ionicons name="settings" size={14} color={Colors.textSuccess} />
             </View>
           </View>
           <View style={styles.marketingContent}>
@@ -108,7 +108,7 @@ export default function BrandSettingsScreen() {
             </Text>
             <TouchableOpacity style={styles.readMoreBtn}>
               <Text style={styles.readMoreText}>Xem thêm</Text>
-              <Ionicons name="chevron-forward" size={14} color="#4CAF50" />
+              <Ionicons name="chevron-forward" size={14} color={Colors.textSuccess} />
             </TouchableOpacity>
           </View>
         </View>
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
   },
   readMoreText: {
     fontSize: 13,
-    color: "#4CAF50",
+    color: Colors.textSuccess,
     marginRight: 4,
   },
   footer: {

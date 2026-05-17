@@ -1,62 +1,68 @@
 import { apiClient } from './client';
 import { API_ENDPOINTS } from './endpoints';
-import { LoginRequest, LoginResponse, RegisterRequest } from '@/types/auth.types';
+import {
+  ChangePasswordByEmailRequest,
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+} from '@/types/auth.types';
 import { ApiResponse } from '@/types/common.types';
 
 export const authService = {
-  /**
-   * Đăng nhập hệ thống
-   */
   login: async (data: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
-    return apiClient.post(API_ENDPOINTS.AUTH.LOGIN, data);
+    return apiClient.post(API_ENDPOINTS.AUTH.LOGIN, data, {
+      rrmsRetryable: true,
+      rrmsRetryLabel: 'login',
+    } as any);
   },
 
-  /**
-   * Đăng xuất
-   */
-  logout: async (token: string): Promise<ApiResponse<any>> => {
-    return apiClient.post(API_ENDPOINTS.AUTH.LOGOUT, { token });
+  logout: async (token: string): Promise<ApiResponse<null>> => {
+    return apiClient.post(
+      API_ENDPOINTS.AUTH.LOGOUT,
+      { token },
+      {
+        rrmsRetryable: true,
+        rrmsRetryLabel: 'logout',
+      } as any
+    );
   },
 
-  /**
-   * Làm mới token
-   */
   refreshToken: async (token: string): Promise<ApiResponse<LoginResponse>> => {
-    return apiClient.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN, { token });
+    return apiClient.post(
+      API_ENDPOINTS.AUTH.REFRESH_TOKEN,
+      { token },
+      {
+        rrmsRetryable: true,
+        rrmsRetryLabel: 'refreshToken',
+      } as any
+    );
   },
 
-  /**
-   * Đăng ký
-   */
-  register: async (data: RegisterRequest): Promise<ApiResponse<any>> => {
+  register: async (data: RegisterRequest): Promise<ApiResponse<{ status: boolean; message: string; username: string }>> => {
     return apiClient.post(API_ENDPOINTS.AUTH.REGISTER, data);
   },
 
-  /**
-   * Gửi OTP xác thực khi đăng ký
-   */
+  checkMail: async (email: string): Promise<ApiResponse<boolean>> => {
+    return apiClient.get(API_ENDPOINTS.AUTH.CHECK_EMAIL, {
+      params: { email },
+    });
+  },
+
   authenticationRegister: async (gmail: string): Promise<ApiResponse<boolean>> => {
-    return apiClient.post('/authen/authenticationRegister', { gmail });
+    return apiClient.post(API_ENDPOINTS.AUTH.REGISTER_REQUEST_OTP, { gmail });
   },
 
-  /**
-   * Xác nhận OTP đăng ký
-   */
   acceptAuthenticationRegister: async (gmail: string, code: string): Promise<ApiResponse<boolean>> => {
-    return apiClient.post('/authen/acceptAuthenticationRegister', { gmail, code });
+    return apiClient.post(API_ENDPOINTS.AUTH.REGISTER_VERIFY_OTP, { gmail, code });
   },
 
-  /**
-   * Quên mật khẩu - Gửi OTP
-   */
   forgetPassword: async (email: string): Promise<ApiResponse<boolean>> => {
     return apiClient.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
   },
 
-  /**
-   * Xác nhận đổi mật khẩu
-   */
-  acceptChangePassword: async (data: any): Promise<ApiResponse<boolean>> => {
+  acceptChangePassword: async (
+    data: ChangePasswordByEmailRequest,
+  ): Promise<ApiResponse<boolean>> => {
     return apiClient.post(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, data);
   },
 };

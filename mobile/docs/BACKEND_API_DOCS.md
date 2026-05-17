@@ -631,6 +631,10 @@ Không lấy được thông tin email hoặc tên
   "birthday": null,
   "gender": null,
   "cccd": "string",
+  "address": "123 Example Street",
+  "job": "Property Manager",
+  "placeOfIssue": "Cục Cảnh sát QLHC về TTXH",
+  "dateOfIssue": "2026-05-17",
   "avatar": "https://example.com/image.jpg",
   "role": [],
   "permissions": []

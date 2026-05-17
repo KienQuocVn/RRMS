@@ -463,8 +463,8 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
                 </Paper>
               )}
               {motel.methodofcreation === 'disable' && (
-                <Paper elevation={0} sx={{ p: 2, bgcolor: 'success.light', display: 'flex', gap: 2, alignItems: 'center' }}>
-                  <InfoIcon color="success" />
+                <Paper elevation={0} sx={{ p: 2, bgcolor: 'info.light', display: 'flex', gap: 2, alignItems: 'center' }}>
+                  <InfoIcon color="info" />
                   <Box>
                     <Typography variant="body2" fontWeight="bold">Ghi chú:</Typography>
                     <Typography variant="body2">Bạn sẽ tạo từng phòng thủ công sau khi thêm nhà trọ.</Typography>

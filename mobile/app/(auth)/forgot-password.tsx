@@ -1,9 +1,3 @@
-/**
- * Forgot Password Screen - Màn hình quên mật khẩu
- * Header custom: "Quên mật khẩu" + back button
- * Warning box: cảnh báo xác minh SĐT
- */
-
 import React, { useState } from 'react';
 import {
   View,
@@ -13,6 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Text,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,13 +18,14 @@ import {
   AuthButton,
   WarningBox,
   SupportFooter,
+  PasswordHints,
 } from '@/components/auth';
-import { Colors, Spacing, FontSizes, FontWeights, AppConstants } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, FontWeights } from '@/constants/theme';
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
-
-  // ── State ──
   const [step, setStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -37,52 +33,76 @@ export default function ForgotPasswordScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // ── Handlers ──
   const handleRequestReset = async () => {
-    if (!email) {
-      alert('Vui lòng nhập email.');
+    const normalizedEmail = email.trim();
+
+    if (!EMAIL_PATTERN.test(normalizedEmail)) {
+      Alert.alert('Email không hợp lệ', 'Vui lòng nhập đúng email đã đăng ký.');
       return;
     }
+
     setLoading(true);
     try {
-      const res = await authService.forgetPassword(email);
-      if (res.code === 200 || res.result) {
-        alert('Mã OTP đã được gửi đến email của bạn.');
-        setStep(2);
-      } else {
-        alert(res.message || 'Yêu cầu thất bại.');
+      const checkMailResponse = await authService.checkMail(normalizedEmail);
+
+      if (!(checkMailResponse.code === 200 && checkMailResponse.result)) {
+        Alert.alert('Không tìm thấy email', checkMailResponse.message || 'Email này chưa tồn tại trong hệ thống.');
+        return;
       }
+
+      const otpResponse = await authService.forgetPassword(normalizedEmail);
+
+      if (otpResponse.code === 200 && otpResponse.result) {
+        setStep(2);
+        Alert.alert('Đã gửi mã OTP', 'Mã xác nhận đã được gửi tới email của bạn. Mã có hiệu lực trong 5 phút.');
+        return;
+      }
+
+      Alert.alert('Yêu cầu thất bại', otpResponse.message || 'Không thể gửi OTP đổi mật khẩu.');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Lỗi kết nối máy chủ');
+      Alert.alert('Lỗi kết nối', err?.response?.data?.message || 'Không thể kết nối máy chủ.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleResetPassword = async () => {
-    if (!otp || !newPassword || !confirmPassword) {
-      alert('Vui lòng điền đầy đủ thông tin.');
+    if (!otp.trim() || !newPassword.trim() || !confirmPassword.trim()) {
+      Alert.alert('Thiếu thông tin', 'Vui lòng điền đầy đủ OTP và mật khẩu mới.');
       return;
     }
+
+    if (newPassword.length < 8) {
+      Alert.alert('Mật khẩu chưa hợp lệ', 'Mật khẩu mới phải có ít nhất 8 ký tự.');
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
-      alert('Mật khẩu xác nhận không khớp.');
+      Alert.alert('Mật khẩu không khớp', 'Mật khẩu xác nhận không giống mật khẩu mới.');
       return;
     }
+
     setLoading(true);
     try {
-      const res = await authService.acceptChangePassword({
-        email,
+      const response = await authService.acceptChangePassword({
+        email: email.trim(),
         newPassword,
-        code: otp
+        code: otp.trim(),
       });
-      if (res.code === 200 || res.result) {
-        alert('Đổi mật khẩu thành công!');
-        router.back();
-      } else {
-        alert(res.message || 'Mã OTP không đúng hoặc đã hết hạn.');
+
+      if (response.code === 200 && response.result) {
+        Alert.alert('Đổi mật khẩu thành công', 'Bạn có thể đăng nhập lại bằng mật khẩu mới.', [
+          {
+            text: 'Đăng nhập',
+            onPress: () => router.replace('/(auth)/login'),
+          },
+        ]);
+        return;
       }
+
+      Alert.alert('Không thể đổi mật khẩu', response.message || 'Mã OTP không đúng hoặc đã hết hạn.');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Lỗi kết nối máy chủ');
+      Alert.alert('Lỗi kết nối', err?.response?.data?.message || 'Không thể kết nối máy chủ.');
     } finally {
       setLoading(false);
     }
@@ -93,7 +113,6 @@ export default function ForgotPasswordScreen() {
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      {/* ── Custom Header ── */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -112,28 +131,25 @@ export default function ForgotPasswordScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Logo ── */}
         <AuthLogo size="small" />
 
-        {/* ── Form ── */}
         <View style={styles.form}>
           {step === 1 ? (
             <>
               <AuthInput
                 label="Email"
-                placeholder="Nhập email của bạn"
+                required
+                placeholder="Nhập email đã đăng ký"
                 keyboardType="email-address"
                 value={email}
                 onChangeText={setEmail}
               />
 
-              {/* Cảnh báo */}
               <WarningBox
                 variant="warning"
-                message="Chú ý: Hãy chắc chắn email của bạn nhập là đúng. Hệ thống sẽ gửi mã xác nhận qua email này để xác minh trước khi bạn thực hiện yêu cầu đổi mật khẩu mới."
+                message="Hệ thống sẽ kiểm tra email trước, sau đó gửi OTP để bạn xác nhận yêu cầu đổi mật khẩu."
               />
 
-              {/* Buttons */}
               <AuthButton
                 title="Yêu cầu đổi mật khẩu"
                 variant="primary"
@@ -143,27 +159,39 @@ export default function ForgotPasswordScreen() {
             </>
           ) : (
             <>
+              <WarningBox
+                variant="info"
+                message={`OTP đã được gửi tới ${email.trim()}. Nhập mã xác thực và mật khẩu mới để hoàn tất.`}
+              />
+
               <AuthInput
                 label="Mã OTP"
+                required
                 placeholder="Nhập mã OTP (5 phút)"
                 keyboardType="number-pad"
                 value={otp}
                 onChangeText={setOtp}
               />
+
               <AuthInput
                 label="Mật khẩu mới"
+                required
                 placeholder="Nhập mật khẩu mới"
                 secureTextEntry
                 value={newPassword}
                 onChangeText={setNewPassword}
               />
+
               <AuthInput
                 label="Xác nhận mật khẩu"
+                required
                 placeholder="Nhập lại mật khẩu mới"
                 secureTextEntry
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
               />
+
+              <PasswordHints password={newPassword} />
 
               <AuthButton
                 title="Xác nhận đổi mật khẩu"
@@ -171,20 +199,24 @@ export default function ForgotPasswordScreen() {
                 onPress={handleResetPassword}
                 loading={loading}
               />
+
+              <AuthButton
+                title="Gửi lại mã OTP"
+                variant="outline"
+                onPress={handleRequestReset}
+                disabled={loading}
+              />
             </>
           )}
 
           <AuthButton
             title="Quay lại đăng nhập"
             variant="outline"
-            onPress={() => router.back()}
+            onPress={() => router.replace('/(auth)/login')}
           />
         </View>
 
-        {/* Spacer để đẩy footer xuống */}
         <View style={styles.spacer} />
-
-        {/* ── Footer ── */}
         <SupportFooter showSupportDetails={false} />
       </ScrollView>
     </KeyboardAvoidingView>

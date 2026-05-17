@@ -39,6 +39,10 @@ public class AccountRequest implements Serializable {
     LocalDate birthday;
     Gender gender;
     String cccd;
+    String address;
+    String job;
+    String placeOfIssue;
+    LocalDate dateOfIssue;
     String avatar;
     List<String> role;
     List<String> permissions;

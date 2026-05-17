@@ -111,7 +111,7 @@ export default function CompanyManagementScreen() {
           <Ionicons
             name="call"
             size={24}
-            color="#4CAF50"
+            color={Colors.textSuccess}
             style={{ marginRight: 12 }}
           />
           <Text style={styles.contactBtnText}>

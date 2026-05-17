@@ -9,4 +9,6 @@ import com.rrms.rrms.models.Car;
 
 public interface CarRepository extends JpaRepository<Car, UUID> {
     List<Car> findByRoom_RoomId(UUID roomId);
+
+    List<Car> findByRoom_Motel_MotelId(UUID motelId);
 }

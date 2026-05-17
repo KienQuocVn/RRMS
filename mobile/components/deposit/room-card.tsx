@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
   arrowBtn: {
     width: 28,
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: FontSizes.xs,
     fontWeight: FontWeights.semiBold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
 
   // ── Price ──
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   priceValue: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
 
   // ── Action Buttons ──

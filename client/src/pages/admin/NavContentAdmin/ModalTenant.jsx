@@ -36,6 +36,7 @@ import { getRoomById } from '~/apis/roomAPI'
 import { getRoomByMotelIdWContract, getRoomByMotelIdYContract } from '~/apis/roomAPI'
 import { useParams } from 'react-router-dom'
 import { normalizeTenantPayload } from '~/utils/apiAdapters'
+import { Colors } from '~/theme'
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',

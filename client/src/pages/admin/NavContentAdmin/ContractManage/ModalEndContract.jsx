@@ -15,6 +15,7 @@ import Swal from 'sweetalert2';
 import { getRoomById } from '~/apis/roomAPI';
 import { getContractByIdRoom2, deleteContractByRoomId } from '~/apis/contractTemplateAPI';
 import { deleteTenant } from '~/apis/tenantAPI';
+import { Colors } from '~/theme';
 
 function ModalEndContract({ toggleModal, modalOpen, roomId }) {
   const [room, setRoom] = useState({});

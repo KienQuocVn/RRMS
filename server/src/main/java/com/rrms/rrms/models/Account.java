@@ -67,6 +67,18 @@ public class Account extends BaseEntity {
     @Column(columnDefinition = "VARCHAR(15)")
     private String cccd;
 
+    @Column(columnDefinition = "TEXT")
+    private String address;
+
+    @Column(columnDefinition = "VARCHAR(255)")
+    private String job;
+
+    @Column(name = "place_of_issue", columnDefinition = "VARCHAR(255)")
+    private String placeOfIssue;
+
+    @Column(name = "date_of_issue", columnDefinition = "DATE")
+    private LocalDate dateOfIssue;
+
     @Column(columnDefinition = "INT")
     private Integer commissionRate;
 

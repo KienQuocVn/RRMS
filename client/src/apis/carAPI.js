@@ -26,3 +26,11 @@ export const getCarByCarId = async (carId) => {
   const normalizedCarId = extractEntityId(carId, ['carId', 'id'])
   return await httpClient.get(`/cars/${normalizedCarId}`)
 }
+
+export const getCarsByMotelId = async (motelId) => {
+  const normalizedMotelId = extractEntityId(motelId, ['motelId', 'id'])
+  if (!normalizedMotelId) return []
+  
+  const response = await httpClient.get(`/cars/motel/${normalizedMotelId}`)
+  return Array.isArray(response.data) ? response.data : []
+}

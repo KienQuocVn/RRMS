@@ -37,4 +37,9 @@ public class Car {
 
     @Column(columnDefinition = "TEXT")
     private String image;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_id")
+    @JsonBackReference(value = "Tenant-Car")
+    private Tenant tenant;
 }

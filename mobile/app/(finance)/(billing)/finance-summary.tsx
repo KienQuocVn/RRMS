@@ -72,7 +72,7 @@ export default function FinanceSummaryScreen() {
         <View style={styles.summaryRow}>
           <View style={styles.summaryCol}>
             <View style={styles.summaryLabelRow}>
-              <Ionicons name="trending-up" size={14} color="#4CAF50" style={{ marginRight: 4 }} />
+              <Ionicons name="trending-up" size={14} color={Colors.textSuccess} style={{ marginRight: 4 }} />
               <Text style={styles.summaryLabel}>Khoản thu</Text>
             </View>
             <Text style={[styles.summaryValue, { color: '#4CAF50' }]}>+ 0 đ</Text>
@@ -117,8 +117,8 @@ export default function FinanceSummaryScreen() {
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         accessibilityLabel="Tải xuống"
       >
-        <Ionicons name="chevron-down" size={28} color="#4CAF50" />
-        <Ionicons name="chevron-down" size={28} color="#4CAF50" style={{ marginTop: -18 }} />
+        <Ionicons name="chevron-down" size={28} color={Colors.textSuccess} />
+        <Ionicons name="chevron-down" size={28} color={Colors.textSuccess} style={{ marginTop: -18 }} />
       </TouchableOpacity>
 
       {/* ── FAB ── */}

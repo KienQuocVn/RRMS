@@ -1,27 +1,26 @@
 /**
- * HomeHeader - Header xanh lá sticky trên đầu trang chủ
- * Hiển thị: icon nhà, tên user, dropdown, QR, hamburger menu
+ * HomeHeader - Header xanh la sticky tren dau trang chu
+ * Hien thi: icon nha, ten user, dropdown, QR, hamburger menu
  */
 
-import React, { useState, useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
+  Animated,
   Modal,
   Pressable,
-  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
+  BorderRadius,
   Colors,
-  Spacing,
   FontSizes,
   FontWeights,
-  BorderRadius,
-  Shadows,
+  Spacing,
 } from "@/constants/theme";
 
 interface HomeHeaderProps {
@@ -36,7 +35,7 @@ export default function HomeHeader({
   onQRPress,
 }: HomeHeaderProps) {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
-  const slideAnim = useRef(new Animated.Value(400)).current; // Initial off-screen position
+  const slideAnim = useRef(new Animated.Value(400)).current;
   const router = useRouter();
 
   const handleMenuPress = () => {
@@ -47,7 +46,7 @@ export default function HomeHeader({
       useNativeDriver: true,
     }).start();
 
-    if (onMenuPress) onMenuPress();
+    onMenuPress?.();
   };
 
   const closeMenu = (callback?: () => void) => {
@@ -57,7 +56,7 @@ export default function HomeHeader({
       useNativeDriver: true,
     }).start(() => {
       setIsMenuVisible(false);
-      if (callback) callback();
+      callback?.();
     });
   };
 
@@ -69,23 +68,19 @@ export default function HomeHeader({
 
   return (
     <View style={styles.container}>
-      {/* Row 1: User info + actions */}
       <View style={styles.topRow}>
-        {/* Home icon */}
         <View style={styles.homeIconWrap}>
           <Ionicons name="home" size={22} color={Colors.primary} />
         </View>
 
-        {/* User info */}
         <View style={styles.userInfo}>
-          <Text style={styles.subtitle}>Đang quản lý Nhà trọ</Text>
+          <Text style={styles.subtitle}>Dang quan ly Nha tro</Text>
           <View style={styles.userNameRow}>
             <Text style={styles.userName}>{userName}</Text>
             <Ionicons name="chevron-down" size={16} color={Colors.white} />
           </View>
         </View>
 
-        {/* Actions */}
         <TouchableOpacity style={styles.actionButton} onPress={onQRPress}>
           <Ionicons name="scan-outline" size={22} color={Colors.white} />
         </TouchableOpacity>
@@ -95,10 +90,9 @@ export default function HomeHeader({
         </TouchableOpacity>
       </View>
 
-      {/* Bottom Menu Modal */}
       <Modal
         visible={isMenuVisible}
-        transparent={true}
+        transparent
         animationType="none"
         onRequestClose={() => closeMenu()}
       >
@@ -109,24 +103,21 @@ export default function HomeHeader({
               { transform: [{ translateY: slideAnim }] },
             ]}
           >
-            <Pressable onPress={(e) => e.stopPropagation()}>
+            <Pressable onPress={(event) => event.stopPropagation()}>
               <View style={styles.dragHandle} />
 
-              {/* Menu Items */}
               <TouchableOpacity
                 style={styles.menuItem}
                 activeOpacity={0.7}
-                onPress={() => closeMenu(() => router.push("/add-building"))}
+                onPress={() => closeMenu(() => router.push("/add-building/add-building"))}
               >
                 <View style={[styles.menuIconWrap, styles.iconAdd]}>
                   <Ionicons name="add" size={24} color={Colors.primary} />
                 </View>
                 <View style={styles.menuItemContent}>
-                  <Text style={styles.menuItemTitle}>
-                    Thêm mới tòa nhà cho thuê
-                  </Text>
+                  <Text style={styles.menuItemTitle}>Them moi toa nha cho thue</Text>
                   <Text style={styles.menuItemDesc}>
-                    Bạn có thể thêm nhiều nhà tài sản cho thuê để quản lý
+                    Ban co the them nhieu nha tai san cho thue de quan ly
                   </Text>
                 </View>
                 <Ionicons
@@ -141,17 +132,17 @@ export default function HomeHeader({
               <TouchableOpacity
                 style={styles.menuItem}
                 activeOpacity={0.7}
-                onPress={() => closeMenu(() => router.push("/edit-building"))}
+                onPress={() => closeMenu(() => router.push("/edit-building/edit-building"))}
               >
                 <View style={[styles.menuIconWrap, styles.iconDefault]}>
                   <Ionicons name="pencil" size={20} color={Colors.gray800} />
                 </View>
                 <View style={styles.menuItemContent}>
                   <Text style={styles.menuItemTitle}>
-                    Chỉnh sửa thông tin "{userName}"
+                    {`Chinh sua thong tin "${userName}"`}
                   </Text>
                   <Text style={styles.menuItemDesc}>
-                    Chỉnh sửa nhà trọ hiện tại. Bao gồm tên, địa chỉ...
+                    Chinh sua nha tro hien tai, bao gom ten, dia chi...
                   </Text>
                 </View>
                 <Ionicons
@@ -176,10 +167,9 @@ export default function HomeHeader({
                   />
                 </View>
                 <View style={styles.menuItemContent}>
-                  <Text style={styles.menuItemTitle}>Cài đặt</Text>
+                  <Text style={styles.menuItemTitle}>Cai dat</Text>
                   <Text style={styles.menuItemDesc}>
-                    Cài đặt như: máy in, chức năng, tiện ích, giờ giấc, nội
-                    quy...
+                    Cai dat nhu may in, chuc nang, tien ich, gio giac, noi quy...
                   </Text>
                 </View>
                 <Ionicons
@@ -244,8 +234,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginLeft: Spacing.sm,
   },
-
-  // Modal Styles
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -256,7 +244,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing["4xl"], // Give extra padding for iOS bottom area
+    paddingBottom: Spacing["4xl"],
     paddingTop: Spacing.sm,
   },
   dragHandle: {
@@ -281,7 +269,7 @@ const styles = StyleSheet.create({
     marginRight: Spacing.md,
   },
   iconAdd: {
-    backgroundColor: "#E8F5E9", // Light green
+    backgroundColor: "#E8F5E9",
   },
   iconDefault: {
     backgroundColor: Colors.white,
