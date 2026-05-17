@@ -3,10 +3,17 @@
  * Card giới thiệu app khách thuê với rating, buttons chia sẻ/cài đặt
  */
 
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
 
 interface TenantAppProps {
   onSharePress?: () => void;
@@ -14,7 +21,11 @@ interface TenantAppProps {
   onLearnMorePress?: () => void;
 }
 
-export default function TenantApp({ onSharePress, onInstallPress, onLearnMorePress }: TenantAppProps) {
+export default function TenantApp({
+  onSharePress,
+  onInstallPress,
+  onLearnMorePress,
+}: TenantAppProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>APP dành riêng khách thuê</Text>
@@ -44,7 +55,8 @@ export default function TenantApp({ onSharePress, onInstallPress, onLearnMorePre
               <Text style={styles.ratingText}>4.4 - 1.000+ Rating</Text>
             </View>
             <Text style={styles.appDescription} numberOfLines={2}>
-              Hơn <Text style={styles.highlight}>10.000+</Text> khách thuê tiềm năng. Gửi hóa đơn tự động, báo cáo sự cố, chốt đồng hồ...
+              Hơn <Text style={styles.highlight}>10.000+</Text> khách thuê tiềm
+              năng. Gửi hóa đơn tự động, báo cáo sự cố, chốt đồng hồ...
             </Text>
             <TouchableOpacity>
               <Text style={styles.linkText}>Website https://rrms.vn</Text>
@@ -65,10 +77,21 @@ export default function TenantApp({ onSharePress, onInstallPress, onLearnMorePre
         </View>
 
         {/* Learn more */}
-        <TouchableOpacity style={styles.learnMoreBtn} onPress={onLearnMorePress}>
-          <Ionicons name="information-circle-outline" size={18} color={Colors.textSecondary} />
+        <TouchableOpacity
+          style={styles.learnMoreBtn}
+          onPress={onLearnMorePress}
+        >
+          <Ionicons
+            name="information-circle-outline"
+            size={18}
+            color={Colors.textSecondary}
+          />
           <Text style={styles.learnMoreText}>Tìm hiểu thêm</Text>
-          <Ionicons name="chevron-forward" size={16} color={Colors.textSecondary} />
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color={Colors.textSecondary}
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -100,7 +123,7 @@ const styles = StyleSheet.create({
     ...Shadows.sm,
   },
   appInfoRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: Spacing.base,
   },
   appIconWrap: {
@@ -108,16 +131,16 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 14,
     backgroundColor: Colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.md,
   },
   appInfo: {
     flex: 1,
   },
   appNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginBottom: 4,
   },
@@ -140,8 +163,8 @@ const styles = StyleSheet.create({
     fontWeight: FontWeights.bold,
   },
   ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 2,
     marginBottom: 4,
   },
@@ -166,15 +189,15 @@ const styles = StyleSheet.create({
     fontWeight: FontWeights.medium,
   },
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.md,
     marginBottom: Spacing.md,
   },
   outlineBtn: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     paddingVertical: Spacing.md,
     borderWidth: 1.5,
@@ -189,9 +212,9 @@ const styles = StyleSheet.create({
   },
   filledBtn: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     paddingVertical: Spacing.md,
     backgroundColor: Colors.primary,
@@ -203,9 +226,9 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   learnMoreBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     paddingVertical: Spacing.md,
     borderWidth: 1,

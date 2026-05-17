@@ -625,7 +625,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                                 fontSize: '14px',
                                 marginBottom: '8px'
                               }}>
-                              <LocationOnIcon fontSize="small" sx={{ color: '#4caf50', marginTop: '2px' }} />
+                              <LocationOnIcon fontSize="small" sx={{ color: Colors.success, marginTop: '2px' }} />
                               <strong style={{ fontWeight: 600, color: '#333' }}>Địa chỉ:</strong>
                               <span style={{ color: '#555' }}>{row.address}</span>
                             </Typography>

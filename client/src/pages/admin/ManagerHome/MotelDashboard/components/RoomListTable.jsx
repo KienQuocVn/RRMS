@@ -57,7 +57,7 @@ const getStatusChip = (room) => {
     return (
       <Chip
         label="Đang ở"
-        sx={{ bgcolor: '#4caf50', color: 'white', height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
+        sx={{ bgcolor: Colors.success, color: 'white', height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
       />
     )
   if (status === 'IATExpire')
@@ -237,7 +237,7 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
                         sx={{
                           width: 24,
                           height: 24,
-                          bgcolor: room.latestContract?.status === 'ACTIVE' ? '#4caf50' : '#ff9800'
+                          bgcolor: room.latestContract?.status === 'ACTIVE' ? Colors.success : '#ff9800'
                         }}>
                         <HouseIcon sx={{ fontSize: 16 }} />
                       </Avatar>

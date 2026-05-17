@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '@/services/api/auth.service';
 import { LoginRequest, LoginResponse } from '@/types/auth.types';
+import { zustandSafeStorage } from '@/services/storage/safe-async-storage';
 
 interface AuthState {
   token: string | null;
@@ -86,7 +86,7 @@ export const useAuth = create<AuthState>()(
     }),
     {
       name: 'rrms-auth-storage',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => zustandSafeStorage),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated();
       },

@@ -4,7 +4,7 @@
  * Điều hướng từ: ManagementMenu > "Quản lý khách thuê"
  */
 
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -12,11 +12,18 @@ import {
   TouchableOpacity,
   TextInput,
   Platform,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
 
 // ── Component ──
 export default function TenantsListScreen() {
@@ -26,14 +33,19 @@ export default function TenantsListScreen() {
   return (
     <View style={styles.container}>
       {/* ── Header ── */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : Spacing.xl }]}>
+      <View
+        style={[
+          styles.header,
+          { paddingTop: Platform.OS === "ios" ? insets.top : Spacing.xl },
+        ]}
+      >
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Quay lại"
         >
-          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
+          <Ionicons name="arrow-back" size={24} color={Colors.textSuccess} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Danh sách khách thuê</Text>
       </View>
@@ -45,7 +57,12 @@ export default function TenantsListScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Chia sẻ excel"
         >
-          <Ionicons name="grid-outline" size={16} color={Colors.white} style={{ marginRight: 6 }} />
+          <Ionicons
+            name="grid-outline"
+            size={16}
+            color={Colors.white}
+            style={{ marginRight: 6 }}
+          />
           <Text style={styles.exportBtnText}>Chia sẻ excel</Text>
         </TouchableOpacity>
 
@@ -54,9 +71,19 @@ export default function TenantsListScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Quản lý khách cũ"
         >
-          <Ionicons name="person-circle-outline" size={18} color={Colors.white} style={{ marginRight: 6 }} />
+          <Ionicons
+            name="person-circle-outline"
+            size={18}
+            color={Colors.white}
+            style={{ marginRight: 6 }}
+          />
           <Text style={styles.oldTenantBtnText}>Quản lý khách cũ</Text>
-          <Ionicons name="chevron-forward" size={16} color={Colors.white} style={{ marginLeft: 'auto' }} />
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color={Colors.white}
+            style={{ marginLeft: "auto" }}
+          />
         </TouchableOpacity>
       </View>
 
@@ -71,7 +98,11 @@ export default function TenantsListScreen() {
             <Text style={styles.dropdownLabel}>Chọn phòng</Text>
             <Text style={styles.dropdownValue}>Chọn giá trị</Text>
           </View>
-          <Ionicons name="chevron-down" size={18} color={Colors.textSecondary} />
+          <Ionicons
+            name="chevron-down"
+            size={18}
+            color={Colors.textSecondary}
+          />
         </TouchableOpacity>
 
         <View style={styles.searchInputWrap}>
@@ -81,7 +112,12 @@ export default function TenantsListScreen() {
             placeholderTextColor={Colors.gray400}
             accessibilityLabel="Tìm kiếm khách thuê"
           />
-          <Ionicons name="search" size={20} color={Colors.textSecondary} style={styles.searchIcon} />
+          <Ionicons
+            name="search"
+            size={20}
+            color={Colors.textSecondary}
+            style={styles.searchIcon}
+          />
         </View>
       </View>
 
@@ -104,11 +140,11 @@ export default function TenantsListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
@@ -119,28 +155,28 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: Colors.borderLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.md,
   },
   headerTitle: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
   },
 
   // Action bar
   actionBar: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.sm,
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.sm,
     backgroundColor: Colors.white,
   },
   exportBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#4CAF50',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.success,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
@@ -152,9 +188,9 @@ const styles = StyleSheet.create({
   },
   oldTenantBtn: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.textPrimary,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.textSuccess,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
@@ -167,7 +203,7 @@ const styles = StyleSheet.create({
 
   // Filter & Search
   filterSearchRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.sm,
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.md,
@@ -176,10 +212,10 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.borderLight,
   },
   dropdown: {
-    width: '35%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    width: "35%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: Colors.white,
     borderWidth: 1,
     borderColor: Colors.borderLight,
@@ -198,12 +234,12 @@ const styles = StyleSheet.create({
   dropdownValue: {
     fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
   },
   searchInputWrap: {
     flex: 1,
-    position: 'relative',
-    justifyContent: 'center',
+    position: "relative",
+    justifyContent: "center",
   },
   searchInput: {
     height: 44,
@@ -211,22 +247,22 @@ const styles = StyleSheet.create({
     borderColor: Colors.borderLight,
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,
-    paddingRight: Spacing['2xl'],
+    paddingRight: Spacing["2xl"],
     fontSize: FontSizes.sm,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
   },
   searchIcon: {
-    position: 'absolute',
+    position: "absolute",
     right: Spacing.md,
   },
 
   // Empty state
   emptyStateContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: Spacing.xl,
-    paddingBottom: Spacing['5xl'],
+    paddingBottom: Spacing["5xl"],
   },
   emptyIconWrap: {
     marginBottom: Spacing.lg,
@@ -234,19 +270,19 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: FontSizes.lg,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
     marginBottom: Spacing.xs,
   },
   emptyStateDesc: {
     fontSize: FontSizes.md,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: Spacing.md,
   },
   emptyStateHint: {
     fontSize: FontSizes.md,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 22,
   },
 });

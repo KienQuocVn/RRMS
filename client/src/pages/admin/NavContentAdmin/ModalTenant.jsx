@@ -1278,7 +1278,7 @@ const AddTenantModal = ({ open, onClose, reloadData, avatar, editId }) => {
                     variant="contained"
                     color="primary"
                     sx={{
-                      backgroundColor: '#4caf50',
+                      backgroundColor: Colors.success,
                       boxShadow: '0px 4px 10px rgba(76, 175, 80, 0.3)', // Đổ bóng nhẹ cho nút Lưu
                       '&:hover': { boxShadow: '0px 6px 12px rgba(76, 175, 80, 0.5)' } // Đổ bóng khi hover
                     }}

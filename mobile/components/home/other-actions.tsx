@@ -3,18 +3,25 @@
  * List items: Khoản thu/chi, Tổng kết dịch vụ, Lịch sử Zalo, Lịch sử chuyển khoản
  */
 
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
 
 /** Map action id → route path */
 const ACTION_ROUTES: Record<string, string> = {
-  finance: '/finance-summary',
-  'service-summary': '/service-summary',
-  'zalo-history': '/zalo-history',
-  'transfer-history': '/transfer-history',
+  finance: "/finance-summary",
+  "service-summary": "/service-summary",
+  "zalo-history": "/zalo-history",
+  "transfer-history": "/transfer-history",
 };
 
 interface ActionListItem {
@@ -28,36 +35,37 @@ interface ActionListItem {
 
 const OTHER_ACTIONS: ActionListItem[] = [
   {
-    id: 'finance',
-    icon: 'trending-up-outline',
-    iconBg: '#FFF3E0',
-    iconColor: '#FF9800',
-    title: 'Khoản thu / chi & Tổng kết',
-    description: 'Tổng kết việc kinh doanh & Quản lý các khoản thu (tiền vào), chi (tiền ra) trong hệ thống của bạn',
+    id: "finance",
+    icon: "trending-up-outline",
+    iconBg: "#FFF3E0",
+    iconColor: "#FF9800",
+    title: "Khoản thu / chi & Tổng kết",
+    description:
+      "Tổng kết việc kinh doanh & Quản lý các khoản thu (tiền vào), chi (tiền ra) trong hệ thống của bạn",
   },
   {
-    id: 'service-summary',
-    icon: 'bar-chart-outline',
-    iconBg: '#E8F5E9',
-    iconColor: '#4CAF50',
-    title: 'Tổng kết dịch vụ khách sử dụng',
-    description: 'Thống kê dịch vụ điện nước, wifi, rác... khách sử dụng',
+    id: "service-summary",
+    icon: "bar-chart-outline",
+    iconBg: "#E8F5E9",
+    iconColor: Colors.success,
+    title: "Tổng kết dịch vụ khách sử dụng",
+    description: "Thống kê dịch vụ điện nước, wifi, rác... khách sử dụng",
   },
   {
-    id: 'zalo-history',
-    icon: 'chatbubble-ellipses-outline',
-    iconBg: '#E3F2FD',
-    iconColor: '#0068FF',
-    title: 'Lịch sử gửi ZALO',
-    description: 'Xem lịch sử gửi hóa đơn TỰ ĐỘNG qua zalo',
+    id: "zalo-history",
+    icon: "chatbubble-ellipses-outline",
+    iconBg: "#E3F2FD",
+    iconColor: "#0068FF",
+    title: "Lịch sử gửi ZALO",
+    description: "Xem lịch sử gửi hóa đơn TỰ ĐỘNG qua zalo",
   },
   {
-    id: 'transfer-history',
-    icon: 'swap-horizontal-outline',
-    iconBg: '#FCE4EC',
-    iconColor: '#E91E63',
-    title: 'Lịch sử KHÁCH CHUYỂN KHOẢN',
-    description: 'Lịch sử hệ thống tự động gạch nợ khi khách chuyển khoản',
+    id: "transfer-history",
+    icon: "swap-horizontal-outline",
+    iconBg: "#FCE4EC",
+    iconColor: "#E91E63",
+    title: "Lịch sử KHÁCH CHUYỂN KHOẢN",
+    description: "Lịch sử hệ thống tự động gạch nợ khi khách chuyển khoản",
   },
 ];
 
@@ -126,8 +134,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.base,
   },
   listItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     borderRadius: BorderRadius.xl,
     padding: Spacing.base,
@@ -140,8 +148,8 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.md,
   },
   textWrap: {

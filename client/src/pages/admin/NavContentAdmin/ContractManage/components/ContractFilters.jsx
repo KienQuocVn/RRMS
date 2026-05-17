@@ -16,7 +16,7 @@ const ContractFilters = () => {
               top: 6,
               right: 6,
               '& .MuiBadge-badge': {
-                bgcolor: '#4caf50',
+                bgcolor: Colors.success,
                 color: 'white',
                 minWidth: '16px',
                 height: '16px',
@@ -33,7 +33,7 @@ const ContractFilters = () => {
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Typography variant="body2" sx={{ color: '#555', fontSize: '13px' }}>Trong thời hạn hợp đồng</Typography>
-                <Box sx={{ bgcolor: '#4caf50', color: 'white', borderRadius: '10px', px: 0.8, py: 0.1, fontSize: '10px', fontWeight: 'bold' }}>2</Box>
+                <Box sx={{ bgcolor: Colors.success, color: 'white', borderRadius: '10px', px: 0.8, py: 0.1, fontSize: '10px', fontWeight: 'bold' }}>2</Box>
               </Box>
             }
           />
@@ -42,7 +42,7 @@ const ContractFilters = () => {
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Typography variant="body2" sx={{ color: '#555', fontSize: '13px' }}>Đang báo kết thúc</Typography>
-                <Box sx={{ bgcolor: '#4caf50', color: 'white', borderRadius: '10px', px: 0.8, py: 0.1, fontSize: '10px', fontWeight: 'bold' }}>2</Box>
+                <Box sx={{ bgcolor: Colors.success, color: 'white', borderRadius: '10px', px: 0.8, py: 0.1, fontSize: '10px', fontWeight: 'bold' }}>2</Box>
               </Box>
             }
           />

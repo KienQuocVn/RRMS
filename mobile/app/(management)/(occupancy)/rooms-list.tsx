@@ -4,7 +4,7 @@
  * Điều hướng từ: ManagementMenu > "Quản lý phòng"
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -12,11 +12,18 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
 
 // ── Interface ──
 interface RoomData {
@@ -29,14 +36,44 @@ interface RoomData {
 
 // ── Mock Data ──
 const MOCK_ROOMS: RoomData[] = [
-  { id: '1', name: 'Phòng 1', price: '3.000.000', statusEmpty: true, statusWaiting: true },
-  { id: '2', name: 'Phòng 2', price: '3.000.000', statusEmpty: true, statusWaiting: true },
-  { id: '3', name: 'Phòng 3', price: '3.000.000', statusEmpty: true, statusWaiting: true },
-  { id: '4', name: 'Phòng 4', price: '3.000.000', statusEmpty: true, statusWaiting: true },
-  { id: '5', name: 'Phòng 5', price: '3.000.000', statusEmpty: true, statusWaiting: true },
+  {
+    id: "1",
+    name: "Phòng 1",
+    price: "3.000.000",
+    statusEmpty: true,
+    statusWaiting: true,
+  },
+  {
+    id: "2",
+    name: "Phòng 2",
+    price: "3.000.000",
+    statusEmpty: true,
+    statusWaiting: true,
+  },
+  {
+    id: "3",
+    name: "Phòng 3",
+    price: "3.000.000",
+    statusEmpty: true,
+    statusWaiting: true,
+  },
+  {
+    id: "4",
+    name: "Phòng 4",
+    price: "3.000.000",
+    statusEmpty: true,
+    statusWaiting: true,
+  },
+  {
+    id: "5",
+    name: "Phòng 5",
+    price: "3.000.000",
+    statusEmpty: true,
+    statusWaiting: true,
+  },
 ];
 
-const FLOORS = ['Tầng trệt', 'Tầng 1', 'Tầng 2'];
+const FLOORS = ["Tầng trệt", "Tầng 1", "Tầng 2"];
 
 // ── Component ──
 export default function RoomsListScreen() {
@@ -47,14 +84,19 @@ export default function RoomsListScreen() {
   return (
     <View style={styles.container}>
       {/* ── Header ── */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : Spacing.xl }]}>
+      <View
+        style={[
+          styles.header,
+          { paddingTop: Platform.OS === "ios" ? insets.top : Spacing.xl },
+        ]}
+      >
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Quay lại"
         >
-          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
+          <Ionicons name="arrow-back" size={24} color={Colors.textSuccess} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Danh sách phòng</Text>
         <TouchableOpacity
@@ -62,7 +104,11 @@ export default function RoomsListScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Bộ lọc"
         >
-          <Ionicons name="filter-outline" size={22} color={Colors.textPrimary} />
+          <Ionicons
+            name="filter-outline"
+            size={22}
+            color={Colors.textSuccess}
+          />
         </TouchableOpacity>
       </View>
 
@@ -72,18 +118,34 @@ export default function RoomsListScreen() {
           <View style={styles.settingsBadge}>
             <Text style={styles.settingsBadgeText}>0</Text>
           </View>
-          <Ionicons name="settings-outline" size={22} color={Colors.textSecondary} />
+          <Ionicons
+            name="settings-outline"
+            size={22}
+            color={Colors.textSecondary}
+          />
         </TouchableOpacity>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.floorScroll}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.floorScroll}
+        >
           {FLOORS.map((floor, index) => (
             <TouchableOpacity
               key={floor}
-              style={[styles.floorTab, activeFloor === index && styles.floorTabActive]}
+              style={[
+                styles.floorTab,
+                activeFloor === index && styles.floorTabActive,
+              ]}
               onPress={() => setActiveFloor(index)}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               accessibilityLabel={floor}
             >
-              <Text style={[styles.floorTabText, activeFloor === index && styles.floorTabTextActive]}>
+              <Text
+                style={[
+                  styles.floorTabText,
+                  activeFloor === index && styles.floorTabTextActive,
+                ]}
+              >
                 {floor}
               </Text>
             </TouchableOpacity>
@@ -128,14 +190,23 @@ function RoomCard({ room }: { room: RoomData }) {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel={`Menu ${room.name}`}
         >
-          <Ionicons name="ellipsis-vertical" size={20} color={Colors.textSecondary} />
+          <Ionicons
+            name="ellipsis-vertical"
+            size={20}
+            color={Colors.textSecondary}
+          />
         </TouchableOpacity>
       </View>
 
       {/* Status Box */}
       <View style={styles.statusBox}>
         <View style={styles.statusBoxHeader}>
-          <Ionicons name="pricetag-outline" size={12} color={Colors.textSecondary} style={{ marginRight: 4 }} />
+          <Ionicons
+            name="pricetag-outline"
+            size={12}
+            color={Colors.textSecondary}
+            style={{ marginRight: 4 }}
+          />
           <Text style={styles.statusBoxTitle}>Trạng thái</Text>
         </View>
         <View style={styles.statusList}>
@@ -158,7 +229,12 @@ function RoomCard({ room }: { room: RoomData }) {
       <View style={styles.cardFooter}>
         <View style={styles.priceCol}>
           <View style={styles.priceLabelRow}>
-            <Ionicons name="cash" size={14} color={Colors.success} style={{ marginRight: 4 }} />
+            <Ionicons
+              name="cash"
+              size={14}
+              color={Colors.success}
+              style={{ marginRight: 4 }}
+            />
             <Text style={styles.priceLabel}>Giá thuê</Text>
           </View>
           <Text style={styles.priceValue}>{room.price} đ</Text>
@@ -169,16 +245,22 @@ function RoomCard({ room }: { room: RoomData }) {
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             accessibilityLabel={`Lập phòng ${room.name}`}
           >
-            <View style={[styles.btnBadge, { backgroundColor: '#2196F3' }]} />
-            <Text style={[styles.actionBtnText, { color: Colors.success }]}>Lập phòng</Text>
+            <View style={[styles.btnBadge, { backgroundColor: "#2196F3" }]} />
+            <Text style={[styles.actionBtnText, { color: Colors.success }]}>
+              Lập phòng
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionBtn, { borderColor: Colors.success }]}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             accessibilityLabel={`Đăng tin ${room.name}`}
           >
-            <View style={[styles.btnBadge, { backgroundColor: Colors.error }]} />
-            <Text style={[styles.actionBtnText, { color: Colors.success }]}>Đăng tin</Text>
+            <View
+              style={[styles.btnBadge, { backgroundColor: Colors.error }]}
+            />
+            <Text style={[styles.actionBtnText, { color: Colors.success }]}>
+              Đăng tin
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -190,12 +272,12 @@ function RoomCard({ room }: { room: RoomData }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
@@ -206,14 +288,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: Colors.borderLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerTitle: {
     flex: 1,
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
     marginLeft: Spacing.md,
   },
   filterButton: {
@@ -222,14 +304,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: Colors.borderLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   // Floor tabs
   floorTabContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.sm,
@@ -238,18 +320,18 @@ const styles = StyleSheet.create({
   },
   settingsIcon: {
     marginRight: Spacing.md,
-    position: 'relative',
+    position: "relative",
   },
   settingsBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: -6,
     right: -8,
     backgroundColor: Colors.error,
     borderRadius: 8,
     width: 16,
     height: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     zIndex: 1,
   },
   settingsBadgeText: {
@@ -265,7 +347,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     marginRight: Spacing.xs,
     borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    borderBottomColor: "transparent",
   },
   floorTabActive: {
     borderBottomColor: Colors.success,
@@ -286,7 +368,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: Spacing.base,
-    paddingBottom: Spacing['4xl'],
+    paddingBottom: Spacing["4xl"],
     gap: Spacing.base,
   },
 
@@ -295,29 +377,29 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderRadius: BorderRadius.lg,
     borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
+    borderLeftColor: Colors.success,
     padding: Spacing.base,
     ...Shadows.sm,
   },
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: Spacing.md,
   },
   roomIconBox: {
     width: 32,
     height: 32,
-    backgroundColor: '#E8F5E9',
+    backgroundColor: "#E8F5E9",
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.sm,
   },
   roomTitle: {
     flex: 1,
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
   },
 
   // Status box
@@ -327,11 +409,11 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     padding: Spacing.sm,
     marginBottom: Spacing.md,
-    alignItems: 'center',
+    alignItems: "center",
   },
   statusBoxHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: Spacing.sm,
   },
   statusBoxTitle: {
@@ -339,12 +421,12 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   statusList: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.md,
   },
   statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.gray50,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -359,19 +441,19 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: FontSizes.xs,
     fontWeight: FontWeights.semiBold,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
   },
 
   // Footer
   cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   priceCol: {},
   priceLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 2,
   },
   priceLabel: {
@@ -381,10 +463,10 @@ const styles = StyleSheet.create({
   priceValue: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
   },
   actionsBox: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.sm,
   },
   actionBtn: {
@@ -392,8 +474,8 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.full,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    position: 'relative',
-    overflow: 'visible',
+    position: "relative",
+    overflow: "visible",
   },
   actionBtnText: {
     fontSize: FontSizes.sm,
@@ -403,22 +485,22 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    position: 'absolute',
+    position: "absolute",
     top: -2,
     right: 2,
   },
 
   // FAB
   fab: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 24,
     right: 20,
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#4CAF50',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: Colors.success,
+    alignItems: "center",
+    justifyContent: "center",
     ...Shadows.lg,
   },
 });

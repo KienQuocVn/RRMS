@@ -3,10 +3,17 @@
  * Card hướng dẫn truy cập phiên bản web
  */
 
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
 
 export default function DesktopVersion() {
   return (
@@ -33,8 +40,8 @@ export default function DesktopVersion() {
         {/* Instructions box */}
         <View style={styles.instructionBox}>
           <Text style={styles.instructionText}>
-            <Text style={styles.bold}>Bước 1:</Text> Vui lòng truy cập{' '}
-            <Text style={styles.bold}>"bằng máy tính"</Text> vào{'\n'}
+            <Text style={styles.bold}>Bước 1:</Text> Vui lòng truy cập{" "}
+            <Text style={styles.bold}>"bằng máy tính"</Text> vào{"\n"}
             <Text style={styles.linkText}>https://rrms.vn</Text>
           </Text>
           <Text style={[styles.instructionText, { marginTop: 8 }]}>
@@ -71,8 +78,8 @@ const styles = StyleSheet.create({
     ...Shadows.sm,
   },
   headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: Spacing.base,
   },
   iconWrap: {
@@ -80,8 +87,8 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 14,
     backgroundColor: Colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.md,
   },
   headerText: {
@@ -116,6 +123,6 @@ const styles = StyleSheet.create({
   linkText: {
     color: Colors.primary,
     fontWeight: FontWeights.bold,
-    textDecorationLine: 'underline',
+    textDecorationLine: "underline",
   },
 });

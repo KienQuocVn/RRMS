@@ -1,15 +1,46 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import { authStorage } from '../storage/auth.storage';
 
+function getExpoLanHost() {
+  const hostUri =
+    Constants.expoConfig?.hostUri ??
+    Constants.expoGoConfig?.debuggerHost ??
+    Constants.manifest2?.extra?.expoClient?.hostUri;
+
+  if (!hostUri || typeof hostUri !== 'string') {
+    return null;
+  }
+
+  return hostUri.split(':')[0] || null;
+}
+
+function resolveBaseUrl() {
+  const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
+
+  if (configuredApiUrl) {
+    return configuredApiUrl;
+  }
+
+  if (Platform.OS === 'android') {
+    return 'http://10.0.2.2:7000';
+  }
+
+  const expoLanHost = getExpoLanHost();
+  if (expoLanHost) {
+    return `http://${expoLanHost}:7000`;
+  }
+
+  return 'http://localhost:7000';
+}
+
 const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL;
-const fallbackApiUrl =
-  Platform.OS === 'android' ? 'http://10.0.2.2:7000' : 'http://localhost:7000';
-const BASE_URL = configuredApiUrl?.trim() || fallbackApiUrl;
+const BASE_URL = resolveBaseUrl();
 
 if (!configuredApiUrl?.trim()) {
   console.warn(
-    '[API] EXPO_PUBLIC_API_URL is missing. Fallback baseURL in use:',
+    '[API] EXPO_PUBLIC_API_URL is missing. Resolved fallback baseURL in use:',
     BASE_URL
   );
 }

@@ -1,8 +1,23 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Switch, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius } from '@/constants/theme';
-import { RentType } from '@/types/building.types';
+import React, { useMemo, useState } from "react";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  BorderRadius,
+  Colors,
+  FontSizes,
+  FontWeights,
+  Spacing,
+} from "@/constants/theme";
+import { RentType } from "@/types/building.types";
 
 interface AddBuildingFormProps {
   rentType: RentType;
@@ -11,7 +26,70 @@ interface AddBuildingFormProps {
   setIsAutoInit: (val: boolean) => void;
 }
 
-const SectionTitle = ({ title, subTitle }: { title: string; subTitle: string }) => (
+type ActiveModal = "rentType" | "floor" | "occupancy" | null;
+
+interface PickerOption {
+  value: string;
+  title: string;
+  description?: string;
+}
+
+const RENT_TYPE_OPTIONS: (PickerOption & { value: RentType })[] = [
+  { value: "room", title: "Nhà trọ", description: "Cho thuê theo phòng" },
+  {
+    value: "bed",
+    title: "Ký túc xá/sleepbox",
+    description: "Cho thuê theo giường",
+  },
+  {
+    value: "mini_apartment",
+    title: "Chung cư mini",
+    description: "Cho thuê theo căn hộ",
+  },
+  {
+    value: "apartment_building",
+    title: "Tòa nhà chung cư",
+    description: "Cho thuê hoặc quản lý cư dân theo căn hộ",
+  },
+  {
+    value: "whole_house",
+    title: "Nhà nguyên căn",
+    description: "Cho thuê theo phòng/nhà",
+  },
+  {
+    value: "office",
+    title: "Văn phòng cho thuê",
+    description: "Tòa nhà văn phòng, dịch vụ văn phòng",
+  },
+];
+
+const FLOOR_OPTIONS: PickerOption[] = [
+  { value: "ground", title: "Tầng trệt (không có tầng)" },
+  { value: "2", title: "2 tầng (Gồm 1 trệt + 1 tầng)" },
+  { value: "3", title: "3 tầng (Gồm 1 trệt + 2 tầng)" },
+  { value: "4", title: "4 tầng (Gồm 1 trệt + 3 tầng)" },
+  { value: "5", title: "5 tầng (Gồm 1 trệt + 4 tầng)" },
+  { value: "6", title: "6 tầng (Gồm 1 trệt + 5 tầng)" },
+  { value: "7", title: "7 tầng (Gồm 1 trệt + 6 tầng)" },
+  { value: "8", title: "8 tầng (Gồm 1 trệt + 7 tầng)" },
+];
+
+const OCCUPANCY_OPTIONS: PickerOption[] = [
+  { value: "1", title: "1 người/phòng" },
+  { value: "2", title: "2 người/phòng" },
+  { value: "3", title: "3 người/phòng" },
+  { value: "4", title: "4 người/phòng" },
+  { value: "5", title: "5 người/phòng" },
+  { value: "6", title: "6 người/phòng" },
+];
+
+const SectionTitle = ({
+  title,
+  subTitle,
+}: {
+  title: string;
+  subTitle: string;
+}) => (
   <View style={styles.sectionTitleContainer}>
     <View style={styles.hashtagIcon}>
       <Text style={styles.hashtagText}>#</Text>
@@ -23,200 +101,427 @@ const SectionTitle = ({ title, subTitle }: { title: string; subTitle: string }) 
   </View>
 );
 
-export const AddBuildingForm = ({ rentType, setRentType, isAutoInit, setIsAutoInit }: AddBuildingFormProps) => {
+function PickerModal({
+  visible,
+  title,
+  icon,
+  options,
+  selectedValue,
+  onSelect,
+  onClose,
+}: {
+  visible: boolean;
+  title: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  options: PickerOption[];
+  selectedValue: string;
+  onSelect: (value: string) => void;
+  onClose: () => void;
+}) {
   return (
-    <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      {/* --- Section 1: Thông tin nhà cho thuê --- */}
-      <SectionTitle 
-        title="Thông tin nhà cho thuê" 
-        subTitle="Thông tin cơ bản tên, loại hình..." 
-      />
-      
-      <View style={styles.card}>
-        {/* Loại hình cho thuê */}
-        <Text style={styles.label}>Loại hình cho thuê <Text style={styles.required}>*</Text></Text>
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputText}>Nhà trọ</Text>
-          <TouchableOpacity style={styles.clearButton}>
-            <Ionicons name="close" size={16} color={Colors.textPrimary} />
-          </TouchableOpacity>
-        </View>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <Pressable style={styles.modalOverlay} onPress={onClose}>
+        <Pressable
+          style={styles.modalCard}
+          onPress={(event) => event.stopPropagation()}
+        >
+          <View style={styles.modalHeader}>
+            <View style={styles.modalHeaderIcon}>
+              <Ionicons name={icon} size={22} color={Colors.textPrimary} />
+            </View>
+            <Text style={styles.modalHeaderTitle}>{title}</Text>
+          </View>
 
-        {/* Cards select */}
-        <View style={styles.rentTypeContainer}>
-          <TouchableOpacity 
-            style={[styles.rentTypeCard, rentType === 'room' && styles.rentTypeCardActive]}
-            onPress={() => setRentType('room')}
-            activeOpacity={0.7}
+          <View style={styles.modalDivider} />
+
+          <ScrollView
+            style={styles.modalList}
+            showsVerticalScrollIndicator={false}
           >
-            <Ionicons name="git-network-outline" size={32} color={rentType === 'room' ? Colors.success : Colors.gray500} />
-            <Text style={styles.rentTypeTitle}>Thuê theo phòng</Text>
-            <Text style={styles.rentTypeSub}>Tính tiền thuê theo phòng</Text>
-          </TouchableOpacity>
+            {options.map((option, index) => {
+              const isSelected = selectedValue === option.value;
 
-          <TouchableOpacity 
-            style={[styles.rentTypeCard, rentType === 'bed' && styles.rentTypeCardActive]}
-            onPress={() => setRentType('bed')}
-            activeOpacity={0.7}
+              return (
+                <View key={option.value}>
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() => {
+                      onSelect(option.value);
+                      onClose();
+                    }}
+                    style={styles.modalOption}
+                  >
+                    <View style={styles.modalOptionText}>
+                      <Text style={styles.modalOptionTitle}>
+                        {option.title}
+                      </Text>
+                      {option.description ? (
+                        <Text style={styles.modalOptionDescription}>
+                          {option.description}
+                        </Text>
+                      ) : null}
+                    </View>
+
+                    {isSelected ? (
+                      <View style={styles.modalCheck}>
+                        <Ionicons
+                          name="checkmark"
+                          size={20}
+                          color={Colors.white}
+                        />
+                      </View>
+                    ) : null}
+                  </TouchableOpacity>
+
+                  {index < options.length - 1 ? (
+                    <View style={styles.modalOptionDivider} />
+                  ) : null}
+                </View>
+              );
+            })}
+          </ScrollView>
+
+          <TouchableOpacity style={styles.modalCloseButton} onPress={onClose}>
+            <Text style={styles.modalCloseButtonText}>Đóng</Text>
+          </TouchableOpacity>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
+export const AddBuildingForm = ({
+  rentType,
+  setRentType,
+  isAutoInit,
+  setIsAutoInit,
+}: AddBuildingFormProps) => {
+  const [activeModal, setActiveModal] = useState<ActiveModal>(null);
+  const [buildingName, setBuildingName] = useState("");
+  const [floorValue, setFloorValue] = useState(FLOOR_OPTIONS[0].value);
+  const [sampleRoomCount, setSampleRoomCount] = useState("5");
+  const [sampleArea, setSampleArea] = useState("15");
+  const [samplePrice, setSamplePrice] = useState("");
+  const [maxOccupancy, setMaxOccupancy] = useState("");
+  const [invoiceDay, setInvoiceDay] = useState("1");
+  const [paymentDeadline, setPaymentDeadline] = useState("5");
+
+  const selectedRentType = useMemo(
+    () =>
+      RENT_TYPE_OPTIONS.find((option) => option.value === rentType) ??
+      RENT_TYPE_OPTIONS[0],
+    [rentType],
+  );
+  const selectedFloor =
+    FLOOR_OPTIONS.find((option) => option.value === floorValue) ??
+    FLOOR_OPTIONS[0];
+  const selectedOccupancy = OCCUPANCY_OPTIONS.find(
+    (option) => option.value === maxOccupancy,
+  );
+
+  return (
+    <>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <SectionTitle
+          title="Thông tin nhà cho thuê"
+          subTitle="Thông tin cơ bản tên, loại hình..."
+        />
+
+        <View style={styles.card}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => setActiveModal("rentType")}
+            style={[styles.selectorField, styles.selectorFieldLarge]}
           >
-            <Ionicons name="business-outline" size={32} color={rentType === 'bed' ? Colors.success : Colors.gray500} />
-            <Text style={styles.rentTypeTitle}>Thuê theo giường</Text>
-            <Text style={styles.rentTypeSub}>Tính tiền theo giường</Text>
+            <View style={styles.selectorTextWrap}>
+              <Text style={styles.selectorLabel}>
+                Loại hình cho thuê <Text style={styles.required}>*</Text>
+              </Text>
+              <Text style={styles.selectorValue}>{selectedRentType.title}</Text>
+            </View>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => setRentType("room")}
+              style={styles.clearButton}
+            >
+              <Ionicons name="close" size={16} color={Colors.textPrimary} />
+            </TouchableOpacity>
           </TouchableOpacity>
-        </View>
 
-        {/* Tên Nhà trọ */}
-        <Text style={styles.label}>Tên Nhà trọ <Text style={styles.required}>*</Text></Text>
-        <View style={[styles.inputContainer, styles.inputContainerBorder]}>
-          <TextInput 
-            style={styles.textInput} 
-            placeholder="Ví dụ: Nguyễn Thanh" 
-            placeholderTextColor={Colors.gray500}
-          />
-          <View style={styles.inputSuffixBox}>
-            <Text style={styles.inputSuffixText}>Nhà trọ</Text>
-          </View>
-        </View>
-        <Text style={styles.errorText}>Tên nhà cho thuê là bắt buộc</Text>
-      </View>
-
-      {/* --- Section 2: Cách khởi tạo dữ liệu --- */}
-      <SectionTitle 
-        title="Cách khởi tạo dữ liệu" 
-        subTitle="Theo mẫu hoặc từ excel hoặc thủ công" 
-      />
-      
-      <View style={styles.card}>
-        {/* Đang khởi tạo tự động theo mẫu */}
-        <View style={styles.switchRow}>
-          <View style={styles.switchTextWrap}>
-            <Text style={styles.switchTitle}>Đang khởi tạo tự động theo mẫu</Text>
-            <Text style={styles.switchSub}>Hệ thống sẽ tự động tạo phòng mẫu theo tổng số phòng bạn nhập bên dưới.</Text>
-          </View>
-          <Switch 
-            value={isAutoInit} 
-            onValueChange={setIsAutoInit}
-            trackColor={{ false: Colors.gray300, true: '#a3e4b7' }}
-            thumbColor={isAutoInit ? Colors.success : Colors.white}
-          />
-        </View>
-
-        <View style={styles.divider} />
-
-        {/* Thiết lập số tầng */}
-        <View style={styles.inputContainer}>
-          <View style={styles.inputInner}>
-            <Text style={styles.labelInside}>Thiết lập số tầng (Gồm tầng trệt) <Text style={styles.required}>*</Text></Text>
-            <Text style={styles.inputTextValue}>Tầng trệt (không có tầng)</Text>
-          </View>
-          <TouchableOpacity style={styles.clearButton}>
-            <Ionicons name="close" size={16} color={Colors.textPrimary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Số lượng phòng mẫu */}
-        <Text style={styles.label}>Số lượng phòng mẫu <Text style={styles.required}>*</Text></Text>
-        <View style={[styles.inputContainer, styles.inputContainerBorder]}>
-          <TextInput 
-            style={styles.textInput} 
-            defaultValue="5" 
-            keyboardType="numeric"
-          />
-          <View style={styles.inputSuffixBox}>
-            <Text style={styles.inputSuffixText}>phòng</Text>
-          </View>
-        </View>
-
-        {/* Diện tích & Giá thuê */}
-        <View style={styles.row}>
-          <View style={styles.columnView}>
-            <Text style={styles.label}>Diện tích mẫu <Text style={styles.required}>*</Text></Text>
-            <View style={[styles.inputContainer, styles.inputContainerBorder]}>
-              <TextInput 
-                style={styles.textInput} 
-                defaultValue="15" 
-                keyboardType="numeric"
-              />
-              <View style={styles.inputSuffixBox}>
-                <Text style={styles.inputSuffixText}>m2</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.columnView}>
-            <Text style={styles.label}>Giá thuê mẫu <Text style={styles.required}>*</Text></Text>
-            <View style={[styles.inputContainer, styles.inputContainerBorder, { borderColor: Colors.error }]}>
-              <TextInput 
-                style={styles.textInput} 
-                placeholder="Nhập giá"
-                keyboardType="numeric"
-              />
-              <View style={styles.inputSuffixBox}>
-                <Text style={styles.inputSuffixText}>đ/tháng</Text>
-              </View>
-            </View>
-            <Text style={styles.errorTextSmall}>Giá thuê là bắt buộc!</Text>
-          </View>
-        </View>
-
-        <Text style={styles.noteText}>* Chú ý: Đây là giá thuê & diện tích hầu hết các phòng</Text>
-        <Text style={styles.noteText}>* Sau khi thêm nhà bạn vẫn có thể sửa cho từng phòng</Text>
-
-        {/* Tối đa người ở */}
-        <Text style={[styles.label, { marginTop: Spacing.md }]}>Tối đa người ở / phòng</Text>
-        <View style={[styles.inputContainer, styles.inputContainerBorder]}>
-          <Text style={[styles.inputTextValue, { flex: 1 }]}>Chọn giá trị</Text>
-          <Ionicons name="chevron-down" size={20} color={Colors.gray800} />
-        </View>
-      </View>
-
-      {/* --- Section 3: Cài đặt ngày chốt & hạn hóa đơn --- */}
-      <SectionTitle 
-        title="Cài đặt ngày chốt & hạn hóa đơn" 
-        subTitle="Tùy chỉnh tính năng sử dụng cho Nhà trọ" 
-      />
-      
-      <View style={styles.cardNoPadding}>
-        <View style={[styles.row, { padding: Spacing.base }]}>
-          <View style={styles.columnView}>
-            <Text style={styles.label}>Ngày lập hóa đơn thu tiền <Text style={styles.required}>*</Text></Text>
-            <View style={[styles.inputContainer, styles.inputContainerBorder]}>
-              <TextInput 
-                style={styles.textInput} 
-                defaultValue="1" 
-                keyboardType="numeric"
-              />
-            </View>
-            <Text style={styles.helperText}>Nhập ngày cuối tháng hoặc ngày cố định trong tháng.</Text>
-          </View>
-
-          <View style={styles.columnView}>
-            <Text style={styles.label}>Hạn đóng tiền <Text style={styles.required}>*</Text></Text>
-            <View style={[styles.inputContainer, styles.inputContainerBorder]}>
-              <TextInput 
-                style={styles.textInput} 
-                defaultValue="5"
-                keyboardType="numeric"
-              />
-              <View style={styles.inputSuffixBox}>
-                <Text style={styles.inputSuffixText}>Ngày</Text>
-              </View>
-            </View>
-            <Text style={styles.helperText}>Số ngày hết đóng tiền thuê kể từ ngày lập hóa đơn</Text>
-          </View>
-        </View>
-
-        <View style={styles.infoAlert}>
-          <View style={styles.infoAlertIcon}>
-            <Ionicons name="information" size={16} color={Colors.white} />
-          </View>
-          <Text style={styles.infoAlertText}>
-            <Text style={{ fontWeight: 'bold' }}>Thông tin:</Text> Khi có khách thuê không đóng tiền đúng hạn. Phần mềm sẽ nhắc nhở bạn.
+          <Text style={styles.label}>
+            Tên Nhà trọ <Text style={styles.required}>*</Text>
           </Text>
+          <View style={[styles.inputContainer, styles.inputContainerBorder]}>
+            <TextInput
+              style={styles.textInput}
+              value={buildingName}
+              onChangeText={setBuildingName}
+              placeholder="Ví dụ: Nguyễn Thanh"
+              placeholderTextColor={Colors.gray500}
+            />
+            <View style={styles.inputSuffixBox}>
+              <Text style={styles.inputSuffixText}>Nhà trọ</Text>
+            </View>
+          </View>
         </View>
-      </View>
 
-    </ScrollView>
+        <View style={styles.sectionGap} />
+
+        <SectionTitle
+          title="Cách khởi tạo dữ liệu"
+          subTitle="Theo mẫu hoặc từ excel hoặc thủ công"
+        />
+
+        <View style={styles.card}>
+          <View style={styles.methodCards}>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => setIsAutoInit(true)}
+              style={[styles.methodCard, isAutoInit && styles.methodCardActive]}
+            >
+              <Ionicons
+                name="chatbox-ellipses-outline"
+                size={42}
+                color={isAutoInit ? "#FDB515" : Colors.gray500}
+              />
+              <Text style={styles.methodTitle}>Tự động theo mẫu</Text>
+              <Text style={styles.methodDesc}>
+                Số room được tạo tự động theo mẫu bạn nhập bên dưới
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => setIsAutoInit(false)}
+              style={[
+                styles.methodCard,
+                !isAutoInit && styles.methodCardActive,
+              ]}
+            >
+              <Ionicons
+                name="document-text-outline"
+                size={42}
+                color={!isAutoInit ? "#2E7D32" : Colors.gray500}
+              />
+              <Text style={styles.methodTitle}>Tạo theo Excel</Text>
+              <Text style={styles.methodDesc}>
+                Số room và giá được tạo từ file Excel bạn nhập
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => setActiveModal("floor")}
+            style={[styles.selectorField, styles.selectorFieldLarge]}
+          >
+            <View style={styles.selectorTextWrap}>
+              <Text style={styles.selectorLabel}>
+                Thiết lập số tầng (Gồm tầng triệt){" "}
+                <Text style={styles.required}>*</Text>
+              </Text>
+              <Text style={styles.selectorValue}>{selectedFloor.title}</Text>
+            </View>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => setFloorValue(FLOOR_OPTIONS[0].value)}
+              style={styles.clearButton}
+            >
+              <Ionicons name="close" size={16} color={Colors.textPrimary} />
+            </TouchableOpacity>
+          </TouchableOpacity>
+
+          <View style={styles.divider} />
+
+          <Text style={styles.label}>
+            Số lượng phòng mẫu <Text style={styles.required}>*</Text>
+          </Text>
+          <View style={[styles.inputContainer, styles.inputContainerBorder]}>
+            <TextInput
+              style={styles.textInput}
+              value={sampleRoomCount}
+              onChangeText={setSampleRoomCount}
+              keyboardType="numeric"
+            />
+            <View style={styles.inputSuffixBox}>
+              <Text style={styles.inputSuffixText}>phòng</Text>
+            </View>
+          </View>
+
+          <View style={styles.row}>
+            <View style={styles.columnView}>
+              <Text style={styles.label}>
+                Diện tích mẫu <Text style={styles.required}>*</Text>
+              </Text>
+              <View
+                style={[styles.inputContainer, styles.inputContainerBorder]}
+              >
+                <TextInput
+                  style={styles.textInput}
+                  value={sampleArea}
+                  onChangeText={setSampleArea}
+                  keyboardType="numeric"
+                />
+                <View style={styles.inputSuffixBox}>
+                  <Text style={styles.inputSuffixText}>m2</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.columnView}>
+              <Text style={styles.label}>
+                Giá thuê mẫu <Text style={styles.required}>*</Text>
+              </Text>
+              <View
+                style={[
+                  styles.inputContainer,
+                  styles.inputContainerBorder,
+                  samplePrice.trim() ? null : styles.inputErrorBorder,
+                ]}
+              >
+                <TextInput
+                  style={styles.textInput}
+                  value={samplePrice}
+                  onChangeText={setSamplePrice}
+                  placeholder="Nhập giá"
+                  placeholderTextColor={Colors.gray500}
+                  keyboardType="numeric"
+                />
+                <View style={styles.inputSuffixBox}>
+                  <Text style={styles.inputSuffixText}>đ/tháng</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          <Text style={styles.noteText}>
+            * Chú ý: Đây là giá thuê & diện tích hầu hết các phòng
+          </Text>
+          <Text style={styles.noteText}>
+            * Sau khi thêm nhà bạn vẫn có thể sửa cho từng phòng
+          </Text>
+
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => setActiveModal("occupancy")}
+            style={[
+              styles.selectorField,
+              styles.selectorFieldCompact,
+              { marginTop: Spacing.md },
+            ]}
+          >
+            <View style={styles.selectorTextWrap}>
+              <Text style={styles.selectorLabel}>Tối đa người ở / phòng</Text>
+              <Text style={styles.selectorValue}>
+                {selectedOccupancy ? selectedOccupancy.title : "Chọn giá trị"}
+              </Text>
+            </View>
+            <Ionicons name="chevron-down" size={20} color={Colors.gray800} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.sectionGap} />
+
+        <SectionTitle
+          title="Cài đặt ngày"
+          subTitle="Cấu hình ngày giúp hệ thống thông báo cho bạn"
+        />
+
+        <View style={styles.cardNoPadding}>
+          <View style={[styles.row, { padding: Spacing.base }]}>
+            <View style={styles.columnView}>
+              <Text style={styles.label}>
+                Ngày lập hóa đơn thu tiền <Text style={styles.required}>*</Text>
+              </Text>
+              <View
+                style={[styles.inputContainer, styles.inputContainerBorder]}
+              >
+                <TextInput
+                  style={styles.textInput}
+                  value={invoiceDay}
+                  onChangeText={setInvoiceDay}
+                  keyboardType="numeric"
+                />
+              </View>
+              <Text style={styles.helperText}>
+                Nhập ngày cuối tháng hoặc ngày cố định trong tháng.
+              </Text>
+            </View>
+
+            <View style={styles.columnView}>
+              <Text style={styles.label}>
+                Hạn đóng tiền <Text style={styles.required}>*</Text>
+              </Text>
+              <View
+                style={[styles.inputContainer, styles.inputContainerBorder]}
+              >
+                <TextInput
+                  style={styles.textInput}
+                  value={paymentDeadline}
+                  onChangeText={setPaymentDeadline}
+                  keyboardType="numeric"
+                />
+                <View style={styles.inputSuffixBox}>
+                  <Text style={styles.inputSuffixText}>Ngày</Text>
+                </View>
+              </View>
+              <Text style={styles.helperText}>
+                Số ngày hết đóng tiền thuê kể từ ngày lập hóa đơn
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.infoAlert}>
+            <View style={styles.infoAlertIcon}>
+              <Ionicons name="information" size={16} color={Colors.white} />
+            </View>
+            <Text style={styles.infoAlertText}>
+              <Text style={styles.infoStrong}>Thông tin:</Text> Khi có khách
+              thuê không đóng tiền đúng hạn. Phần mềm sẽ nhắc nhở bạn.
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+
+      <PickerModal
+        visible={activeModal === "rentType"}
+        title="Loại hình cho thuê"
+        icon="home"
+        options={RENT_TYPE_OPTIONS}
+        selectedValue={rentType}
+        onSelect={(value) => setRentType(value as RentType)}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <PickerModal
+        visible={activeModal === "floor"}
+        title="Thiết lập số tầng (Gồm tầng triệt)"
+        icon="list"
+        options={FLOOR_OPTIONS}
+        selectedValue={floorValue}
+        onSelect={setFloorValue}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <PickerModal
+        visible={activeModal === "occupancy"}
+        title="Tối đa người ở / phòng"
+        icon="people"
+        options={OCCUPANCY_OPTIONS}
+        selectedValue={maxOccupancy}
+        onSelect={setMaxOccupancy}
+        onClose={() => setActiveModal(null)}
+      />
+    </>
   );
 };
 
@@ -225,27 +530,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: Spacing['4xl'],
+    paddingBottom: Spacing["4xl"],
   },
   sectionTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: Spacing.base,
     paddingTop: Spacing.lg,
     paddingBottom: Spacing.sm,
+    backgroundColor: Colors.white,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: Colors.borderLight,
   },
   hashtagIcon: {
     width: 32,
     height: 32,
     backgroundColor: Colors.success,
     borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.sm,
   },
   hashtagText: {
     color: Colors.white,
-    fontWeight: 'bold',
+    fontWeight: FontWeights.bold,
     fontSize: FontSizes.lg,
   },
   sectionTitleWrap: {
@@ -259,6 +568,10 @@ const styles = StyleSheet.create({
   sectionTitleSub: {
     fontSize: FontSizes.sm,
     color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  sectionGap: {
+    height: Spacing.base,
   },
   card: {
     backgroundColor: Colors.white,
@@ -275,16 +588,48 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FontSizes.sm,
-    fontWeight: '600',
+    fontWeight: FontWeights.semiBold,
     color: Colors.textPrimary,
     marginBottom: Spacing.xs,
   },
   required: {
     color: Colors.error,
   },
+  selectorField: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    borderRadius: BorderRadius.lg,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  selectorFieldLarge: {
+    minHeight: 72,
+  },
+  selectorFieldCompact: {
+    minHeight: 48,
+  },
+  selectorTextWrap: {
+    flex: 1,
+    justifyContent: "center",
+    paddingVertical: Spacing.sm,
+    paddingRight: Spacing.md,
+  },
+  selectorLabel: {
+    fontSize: FontSizes.sm,
+    color: Colors.textPrimary,
+    marginBottom: 2,
+  },
+  selectorValue: {
+    fontSize: FontSizes.base,
+    fontWeight: FontWeights.bold,
+    color: Colors.textPrimary,
+  },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.gray100,
     borderRadius: BorderRadius.md,
     minHeight: 48,
@@ -296,18 +641,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderLight,
   },
-  inputText: {
-    flex: 1,
-    fontSize: FontSizes.base,
-    color: Colors.textPrimary,
-  },
-  clearButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: Colors.gray300,
-    alignItems: 'center',
-    justifyContent: 'center',
+  inputErrorBorder: {
+    borderColor: Colors.error,
   },
   textInput: {
     flex: 1,
@@ -316,135 +651,100 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   inputSuffixBox: {
-    backgroundColor: Colors.gray50,
+    backgroundColor: "#F5FAEE",
     paddingHorizontal: Spacing.sm,
     paddingVertical: 4,
     borderRadius: BorderRadius.sm,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
   },
   inputSuffixText: {
     fontSize: FontSizes.sm,
-    color: Colors.textSecondary,
+    color: Colors.textPrimary,
   },
-  errorText: {
-    color: Colors.error,
-    fontSize: FontSizes.sm,
-    marginTop: -8,
-    marginBottom: Spacing.md,
+  clearButton: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.gray300,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  rentTypeContainer: {
-    flexDirection: 'row',
+  methodCards: {
+    flexDirection: "row",
     gap: Spacing.md,
     marginBottom: Spacing.md,
   },
-  rentTypeCard: {
+  methodCard: {
     flex: 1,
+    minHeight: 150,
     borderWidth: 1.5,
     borderColor: Colors.borderLight,
-    borderStyle: 'dashed',
+    borderStyle: "dashed",
     borderRadius: BorderRadius.lg,
-    padding: Spacing.base,
-    alignItems: 'center',
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.lg,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  rentTypeCardActive: {
+  methodCardActive: {
     borderColor: Colors.success,
-    backgroundColor: '#F1F9F4', 
+    backgroundColor: "#FCFFFB",
   },
-  rentTypeTitle: {
-    fontSize: FontSizes.sm,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
+  methodTitle: {
     marginTop: Spacing.sm,
-    textAlign: 'center',
+    fontSize: FontSizes.base,
+    fontWeight: FontWeights.bold,
+    color: Colors.textPrimary,
+    textAlign: "center",
   },
-  rentTypeSub: {
-    fontSize: FontSizes.xs,
+  methodDesc: {
+    marginTop: 6,
+    fontSize: FontSizes.sm,
     color: Colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 4,
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: Colors.borderLight,
+    marginBottom: Spacing.md,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.md,
   },
   columnView: {
     flex: 1,
   },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.borderLight,
-    marginVertical: Spacing.md,
-  },
-  switchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  switchTextWrap: {
-    flex: 1,
-    paddingRight: Spacing.md,
-  },
-  switchTitle: {
-    fontSize: FontSizes.base,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-  },
-  switchSub: {
-    fontSize: FontSizes.sm,
-    color: Colors.textSecondary,
-    marginTop: 2,
-    lineHeight: 18,
-  },
-  inputInner: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  labelInside: {
-    fontSize: FontSizes.xs,
-    color: Colors.textSecondary,
-    marginBottom: 2,
-  },
-  inputTextValue: {
-    fontSize: FontSizes.base,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-  },
-  errorTextSmall: {
-    color: Colors.error,
-    fontSize: FontSizes.xs,
-    marginTop: -8,
-  },
   noteText: {
     fontSize: FontSizes.sm,
-    color: '#D84315', 
-    fontStyle: 'italic',
+    color: "#D84315",
+    fontStyle: "italic",
     marginBottom: 4,
   },
   helperText: {
     fontSize: FontSizes.xs,
-    color: '#D84315', 
+    color: "#D84315",
     marginTop: -8,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   infoAlert: {
-    flexDirection: 'row',
-    backgroundColor: '#F1F9F4',
+    flexDirection: "row",
+    backgroundColor: "#F1F9F4",
     borderWidth: 1,
     borderColor: Colors.success,
     padding: Spacing.md,
     marginHorizontal: Spacing.base,
     marginBottom: Spacing.base,
     borderRadius: BorderRadius.md,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
   },
   infoAlertIcon: {
     backgroundColor: Colors.success,
     width: 20,
     height: 20,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.sm,
     marginTop: 2,
   },
@@ -453,5 +753,96 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     color: Colors.textPrimary,
     lineHeight: 20,
+  },
+  infoStrong: {
+    fontWeight: FontWeights.bold,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: Spacing.lg,
+  },
+  modalCard: {
+    width: "100%",
+    maxHeight: "78%",
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.base,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  modalHeaderIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.textPrimary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: Spacing.sm,
+  },
+  modalHeaderTitle: {
+    flex: 1,
+    fontSize: FontSizes.xl,
+    fontWeight: FontWeights.bold,
+    color: Colors.textPrimary,
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: Colors.borderLight,
+    marginTop: Spacing.base,
+    marginBottom: Spacing.sm,
+  },
+  modalList: {
+    flexGrow: 0,
+  },
+  modalOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: Spacing.base,
+  },
+  modalOptionText: {
+    flex: 1,
+    paddingRight: Spacing.md,
+  },
+  modalOptionTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: FontWeights.bold,
+    color: Colors.textPrimary,
+  },
+  modalOptionDescription: {
+    marginTop: 2,
+    fontSize: FontSizes.base,
+    color: Colors.textSecondary,
+    lineHeight: 24,
+  },
+  modalOptionDivider: {
+    height: 1,
+    backgroundColor: Colors.borderLight,
+  },
+  modalCheck: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: Colors.success,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalCloseButton: {
+    marginTop: Spacing.base,
+    backgroundColor: Colors.gray100,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48,
+  },
+  modalCloseButtonText: {
+    fontSize: FontSizes.base,
+    fontWeight: FontWeights.bold,
+    color: Colors.textPrimary,
   },
 });

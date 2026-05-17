@@ -3,16 +3,25 @@
  * Có thể dismiss. Hiển thị icon chuông + message.
  */
 
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
 
 interface NotificationBannerProps {
   onEnablePress?: () => void;
 }
 
-export default function NotificationBanner({ onEnablePress }: NotificationBannerProps) {
+export default function NotificationBanner({
+  onEnablePress,
+}: NotificationBannerProps) {
   const [visible, setVisible] = useState(true);
 
   if (!visible) return null;
@@ -41,14 +50,19 @@ export default function NotificationBanner({ onEnablePress }: NotificationBanner
         <View style={styles.textWrap}>
           <Text style={styles.title}>Cho phép điện thoại nhận thông báo!</Text>
           <Text style={styles.description}>
-            Phần mềm sẽ không hoạt động đúng nếu bạn không cho phép nhận thông báo
+            Phần mềm sẽ không hoạt động đúng nếu bạn không cho phép nhận thông
+            báo
           </Text>
         </View>
       </View>
 
       {/* Action button */}
       <TouchableOpacity style={styles.actionBtn} onPress={onEnablePress}>
-        <Ionicons name="settings-outline" size={18} color={Colors.textPrimary} />
+        <Ionicons
+          name="settings-outline"
+          size={18}
+          color={Colors.textPrimary}
+        />
         <Text style={styles.actionText}>Cho phép nhận thông báo</Text>
       </TouchableOpacity>
     </View>
@@ -65,30 +79,30 @@ const styles = StyleSheet.create({
     ...Shadows.md,
   },
   closeBtn: {
-    position: 'absolute',
+    position: "absolute",
     top: Spacing.sm,
     right: Spacing.sm,
     zIndex: 1,
   },
   content: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: Spacing.md,
   },
   iconWrap: {
     marginRight: Spacing.md,
-    position: 'relative',
+    position: "relative",
   },
   badge: {
-    position: 'absolute',
+    position: "absolute",
     top: -4,
     right: -4,
     backgroundColor: Colors.error,
     borderRadius: 10,
     width: 18,
     height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   badgeText: {
     color: Colors.white,
@@ -102,7 +116,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     fontWeight: FontWeights.bold,
     color: Colors.textPrimary,
-    marginTop:10,
+    marginTop: 10,
     marginBottom: 4,
   },
   description: {
@@ -111,9 +125,9 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   actionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
     paddingVertical: Spacing.md,
     borderWidth: 1,

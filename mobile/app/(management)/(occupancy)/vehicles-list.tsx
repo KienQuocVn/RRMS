@@ -4,7 +4,7 @@
  * Điều hướng từ: ManagementMenu > "Danh sách xe"
  */
 
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -12,11 +12,18 @@ import {
   TouchableOpacity,
   TextInput,
   Platform,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
 
 // ── Component ──
 export default function VehiclesListScreen() {
@@ -26,14 +33,19 @@ export default function VehiclesListScreen() {
   return (
     <View style={styles.container}>
       {/* ── Header ── */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : Spacing.xl }]}>
+      <View
+        style={[
+          styles.header,
+          { paddingTop: Platform.OS === "ios" ? insets.top : Spacing.xl },
+        ]}
+      >
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Quay lại"
         >
-          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
+          <Ionicons name="arrow-back" size={24} color={Colors.textSuccess} />
         </TouchableOpacity>
         <View style={styles.headerTitleWrap}>
           <Text style={styles.headerTitle}>Danh sách phương tiện</Text>
@@ -44,7 +56,12 @@ export default function VehiclesListScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Thêm phương tiện"
         >
-          <Ionicons name="add" size={16} color={Colors.textPrimary} style={{ marginRight: 2 }} />
+          <Ionicons
+            name="add"
+            size={16}
+            color={Colors.textSuccess}
+            style={{ marginRight: 2 }}
+          />
           <Text style={styles.addButtonText}>Thêm</Text>
         </TouchableOpacity>
       </View>
@@ -79,7 +96,7 @@ export default function VehiclesListScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Tìm kiếm"
         >
-          <Ionicons name="search" size={22} color={Colors.textPrimary} />
+          <Ionicons name="search" size={22} color={Colors.textSuccess} />
         </TouchableOpacity>
       </View>
     </View>
@@ -90,11 +107,11 @@ export default function VehiclesListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
@@ -105,8 +122,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: Colors.borderLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.md,
   },
   headerTitleWrap: {
@@ -115,7 +132,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
   },
   headerSubtitle: {
     fontSize: FontSizes.sm,
@@ -123,8 +140,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: BorderRadius.md,
@@ -134,7 +151,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: FontSizes.md,
     fontWeight: FontWeights.medium,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
   },
 
   // Count bar
@@ -153,35 +170,35 @@ const styles = StyleSheet.create({
   // Empty state
   emptyStateContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingBottom: Spacing['5xl'],
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: Spacing["5xl"],
   },
   emptyIconWrap: {
-    position: 'relative',
+    position: "relative",
     marginBottom: Spacing.lg,
   },
   emptySearchIcon: {
-    position: 'absolute',
+    position: "absolute",
     top: -8,
     right: -12,
   },
   emptyStateTitle: {
     fontSize: FontSizes.lg,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
     marginBottom: Spacing.xs,
   },
   emptyStateDesc: {
     fontSize: FontSizes.md,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
   },
 
   // Bottom search bar
   bottomSearchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.md,
@@ -196,7 +213,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,
     fontSize: FontSizes.md,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
     backgroundColor: Colors.white,
   },
   searchIconBtn: {

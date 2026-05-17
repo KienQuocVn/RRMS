@@ -8,16 +8,22 @@ interface AddBuildingFlowState {
   setRentType: (rentType: RentType) => void;
   setIsAutoInit: (isAutoInit: boolean) => void;
   setAddress: (address: BuildingAddress) => void;
+  updateAddress: (address: Partial<BuildingAddress>) => void;
   resetAddress: () => void;
 }
 
 const initialAddress: BuildingAddress = {
+  provinceCode: '',
   city: '',
+  districtCode: '',
   district: '',
+  wardCode: '',
   ward: '',
   detail: '',
   hasMapPin: false,
   mapLabel: '',
+  latitude: null,
+  longitude: null,
 };
 
 export const useAddBuildingFlow = create<AddBuildingFlowState>((set) => ({
@@ -27,5 +33,12 @@ export const useAddBuildingFlow = create<AddBuildingFlowState>((set) => ({
   setRentType: (rentType) => set({ rentType }),
   setIsAutoInit: (isAutoInit) => set({ isAutoInit }),
   setAddress: (address) => set({ address }),
+  updateAddress: (address) =>
+    set((state) => ({
+      address: {
+        ...state.address,
+        ...address,
+      },
+    })),
   resetAddress: () => set({ address: initialAddress }),
 }));

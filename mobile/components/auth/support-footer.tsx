@@ -3,18 +3,33 @@
  * Hiển thị: hotline, Zalo, phiên bản app.
  */
 
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, FontSizes, FontWeights, Spacing, BorderRadius, Shadows } from '@/constants/theme';
-import { AppConstants } from '@/constants/theme';
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Linking,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  Colors,
+  FontSizes,
+  FontWeights,
+  Spacing,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
+import { AppConstants } from "@/constants/theme";
 
 interface SupportFooterProps {
   /** Hiển thị section hỗ trợ chi tiết (hotline, Zalo) */
   showSupportDetails?: boolean;
 }
 
-export default function SupportFooter({ showSupportDetails = true }: SupportFooterProps) {
+export default function SupportFooter({
+  showSupportDetails = true,
+}: SupportFooterProps) {
   const handleCallPress = () => {
     Linking.openURL(`tel:${AppConstants.SUPPORT_PHONE}`);
   };
@@ -28,15 +43,21 @@ export default function SupportFooter({ showSupportDetails = true }: SupportFoot
             <View style={styles.liveIndicator} />
             <View style={styles.supportHeaderText}>
               <Text style={styles.supportTitle}>Hỗ trợ việc đăng nhập</Text>
-              <Text style={styles.supportSubtitle}>{AppConstants.SUPPORT_AVAILABLE}</Text>
+              <Text style={styles.supportSubtitle}>
+                {AppConstants.SUPPORT_AVAILABLE}
+              </Text>
             </View>
           </View>
 
           {/* Hotline */}
           <TouchableOpacity style={styles.supportRow} onPress={handleCallPress}>
-            <Ionicons name="call-outline" size={22} color={Colors.textPrimary} />
+            <Ionicons
+              name="call-outline"
+              size={22}
+              color={Colors.textPrimary}
+            />
             <Text style={styles.supportRowText}>
-              Gọi điện trực tiếp{' '}
+              Gọi điện trực tiếp{" "}
               <Text style={styles.supportRowStatus}>(sẵn sàng)</Text>
             </Text>
           </TouchableOpacity>
@@ -47,7 +68,7 @@ export default function SupportFooter({ showSupportDetails = true }: SupportFoot
               <Text style={styles.zaloIconText}>Zalo</Text>
             </View>
             <Text style={styles.supportRowText}>
-              Chat/Gọi điện qua Zalo{' '}
+              Chat/Gọi điện qua Zalo{" "}
               <Text style={styles.supportRowStatus}>(sẵn sàng)</Text>
             </Text>
           </TouchableOpacity>
@@ -65,11 +86,11 @@ export default function SupportFooter({ showSupportDetails = true }: SupportFoot
 const styles = StyleSheet.create({
   container: {
     paddingTop: Spacing.lg,
-    paddingBottom: Spacing['2xl'],
-    alignItems: 'center',
+    paddingBottom: Spacing["2xl"],
+    alignItems: "center",
   },
   supportCard: {
-    width: '100%',
+    width: "100%",
     backgroundColor: Colors.gray50,
     borderRadius: BorderRadius.lg,
     padding: Spacing.base,
@@ -78,8 +99,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.borderLight,
   },
   supportHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: Spacing.base,
   },
   liveIndicator: {
@@ -103,8 +124,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   supportRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: Spacing.md,
     borderTopWidth: 1,
     borderTopColor: Colors.borderLight,
@@ -124,8 +145,8 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     backgroundColor: Colors.zaloBlue,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   zaloIconText: {
     color: Colors.white,

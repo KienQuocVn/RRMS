@@ -1,14 +1,17 @@
-import React from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
+import React from "react";
+import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Colors, Spacing, FontSizes, BorderRadius } from "@/constants/theme";
 
 interface DepositSearchBarProps {
   searchText: string;
   setSearchText: (text: string) => void;
 }
 
-export const DepositSearchBar = ({ searchText, setSearchText }: DepositSearchBarProps) => (
+export const DepositSearchBar = ({
+  searchText,
+  setSearchText,
+}: DepositSearchBarProps) => (
   <View style={styles.searchContainer}>
     <View style={styles.searchInputWrap}>
       <TextInput
@@ -19,7 +22,7 @@ export const DepositSearchBar = ({ searchText, setSearchText }: DepositSearchBar
         onChangeText={setSearchText}
       />
       <TouchableOpacity style={styles.searchIconBtn}>
-        <Ionicons name="search" size={22} color={Colors.textPrimary} />
+        <Ionicons name="search" size={22} color={Colors.textSuccess} />
       </TouchableOpacity>
     </View>
   </View>
@@ -33,8 +36,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   searchInputWrap: {
-    position: 'relative',
-    justifyContent: 'center',
+    position: "relative",
+    justifyContent: "center",
   },
   searchInput: {
     height: 46,
@@ -45,14 +48,14 @@ const styles = StyleSheet.create({
     paddingLeft: Spacing.lg,
     paddingRight: 48,
     fontSize: FontSizes.base,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
   },
   searchIconBtn: {
-    position: 'absolute',
+    position: "absolute",
     right: 14,
     width: 32,
     height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

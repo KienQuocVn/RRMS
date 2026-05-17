@@ -1,22 +1,48 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Colors, FontSizes, FontWeights, Spacing, BorderRadius } from '@/constants/theme';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Platform,
+  Image,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  Colors,
+  FontSizes,
+  FontWeights,
+  Spacing,
+  BorderRadius,
+} from "@/constants/theme";
 
 export default function CompanyManagementScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
   const Header = () => (
-    <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : insets.top + Spacing.sm }]}>
+    <View
+      style={[
+        styles.header,
+        {
+          paddingTop:
+            Platform.OS === "ios" ? insets.top : insets.top + Spacing.sm,
+        },
+      ]}
+    >
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
+        <Ionicons name="arrow-back" size={22} color={Colors.textSuccess} />
       </TouchableOpacity>
       <View style={styles.headerTitleWrap}>
-        <Text style={styles.headerTitle}>Công ty/nhóm - Quản lý thành viên</Text>
-        <Text style={styles.headerSub}>Quản lý hiệu quả hơn với nhiều thành viên</Text>
+        <Text style={styles.headerTitle}>
+          Công ty/nhóm - Quản lý thành viên
+        </Text>
+        <Text style={styles.headerSub}>
+          Quản lý hiệu quả hơn với nhiều thành viên
+        </Text>
       </View>
     </View>
   );
@@ -24,7 +50,10 @@ export default function CompanyManagementScreen() {
   return (
     <View style={styles.container}>
       <Header />
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Banner Section */}
         <View style={styles.bannerContainer}>
           <View style={styles.bannerLeft}>
@@ -32,22 +61,32 @@ export default function CompanyManagementScreen() {
             <Ionicons name="people" size={60} color="#A5D6A7" />
           </View>
           <View style={styles.bannerRight}>
-            <Text style={styles.bannerText}>Hiệu quả hơn khi quản lý cùng các thành viên</Text>
+            <Text style={styles.bannerText}>
+              Hiệu quả hơn khi quản lý cùng các thành viên
+            </Text>
             <Text style={styles.bannerHighlight}>Thành viên - Quyền hạn</Text>
           </View>
         </View>
 
         {/* Title Section */}
         <View style={styles.titleSection}>
-          <Text style={styles.mainTitle}>Thiết lập công ty hoặc nhóm của bạn</Text>
+          <Text style={styles.mainTitle}>
+            Thiết lập công ty hoặc nhóm của bạn
+          </Text>
           <Text style={styles.subTitle}>
-            Phần mềm sẽ giúp bạn tạo ra một công ty hoặc một đội nhóm và được chia quyền hạn để quản lý phần mềm!
+            Phần mềm sẽ giúp bạn tạo ra một công ty hoặc một đội nhóm và được
+            chia quyền hạn để quản lý phần mềm!
           </Text>
         </View>
 
         {/* Alert Section */}
         <View style={styles.alertBox}>
-          <Ionicons name="warning-outline" size={24} color="#E65100" style={{ marginRight: 8 }} />
+          <Ionicons
+            name="warning-outline"
+            size={24}
+            color="#E65100"
+            style={{ marginRight: 8 }}
+          />
           <Text style={styles.alertText}>
             Để sử dụng tính năng này. Hãy liên hệ chuyên viên để được hỗ trợ!
           </Text>
@@ -56,26 +95,37 @@ export default function CompanyManagementScreen() {
         {/* Support Section */}
         <View style={styles.supportHeader}>
           <View style={styles.redDotContainer}>
-             <View style={styles.redDotLarge} />
-             <View style={styles.redDotSmall} />
+            <View style={styles.redDotLarge} />
+            <View style={styles.redDotSmall} />
           </View>
           <View>
             <Text style={styles.supportTitle}>Hỗ trợ tính năng</Text>
-            <Text style={styles.supportSub}>Chuyên viên luôn sẵn sàng hỗ trợ 24/7</Text>
+            <Text style={styles.supportSub}>
+              Chuyên viên luôn sẵn sàng hỗ trợ 24/7
+            </Text>
           </View>
         </View>
 
         {/* Contact Buttons */}
         <TouchableOpacity style={styles.contactBtn}>
-          <Ionicons name="call" size={24} color="#4CAF50" style={{ marginRight: 12 }} />
-          <Text style={styles.contactBtnText}>Gọi điện trực tiếp (sẵn sàng)</Text>
+          <Ionicons
+            name="call"
+            size={24}
+            color="#4CAF50"
+            style={{ marginRight: 12 }}
+          />
+          <Text style={styles.contactBtnText}>
+            Gọi điện trực tiếp (sẵn sàng)
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.contactBtn}>
           <View style={styles.zaloIconWrapper}>
             <Text style={styles.zaloIconText}>Zalo</Text>
           </View>
-          <Text style={styles.contactBtnText}>Chat/Gọi điện qua Zalo (sẵn sàng)</Text>
+          <Text style={styles.contactBtnText}>
+            Chat/Gọi điện qua Zalo (sẵn sàng)
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -85,11 +135,11 @@ export default function CompanyManagementScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
@@ -101,8 +151,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: Colors.gray50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: Spacing.md,
   },
   headerTitleWrap: {
@@ -111,7 +161,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
   },
   headerSub: {
     fontSize: 12,
@@ -125,61 +175,61 @@ const styles = StyleSheet.create({
     padding: Spacing.base,
   },
   bannerContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#E8F5E9',
+    flexDirection: "row",
+    backgroundColor: "#E8F5E9",
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: Spacing.xl,
     borderWidth: 1,
-    borderColor: '#C8E6C9',
+    borderColor: "#C8E6C9",
   },
   bannerLeft: {
     width: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.md,
   },
   bannerRight: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   bannerText: {
     fontSize: FontSizes.md,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    textAlign: 'center',
+    fontWeight: "600",
+    color: Colors.textSuccess,
+    textAlign: "center",
     marginBottom: 8,
   },
   bannerHighlight: {
     fontSize: FontSizes.lg,
-    fontWeight: 'bold',
-    color: '#4CAF50',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: Colors.success,
+    textAlign: "center",
   },
   titleSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: Spacing.xl,
     paddingHorizontal: Spacing.sm,
   },
   mainTitle: {
     fontSize: FontSizes.md,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
+    fontWeight: "bold",
+    color: Colors.textSuccess,
     marginBottom: Spacing.sm,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subTitle: {
     fontSize: 14,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 20,
   },
   alertBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF3E0',
-    borderColor: '#FFB74D',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF3E0",
+    borderColor: "#FFB74D",
     borderWidth: 1,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
@@ -188,46 +238,46 @@ const styles = StyleSheet.create({
   alertText: {
     flex: 1,
     fontSize: 14,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
     lineHeight: 20,
   },
   supportHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: Spacing.md,
   },
   redDotContainer: {
     width: 24,
     height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: Spacing.sm,
   },
   redDotLarge: {
-    position: 'absolute',
+    position: "absolute",
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(244, 67, 54, 0.2)',
+    backgroundColor: "rgba(244, 67, 54, 0.2)",
   },
   redDotSmall: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#F44336',
+    backgroundColor: "#F44336",
   },
   supportTitle: {
     fontSize: FontSizes.md,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
+    fontWeight: "bold",
+    color: Colors.textSuccess,
   },
   supportSub: {
     fontSize: 13,
     color: Colors.textSecondary,
   },
   contactBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     padding: Spacing.lg,
     borderRadius: BorderRadius.md,
@@ -237,21 +287,21 @@ const styles = StyleSheet.create({
   },
   contactBtnText: {
     fontSize: FontSizes.md,
-    fontWeight: '600',
-    color: Colors.textPrimary,
+    fontWeight: "600",
+    color: Colors.textSuccess,
   },
   zaloIconWrapper: {
-    backgroundColor: '#0084FF',
+    backgroundColor: "#0084FF",
     borderRadius: 12,
     width: 24,
     height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
   },
   zaloIconText: {
     color: Colors.white,
     fontSize: 8,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });

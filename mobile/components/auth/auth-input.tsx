@@ -3,7 +3,7 @@
  * Hỗ trợ: text thường, password (toggle show/hide), validation error.
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -11,11 +11,17 @@ import {
   TouchableOpacity,
   StyleSheet,
   type TextInputProps,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, FontSizes, FontWeights, Spacing, BorderRadius } from '@/constants/theme';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  Colors,
+  FontSizes,
+  FontWeights,
+  Spacing,
+  BorderRadius,
+} from "@/constants/theme";
 
-interface AuthInputProps extends Omit<TextInputProps, 'style'> {
+interface AuthInputProps extends Omit<TextInputProps, "style"> {
   /** Label hiển thị phía trên input */
   label: string;
   /** Có bắt buộc không (hiện dấu *) */
@@ -73,10 +79,10 @@ export default function AuthInput({
             onPress={toggleSecure}
             style={styles.toggleButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            accessibilityLabel={isSecure ? 'Hiện mật khẩu' : 'Ẩn mật khẩu'}
+            accessibilityLabel={isSecure ? "Hiện mật khẩu" : "Ẩn mật khẩu"}
           >
             <Ionicons
-              name={isSecure ? 'eye-off-outline' : 'eye-outline'}
+              name={isSecure ? "eye-off-outline" : "eye-outline"}
               size={22}
               color={Colors.gray500}
             />
@@ -104,8 +110,8 @@ const styles = StyleSheet.create({
     color: Colors.error,
   },
   inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: Colors.inputBorder,
     borderRadius: BorderRadius.lg,
@@ -124,7 +130,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FontSizes.base,
     color: Colors.textPrimary,
-    height: '100%',
+    height: "100%",
   },
   toggleButton: {
     paddingLeft: Spacing.sm,

@@ -1,8 +1,21 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius } from '@/constants/theme';
-import { RentType } from '@/types/building.types';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+} from "@/constants/theme";
+import { RentType } from "@/types/building.types";
 
 interface EditBuildingFormProps {
   rentType: RentType;
@@ -11,7 +24,13 @@ interface EditBuildingFormProps {
   setBuildingName: (name: string) => void;
 }
 
-const SectionTitle = ({ title, subTitle }: { title: string; subTitle: string }) => (
+const SectionTitle = ({
+  title,
+  subTitle,
+}: {
+  title: string;
+  subTitle: string;
+}) => (
   <View style={styles.sectionTitleContainer}>
     <View style={styles.hashtagIcon}>
       <Text style={styles.hashtagText}>#</Text>
@@ -23,50 +42,77 @@ const SectionTitle = ({ title, subTitle }: { title: string; subTitle: string }) 
   </View>
 );
 
-export const EditBuildingForm = ({ rentType, setRentType, buildingName, setBuildingName }: EditBuildingFormProps) => {
+export const EditBuildingForm = ({
+  rentType,
+  setRentType,
+  buildingName,
+  setBuildingName,
+}: EditBuildingFormProps) => {
   return (
-    <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
       {/* --- Section 1: Thông tin nhà cho thuê --- */}
-      <SectionTitle 
-        title="Thông tin nhà cho thuê" 
-        subTitle="Thông tin cơ bản tên, loại hình..." 
+      <SectionTitle
+        title="Thông tin nhà cho thuê"
+        subTitle="Thông tin cơ bản tên, loại hình..."
       />
-      
+
       <View style={styles.card}>
         {/* Loại hình cho thuê (Disabled styling) */}
-        <Text style={styles.label}>Loại hình cho thuê <Text style={styles.required}>*</Text></Text>
+        <Text style={styles.label}>
+          Loại hình cho thuê <Text style={styles.required}>*</Text>
+        </Text>
         <View style={styles.inputContainerDisabled}>
           <Text style={styles.inputText}>Nhà trọ</Text>
         </View>
 
         {/* Cards select */}
         <View style={styles.rentTypeContainer}>
-          <TouchableOpacity 
-            style={[styles.rentTypeCard, rentType === 'room' && styles.rentTypeCardActive]}
-            onPress={() => setRentType('room')}
+          <TouchableOpacity
+            style={[
+              styles.rentTypeCard,
+              rentType === "room" && styles.rentTypeCardActive,
+            ]}
+            onPress={() => setRentType("room")}
             activeOpacity={0.7}
           >
-            <Ionicons name="git-network-outline" size={32} color={rentType === 'room' ? Colors.success : Colors.gray500} />
+            <Ionicons
+              name="git-network-outline"
+              size={32}
+              color={rentType === "room" ? Colors.success : Colors.gray500}
+            />
             <Text style={styles.rentTypeTitle}>Thuê theo phòng</Text>
             <Text style={styles.rentTypeSub}>Tính tiền thuê theo phòng</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.rentTypeCard, rentType === 'bed' && styles.rentTypeCardActive]}
-            onPress={() => setRentType('bed')}
+          <TouchableOpacity
+            style={[
+              styles.rentTypeCard,
+              rentType === "bed" && styles.rentTypeCardActive,
+            ]}
+            onPress={() => setRentType("bed")}
             activeOpacity={0.7}
           >
-            <Ionicons name="business-outline" size={32} color={rentType === 'bed' ? Colors.success : Colors.gray500} />
+            <Ionicons
+              name="business-outline"
+              size={32}
+              color={rentType === "bed" ? Colors.success : Colors.gray500}
+            />
             <Text style={styles.rentTypeTitle}>Thuê theo giường</Text>
             <Text style={styles.rentTypeSub}>Tính tiền theo giường</Text>
           </TouchableOpacity>
         </View>
 
         {/* Tên Nhà trọ */}
-        <Text style={styles.label}>Tên Nhà trọ <Text style={styles.required}>*</Text></Text>
+        <Text style={styles.label}>
+          Tên Nhà trọ <Text style={styles.required}>*</Text>
+        </Text>
         <View style={[styles.inputContainer, styles.inputContainerBorder]}>
-          <TextInput 
-            style={styles.textInput} 
+          <TextInput
+            style={styles.textInput}
             value={buildingName}
             onChangeText={setBuildingName}
           />
@@ -74,15 +120,17 @@ export const EditBuildingForm = ({ rentType, setRentType, buildingName, setBuild
             <Text style={styles.inputSuffixText}>Nhà trọ</Text>
           </View>
         </View>
-        <Text style={styles.displayNameText}>Tên hiển thị: Nhà trọ {buildingName}</Text>
+        <Text style={styles.displayNameText}>
+          Tên hiển thị: Nhà trọ {buildingName}
+        </Text>
       </View>
 
       {/* --- Section 2: Cách khởi tạo dữ liệu --- */}
-      <SectionTitle 
-        title="Cách khởi tạo dữ liệu" 
-        subTitle="Theo mẫu hoặc từ excel hoặc thủ công" 
+      <SectionTitle
+        title="Cách khởi tạo dữ liệu"
+        subTitle="Theo mẫu hoặc từ excel hoặc thủ công"
       />
-      
+
       <View style={[styles.card, { borderBottomWidth: 0 }]}>
         {/* Read-only Data Summary Box */}
         <View style={styles.summaryBox}>
@@ -135,30 +183,36 @@ export const EditBuildingForm = ({ rentType, setRentType, buildingName, setBuild
       <View style={styles.sectionDivider} />
 
       {/* --- Section 3: Cài đặt ngày chốt & hạn hóa đơn --- */}
-      <SectionTitle 
-        title="Cài đặt ngày chốt & hạn hóa đơn" 
-        subTitle="Tùy chỉnh tính năng sử dụng cho Nhà trọ" 
+      <SectionTitle
+        title="Cài đặt ngày chốt & hạn hóa đơn"
+        subTitle="Tùy chỉnh tính năng sử dụng cho Nhà trọ"
       />
-      
+
       <View style={styles.cardNoPadding}>
         <View style={[styles.row, { padding: Spacing.base }]}>
           <View style={styles.columnView}>
-            <Text style={styles.label}>Ngày lập hóa đơn thu tiền <Text style={styles.required}>*</Text></Text>
+            <Text style={styles.label}>
+              Ngày lập hóa đơn thu tiền <Text style={styles.required}>*</Text>
+            </Text>
             <View style={[styles.inputContainer, styles.inputContainerBorder]}>
-              <TextInput 
-                style={styles.textInput} 
-                defaultValue="1" 
+              <TextInput
+                style={styles.textInput}
+                defaultValue="1"
                 keyboardType="numeric"
               />
             </View>
-            <Text style={styles.helperText}>Nhập ngày cuối tháng hoặc ngày cố định trong tháng.</Text>
+            <Text style={styles.helperText}>
+              Nhập ngày cuối tháng hoặc ngày cố định trong tháng.
+            </Text>
           </View>
 
           <View style={styles.columnView}>
-            <Text style={styles.label}>Hạn đóng tiền <Text style={styles.required}>*</Text></Text>
+            <Text style={styles.label}>
+              Hạn đóng tiền <Text style={styles.required}>*</Text>
+            </Text>
             <View style={[styles.inputContainer, styles.inputContainerBorder]}>
-              <TextInput 
-                style={styles.textInput} 
+              <TextInput
+                style={styles.textInput}
                 defaultValue="5"
                 keyboardType="numeric"
               />
@@ -166,7 +220,9 @@ export const EditBuildingForm = ({ rentType, setRentType, buildingName, setBuild
                 <Text style={styles.inputSuffixText}>Ngày</Text>
               </View>
             </View>
-            <Text style={styles.helperText}>Số ngày hết đóng tiền thuê kể từ ngày lập hóa đơn</Text>
+            <Text style={styles.helperText}>
+              Số ngày hết đóng tiền thuê kể từ ngày lập hóa đơn
+            </Text>
           </View>
         </View>
 
@@ -175,11 +231,11 @@ export const EditBuildingForm = ({ rentType, setRentType, buildingName, setBuild
             <Ionicons name="information" size={16} color={Colors.white} />
           </View>
           <Text style={styles.infoAlertText}>
-            <Text style={{ fontWeight: 'bold' }}>Thông tin:</Text> Khi có khách thuê không đóng tiền đúng hạn. Phần mềm sẽ nhắc nhở bạn.
+            <Text style={{ fontWeight: "bold" }}>Thông tin:</Text> Khi có khách
+            thuê không đóng tiền đúng hạn. Phần mềm sẽ nhắc nhở bạn.
           </Text>
         </View>
       </View>
-
     </ScrollView>
   );
 };
@@ -189,11 +245,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: Spacing['4xl'],
+    paddingBottom: Spacing["4xl"],
   },
   sectionTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: Spacing.base,
     paddingTop: Spacing.lg,
     paddingBottom: Spacing.sm,
@@ -203,13 +259,13 @@ const styles = StyleSheet.create({
     height: 32,
     backgroundColor: Colors.success,
     borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.sm,
   },
   hashtagText: {
     color: Colors.white,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: FontSizes.lg,
   },
   sectionTitleWrap: {
@@ -240,11 +296,11 @@ const styles = StyleSheet.create({
   sectionDivider: {
     height: 1,
     backgroundColor: Colors.borderLight,
-    width: '100%',
+    width: "100%",
   },
   label: {
     fontSize: FontSizes.sm,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.textPrimary,
     marginBottom: Spacing.xs,
   },
@@ -252,8 +308,8 @@ const styles = StyleSheet.create({
     color: Colors.error,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     borderRadius: BorderRadius.md,
     minHeight: 48,
@@ -261,8 +317,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   inputContainerDisabled: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.gray100,
     borderRadius: BorderRadius.md,
     minHeight: 48,
@@ -304,7 +360,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   rentTypeContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.md,
     marginBottom: Spacing.md,
   },
@@ -312,37 +368,37 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1.5,
     borderColor: Colors.borderLight,
-    borderStyle: 'dashed',
+    borderStyle: "dashed",
     borderRadius: BorderRadius.lg,
     padding: Spacing.base,
-    alignItems: 'center',
+    alignItems: "center",
   },
   rentTypeCardActive: {
     borderColor: Colors.success,
-    backgroundColor: '#F1F9F4', 
+    backgroundColor: "#F1F9F4",
   },
   rentTypeTitle: {
     fontSize: FontSizes.sm,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.textPrimary,
     marginTop: Spacing.sm,
-    textAlign: 'center',
+    textAlign: "center",
   },
   rentTypeSub: {
     fontSize: FontSizes.xs,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 4,
   },
   summaryBox: {
-    backgroundColor: '#F0F4E8',
+    backgroundColor: "#F0F4E8",
     borderRadius: BorderRadius.lg,
     padding: Spacing.base,
     borderWidth: 1,
-    borderColor: '#E2E8D5',
+    borderColor: "#E2E8D5",
   },
   summaryRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   summaryCol: {
     flex: 1,
@@ -354,16 +410,16 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     fontSize: FontSizes.sm,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.textPrimary,
   },
   summaryDivider: {
     height: 1,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: "rgba(0,0,0,0.05)",
     marginVertical: Spacing.sm,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.md,
   },
   columnView: {
@@ -371,28 +427,28 @@ const styles = StyleSheet.create({
   },
   helperText: {
     fontSize: FontSizes.xs,
-    color: '#D84315', 
+    color: "#D84315",
     marginTop: 4,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   infoAlert: {
-    flexDirection: 'row',
-    backgroundColor: '#F1F9F4',
+    flexDirection: "row",
+    backgroundColor: "#F1F9F4",
     borderWidth: 1,
     borderColor: Colors.success,
     padding: Spacing.md,
     marginHorizontal: Spacing.base,
     marginBottom: Spacing.base,
     borderRadius: BorderRadius.md,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
   },
   infoAlertIcon: {
     backgroundColor: Colors.success,
     width: 20,
     height: 20,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.sm,
     marginTop: 2,
   },

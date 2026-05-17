@@ -1,21 +1,34 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from "react-native";
+import { Colors, Spacing, FontSizes, BorderRadius } from "@/constants/theme";
 
 interface EditBuildingBottomActionsProps {
   onClose: () => void;
   onNext: () => void;
 }
 
-export const EditBuildingBottomActions = ({ onClose, onNext }: EditBuildingBottomActionsProps) => {
+export const EditBuildingBottomActions = ({
+  onClose,
+  onNext,
+}: EditBuildingBottomActionsProps) => {
   return (
     <View style={styles.bottomBar}>
       {/* Progress Bar */}
       <View style={styles.progressContainer}>
-        <View style={[styles.progressSegment, { backgroundColor: Colors.success }]} />
-        <View style={[styles.progressSegment, { backgroundColor: Colors.gray200 }]} />
+        <View
+          style={[styles.progressSegment, { backgroundColor: Colors.success }]}
+        />
+        <View
+          style={[styles.progressSegment, { backgroundColor: Colors.gray200 }]}
+        />
       </View>
-      
+
       {/* Buttons */}
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.btnSecondary} onPress={onClose}>
@@ -34,12 +47,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderTopWidth: 1,
     borderTopColor: Colors.borderLight,
-    paddingBottom: Platform.OS === 'ios' ? 34 : Spacing.md,
+    paddingBottom: Platform.OS === "ios" ? 34 : Spacing.md,
   },
   progressContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     height: 3,
-    width: '100%',
+    width: "100%",
     marginBottom: Spacing.md,
   },
   progressSegment: {
@@ -47,7 +60,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 1,
   },
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: Spacing.base,
     gap: Spacing.md,
   },
@@ -56,25 +69,25 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.gray100,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   btnSecondaryText: {
     fontSize: FontSizes.base,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
+    fontWeight: "bold",
+    color: Colors.textSuccess,
   },
   btnPrimary: {
     flex: 1,
     backgroundColor: Colors.success,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   btnPrimaryText: {
     fontSize: FontSizes.base,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.white,
   },
 });

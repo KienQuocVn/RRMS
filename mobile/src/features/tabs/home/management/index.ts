@@ -1,7 +1,7 @@
 import type { TabOwnedScreen } from '../../types';
 
-export { default as AddBuildingScreen } from '@/app/(management)/(buildings)/add-building';
-export { default as EditBuildingScreen } from '@/app/(management)/(buildings)/edit-building';
+export { default as AddBuildingScreen } from '@/app/(management)/(buildings)/add-building/add-building';
+export { default as EditBuildingScreen } from '@/app/(management)/(buildings)/edit-building/edit-building';
 export { default as BrokerManagementScreen } from '@/app/(management)/(buildings)/broker-management';
 export { default as RoomsListScreen } from '@/app/(management)/(occupancy)/rooms-list';
 export { default as ContractsListScreen } from '@/app/(finance)/(contracts)/contracts-list';

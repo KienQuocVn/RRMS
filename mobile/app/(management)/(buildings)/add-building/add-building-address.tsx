@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
+  Modal,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -21,39 +24,100 @@ import {
   Spacing,
 } from '@/constants/theme';
 import { useAddBuildingFlow } from '@/hooks/use-add-building-flow';
+import {
+  AddressOption,
+  getDistricts,
+  getProvinces,
+  getWards,
+} from '@/services/address/address.service';
 
-const CITY_OPTIONS = ['Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng'];
+type ActiveModal = 'province' | 'district' | 'ward' | null;
 
-const DISTRICT_OPTIONS: Record<string, string[]> = {
-  'Hồ Chí Minh': ['Quận 1', 'Quận 7', 'Thành phố Thủ Đức'],
-  'Hà Nội': ['Ba Đình', 'Cầu Giấy', 'Hà Đông'],
-  'Đà Nẵng': ['Hải Châu', 'Sơn Trà', 'Ngũ Hành Sơn'],
-};
+function AddressPickerModal({
+  visible,
+  title,
+  icon,
+  options,
+  selectedCode,
+  emptyText,
+  loading,
+  onSelect,
+  onClose,
+}: {
+  visible: boolean;
+  title: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  options: AddressOption[];
+  selectedCode: string;
+  emptyText: string;
+  loading: boolean;
+  onSelect: (option: AddressOption) => void;
+  onClose: () => void;
+}) {
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable style={styles.modalOverlay} onPress={onClose}>
+        <Pressable style={styles.modalCard} onPress={(event) => event.stopPropagation()}>
+          <View style={styles.modalHeader}>
+            <View style={styles.modalHeaderIcon}>
+              <Ionicons name={icon} size={22} color={Colors.textPrimary} />
+            </View>
+            <Text style={styles.modalHeaderTitle}>{title}</Text>
+          </View>
 
-const WARD_OPTIONS: Record<string, string[]> = {
-  'Quận 1': ['Phường Bến Nghé', 'Phường Bến Thành', 'Phường Đa Kao'],
-  'Quận 7': ['Phường Tân Phú', 'Phường Tân Hưng', 'Phường Phú Mỹ'],
-  'Thành phố Thủ Đức': ['Phường An Khánh', 'Phường Thảo Điền', 'Phường Linh Đông'],
-  'Ba Đình': ['Phường Kim Mã', 'Phường Liễu Giai', 'Phường Điện Biên'],
-  'Cầu Giấy': ['Phường Dịch Vọng', 'Phường Quan Hoa', 'Phường Yên Hòa'],
-  'Hà Đông': ['Phường Mộ Lao', 'Phường Phú La', 'Phường Nguyễn Trãi'],
-  'Hải Châu': ['Phường Hải Châu I', 'Phường Bình Thuận', 'Phường Hòa Thuận Tây'],
-  'Sơn Trà': ['Phường An Hải Bắc', 'Phường Phước Mỹ', 'Phường Nại Hiên Đông'],
-  'Ngũ Hành Sơn': ['Phường Mỹ An', 'Phường Khuê Mỹ', 'Phường Hòa Hải'],
-};
+          <View style={styles.modalDivider} />
 
-function cycleOption(currentValue: string, options: string[]) {
-  if (options.length === 0) {
-    return '';
-  }
+          {loading ? (
+            <View style={styles.modalLoading}>
+              <ActivityIndicator size="small" color={Colors.success} />
+              <Text style={styles.modalLoadingText}>Đang tải dữ liệu...</Text>
+            </View>
+          ) : (
+            <ScrollView style={styles.modalList} showsVerticalScrollIndicator={false}>
+              {options.length === 0 ? (
+                <View style={styles.modalEmptyState}>
+                  <Text style={styles.modalEmptyText}>{emptyText}</Text>
+                </View>
+              ) : (
+                options.map((option, index) => {
+                  const isSelected = selectedCode === option.code;
 
-  if (!currentValue) {
-    return options[0];
-  }
+                  return (
+                    <View key={option.code}>
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        onPress={() => {
+                          onSelect(option);
+                          onClose();
+                        }}
+                        style={styles.modalOption}
+                      >
+                        <Text style={styles.modalOptionTitle}>{option.name}</Text>
 
-  const currentIndex = options.indexOf(currentValue);
-  const nextIndex = currentIndex === -1 || currentIndex === options.length - 1 ? 0 : currentIndex + 1;
-  return options[nextIndex];
+                        {isSelected ? (
+                          <View style={styles.modalCheck}>
+                            <Ionicons name="checkmark" size={20} color={Colors.white} />
+                          </View>
+                        ) : null}
+                      </TouchableOpacity>
+
+                      {index < options.length - 1 ? (
+                        <View style={styles.modalOptionDivider} />
+                      ) : null}
+                    </View>
+                  );
+                })
+              )}
+            </ScrollView>
+          )}
+
+          <TouchableOpacity style={styles.modalCloseButton} onPress={onClose}>
+            <Text style={styles.modalCloseButtonText}>Đóng</Text>
+          </TouchableOpacity>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
 }
 
 export default function AddBuildingAddressScreen() {
@@ -61,43 +125,183 @@ export default function AddBuildingAddressScreen() {
   const router = useRouter();
   const savedAddress = useAddBuildingFlow((state) => state.address);
   const setAddress = useAddBuildingFlow((state) => state.setAddress);
+  const updateAddress = useAddBuildingFlow((state) => state.updateAddress);
+
+  const [activeModal, setActiveModal] = useState<ActiveModal>(null);
+  const [provinceCode, setProvinceCode] = useState(savedAddress.provinceCode);
   const [city, setCity] = useState(savedAddress.city);
+  const [districtCode, setDistrictCode] = useState(savedAddress.districtCode);
   const [district, setDistrict] = useState(savedAddress.district);
+  const [wardCode, setWardCode] = useState(savedAddress.wardCode);
   const [ward, setWard] = useState(savedAddress.ward);
   const [detail, setDetail] = useState(savedAddress.detail);
   const [hasMapPin, setHasMapPin] = useState(savedAddress.hasMapPin);
+  const [mapLabel, setMapLabel] = useState(savedAddress.mapLabel);
+  const [latitude, setLatitude] = useState<number | null>(savedAddress.latitude);
+  const [longitude, setLongitude] = useState<number | null>(savedAddress.longitude);
 
-  const districtOptions = city ? DISTRICT_OPTIONS[city] ?? [] : [];
-  const wardOptions = district ? WARD_OPTIONS[district] ?? [] : [];
-  const isValid = Boolean(city && district && ward && detail.trim());
+  const [provinceOptions, setProvinceOptions] = useState<AddressOption[]>([]);
+  const [districtOptions, setDistrictOptions] = useState<AddressOption[]>([]);
+  const [wardOptions, setWardOptions] = useState<AddressOption[]>([]);
+  const [loadingProvince, setLoadingProvince] = useState(true);
+  const [loadingDistrict, setLoadingDistrict] = useState(false);
+  const [loadingWard, setLoadingWard] = useState(false);
 
-  const handleCityPress = () => {
-    const nextCity = cycleOption(city, CITY_OPTIONS);
-    setCity(nextCity);
+  useEffect(() => {
+    let mounted = true;
+
+    const loadProvinces = async () => {
+      setLoadingProvince(true);
+      const data = await getProvinces();
+
+      if (!mounted) {
+        return;
+      }
+
+      setProvinceOptions(data);
+      setLoadingProvince(false);
+    };
+
+    void loadProvinces();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadDistricts = async () => {
+      if (!provinceCode) {
+        setDistrictOptions([]);
+        return;
+      }
+
+      setLoadingDistrict(true);
+      const data = await getDistricts(provinceCode);
+
+      if (!mounted) {
+        return;
+      }
+
+      setDistrictOptions(data);
+      setLoadingDistrict(false);
+    };
+
+    void loadDistricts();
+
+    return () => {
+      mounted = false;
+    };
+  }, [provinceCode]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadWards = async () => {
+      if (!districtCode) {
+        setWardOptions([]);
+        return;
+      }
+
+      setLoadingWard(true);
+      const data = await getWards(districtCode);
+
+      if (!mounted) {
+        return;
+      }
+
+      setWardOptions(data);
+      setLoadingWard(false);
+    };
+
+    void loadWards();
+
+    return () => {
+      mounted = false;
+    };
+  }, [districtCode]);
+
+  useEffect(() => {
+    setHasMapPin(savedAddress.hasMapPin);
+    setMapLabel(savedAddress.mapLabel);
+    setLatitude(savedAddress.latitude);
+    setLongitude(savedAddress.longitude);
+  }, [savedAddress.hasMapPin, savedAddress.latitude, savedAddress.longitude, savedAddress.mapLabel]);
+
+  const currentMapMeta = useMemo(() => {
+    if (mapLabel) {
+      return mapLabel;
+    }
+
+    if (hasMapPin && latitude !== null && longitude !== null) {
+      return `Tọa độ đã ghim: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+    }
+
+    return '';
+  }, [hasMapPin, latitude, longitude, mapLabel]);
+
+  const isValid = Boolean(provinceCode && districtCode && wardCode && detail.trim());
+
+  const resetMapSelection = () => {
+    setHasMapPin(false);
+    setMapLabel('');
+    setLatitude(null);
+    setLongitude(null);
+  };
+
+  const handleSelectProvince = (option: AddressOption) => {
+    if (option.code === provinceCode) {
+      return;
+    }
+
+    setProvinceCode(option.code);
+    setCity(option.name);
+    setDistrictCode('');
     setDistrict('');
+    setWardCode('');
     setWard('');
-    setHasMapPin(false);
+    resetMapSelection();
   };
 
-  const handleDistrictPress = () => {
-    if (!city) {
+  const handleSelectDistrict = (option: AddressOption) => {
+    if (option.code === districtCode) {
       return;
     }
 
-    const nextDistrict = cycleOption(district, districtOptions);
-    setDistrict(nextDistrict);
+    setDistrictCode(option.code);
+    setDistrict(option.name);
+    setWardCode('');
     setWard('');
-    setHasMapPin(false);
+    resetMapSelection();
   };
 
-  const handleWardPress = () => {
-    if (!district) {
-      return;
-    }
+  const handleSelectWard = (option: AddressOption) => {
+    setWardCode(option.code);
+    setWard(option.name);
+    resetMapSelection();
+  };
 
-    const nextWard = cycleOption(ward, wardOptions);
-    setWard(nextWard);
-    setHasMapPin(false);
+  const persistDraftAddress = () => {
+    updateAddress({
+      provinceCode,
+      city,
+      districtCode,
+      district,
+      wardCode,
+      ward,
+      detail: detail.trim(),
+      hasMapPin,
+      mapLabel,
+      latitude,
+      longitude,
+    });
+  };
+
+  const handleOpenMapPicker = () => {
+    persistDraftAddress();
+    router.push('/add-building/add-building-map-picker');
   };
 
   const handleConfirm = () => {
@@ -105,17 +309,18 @@ export default function AddBuildingAddressScreen() {
       return;
     }
 
-    const mapLabel = hasMapPin
-      ? `Đã ghim vị trí trên bản đồ tại ${ward}, ${district}`
-      : '';
-
     setAddress({
+      provinceCode,
       city,
+      districtCode,
       district,
+      wardCode,
       ward,
       detail: detail.trim(),
       hasMapPin,
       mapLabel,
+      latitude,
+      longitude,
     });
     router.back();
   };
@@ -172,13 +377,17 @@ export default function AddBuildingAddressScreen() {
             <Ionicons name="warning" size={24} color={Colors.white} />
           </View>
           <Text style={styles.warningText}>
-            <Text style={styles.warningStrong}>Thông tin:</Text> Nếu địa chỉ của bạn không có trong
-            danh sách bên dưới. Vui lòng liên hệ với nhân viên để được hỗ trợ!
+            <Text style={styles.warningStrong}>Thông tin:</Text> Nếu địa chỉ của bạn không có
+            trong danh sách bên dưới. Vui lòng liên hệ với nhân viên để được hỗ trợ!
           </Text>
         </View>
 
         <View style={styles.formCard}>
-          <TouchableOpacity activeOpacity={0.85} onPress={handleCityPress} style={styles.selector}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => setActiveModal('province')}
+            style={styles.selector}
+          >
             <Text style={styles.selectorLabel}>
               Tỉnh/Thành phố <Text style={styles.required}>*</Text>
             </Text>
@@ -192,8 +401,12 @@ export default function AddBuildingAddressScreen() {
 
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={handleDistrictPress}
-            style={[styles.selector, !city && styles.selectorDisabled]}
+            onPress={() => {
+              if (provinceCode) {
+                setActiveModal('district');
+              }
+            }}
+            style={[styles.selector, !provinceCode && styles.selectorDisabled]}
           >
             <Text style={styles.selectorLabel}>
               Quận/Huyện <Text style={styles.required}>*</Text>
@@ -208,8 +421,12 @@ export default function AddBuildingAddressScreen() {
 
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={handleWardPress}
-            style={[styles.selector, !district && styles.selectorDisabled]}
+            onPress={() => {
+              if (districtCode) {
+                setActiveModal('ward');
+              }
+            }}
+            style={[styles.selector, !districtCode && styles.selectorDisabled]}
           >
             <Text style={styles.selectorLabel}>
               Phường/Xã <Text style={styles.required}>*</Text>
@@ -252,19 +469,17 @@ export default function AddBuildingAddressScreen() {
 
           <TouchableOpacity
             activeOpacity={0.85}
-            disabled={!ward}
-            onPress={() => setHasMapPin((current) => !current)}
-            style={[styles.mapButton, !ward && styles.mapButtonDisabled]}
+            disabled={!wardCode}
+            onPress={handleOpenMapPicker}
+            style={[styles.mapButton, !wardCode && styles.mapButtonDisabled]}
           >
             <Ionicons name="location" size={22} color={Colors.textPrimary} />
             <Text style={styles.mapButtonText}>
-              {hasMapPin ? 'Đã lấy vị trí trên bản đồ' : 'Lấy vị trí trên bản đồ'}
+              {hasMapPin ? 'Cập nhật vị trí trên bản đồ' : 'Lấy vị trí trên bản đồ'}
             </Text>
           </TouchableOpacity>
 
-          {hasMapPin ? (
-            <Text style={styles.mapMeta}>Vị trí mẫu đang được ghim gần khu vực {ward}</Text>
-          ) : null}
+          {currentMapMeta ? <Text style={styles.mapMeta}>{currentMapMeta}</Text> : null}
         </View>
       </ScrollView>
 
@@ -288,6 +503,42 @@ export default function AddBuildingAddressScreen() {
           <Text style={styles.confirmButtonText}>Xác nhận địa chỉ & tiếp tục</Text>
         </TouchableOpacity>
       </View>
+
+      <AddressPickerModal
+        visible={activeModal === 'province'}
+        title="Tỉnh/Thành phố"
+        icon="business-outline"
+        options={provinceOptions}
+        selectedCode={provinceCode}
+        emptyText="Chưa có dữ liệu tỉnh/thành phố."
+        loading={loadingProvince}
+        onSelect={handleSelectProvince}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <AddressPickerModal
+        visible={activeModal === 'district'}
+        title="Quận/Huyện"
+        icon="map-outline"
+        options={districtOptions}
+        selectedCode={districtCode}
+        emptyText="Hãy chọn Tỉnh/Thành phố trước để tải Quận/Huyện."
+        loading={loadingDistrict}
+        onSelect={handleSelectDistrict}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <AddressPickerModal
+        visible={activeModal === 'ward'}
+        title="Phường/Xã"
+        icon="location-outline"
+        options={wardOptions}
+        selectedCode={wardCode}
+        emptyText="Hãy chọn Quận/Huyện trước để tải Phường/Xã."
+        loading={loadingWard}
+        onSelect={handleSelectWard}
+        onClose={() => setActiveModal(null)}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -477,7 +728,7 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: '#30E45D',
+    backgroundColor: Colors.success,
   },
   mapPinStem: {
     width: 3,
@@ -514,7 +765,8 @@ const styles = StyleSheet.create({
   mapMeta: {
     marginTop: Spacing.md,
     fontSize: FontSizes.sm,
-    color: '#13823B',
+    color: Colors.success,
+    textAlign: 'center',
   },
   footer: {
     position: 'absolute',
@@ -546,11 +798,111 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   confirmButtonDisabled: {
-    backgroundColor: '#97D8AA',
+    backgroundColor: Colors.gray300,
   },
   confirmButtonText: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
     color: Colors.white,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+  },
+  modalCard: {
+    width: '100%',
+    maxHeight: '72%',
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.base,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  modalHeaderIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.textPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
+  },
+  modalHeaderTitle: {
+    flex: 1,
+    fontSize: FontSizes.xl,
+    fontWeight: FontWeights.bold,
+    color: Colors.textPrimary,
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: Colors.borderLight,
+    marginTop: Spacing.base,
+    marginBottom: Spacing.sm,
+  },
+  modalLoading: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing['2xl'],
+  },
+  modalLoadingText: {
+    marginTop: Spacing.sm,
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+  },
+  modalList: {
+    flexGrow: 0,
+  },
+  modalEmptyState: {
+    paddingVertical: Spacing.xl,
+  },
+  modalEmptyText: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  modalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 56,
+    paddingVertical: Spacing.sm,
+  },
+  modalOptionTitle: {
+    flex: 1,
+    paddingRight: Spacing.md,
+    fontSize: FontSizes.lg,
+    fontWeight: FontWeights.bold,
+    color: Colors.textPrimary,
+  },
+  modalOptionDivider: {
+    height: 1,
+    backgroundColor: Colors.borderLight,
+  },
+  modalCheck: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: Colors.success,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCloseButton: {
+    marginTop: Spacing.base,
+    backgroundColor: Colors.gray100,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  modalCloseButtonText: {
+    fontSize: FontSizes.base,
+    fontWeight: FontWeights.bold,
+    color: Colors.textPrimary,
   },
 });

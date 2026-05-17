@@ -3,32 +3,47 @@
  * Banner quảng cáo với 2 buttons: Lắp phòng trống, Tin đăng
  */
 
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
 
 interface RentalPostProps {
   onFillRoomPress?: () => void;
   onPostPress?: () => void;
 }
 
-export default function RentalPost({ onFillRoomPress, onPostPress }: RentalPostProps) {
+export default function RentalPost({
+  onFillRoomPress,
+  onPostPress,
+}: RentalPostProps) {
   return (
     <View style={styles.container}>
       {/* Banner card */}
       <View style={styles.card}>
         <View style={styles.cardContent}>
-          <View style={[styles.iconWrap, { backgroundColor: '#E8F5E9' }]}>
+          <View style={[styles.iconWrap, { backgroundColor: "#E8F5E9" }]}>
             <Ionicons name="home-outline" size={32} color={Colors.primary} />
             <View style={styles.postIndicator}>
-              <Ionicons name="arrow-up-outline" size={14} color={Colors.white} />
+              <Ionicons
+                name="arrow-up-outline"
+                size={14}
+                color={Colors.white}
+              />
             </View>
           </View>
           <View style={styles.textWrap}>
             <Text style={styles.cardTitle}>Đăng tin cho thuê</Text>
             <Text style={styles.cardDescription}>
-              Hơn <Text style={styles.highlight}>10.000+</Text> khách thuê tiềm năng trên hệ thống RRMS
+              Hơn <Text style={styles.highlight}>10.000+</Text> khách thuê tiềm
+              năng trên hệ thống RRMS
             </Text>
           </View>
         </View>
@@ -63,29 +78,29 @@ const styles = StyleSheet.create({
     ...Shadows.sm,
   },
   cardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: Spacing.base,
   },
   iconWrap: {
     width: 56,
     height: 56,
     borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.md,
-    position: 'relative',
+    position: "relative",
   },
   postIndicator: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -2,
     right: -2,
     width: 20,
     height: 20,
     borderRadius: 10,
     backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   textWrap: {
     flex: 1,
@@ -106,14 +121,14 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.md,
   },
   outlineBtn: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     paddingVertical: Spacing.md,
     borderWidth: 1.5,
@@ -128,9 +143,9 @@ const styles = StyleSheet.create({
   },
   filledBtn: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     paddingVertical: Spacing.md,
     backgroundColor: Colors.primary,

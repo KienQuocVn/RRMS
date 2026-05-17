@@ -196,7 +196,7 @@ function ModalEndContract({ toggleModal, modalOpen, roomId }) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     bgcolor: task.completed ? '#e8f5e9' : '#fff3e0',
-                    color: task.completed ? '#4caf50' : '#ff9800'
+                    color: task.completed ? Colors.success : '#ff9800'
                   }}
                 >
                   {task.completed ? (

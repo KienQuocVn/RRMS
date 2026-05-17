@@ -3,11 +3,18 @@
  * Cards: Quản lý môi giới, Tài khoản ngân hàng (PRO)
  */
 
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
 
 interface ExpandedMenuProps {
   onBrokerPress?: () => void;
@@ -26,7 +33,7 @@ export default function ExpandedMenu({
     if (onBrokerPress) {
       onBrokerPress();
     } else {
-      router.push('/broker-management' as any);
+      router.push("/broker-management" as any);
     }
   };
 
@@ -34,7 +41,7 @@ export default function ExpandedMenu({
     if (onBankPress) {
       onBankPress();
     } else {
-      router.push('/bank-account' as any);
+      router.push("/bank-account" as any);
     }
   };
 
@@ -51,13 +58,14 @@ export default function ExpandedMenu({
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         accessibilityLabel="Quản lý môi giới"
       >
-        <View style={[styles.cardIcon, { backgroundColor: '#E8F5E9' }]}>
+        <View style={[styles.cardIcon, { backgroundColor: "#E8F5E9" }]}>
           <Ionicons name="megaphone-outline" size={28} color={Colors.primary} />
         </View>
         <View style={styles.cardContent}>
           <Text style={styles.cardTitle}>Quản lý môi giới</Text>
           <Text style={styles.cardDescription} numberOfLines={2}>
-            Giúp bạn quản lý môi giới lắp phòng của mình. Xây dựng quy trình lấy phòng, chính sách hoa hồng...
+            Giúp bạn quản lý môi giới lắp phòng của mình. Xây dựng quy trình lấy
+            phòng, chính sách hoa hồng...
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color={Colors.gray400} />
@@ -66,7 +74,7 @@ export default function ExpandedMenu({
       {/* Card 2: Tài khoản ngân hàng */}
       <View style={styles.bankCard}>
         <View style={styles.bankCardTop}>
-          <View style={[styles.cardIcon, { backgroundColor: '#E3F2FD' }]}>
+          <View style={[styles.cardIcon, { backgroundColor: "#E3F2FD" }]}>
             <Ionicons name="card-outline" size={28} color="#1976D2" />
           </View>
           <View style={styles.cardContent}>
@@ -77,7 +85,8 @@ export default function ExpandedMenu({
               </View>
             </View>
             <Text style={styles.cardDescription} numberOfLines={3}>
-              Giúp khách thanh toán tiền thuê nhà, Gạch nợ TỰ ĐỘNG khi khách chuyển khoản & hiện thị mã QR, chuyển khoản nhanh hơn.
+              Giúp khách thanh toán tiền thuê nhà, Gạch nợ TỰ ĐỘNG khi khách
+              chuyển khoản & hiện thị mã QR, chuyển khoản nhanh hơn.
             </Text>
           </View>
         </View>
@@ -90,7 +99,11 @@ export default function ExpandedMenu({
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             accessibilityLabel="Tìm hiểu thêm"
           >
-            <Ionicons name="help-circle-outline" size={18} color={Colors.primary} />
+            <Ionicons
+              name="help-circle-outline"
+              size={18}
+              color={Colors.primary}
+            />
             <Text style={styles.outlineBtnText}>Tìm hiểu thêm</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -125,8 +138,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.base,
   },
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     borderRadius: BorderRadius.xl,
     padding: Spacing.base,
@@ -139,8 +152,8 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.md,
   },
   cardContent: {
@@ -153,8 +166,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   cardTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginBottom: 4,
   },
@@ -184,19 +197,19 @@ const styles = StyleSheet.create({
     ...Shadows.sm,
   },
   bankCardTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     marginBottom: Spacing.base,
   },
   bankButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.md,
   },
   outlineBtn: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     paddingVertical: Spacing.md,
     borderWidth: 1.5,
@@ -210,9 +223,9 @@ const styles = StyleSheet.create({
   },
   filledBtn: {
     flex: 1.3,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     paddingVertical: Spacing.md,
     backgroundColor: Colors.primary,

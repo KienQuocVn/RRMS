@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -6,21 +6,16 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import {
-  Colors,
-  Spacing,
-  FontWeights,
-  Shadows,
-} from '@/constants/theme';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Colors, Spacing, FontWeights, Shadows } from "@/constants/theme";
 
 const GROUPS = [
   {
-    id: 'ground-floor',
-    name: 'Tầng trệt',
+    id: "ground-floor",
+    name: "Tầng trệt",
   },
 ];
 
@@ -30,9 +25,17 @@ export default function RoomGroupsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : Spacing.xl }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
+      <View
+        style={[
+          styles.header,
+          { paddingTop: Platform.OS === "ios" ? insets.top : Spacing.xl },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={24} color={Colors.textSuccess} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Gom nhóm</Text>
       </View>
@@ -61,7 +64,9 @@ export default function RoomGroupsScreen() {
         <Ionicons name="add" size={24} color={Colors.white} />
       </TouchableOpacity>
 
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 14) }]}>
+      <View
+        style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 14) }]}
+      >
         <Text style={styles.noteText}>
           Chú ý: Nhấp giữ sau đó kéo thả để sắp xếp thứ tự của nhóm
         </Text>
@@ -77,33 +82,33 @@ export default function RoomGroupsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EDF2F3',
+    backgroundColor: "#EDF2F3",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: "#E5E7EB",
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "#D1D5DB",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.sm,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: "#FAFAFA",
   },
   headerTitle: {
     fontSize: 18,
     lineHeight: 24,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
   },
   scrollView: {
     flex: 1,
@@ -114,8 +119,8 @@ const styles = StyleSheet.create({
     paddingBottom: 132,
   },
   groupCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     borderRadius: 16,
     paddingHorizontal: 16,
@@ -126,9 +131,9 @@ const styles = StyleSheet.create({
     width: 48,
     height: 64,
     borderRadius: 8,
-    backgroundColor: '#D1D3D4',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#D1D3D4",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
   },
   groupName: {
@@ -136,7 +141,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 24,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+    color: Colors.textSuccess,
   },
   editButton: {
     width: 44,
@@ -144,23 +149,23 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     borderWidth: 1,
     borderColor: Colors.black,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     right: 20,
     bottom: 118,
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#14B24B',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#14B24B",
+    alignItems: "center",
+    justifyContent: "center",
     ...Shadows.lg,
   },
   footer: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
@@ -171,15 +176,15 @@ const styles = StyleSheet.create({
   noteText: {
     fontSize: 13,
     lineHeight: 18,
-    color: '#EF6A34',
+    color: "#EF6A34",
     marginBottom: 12,
   },
   saveButton: {
-    backgroundColor: '#13AA47',
+    backgroundColor: "#13AA47",
     borderRadius: 12,
     paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   saveButtonText: {
     fontSize: 16,

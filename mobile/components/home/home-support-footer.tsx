@@ -3,11 +3,23 @@
  * Hiển thị hotline + Zalo ở cuối trang chủ
  */
 
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius } from '@/constants/theme';
-import { AppConstants } from '@/constants/theme';
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Linking,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+} from "@/constants/theme";
+import { AppConstants } from "@/constants/theme";
 
 export default function HomeSupportFooter() {
   const handleCallPress = () => {
@@ -39,7 +51,8 @@ export default function HomeSupportFooter() {
           <Text style={styles.zaloText}>Zalo</Text>
         </View>
         <Text style={styles.supportText}>
-          Chat/Gọi điện qua Zalo <Text style={styles.statusText}>(sẵn sàng)</Text>
+          Chat/Gọi điện qua Zalo{" "}
+          <Text style={styles.statusText}>(sẵn sàng)</Text>
         </Text>
       </TouchableOpacity>
     </View>
@@ -50,11 +63,11 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: Spacing.base,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing['4xl'],
+    paddingBottom: Spacing["4xl"],
   },
   headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: Spacing.base,
   },
   liveIndicator: {
@@ -75,8 +88,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   supportRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: Spacing.base,
     borderTopWidth: 1,
     borderTopColor: Colors.borderLight,
@@ -96,8 +109,8 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     backgroundColor: Colors.zaloBlue,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   zaloText: {
     color: Colors.white,

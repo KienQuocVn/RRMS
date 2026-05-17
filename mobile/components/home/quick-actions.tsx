@@ -3,10 +3,17 @@
  * Grid 3 cột x 2 hàng: Cọc giữ chỗ, Lập hợp đồng, Thanh lý, ...
  */
 
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
 
 interface QuickActionItem {
   id: string;
@@ -17,12 +24,43 @@ interface QuickActionItem {
 }
 
 const QUICK_ACTIONS: QuickActionItem[] = [
-  { id: 'deposit', icon: 'cash-outline', label: 'Cọc giữ chỗ', iconColor: '#4CAF50' },
-  { id: 'contract', icon: 'document-text-outline', label: 'Lập hợp đồng mới', badge: 5, iconColor: '#FF9800' },
-  { id: 'checkout', icon: 'log-out-outline', label: 'Thanh lý\n(Trả phòng)', iconColor: '#2196F3' },
-  { id: 'invoice', icon: 'receipt-outline', label: 'Lập hóa đơn', iconColor: '#9C27B0' },
-  { id: 'bill', icon: 'calculator-outline', label: 'Chốt & Lập\nhóa đơn', iconColor: '#FF5722' },
-  { id: 'collect', icon: 'wallet-outline', label: 'Hóa đơn\ncần thu tiền', iconColor: '#E91E63' },
+  {
+    id: "deposit",
+    icon: "cash-outline",
+    label: "Cọc giữ chỗ",
+    iconColor: Colors.success,
+  },
+  {
+    id: "contract",
+    icon: "document-text-outline",
+    label: "Lập hợp đồng mới",
+    badge: 5,
+    iconColor: "#FF9800",
+  },
+  {
+    id: "checkout",
+    icon: "log-out-outline",
+    label: "Thanh lý\n(Trả phòng)",
+    iconColor: "#2196F3",
+  },
+  {
+    id: "invoice",
+    icon: "receipt-outline",
+    label: "Lập hóa đơn",
+    iconColor: "#9C27B0",
+  },
+  {
+    id: "bill",
+    icon: "calculator-outline",
+    label: "Chốt & Lập\nhóa đơn",
+    iconColor: "#FF5722",
+  },
+  {
+    id: "collect",
+    icon: "wallet-outline",
+    label: "Hóa đơn\ncần thu tiền",
+    iconColor: "#E91E63",
+  },
 ];
 
 interface QuickActionsProps {
@@ -46,7 +84,12 @@ export default function QuickActions({ onItemPress }: QuickActionsProps) {
             activeOpacity={0.7}
           >
             {/* Icon container */}
-            <View style={[styles.iconWrap, { backgroundColor: `${item.iconColor}15` }]}>
+            <View
+              style={[
+                styles.iconWrap,
+                { backgroundColor: `${item.iconColor}15` },
+              ]}
+            >
               <Ionicons name={item.icon} size={28} color={item.iconColor} />
               {/* Badge */}
               {item.badge !== undefined && (
@@ -80,13 +123,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.base,
   },
   grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: Spacing.md,
   },
   gridItem: {
-    width: '30%',
-    alignItems: 'center',
+    width: "30%",
+    alignItems: "center",
     paddingVertical: Spacing.md,
     backgroundColor: Colors.white,
     borderRadius: BorderRadius.xl,
@@ -98,21 +141,21 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: Spacing.sm,
-    position: 'relative',
+    position: "relative",
   },
   badge: {
-    position: 'absolute',
+    position: "absolute",
     top: -4,
     right: -8,
     backgroundColor: Colors.error,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 4,
   },
   badgeText: {
@@ -124,7 +167,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     fontWeight: FontWeights.medium,
     color: Colors.textPrimary,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 16,
   },
 });

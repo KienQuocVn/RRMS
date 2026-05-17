@@ -84,6 +84,7 @@ export const Colors = {
   textPrimary: GRAY_900,
   textSecondary: GRAY_600,
   textDisabled: GRAY_400,
+  textSuccess: SUCCESS,
   textLink: PRIMARY,
   inputBackground: WHITE,
   inputBorder: GRAY_300,

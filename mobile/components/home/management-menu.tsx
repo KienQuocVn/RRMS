@@ -3,24 +3,31 @@
  * Grid 3 cột x 4 hàng: Quản lý phòng, hóa đơn, dịch vụ, hợp đồng, ...
  */
 
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
 
 /** Map menu id → route path */
 const MENU_ROUTES: Record<string, string> = {
-  rooms: '/rooms-list',
-  invoices: '/invoices-list',
-  services: '/services-settings',
-  contracts: '/contracts-list',
-  tenants: '/tenants-list',
-  assets: '/assets-list',
-  vehicles: '/vehicles-list',
-  'tenant-app': '/tenant-app-settings',
-  'invoice-settings': '/invoice-settings',
-  'motel-settings': '/motel-settings',
+  rooms: "/rooms-list",
+  invoices: "/invoices-list",
+  services: "/services-settings",
+  contracts: "/contracts-list",
+  tenants: "/tenants-list",
+  assets: "/assets-list",
+  vehicles: "/vehicles-list",
+  "tenant-app": "/tenant-app-settings",
+  "invoice-settings": "/invoice-settings",
+  "motel-settings": "/motel-settings",
 };
 
 interface MenuGridItem {
@@ -32,16 +39,67 @@ interface MenuGridItem {
 }
 
 const MENU_ITEMS: MenuGridItem[] = [
-  { id: 'rooms', icon: 'bed-outline', label: 'Quản lý\nphòng', badge: '0/5', iconColor: '#4CAF50' },
-  { id: 'invoices', icon: 'receipt-outline', label: 'Quản lý\nhóa đơn', iconColor: '#FF9800' },
-  { id: 'services', icon: 'construct-outline', label: 'Quản lý\ndịch vụ', iconColor: '#2196F3' },
-  { id: 'contracts', icon: 'document-text-outline', label: 'Quản lý\nhợp đồng', iconColor: '#9C27B0' },
-  { id: 'tenants', icon: 'people-outline', label: 'Quản lý\nkhách thuê', iconColor: '#00BCD4' },
-  { id: 'assets', icon: 'cube-outline', label: 'Quản lý\ntài sản', iconColor: '#795548' },
-  { id: 'vehicles', icon: 'car-outline', label: 'Danh sách\nxe', iconColor: '#607D8B' },
-  { id: 'tenant-app', icon: 'phone-portrait-outline', label: 'Cài đặt APP\nkhách thuê', iconColor: '#E91E63' },
-  { id: 'invoice-settings', icon: 'settings-outline', label: 'Cài đặt\nhóa đơn', iconColor: '#FF5722' },
-  { id: 'motel-settings', icon: 'home-outline', label: 'Cài đặt\nnhà trọ', iconColor: '#3F51B5' },
+  {
+    id: "rooms",
+    icon: "bed-outline",
+    label: "Quản lý\nphòng",
+    badge: "0/5",
+    iconColor: Colors.success,
+  },
+  {
+    id: "invoices",
+    icon: "receipt-outline",
+    label: "Quản lý\nhóa đơn",
+    iconColor: "#FF9800",
+  },
+  {
+    id: "services",
+    icon: "construct-outline",
+    label: "Quản lý\ndịch vụ",
+    iconColor: "#2196F3",
+  },
+  {
+    id: "contracts",
+    icon: "document-text-outline",
+    label: "Quản lý\nhợp đồng",
+    iconColor: "#9C27B0",
+  },
+  {
+    id: "tenants",
+    icon: "people-outline",
+    label: "Quản lý\nkhách thuê",
+    iconColor: "#00BCD4",
+  },
+  {
+    id: "assets",
+    icon: "cube-outline",
+    label: "Quản lý\ntài sản",
+    iconColor: "#795548",
+  },
+  {
+    id: "vehicles",
+    icon: "car-outline",
+    label: "Danh sách\nxe",
+    iconColor: "#607D8B",
+  },
+  {
+    id: "tenant-app",
+    icon: "phone-portrait-outline",
+    label: "Cài đặt APP\nkhách thuê",
+    iconColor: "#E91E63",
+  },
+  {
+    id: "invoice-settings",
+    icon: "settings-outline",
+    label: "Cài đặt\nhóa đơn",
+    iconColor: "#FF5722",
+  },
+  {
+    id: "motel-settings",
+    icon: "home-outline",
+    label: "Cài đặt\nnhà trọ",
+    iconColor: "#3F51B5",
+  },
 ];
 
 interface ManagementMenuProps {
@@ -75,9 +133,14 @@ export default function ManagementMenu({ onItemPress }: ManagementMenuProps) {
             onPress={() => handleItemPress(item.id)}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            accessibilityLabel={item.label.replace('\n', ' ')}
+            accessibilityLabel={item.label.replace("\n", " ")}
           >
-            <View style={[styles.iconWrap, { backgroundColor: `${item.iconColor}15` }]}>
+            <View
+              style={[
+                styles.iconWrap,
+                { backgroundColor: `${item.iconColor}15` },
+              ]}
+            >
               <Ionicons name={item.icon} size={28} color={item.iconColor} />
               {item.badge && (
                 <View style={styles.badge}>
@@ -110,13 +173,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.base,
   },
   grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: Spacing.md,
   },
   gridItem: {
-    width: '30%',
-    alignItems: 'center',
+    width: "30%",
+    alignItems: "center",
     paddingVertical: Spacing.md,
     backgroundColor: Colors.white,
     borderRadius: BorderRadius.xl,
@@ -128,21 +191,21 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: Spacing.sm,
-    position: 'relative',
+    position: "relative",
   },
   badge: {
-    position: 'absolute',
+    position: "absolute",
     top: -4,
     right: -10,
     backgroundColor: Colors.error,
     borderRadius: 10,
     minWidth: 24,
     height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 4,
   },
   badgeText: {
@@ -154,7 +217,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     fontWeight: FontWeights.medium,
     color: Colors.textPrimary,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 16,
   },
 });
