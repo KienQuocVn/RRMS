@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -176,7 +176,7 @@ function ModalEndContract({ toggleModal, modalOpen, roomId }) {
         <Alert severity="info" sx={{ mb: 4, '& .MuiAlert-icon': { color: '#20a9e7' } }}>
           <AlertTitle sx={{ fontWeight: 'bold' }}>Thông tin:</AlertTitle>
           <Box component="ul" sx={{ m: 0, pl: 2, '& li': { mb: 0.5 } }}>
-            <li>Kết thúc hợp đồng là hành động kết thúc khi khách muốn chuyển đi. Sau khi kết thúc bạn có thể "Lập hợp đồng" cho khách mới</li>
+            <li>Kết thúc hợp đồng là hành động kết thúc khi khách muốn chuyển đi. Sau khi kết thúc bạn có thể Lập hợp đồng cho khách mới</li>
             <li>Các thông tin như <b>Khách thuê, hợp đồng cũ</b> sẽ xóa bỏ để sẵn sàng cho hợp đồng mới.</li>
           </Box>
         </Alert>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -77,7 +77,7 @@ const AssetSelectModal = ({ open, onClose, room, allDevices = [] }) => {
     } else {
       await cancelRoomDevice(room.roomId, deviceId)
     }
-    
+
     // Refresh the list after action
     await fetchDeviceByRoom(room.roomId)
   }
@@ -88,14 +88,16 @@ const AssetSelectModal = ({ open, onClose, room, allDevices = [] }) => {
         <InventoryIcon />
         Thiết lập tài sản phòng &quot;{room?.name}&quot;
       </DialogTitle>
-      
+
       <DialogContent sx={{ mt: 2, bgcolor: '#f8f9fa', p: 3 }}>
         {allDevices.length > 0 ? (
           allDevices.map((item) => {
             const isAssigned = deviceByRoom.some((it) => it.motelDevice?.motel_device_id === item.motel_device_id)
-            
+
             return (
-              <Box key={item.motel_device_id} sx={{ bgcolor: 'white', p: 2, mb: 1, borderRadius: 1, border: '1px solid #e0e0e0' }}>
+              <Box
+                key={item.motel_device_id}
+                sx={{ bgcolor: 'white', p: 2, mb: 1, borderRadius: 1, border: '1px solid #e0e0e0' }}>
                 <Grid container alignItems="center">
                   <Grid item xs={7}>
                     <FormControlLabel
@@ -110,7 +112,14 @@ const AssetSelectModal = ({ open, onClose, room, allDevices = [] }) => {
                         <Box>
                           <Typography variant="subtitle2">{item.deviceName}</Typography>
                           <Typography variant="caption" color="text.secondary">
-                            Giá trị: {item.value} đ / {item.unit === 'CAI' ? 'Cái' : item.unit === 'CHIEC' ? 'Chiếc' : item.unit === 'BO' ? 'Bộ' : 'Cặp'}
+                            Giá trị: {item.value} đ /{' '}
+                            {item.unit === 'CAI'
+                              ? 'Cái'
+                              : item.unit === 'CHIEC'
+                                ? 'Chiếc'
+                                : item.unit === 'BO'
+                                  ? 'Bộ'
+                                  : 'Cặp'}
                           </Typography>
                         </Box>
                       }
@@ -118,13 +127,7 @@ const AssetSelectModal = ({ open, onClose, room, allDevices = [] }) => {
                   </Grid>
                   <Grid item xs={5} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
                     <Typography variant="body2">Số lượng:</Typography>
-                    <TextField
-                      size="small"
-                      type="number"
-                      value={1}
-                      disabled
-                      sx={{ width: 70 }}
-                    />
+                    <TextField size="small" type="number" value={1} disabled sx={{ width: 70 }} />
                   </Grid>
                 </Grid>
               </Box>
@@ -136,7 +139,7 @@ const AssetSelectModal = ({ open, onClose, room, allDevices = [] }) => {
           </Typography>
         )}
       </DialogContent>
-      
+
       <DialogActions sx={{ p: 3, pt: 2, bgcolor: '#f8f9fa' }}>
         <Button onClick={onClose} variant="outlined" color="inherit">
           Đóng

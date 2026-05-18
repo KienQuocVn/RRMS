@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 import { Route } from 'react-router-dom'
 
-const Detail = lazy(() => import('../pages/detail/Detail'))
+const Detail = lazy(() => import('../pages/roomDetail/Detail'))
 const Home = lazy(() => import('../pages/Home/Home'))
 const Chart = lazy(() => import('../pages/charts/Chart'))
 const Search = lazy(() => import('../pages/search/Search'))
@@ -21,8 +21,8 @@ const Recognition = lazy(() => import('../pages/ai/Recognition'))
 const FaceMatch = lazy(() => import('../pages/ai/FaceMatch'))
 const ImageComparison = lazy(() => import('../pages/ai/ImageComparison'))
 const PassportRecognition = lazy(() => import('../pages/ai/PassportRecognition'))
-const RatingHistory = lazy(() => import('../pages/RatingHistory/RatingHistory'))
-const NotFoundPage = lazy(() => import('../pages/notfoundpage/NotFoundPage.jsx'))
+const RatingHistory = lazy(() => import('../pages/ratingHistory/RatingHistory'))
+const NotFoundPage = lazy(() => import('../pages/notFoundPage/NotFoundPage.jsx'))
 
 const PublicRoutes = ({ auth }) => {
   const { username, setUsername, setAvatar, setIsAdmin } = auth

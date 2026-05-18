@@ -17,9 +17,6 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import { useState } from 'react'
 
 const PRIMARY = '#20a9e7'
-const PRIMARY_DARK = '#1792ca'
-const GREEN = '#43a047'
-const GREEN_DARK = '#388e3c'
 const AMBER = '#f59e0b'
 const AMBER_DARK = '#d97706'
 

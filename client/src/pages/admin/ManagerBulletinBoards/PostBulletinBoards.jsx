@@ -5,7 +5,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import PersonIcon from '@mui/icons-material/Person'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import Post from './Post'
-import Customer from './Customer'
+import Customer from './potentialCustomers'
 
 const PostRooms = ({ setIsAdmin }) => {
   const [tabIndex, setTabIndex] = useState('1')
@@ -21,7 +21,7 @@ const PostRooms = ({ setIsAdmin }) => {
     <Box>
       <NavAdmin />
 
-      <Container sx={{ my: 2 }}>
+      <Box sx={{margin:'30px'}}>
         <Box sx={{ my: 2, display: 'flex', alignItems: 'center' }}>
           <Box sx={{ bgcolor: '#20a9e7', width: '4px', height: '45px', mr: 1, borderRadius: '4px' }}></Box>
           <Box>
@@ -63,7 +63,7 @@ const PostRooms = ({ setIsAdmin }) => {
             </TabPanel>
           </TabContext>
         </Paper>
-      </Container>
+      </Box>
     </Box>
   )
 }

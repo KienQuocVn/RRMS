@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   AppBar,
   Toolbar,
@@ -31,18 +31,18 @@ import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import { ReactTabulator } from 'react-tabulator'
 import axios from 'axios'
 import Swal from 'sweetalert2'
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx'
 
 const IncomeSummary = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const [modalOpen, setModalOpen] = useState(false)
   const userData = JSON.parse(sessionStorage.getItem('user')) // Lấy dữ liệu người dùng từ session storage
   const token = userData?.token // Lấy token
-  const username = userData?.username; // **** Lấy tên tài khoản từ sessionStorage
+  const username = userData?.username // **** Lấy tên tài khoản từ sessionStorage
   const [transactionType, setTransactionType] = useState('receipt') // 'receipt' or 'expense'
   const [payments, setPayments] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
-  const [error, setError] = useState(null)
+  const [setError] = useState(null)
   const [summary, setSummary] = useState({
     totalIncome: 0,
     totalExpense: 0,
@@ -51,34 +51,37 @@ const IncomeSummary = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
 
   useEffect(() => {
     setIsAdmin(true)
-    fetchData();
+    fetchData()
   }, [setIsAdmin])
 
   // **** Hàm để lấy dữ liệu giao dịch, phương thức thanh toán và tóm tắt
   const fetchData = async () => {
     try {
-      console.log("Tên tài khoản:", username); // **** In ra tên tài khoản
+      console.log('Tên tài khoản:', username) // **** In ra tên tài khoản
 
       const [transactionsResponse, paymentsResponse, summaryResponse] = await Promise.all([
         axios.get(`${env.API_URL}/api/v1/transactions/${username}`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${env.API_URL}/api/v1/payment/list_payment`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${env.API_URL}/api/v1/transactions/summary`, { headers: { Authorization: `Bearer ${token}` }, params: { username } }),
-      ]);
+        axios.get(`${env.API_URL}/api/v1/transactions/summary`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { username }
+        })
+      ])
 
       // **** Cập nhật trạng thái với dữ liệu lấy được
-      setTransactions(transactionsResponse.data);
-      setPayments(paymentsResponse.data);
-      setSummary(summaryResponse.data);
- 
-      console.log(paymentsResponse.data);
-console.log(typeof transactions);
+      setTransactions(transactionsResponse.data)
+      setPayments(paymentsResponse.data)
+      setSummary(summaryResponse.data)
+
+      console.log(paymentsResponse.data)
+      console.log(typeof transactions)
     } catch (err) {
-      setError(err.message);
-      console.error('Có lỗi xảy ra khi lấy dữ liệu:', err);
+      setError(err.message)
+      console.error('Có lỗi xảy ra khi lấy dữ liệu:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // **** Hàm xóa giao dịch
   const deleteTransaction = async (id) => {
@@ -88,53 +91,55 @@ console.log(typeof transactions);
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Có',
-      cancelButtonText: 'Hủy',
-    });
+      cancelButtonText: 'Hủy'
+    })
 
     if (isConfirmed) {
       try {
-        await axios.delete(`${env.API_URL}/api/v1/transactions/${id}`, { headers: { Authorization: `Bearer ${token}` }, params: { username } });
-        Swal.fire('Thành công!', 'Giao dịch đã được xóa.', 'success');
-        fetchData(); // **** Cập nhật lại dữ liệu sau khi xóa
+        await axios.delete(`${env.API_URL}/api/v1/transactions/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { username }
+        })
+        Swal.fire('Thành công!', 'Giao dịch đã được xóa.', 'success')
+        fetchData() // **** Cập nhật lại dữ liệu sau khi xóa
       } catch (error) {
-        console.error('Có lỗi xảy ra khi xóa giao dịch:', error);
-        Swal.fire('Lỗi!', 'Có lỗi xảy ra khi xóa giao dịch.', 'error');
+        console.error('Có lỗi xảy ra khi xóa giao dịch:', error)
+        Swal.fire('Lỗi!', 'Có lỗi xảy ra khi xóa giao dịch.', 'error')
       }
     }
-  };
+  }
 
   // **** Mở modal để thêm giao dịch
   const handleOpenModal = (type) => {
-    setTransactionType(type);
-    setModalOpen(true);
-  };
+    setTransactionType(type)
+    setModalOpen(true)
+  }
 
-  const handleCloseModal = () => setModalOpen(false);
+  const handleCloseModal = () => setModalOpen(false)
 
   // **** Hàm xử lý nộp giao dịch
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const dateInput = formData.get('date');
-    const date = new Date(dateInput); // Lấy ngày từ form
-    const today = new Date(); // Ngày hiện tại
+    e.preventDefault()
+    const formData = new FormData(e.target)
+    const dateInput = formData.get('date')
+    const date = new Date(dateInput) // Lấy ngày từ form
+    const today = new Date() // Ngày hiện tại
 
     // Đặt thời gian của ngày hiện tại về 00:00:00 để so sánh chỉ ngày
-
 
     // Kiểm tra xem ngày lập phiếu có lớn hơn ngày hiện tại không
     if (date > today) {
       // Nếu lớn hơn, đặt ngày lập phiếu bằng ngày hiện tại
-      Swal.fire('Thông báo', 'Ngày lập phiếu đã được đặt về ngày hiện tại.', 'info');
+      Swal.fire('Thông báo', 'Ngày lập phiếu đã được đặt về ngày hiện tại.', 'info')
       // Đặt ngày về ngày hiện tại
-      e.target.date.value = today.toISOString().split('T')[0];
-      return;
+      e.target.date.value = today.toISOString().split('T')[0]
+      return
     }
 
-    const amount = parseFloat(formData.get('amount'));
+    const amount = parseFloat(formData.get('amount'))
     if (isNaN(amount) || amount <= 0) {
-      Swal.fire('Lỗi!', 'Số tiền không hợp lệ.', 'error');
-      return;
+      Swal.fire('Lỗi!', 'Số tiền không hợp lệ.', 'error')
+      return
     }
 
     const paymentMethod = formData.get('paymentMethod')
@@ -151,7 +156,7 @@ console.log(typeof transactions);
       payerName: formData.get('payer'),
       paymentDescription: formData.get('description'),
       category: formData.get('category'),
-      transactionDate: date.toISOString().split('T')[0],
+      transactionDate: date.toISOString().split('T')[0]
     }
 
     // Hiển thị thông báo xác nhận trước khi gửi
@@ -176,14 +181,13 @@ console.log(typeof transactions);
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          params: { username },
-
+          params: { username }
         })
-        console.log(data);
+        console.log(data)
         // Cập nhật danh sách giao dịch
         setTransactions((prev) => [...prev, response.data])
 
-        await fetchData();
+        await fetchData()
         // Gọi lại fetchTransactions để đảm bảo dữ liệu mới
 
         handleCloseModal()
@@ -204,7 +208,7 @@ console.log(typeof transactions);
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
   }
-  window.deleteTransaction = deleteTransaction;
+  window.deleteTransaction = deleteTransaction
   // Cấu hình các cột của bảng
   const columns = [
     {
@@ -272,49 +276,49 @@ console.log(typeof transactions);
 
   //Xuất excel
   const downloadExcel = () => {
-    const data = transactions.map(transaction => ({
+    const data = transactions.map((transaction) => ({
       'Danh mục thu chi': transaction.category,
       'Số Tiền': transaction.amount,
       'Tên Người Thanh Toán': transaction.payerName,
       'Nội Dung Thanh Toán': transaction.paymentDescription,
       'Ngày lập phiếu': transaction.transactionDate,
-      'Loại Giao Dịch': transaction.transactionType ? 'Thu' : 'Chi',
-    }));
+      'Loại Giao Dịch': transaction.transactionType ? 'Thu' : 'Chi'
+    }))
 
     // Thêm thông tin tổng quan vào mảng dữ liệu
     const summaryData = [
       {
         'Danh mục thu chi': 'Tổng khoản thu (tiền vào)',
-        'Số Tiền': summary.totalIncome,
+        'Số Tiền': summary.totalIncome
       },
       {
         'Danh mục thu chi': 'Tổng khoản chi (tiền ra)',
-        'Số Tiền': summary.totalExpense,
+        'Số Tiền': summary.totalExpense
       },
       {
         'Danh mục thu chi': 'Lợi nhuận',
-        'Số Tiền': summary.profit,
-      },
-    ];
+        'Số Tiền': summary.profit
+      }
+    ]
 
     // Kết hợp dữ liệu giao dịch và dữ liệu tổng quan
-    const combinedData = [...data, ...summaryData];
+    const combinedData = [...data, ...summaryData]
 
-    const worksheet = XLSX.utils.json_to_sheet(combinedData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Báo cáo thu chi');
+    const worksheet = XLSX.utils.json_to_sheet(combinedData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Báo cáo thu chi')
 
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const file = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+    const file = new Blob([excelBuffer], { type: 'application/octet-stream' })
 
-    const fileURL = URL.createObjectURL(file);
-    const link = document.createElement('a');
-    link.href = fileURL;
-    link.setAttribute('download', 'transactions.xlsx');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+    const fileURL = URL.createObjectURL(file)
+    const link = document.createElement('a')
+    link.href = fileURL
+    link.setAttribute('download', 'transactions.xlsx')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   const handlePrint = () => {
     const printContent = `
@@ -344,7 +348,9 @@ console.log(typeof transactions);
               </tr>
             </thead>
             <tbody>
-              ${transactions.map(transaction => `
+              ${transactions
+                .map(
+                  (transaction) => `
                 <tr>
                   <td>${transaction.category}</td>
                   <td>${formatCurrency(transaction.amount)}</td>
@@ -353,7 +359,9 @@ console.log(typeof transactions);
                   <td>${transaction.transactionDate}</td>
                   <td>${transaction.transactionType ? 'Thu' : 'Chi'}</td>
                 </tr>
-              `).join('')}
+              `
+                )
+                .join('')}
             </tbody>
           </table>
           <div class="summary">
@@ -369,24 +377,24 @@ console.log(typeof transactions);
           </div>
         </body>
       </html>
-    `;
+    `
 
-    const WinPrint = window.open('', '', 'width=900,height=650');
-    WinPrint.document.write(printContent);
-    WinPrint.document.close();
-    WinPrint.focus();
-    WinPrint.print();
-    WinPrint.close();
-  };
-  let totalIncomeReceipts ;
-  let totalExpenseReceipts;
-if(transactions.length > 0){
- totalIncomeReceipts = transactions.filter(transaction => transaction.transactionType).length;
-   totalExpenseReceipts = transactions.filter(transaction => !transaction.transactionType).length;
+    const WinPrint = window.open('', '', 'width=900,height=650')
+    WinPrint.document.write(printContent)
+    WinPrint.document.close()
+    WinPrint.focus()
+    WinPrint.print()
+    WinPrint.close()
+  }
+  let totalIncomeReceipts
+  let totalExpenseReceipts
+  if (transactions.length > 0) {
+    totalIncomeReceipts = transactions.filter((transaction) => transaction.transactionType).length
+    totalExpenseReceipts = transactions.filter((transaction) => !transaction.transactionType).length
 
-  console.log(totalIncomeReceipts);
-  console.log(totalExpenseReceipts);
-}
+    console.log(totalIncomeReceipts)
+    console.log(totalExpenseReceipts)
+  }
   return (
     <div>
       <NavAdmin

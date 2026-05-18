@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -8,6 +8,7 @@ import {
   Grid,
   Typography,
   Box,
+  Avatar,
   IconButton,
   TextField,
   MenuItem,
@@ -43,23 +44,27 @@ const AddVehicleModal = ({ open, onClose, rooms, motelId, onSuccess }) => {
       }
       try {
         const contractsResponse = await getContractByIdRoom(selectedRoomId)
-        const contracts = Array.isArray(contractsResponse) ? contractsResponse : (contractsResponse ? [contractsResponse] : [])
+        const contracts = Array.isArray(contractsResponse)
+          ? contractsResponse
+          : contractsResponse
+            ? [contractsResponse]
+            : []
         // Lọc các hợp đồng ACTIVE và lấy thông tin tenant
-        const activeContracts = contracts.filter(c => c.status === 'ACTIVE')
-        const roomTenants = activeContracts.map(c => c.tenant).filter(Boolean)
+        const activeContracts = contracts.filter((c) => c.status === 'ACTIVE')
+        const roomTenants = activeContracts.map((c) => c.tenant).filter(Boolean)
         setTenants(roomTenants)
-        
+
         // Reset tenant đã chọn nếu không có trong danh sách mới
         if (roomTenants.length > 0) {
-          setFormData(prev => ({ ...prev, tenantId: roomTenants[0].tenantId }))
+          setFormData((prev) => ({ ...prev, tenantId: roomTenants[0].tenantId }))
         } else {
-          setFormData(prev => ({ ...prev, tenantId: '' }))
+          setFormData((prev) => ({ ...prev, tenantId: '' }))
         }
       } catch (error) {
         console.error('Lỗi lấy khách thuê:', error)
       }
     }
-    
+
     fetchTenants()
   }, [selectedRoomId])
 
@@ -71,7 +76,7 @@ const AddVehicleModal = ({ open, onClose, rooms, motelId, onSuccess }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async () => {
@@ -109,20 +114,24 @@ const AddVehicleModal = ({ open, onClose, rooms, motelId, onSuccess }) => {
           <Box sx={{ bgcolor: '#e8f5e9', p: 1, borderRadius: '50%', mr: 1, display: 'flex' }}>
             <AddIcon sx={{ color: Colors.info }} fontSize="small" />
           </Box>
-          <Typography variant="h6" fontWeight="bold">Thêm thông tin xe cho giường</Typography>
+          <Typography variant="h6" fontWeight="bold">
+            Thêm thông tin xe cho giường
+          </Typography>
         </Box>
         <IconButton onClick={handleClose}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      
+
       <DialogContent dividers sx={{ bgcolor: '#fbfbfb' }}>
         <Grid container spacing={3}>
           {/* Cột trái: Chọn giường (phòng) */}
           <Grid item xs={12} md={6}>
             <Box sx={{ mb: 2 }}>
               <Box sx={{ borderLeft: `3px solid ${Colors.info}`, pl: 1, mb: 1 }}>
-                <Typography variant="subtitle2" fontWeight="bold">Chọn giường sử dụng xe</Typography>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Chọn giường sử dụng xe
+                </Typography>
               </Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontStyle: 'italic' }}>
                 Danh sách giường để thêm xe
@@ -131,10 +140,10 @@ const AddVehicleModal = ({ open, onClose, rooms, motelId, onSuccess }) => {
 
             <Box sx={{ maxHeight: 400, overflowY: 'auto', pr: 1 }}>
               {rooms.map((room) => (
-                <Box 
+                <Box
                   key={room.roomId}
                   onClick={() => setSelectedRoomId(room.roomId)}
-                  sx={{ 
+                  sx={{
                     border: `1px solid ${selectedRoomId === room.roomId ? Colors.info : '#e0e0e0'}`,
                     borderRadius: 2,
                     p: 2,
@@ -146,15 +155,27 @@ const AddVehicleModal = ({ open, onClose, rooms, motelId, onSuccess }) => {
                       borderColor: Colors.info,
                       boxShadow: '0 2px 8px rgba(76, 175, 80, 0.1)'
                     }
-                  }}
-                >
+                  }}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Avatar sx={{ bgcolor: '#e0e0e0', mr: 2 }}>
-                      <Box component="span" sx={{ fontSize: 20 }}>🏪</Box>
+                      <Box component="span" sx={{ fontSize: 20 }}>
+                        🏪
+                      </Box>
                     </Avatar>
                     <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="subtitle2" fontWeight="bold">{room.name_room || room.name}</Typography>
-                      <Box sx={{ display: 'inline-block', bgcolor: Colors.info, color: 'white', px: 1, borderRadius: 1, fontSize: 10, mb: 0.5 }}>
+                      <Typography variant="subtitle2" fontWeight="bold">
+                        {room.name_room || room.name}
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: 'inline-block',
+                          bgcolor: Colors.info,
+                          color: 'white',
+                          px: 1,
+                          borderRadius: 1,
+                          fontSize: 10,
+                          mb: 0.5
+                        }}>
                         Đang ở
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
@@ -176,7 +197,9 @@ const AddVehicleModal = ({ open, onClose, rooms, motelId, onSuccess }) => {
           <Grid item xs={12} md={6}>
             <Box sx={{ mb: 3 }}>
               <Box sx={{ borderLeft: `3px solid ${Colors.info}`, pl: 1, mb: 1 }}>
-                <Typography variant="subtitle2" fontWeight="bold">Chọn khách thuê</Typography>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Chọn khách thuê
+                </Typography>
               </Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontStyle: 'italic' }}>
                 Chọn khách thuê đang sử dụng xe này
@@ -187,10 +210,11 @@ const AddVehicleModal = ({ open, onClose, rooms, motelId, onSuccess }) => {
                   value={formData.tenantId}
                   onChange={handleChange}
                   displayEmpty
-                  disabled={!selectedRoomId || tenants.length === 0}
-                >
-                  <MenuItem value="" disabled>-- Chọn khách thuê --</MenuItem>
-                  {tenants.map(tenant => (
+                  disabled={!selectedRoomId || tenants.length === 0}>
+                  <MenuItem value="" disabled>
+                    -- Chọn khách thuê --
+                  </MenuItem>
+                  {tenants.map((tenant) => (
                     <MenuItem key={tenant.tenantId} value={tenant.tenantId}>
                       {tenant.fullName}
                     </MenuItem>
@@ -201,27 +225,29 @@ const AddVehicleModal = ({ open, onClose, rooms, motelId, onSuccess }) => {
 
             <Box sx={{ mb: 3 }}>
               <Box sx={{ borderLeft: `3px solid ${Colors.info}`, pl: 1, mb: 1 }}>
-                <Typography variant="subtitle2" fontWeight="bold">Thông tin</Typography>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Thông tin
+                </Typography>
               </Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontStyle: 'italic' }}>
                 Thông tin xe
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <TextField 
-                    fullWidth 
-                    size="small" 
-                    label="Tên loại xe *" 
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Tên loại xe *"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
                   />
                 </Grid>
                 <Grid item xs={6}>
-                  <TextField 
-                    fullWidth 
-                    size="small" 
-                    label="Biển số xe *" 
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Biển số xe *"
                     name="number"
                     value={formData.number}
                     onChange={handleChange}
@@ -232,17 +258,19 @@ const AddVehicleModal = ({ open, onClose, rooms, motelId, onSuccess }) => {
 
             <Box>
               <Box sx={{ borderLeft: `3px solid ${Colors.info}`, pl: 1, mb: 1 }}>
-                <Typography variant="subtitle2" fontWeight="bold">Hình ảnh</Typography>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Hình ảnh
+                </Typography>
               </Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontStyle: 'italic' }}>
                 Hình ảnh
               </Typography>
-              <Box 
-                sx={{ 
-                  bgcolor: '#e3f2fd', 
-                  border: '1px dashed #90caf9', 
-                  borderRadius: 2, 
-                  p: 3, 
+              <Box
+                sx={{
+                  bgcolor: '#e3f2fd',
+                  border: '1px dashed #90caf9',
+                  borderRadius: 2,
+                  p: 3,
                   textAlign: 'center',
                   cursor: 'pointer',
                   '&:hover': { bgcolor: '#bbdefb' }
@@ -251,19 +279,18 @@ const AddVehicleModal = ({ open, onClose, rooms, motelId, onSuccess }) => {
                   // TODO: Thay bằng file input thật
                   const fakeImageUrl = prompt('Nhập URL hình ảnh (tạm thời):')
                   if (fakeImageUrl) {
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      image: prev.image ? `${prev.image},${fakeImageUrl}` : fakeImageUrl 
+                    setFormData((prev) => ({
+                      ...prev,
+                      image: prev.image ? `${prev.image},${fakeImageUrl}` : fakeImageUrl
                     }))
                     toast.success('Đã thêm URL hình ảnh')
                   }
-                }}
-              >
+                }}>
                 <CloudUploadIcon color="info" fontSize="large" sx={{ mb: 1 }} />
                 <Typography variant="body2" color="primary" sx={{ textDecoration: 'underline' }}>
                   Chọn tối đa 2 ảnh
                 </Typography>
-                
+
                 {/* Hiển thị số ảnh đã upload */}
                 {formData.image && (
                   <Typography variant="caption" color="text.secondary" display="block" mt={1}>
@@ -277,16 +304,13 @@ const AddVehicleModal = ({ open, onClose, rooms, motelId, onSuccess }) => {
       </DialogContent>
 
       <DialogActions sx={{ p: 2, bgcolor: '#fbfbfb' }}>
-        <Button onClick={handleClose} variant="contained" sx={{ bgcolor: '#757575', '&:hover': { bgcolor: '#616161' } }}>
+        <Button
+          onClick={handleClose}
+          variant="contained"
+          sx={{ bgcolor: '#757575', '&:hover': { bgcolor: '#616161' } }}>
           Đóng
         </Button>
-        <Button 
-          onClick={handleSubmit} 
-          variant="contained" 
-          color="info" 
-          disabled={loading}
-          startIcon={<AddIcon />}
-        >
+        <Button onClick={handleSubmit} variant="contained" color="info" disabled={loading} startIcon={<AddIcon />}>
           {loading ? 'Đang thêm...' : 'Thêm thông tin xe'}
         </Button>
       </DialogActions>

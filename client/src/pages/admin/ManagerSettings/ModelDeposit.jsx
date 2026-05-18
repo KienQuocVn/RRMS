@@ -8,6 +8,8 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import Swal from 'sweetalert2'
 import { createContractTemplate, getContractTemplateById, updateContractTemplate } from '~/apis/contractTemplateAPI'
 
+import { env } from '~/configs/environment'
+
 const ModelDeposit = ({ motel, username, templatecontractRouteId, fetchDataTemlateContract, onClose }) => {
   const editorRef = useRef()
   const [templatecontracts, setTemplatecontracts] = useState({
@@ -146,7 +148,7 @@ const ModelDeposit = ({ motel, username, templatecontractRouteId, fetchDataTemla
             {templatecontractRouteId === 'Create' ? 'Tạo mẫu hợp đồng mới' : 'Chỉnh sửa mẫu hợp đồng'}
           </Typography>
         </Box>
-        <IconButton onClick={onClose} size="small">
+        <IconButton onClick={() => onClose && onClose()} size="small">
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -207,7 +209,7 @@ const ModelDeposit = ({ motel, username, templatecontractRouteId, fetchDataTemla
         </Grid>
 
         <Editor
-          apiKey="legdn1gs97iq5degej4m47m6w21lvrl8gl8r4gmdbrfkc8eo"
+          apiKey={env.TINY_API_KEY}
           onEditorChange={(evt, editor) => {
             editorRef.current = editor
           }}
@@ -235,7 +237,7 @@ const ModelDeposit = ({ motel, username, templatecontractRouteId, fetchDataTemla
       </DialogContent>
 
       <DialogActions sx={{ p: 2, borderTop: '1px solid #eee' }}>
-        <Button onClick={onClose} variant="outlined" color="inherit" sx={{ mr: 1 }}>
+        <Button onClick={() => onClose && onClose()} variant="outlined" color="inherit" sx={{ mr: 1 }}>
           Đóng
         </Button>
         <Button onClick={onSaveTemplate} variant="contained" color="primary">

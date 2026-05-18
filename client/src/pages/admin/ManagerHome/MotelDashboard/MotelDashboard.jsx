@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Box, Typography, CircularProgress, Button } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
@@ -42,7 +42,7 @@ const MotelDashboard = ({ Motel }) => {
 
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)
-  
+
   // Data for Modals
   const [selectedRoom, setSelectedRoom] = useState(null)
   const [motelServices, setMotelServices] = useState([])
@@ -95,11 +95,11 @@ const MotelDashboard = ({ Motel }) => {
     { id: 'moveinDate', label: 'Ngày vào ở', visible: true },
     { id: 'duration', label: 'Thời hạn hợp đồng', visible: true },
     { id: 'status', label: 'Tình trạng', visible: true },
-    { id: 'finance', label: 'Tài chính', visible: true },
+    { id: 'finance', label: 'Tài chính', visible: true }
   ])
 
   const handleToggleColumn = (colId) => {
-    setColumns(prev => prev.map(col => col.id === colId ? { ...col, visible: !col.visible } : col))
+    setColumns((prev) => prev.map((col) => (col.id === colId ? { ...col, visible: !col.visible } : col)))
   }
 
   useEffect(() => {
@@ -111,7 +111,7 @@ const MotelDashboard = ({ Motel }) => {
   }, [activeMotelId])
 
   const toggleModal = (modalName, isOpen = true) => {
-    setModals(prev => ({ ...prev, [modalName]: isOpen }))
+    setModals((prev) => ({ ...prev, [modalName]: isOpen }))
   }
 
   const fetchData = async () => {
@@ -151,11 +151,11 @@ const MotelDashboard = ({ Motel }) => {
       // Fetch Contract
       const contractRes = await getContractByIdRoom2(room.roomId)
       setContract(contractRes || {})
-      
+
       // Fetch Services
       const servicesRes = await getServiceRoombyRoomId(room.roomId)
       if (servicesRes && Array.isArray(servicesRes)) {
-        const mapped = servicesRes.map(s => ({
+        const mapped = servicesRes.map((s) => ({
           ...s,
           isSelected: true,
           quantity: s.quantity || 1,
@@ -169,7 +169,6 @@ const MotelDashboard = ({ Motel }) => {
       // Fetch Devices
       const devicesRes = await getAllDeviceByRomId(room.roomId)
       setDeviceDetails(devicesRes?.result || [])
-
     } catch (error) {
       console.error('Error prefetching room data', error)
     }
@@ -177,8 +176,11 @@ const MotelDashboard = ({ Motel }) => {
 
   const handleDeleteRoom = async (roomId) => {
     const result = await Swal.fire({
-      title: 'Xóa phòng?', text: 'Không thể hoàn tác!', icon: 'warning',
-      showCancelButton: true, confirmButtonText: 'Xóa'
+      title: 'Xóa phòng?',
+      text: 'Không thể hoàn tác!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Xóa'
     })
     if (result.isConfirmed) {
       try {
@@ -193,8 +195,11 @@ const MotelDashboard = ({ Motel }) => {
 
   const handleDeleteReserve = async (reserveId) => {
     const result = await Swal.fire({
-      title: 'Hủy cọc?', text: 'Không thể hoàn tác!', icon: 'warning',
-      showCancelButton: true, confirmButtonText: 'Hủy cọc'
+      title: 'Hủy cọc?',
+      text: 'Không thể hoàn tác!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Hủy cọc'
     })
     if (result.isConfirmed) {
       try {
@@ -269,29 +274,29 @@ const MotelDashboard = ({ Motel }) => {
 
   // Calculate Counts
   const counts = {
-    active: rooms.filter(r => r.latestContract?.status === 'ACTIVE').length,
-    empty: rooms.filter(r => {
-      const s = r.latestContract?.status; 
-      const rs = r.reserveAPlace?.status; 
-      return !s && !rs;
+    active: rooms.filter((r) => r.latestContract?.status === 'ACTIVE').length,
+    empty: rooms.filter((r) => {
+      const s = r.latestContract?.status
+      const rs = r.reserveAPlace?.status
+      return !s && !rs
     }).length,
-    reportEnd: rooms.filter(r => r.latestContract?.status === 'ReportEnd').length,
-    expire: rooms.filter(r => r.latestContract?.status === 'IATExpire').length,
-    overdue: rooms.filter(r => false).length, // Placeholder if no overdue logic available
-    stake: rooms.filter(r => r.reserveAPlace?.status === 'ACTIVE').length,
-    debt: rooms.filter(r => (r.debt || 0) > 0).length,
+    reportEnd: rooms.filter((r) => r.latestContract?.status === 'ReportEnd').length,
+    expire: rooms.filter((r) => r.latestContract?.status === 'IATExpire').length,
+    overdue: rooms.filter((r) => false).length, // Placeholder if no overdue logic available
+    stake: rooms.filter((r) => r.reserveAPlace?.status === 'ACTIVE').length,
+    debt: rooms.filter((r) => (r.debt || 0) > 0).length
   }
 
-  const filteredRooms = rooms.filter(room => {
+  const filteredRooms = rooms.filter((room) => {
     if (searchTerm && !room.name.toLowerCase().includes(searchTerm.toLowerCase())) return false
-    
+
     const status = room.latestContract?.status
     const reserveStatus = room.reserveAPlace?.status
     const isRoomEmpty = !status && !reserveStatus
-    
+
     // If no filters selected, show all
     if (!Object.values(filters).some(Boolean)) return true
-    
+
     if (filters.isEmpty && isRoomEmpty) return true
     if (filters.isActive && status === 'ACTIVE') return true
     if (filters.isStake && reserveStatus === 'ACTIVE') return true
@@ -299,17 +304,17 @@ const MotelDashboard = ({ Motel }) => {
     if (filters.isReportEnd && status === 'ReportEnd') return true
     if (filters.isDebt && (room.debt || 0) > 0) return true
     // Overdue not strictly defined in old code, mocking for now
-    
+
     return false
   })
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, minHeight: 'calc(100vh - 80px)' }}>
       <MotelStatsCards rooms={rooms} loading={loading} />
-      <RoomFilterBar 
-        filters={filters} 
-        setFilters={setFilters} 
-        onSearchChange={setSearchTerm} 
+      <RoomFilterBar
+        filters={filters}
+        setFilters={setFilters}
+        onSearchChange={setSearchTerm}
         onExportExcel={() => alert('Export Excel requires original ExportToExcel component')}
         onAddRoom={() => toggleModal('addRoom')}
         counts={counts}
@@ -317,10 +322,10 @@ const MotelDashboard = ({ Motel }) => {
         onToggleColumn={handleToggleColumn}
       />
 
-      
-
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+          <CircularProgress />
+        </Box>
       ) : (
         <RoomListTable rooms={filteredRooms} columns={columns} onActionClick={handleActionClick} />
       )}
@@ -362,16 +367,58 @@ const MotelDashboard = ({ Motel }) => {
       />
 
       {/* --- OLD External Modals --- */}
-      <RentRoomModal modalOpen={modals.rentRoom} toggleModal={() => toggleModal('rentRoom', false)} roomId={selectedRoom?.roomId} fetchRooms={fetchData} />
-      <ModalChangeRoom modalOpen={modals.changeRoom} toggleModal={() => toggleModal('changeRoom', false)} roomId={selectedRoom?.roomId} />
-      <ModalEndContract modalOpen={modals.endContract} toggleModal={() => toggleModal('endContract', false)} roomId={selectedRoom?.roomId} />
-      <ModalExtendContract modalOpen={modals.extendContract} toggleModal={() => toggleModal('extendContract', false)} roomId={selectedRoom?.roomId} />
-      <ReserveAPlaceModal modalOpen={modals.reserveAPlace} toggleModal={() => toggleModal('reserveAPlace', false)} roomId={selectedRoom?.roomId} />
-      <ReserveAPlaceDetail modalOpen={modals.reserveAPlaceDetail} toggleModal={() => toggleModal('reserveAPlaceDetail', false)} roomId={selectedRoom?.roomId} />
-      <ModalCreateContract modalOpen={modals.createContract} toggleModal={() => toggleModal('createContract', false)} motelId={activeMotelId} roomId={selectedRoom?.roomId} />
-      <ModalReportContract modalOpen={modals.reportContract} toggleModal={() => toggleModal('reportContract', false)} roomId={selectedRoom?.roomId} />
-      <ModalCancelReportContract modalOpen={modals.cancelReportContract} toggleModal={() => toggleModal('cancelReportContract', false)} roomId={selectedRoom?.roomId} />
-      <ModalListCar modalOpen={modals.listCar} toggleModal={() => toggleModal('listCar', false)} roomId={selectedRoom?.roomId} />
+      <RentRoomModal
+        modalOpen={modals.rentRoom}
+        toggleModal={() => toggleModal('rentRoom', false)}
+        roomId={selectedRoom?.roomId}
+        fetchRooms={fetchData}
+      />
+      <ModalChangeRoom
+        modalOpen={modals.changeRoom}
+        toggleModal={() => toggleModal('changeRoom', false)}
+        roomId={selectedRoom?.roomId}
+      />
+      <ModalEndContract
+        modalOpen={modals.endContract}
+        toggleModal={() => toggleModal('endContract', false)}
+        roomId={selectedRoom?.roomId}
+      />
+      <ModalExtendContract
+        modalOpen={modals.extendContract}
+        toggleModal={() => toggleModal('extendContract', false)}
+        roomId={selectedRoom?.roomId}
+      />
+      <ReserveAPlaceModal
+        modalOpen={modals.reserveAPlace}
+        toggleModal={() => toggleModal('reserveAPlace', false)}
+        roomId={selectedRoom?.roomId}
+      />
+      <ReserveAPlaceDetail
+        modalOpen={modals.reserveAPlaceDetail}
+        toggleModal={() => toggleModal('reserveAPlaceDetail', false)}
+        roomId={selectedRoom?.roomId}
+      />
+      <ModalCreateContract
+        modalOpen={modals.createContract}
+        toggleModal={() => toggleModal('createContract', false)}
+        motelId={activeMotelId}
+        roomId={selectedRoom?.roomId}
+      />
+      <ModalReportContract
+        modalOpen={modals.reportContract}
+        toggleModal={() => toggleModal('reportContract', false)}
+        roomId={selectedRoom?.roomId}
+      />
+      <ModalCancelReportContract
+        modalOpen={modals.cancelReportContract}
+        toggleModal={() => toggleModal('cancelReportContract', false)}
+        roomId={selectedRoom?.roomId}
+      />
+      <ModalListCar
+        modalOpen={modals.listCar}
+        toggleModal={() => toggleModal('listCar', false)}
+        roomId={selectedRoom?.roomId}
+      />
     </Box>
   )
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
   Table,
   TableBody,
@@ -81,7 +81,9 @@ const VehicleRow = ({ vehicle, onRefresh }) => {
         {displayImage ? (
           <img src={displayImage} alt="xe" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }} />
         ) : (
-          <Typography variant="caption" color="text.secondary">Chưa có</Typography>
+          <Typography variant="caption" color="text.secondary">
+            Chưa có
+          </Typography>
         )}
       </TableCell>
       <TableCell sx={{ borderBottom: '1px solid #f0f0f0' }}>Xe máy</TableCell> {/* Có thể điều chỉnh dựa vào data */}
@@ -89,11 +91,7 @@ const VehicleRow = ({ vehicle, onRefresh }) => {
         <IconButton size="small" onClick={handleMenuClick}>
           <MoreVertIcon fontSize="small" />
         </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-        >
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
           <MenuItem onClick={handleMenuClose}>
             <ListItemIcon>
               <EditIcon fontSize="small" color="info" />
@@ -148,13 +146,15 @@ const RoomGroup = ({ room, vehicles, onRefresh }) => {
 
 const VehicleListTable = ({ vehicles, rooms, onRefresh }) => {
   // Nhóm xe theo roomId
-  const groupedVehicles = rooms.map(room => ({
-    ...room,
-    vehicles: vehicles.filter(v => v.roomId === room.roomId)
-  })).filter(g => g.vehicles.length > 0) // Chỉ hiển thị phòng có xe
+  const groupedVehicles = rooms
+    .map((room) => ({
+      ...room,
+      vehicles: vehicles.filter((v) => v.roomId === room.roomId)
+    }))
+    .filter((g) => g.vehicles.length > 0) // Chỉ hiển thị phòng có xe
 
   // Lấy danh sách xe chưa thuộc phòng nào (trường hợp data lỗi)
-  const orphanedVehicles = vehicles.filter(v => !rooms.some(r => r.roomId === v.roomId))
+  const orphanedVehicles = vehicles.filter((v) => !rooms.some((r) => r.roomId === v.roomId))
 
   return (
     <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
@@ -180,16 +180,12 @@ const VehicleListTable = ({ vehicles, rooms, onRefresh }) => {
             </TableRow>
           ) : (
             <>
-              {groupedVehicles.map(group => (
+              {groupedVehicles.map((group) => (
                 <RoomGroup key={group.roomId} room={group} vehicles={group.vehicles} onRefresh={onRefresh} />
               ))}
-              
+
               {orphanedVehicles.length > 0 && (
-                <RoomGroup 
-                  room={{ roomId: 'other', name: 'Khác' }} 
-                  vehicles={orphanedVehicles} 
-                  onRefresh={onRefresh} 
-                />
+                <RoomGroup room={{ roomId: 'other', name: 'Khác' }} vehicles={orphanedVehicles} onRefresh={onRefresh} />
               )}
             </>
           )}

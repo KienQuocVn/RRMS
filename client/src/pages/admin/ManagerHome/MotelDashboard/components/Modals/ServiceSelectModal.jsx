@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -83,10 +83,9 @@ const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onU
       }
 
       Swal.fire({ icon: 'success', title: 'Thông báo', text: 'Cập nhật dịch vụ phòng thành công!' })
-      
+
       if (onUpdateSuccess) onUpdateSuccess()
       onClose()
-
     } catch (error) {
       console.error('Error updating room services:', error)
       Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Cập nhật dịch vụ thất bại.' })
@@ -103,7 +102,7 @@ const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onU
         <InboxIcon />
         Chỉnh sửa dịch vụ sử dụng phòng &quot;{room?.name}&quot;
       </DialogTitle>
-      
+
       <DialogContent sx={{ mt: 2, bgcolor: '#f8f9fa', p: 3 }}>
         {roomServices.length > 0 ? (
           roomServices.map((rs, index) => (
@@ -136,7 +135,7 @@ const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onU
                   value={rs.quantity || 0}
                   onChange={(e) => handleQuantityChange(rs.service.motelServiceId, e.target.value)}
                   InputProps={{
-                    endAdornment: <InputAdornment position="end">{rs.service?.chargetype}</InputAdornment>,
+                    endAdornment: <InputAdornment position="end">{rs.service?.chargetype}</InputAdornment>
                   }}
                 />
               </Grid>
@@ -148,17 +147,12 @@ const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onU
           </Typography>
         )}
       </DialogContent>
-      
+
       <DialogActions sx={{ p: 3, pt: 2, bgcolor: '#f8f9fa' }}>
         <Button onClick={onClose} variant="outlined" color="inherit">
           Hủy bỏ
         </Button>
-        <Button 
-          onClick={handleApplyServices} 
-          variant="contained" 
-          color="primary"
-          disabled={loading}
-        >
+        <Button onClick={handleApplyServices} variant="contained" color="primary" disabled={loading}>
           {loading ? 'Đang cập nhật...' : 'Áp dụng dịch vụ'}
         </Button>
       </DialogActions>

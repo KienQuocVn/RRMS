@@ -9,7 +9,6 @@ import ContractFilters from './components/ContractFilters'
 import { Modal, Button, Form } from 'react-bootstrap'
 import { getPhuongXa, getQuanHuyen, getTinhThanh } from '~/apis/addressAPI'
 import {
-  getRoomByMotelIdWContract,
   getRoomByMotelIdYContract,
   getRoomById,
   getServiceRoombyRoomId,
@@ -742,18 +741,18 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
   }
 
   // Định dạng thêm "/1 người" vào cột countTenant
-  const tenantFormatter = (cell) => {
-    const countTenant = cell.getValue()
-    const svgiconuser = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" strokeLinecap="round" strokeLinejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`
-    if (countTenant !== null && countTenant !== undefined) {
-      return `${svgiconuser} ${countTenant} người`
-    }
-    if (countTenant === null && countTenant === 0) {
-      return `Không xác định`
-    }
+  // const tenantFormatter = (cell) => {
+  //   const countTenant = cell.getValue()
+  //   const svgiconuser = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" strokeLinecap="round" strokeLinejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`
+  //   if (countTenant !== null && countTenant !== undefined) {
+  //     return `${svgiconuser} ${countTenant} người`
+  //   }
+  //   if (countTenant === null && countTenant === 0) {
+  //     return `Không xác định`
+  //   }
 
-    return countTenant
-  }
+  //   return countTenant
+  // }
 
   // Hàm định dạng ngày
   const formatDate = (dateString) => {

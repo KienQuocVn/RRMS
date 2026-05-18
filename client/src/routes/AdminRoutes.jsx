@@ -2,7 +2,7 @@ import { lazy } from 'react'
 import { Route } from 'react-router-dom'
 import ProtectedRoute from '../components/ProtectedRoute'
 
-const AdminStatis = lazy(() => import('../pages/admin/statistical'))
+const AdminStatis = lazy(() => import('../pages/admin/ManagerOverallReport/overallReport'))
 const DetailRoom = lazy(() => import('../pages/admin/ManagerHome/DetailRoom/DetailRoom'))
 const DashboardIndex = lazy(() => import('../pages/admin/ManagerHome/DashboardIndex'))
 const ManagerMyAccount = lazy(() => import('../pages/admin/ManagerMyAccount/ManagerMyAccount'))
@@ -10,7 +10,7 @@ const ManagerCompanyAT = lazy(() => import('../pages/admin/ManagerCompanyAT/Mana
 const ManagerSettings = lazy(() => import('../pages/admin/ManagerSettings/ManagerSettings'))
 const AdminManagerGroup = lazy(() => import('../pages/admin/AdminManagerGroup'))
 const AdminManagerBoard = lazy(() => import('../pages/admin/AdminManageBoard'))
-const AdminManageBoker = lazy(() => import('../pages/admin/AdminManageBoker/AdminManageBoker'))
+const AdminManageBoker = lazy(() => import('../pages/admin/ManagerBroker/AdminManageBoker'))
 const PostRooms = lazy(() => import('../pages/admin/ManagerBulletinBoards/PostBulletinBoards'))
 const AdminManage = lazy(() => import('../pages/admin/AdminManage/AdminManage'))
 const RoomManagement = lazy(() => import('../pages/admin/AdminManage/RoomManagement'))

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Typography, Button, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';

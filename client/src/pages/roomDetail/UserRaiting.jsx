@@ -49,10 +49,10 @@ const UserRating = ({ roomId, username, setReview, review, refreshBulletinBoards
 
     try {
       await postBulletinBoardReview(payload);
-      toast.success('Danh gia thanh cong');
+      toast.success('Đánh giá thành công');
       refreshBulletinBoards();
     } catch (error) {
-      console.error('Loi khi dang binh luan:', error);
+      console.error('Lỗi khi đang bình luận:', error);
     }
   };
 

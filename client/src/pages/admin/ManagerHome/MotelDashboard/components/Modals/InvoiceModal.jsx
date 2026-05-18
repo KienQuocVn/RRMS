@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -69,7 +69,7 @@ const InvoiceModal = ({ open, onClose, room, contract, roomServices = [], device
           })),
         deviceDetails: deviceDetails
       }))
-      
+
       setAdditionItems([])
     }
   }, [open, contract, room, roomServices, deviceDetails])
@@ -105,10 +105,7 @@ const InvoiceModal = ({ open, onClose, room, contract, roomServices = [], device
 
   // Handle Additions (Cộng/Trừ tiền)
   const addNewItem = () => {
-    setAdditionItems([
-      ...additionItems,
-      { id: Date.now(), addition: 1, additionValue: '', additionReason: '' }
-    ])
+    setAdditionItems([...additionItems, { id: Date.now(), addition: 1, additionValue: '', additionReason: '' }])
   }
 
   const removeItem = (id) => {
@@ -130,12 +127,12 @@ const InvoiceModal = ({ open, onClose, room, contract, roomServices = [], device
   // Calculate Grand Total
   const calculateGrandTotal = () => {
     let total = parseFloat(invoiceData.price || 0)
-    
+
     // Add services
     invoiceData.serviceDetails.forEach((s) => {
       total += parseFloat(s.totalPrice || 0)
     })
-    
+
     // Add additions/subtractions
     total += calculateTotalAddition()
     return total
@@ -165,10 +162,10 @@ const InvoiceModal = ({ open, onClose, room, contract, roomServices = [], device
       onClose()
     } catch (error) {
       console.error('Lỗi tạo hóa đơn:', error)
-      Swal.fire({ 
-        icon: 'error', 
-        title: 'Thất bại', 
-        text: error.message || 'Lập hóa đơn không thành công!' 
+      Swal.fire({
+        icon: 'error',
+        title: 'Thất bại',
+        text: error.message || 'Lập hóa đơn không thành công!'
       })
     } finally {
       setLoading(false)
@@ -183,7 +180,7 @@ const InvoiceModal = ({ open, onClose, room, contract, roomServices = [], device
         <ReceiptIcon />
         Lập hóa đơn - {room?.name}
       </DialogTitle>
-      
+
       <DialogContent sx={{ mt: 2, bgcolor: '#f8f9fa', p: 3 }}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
@@ -192,8 +189,7 @@ const InvoiceModal = ({ open, onClose, room, contract, roomServices = [], device
               label="Lý do thu"
               fullWidth
               value={invoiceData.invoiceReason}
-              onChange={(e) => handleInputInvoice('invoiceReason', e.target.value)}
-            >
+              onChange={(e) => handleInputInvoice('invoiceReason', e.target.value)}>
               <MenuItem value="Thu tiền hàng tháng">Thu tiền hàng tháng</MenuItem>
               <MenuItem value="Thu tiền tháng đầu tiên">Thu tiền tháng đầu tiên</MenuItem>
               <MenuItem value="Thu tiền khi kết thúc hợp đồng">Thu tiền khi kết thúc hợp đồng</MenuItem>
@@ -214,7 +210,7 @@ const InvoiceModal = ({ open, onClose, room, contract, roomServices = [], device
               onChange={(e) => handleInputInvoice('invoiceCreateMonth', e.target.value)}
             />
           </Grid>
-          
+
           <Grid item xs={12} sm={6}>
             <TextField
               type="date"
@@ -276,7 +272,9 @@ const InvoiceModal = ({ open, onClose, room, contract, roomServices = [], device
 
         {/* Cấu hình tiền cộng/trừ thêm */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="subtitle1" fontWeight="bold">Các khoản thu/trừ khác</Typography>
+          <Typography variant="subtitle1" fontWeight="bold">
+            Các khoản thu/trừ khác
+          </Typography>
           <Button startIcon={<AddCircleIcon />} variant="outlined" size="small" onClick={addNewItem}>
             Thêm khoản
           </Button>
@@ -290,8 +288,7 @@ const InvoiceModal = ({ open, onClose, room, contract, roomServices = [], device
                 size="small"
                 fullWidth
                 value={item.addition}
-                onChange={(e) => handleAdditionChange(item.id, 'addition', parseInt(e.target.value))}
-              >
+                onChange={(e) => handleAdditionChange(item.id, 'addition', parseInt(e.target.value))}>
                 <MenuItem value={1}>Cộng tiền (+)</MenuItem>
                 <MenuItem value={0}>Trừ tiền (-)</MenuItem>
               </TextField>
@@ -324,47 +321,60 @@ const InvoiceModal = ({ open, onClose, room, contract, roomServices = [], device
 
         {/* Tổng quan hóa đơn */}
         <Box sx={{ bgcolor: 'white', p: 2, borderRadius: 2, mt: 3, border: '1px solid #e0e0e0' }}>
-          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Chi tiết thành tiền</Typography>
-          
+          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+            Chi tiết thành tiền
+          </Typography>
+
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <Typography variant="body2">Tiền phòng:</Typography>
-            <Typography variant="body2" fontWeight="bold">{Number(invoiceData.price || 0).toLocaleString('vi-VN')} đ</Typography>
+            <Typography variant="body2" fontWeight="bold">
+              {Number(invoiceData.price || 0).toLocaleString('vi-VN')} đ
+            </Typography>
           </Box>
-          
+
           {invoiceData.serviceDetails.map((s, idx) => (
             <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="body2">Dịch vụ: {s.serviceName} (SL: {s.quantity})</Typography>
+              <Typography variant="body2">
+                Dịch vụ: {s.serviceName} (SL: {s.quantity})
+              </Typography>
               <Typography variant="body2">{Number(s.totalPrice || 0).toLocaleString('vi-VN')} đ</Typography>
             </Box>
           ))}
 
           {additionItems.length > 0 && (
-             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, color: calculateTotalAddition() >= 0 ? 'success.main' : 'error.main' }}>
-               <Typography variant="body2">Phát sinh khác:</Typography>
-               <Typography variant="body2">{calculateTotalAddition() >= 0 ? '+' : ''}{calculateTotalAddition().toLocaleString('vi-VN')} đ</Typography>
-             </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                mb: 1,
+                color: calculateTotalAddition() >= 0 ? 'success.main' : 'error.main'
+              }}>
+              <Typography variant="body2">Phát sinh khác:</Typography>
+              <Typography variant="body2">
+                {calculateTotalAddition() >= 0 ? '+' : ''}
+                {calculateTotalAddition().toLocaleString('vi-VN')} đ
+              </Typography>
+            </Box>
           )}
-          
+
           <Divider sx={{ my: 1 }} />
-          
+
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="h6" color="error">Tổng cộng:</Typography>
-            <Typography variant="h6" color="error" fontWeight="bold">{calculateGrandTotal().toLocaleString('vi-VN')} đ</Typography>
+            <Typography variant="h6" color="error">
+              Tổng cộng:
+            </Typography>
+            <Typography variant="h6" color="error" fontWeight="bold">
+              {calculateGrandTotal().toLocaleString('vi-VN')} đ
+            </Typography>
           </Box>
         </Box>
-
       </DialogContent>
-      
+
       <DialogActions sx={{ p: 3, pt: 2, bgcolor: '#f8f9fa' }}>
         <Button onClick={onClose} variant="outlined" color="inherit">
           Hủy bỏ
         </Button>
-        <Button 
-          onClick={handleSubmit} 
-          variant="contained" 
-          color="primary"
-          disabled={loading}
-        >
+        <Button onClick={handleSubmit} variant="contained" color="primary" disabled={loading}>
           {loading ? 'Đang tạo...' : 'Lập hóa đơn'}
         </Button>
       </DialogActions>

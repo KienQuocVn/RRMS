@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -170,7 +170,7 @@ function ModalChangeRoom({ toggleModal, modalOpen, roomId }) {
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>Danh sách phòng</Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
-            Chọn phòng để chuyển - "{room?.name || 'Không có thông tin'}"
+            Chọn phòng để chuyển - {room?.name || 'Không có thông tin'}
           </Typography>
         </Box>
       </DialogTitle>

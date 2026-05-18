@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -41,8 +41,8 @@ const AddRoomModal = ({ open, onClose, activeMotelId, motelServices = [], onAddS
         name === 'price'
           ? parseFloat(value) || ''
           : ['area', 'invoiceDate'].includes(name)
-          ? parseInt(value, 10) || ''
-          : value
+            ? parseInt(value, 10) || ''
+            : value
     }))
   }
 
@@ -69,7 +69,7 @@ const AddRoomModal = ({ open, onClose, activeMotelId, motelServices = [], onAddS
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     // Basic validation
     if (!formData.name || !formData.price) {
       Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng nhập tên phòng và giá thuê.' })
@@ -109,7 +109,7 @@ const AddRoomModal = ({ open, onClose, activeMotelId, motelServices = [], onAddS
       await updateContractStatusClose('IATExpire', 10).catch(() => {}) // API might fail, but ignore
 
       Swal.fire({ icon: 'success', title: 'Thông báo', text: 'Thêm phòng thành công!' })
-      
+
       // Reset form
       setFormData({
         name: '',
@@ -120,10 +120,9 @@ const AddRoomModal = ({ open, onClose, activeMotelId, motelServices = [], onAddS
         prioritize: 'Tất cả',
         selectedServices: []
       })
-      
+
       onClose()
       if (onAddSuccess) onAddSuccess()
-
     } catch (error) {
       console.error('Error creating room:', error)
       Swal.fire({ icon: 'error', title: 'Thông báo', text: 'Có lỗi xảy ra khi thêm phòng.' })
@@ -138,7 +137,7 @@ const AddRoomModal = ({ open, onClose, activeMotelId, motelServices = [], onAddS
         <AddBoxIcon />
         Thêm phòng
       </DialogTitle>
-      
+
       <DialogContent sx={{ mt: 2 }}>
         <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
           Thông tin phòng
@@ -146,16 +145,10 @@ const AddRoomModal = ({ open, onClose, activeMotelId, motelServices = [], onAddS
         <Typography variant="body2" color="text.secondary" gutterBottom>
           Nhập các thông tin cơ bản của phòng
         </Typography>
-        
+
         <Grid container spacing={2} sx={{ mt: 1 }}>
           <Grid item xs={12} sm={6}>
-            <TextField
-              label="Tên phòng *"
-              name="name"
-              fullWidth
-              value={formData.name}
-              onChange={handleInputChange}
-            />
+            <TextField label="Tên phòng *" name="name" fullWidth value={formData.name} onChange={handleInputChange} />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
@@ -164,8 +157,7 @@ const AddRoomModal = ({ open, onClose, activeMotelId, motelServices = [], onAddS
               name="group"
               fullWidth
               value={formData.group}
-              onChange={handleInputChange}
-            >
+              onChange={handleInputChange}>
               <MenuItem value="a">Tầng A</MenuItem>
               <MenuItem value="b">Tầng B</MenuItem>
             </TextField>
@@ -197,8 +189,7 @@ const AddRoomModal = ({ open, onClose, activeMotelId, motelServices = [], onAddS
               name="invoiceDate"
               fullWidth
               value={formData.invoiceDate}
-              onChange={handleInputChange}
-            >
+              onChange={handleInputChange}>
               {Array.from({ length: 31 }, (_, i) => (
                 <MenuItem key={i + 1} value={i + 1}>
                   Ngày {i + 1}
@@ -213,8 +204,7 @@ const AddRoomModal = ({ open, onClose, activeMotelId, motelServices = [], onAddS
               name="prioritize"
               fullWidth
               value={formData.prioritize}
-              onChange={handleInputChange}
-            >
+              onChange={handleInputChange}>
               <MenuItem value="Tất cả">Tất cả</MenuItem>
               <MenuItem value="Ưu tiên nữ">Ưu tiên nữ</MenuItem>
               <MenuItem value="Ưu tiên nam">Ưu tiên nam</MenuItem>
@@ -237,7 +227,7 @@ const AddRoomModal = ({ open, onClose, activeMotelId, motelServices = [], onAddS
             motelServices.map((service) => {
               const isSelected = formData.selectedServices.some((s) => s.serviceId === service.motelServiceId)
               const selectedService = formData.selectedServices.find((s) => s.serviceId === service.motelServiceId)
-              
+
               return (
                 <Grid container alignItems="center" spacing={2} key={service.motelServiceId} sx={{ mb: 2 }}>
                   <Grid item xs={7}>
@@ -268,7 +258,7 @@ const AddRoomModal = ({ open, onClose, activeMotelId, motelServices = [], onAddS
                       value={selectedService?.quantity || 0}
                       onChange={(e) => handleQuantityChange(service.motelServiceId, e.target.value)}
                       InputProps={{
-                        endAdornment: <InputAdornment position="end">{service.chargetype}</InputAdornment>,
+                        endAdornment: <InputAdornment position="end">{service.chargetype}</InputAdornment>
                       }}
                     />
                   </Grid>
@@ -282,18 +272,17 @@ const AddRoomModal = ({ open, onClose, activeMotelId, motelServices = [], onAddS
           )}
         </Box>
       </DialogContent>
-      
+
       <DialogActions sx={{ p: 3, pt: 0 }}>
         <Button onClick={onClose} variant="outlined" color="inherit">
           Hủy bỏ
         </Button>
-        <Button 
-          onClick={handleSubmit} 
-          variant="contained" 
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
           disabled={loading}
           startIcon={<AddBoxIcon />}
-          sx={{ bgcolor: '#20a9e7', '&:hover': { bgcolor: '#1b8ec4' } }}
-        >
+          sx={{ bgcolor: '#20a9e7', '&:hover': { bgcolor: '#1b8ec4' } }}>
           {loading ? 'Đang thêm...' : 'Thêm phòng'}
         </Button>
       </DialogActions>

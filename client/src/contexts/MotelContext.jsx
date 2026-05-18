@@ -1,4 +1,4 @@
-import React, { createContext, useMemo, useState } from 'react'
+import { createContext, useMemo, useState } from 'react'
 
 export const MotelContext = createContext(null)
 
@@ -16,5 +16,5 @@ export const MotelProvider = ({ children }) => {
     [motels, isNavAdmin]
   )
 
-  return React.createElement(MotelContext.Provider, { value }, children)
+  return <MotelContext.Provider value={value}>{children}</MotelContext.Provider>
 }

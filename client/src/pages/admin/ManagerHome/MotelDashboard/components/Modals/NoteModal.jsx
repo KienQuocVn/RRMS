@@ -1,13 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Typography
-} from '@mui/material'
+import { useState, useEffect } from 'react'
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Typography } from '@mui/material'
 import EditNoteIcon from '@mui/icons-material/EditNote'
 import Swal from 'sweetalert2'
 
@@ -25,14 +17,14 @@ const NoteModal = ({ open, onClose, room, onUpdateSuccess }) => {
 
   const handleSave = async () => {
     if (!room) return
-    
+
     setLoading(true)
     try {
       const updatedRoom = { ...room, description: note }
       await updateRoom(room.roomId, updatedRoom)
-      
+
       Swal.fire({ icon: 'success', title: 'Thông báo', text: 'Cập nhật ghi chú phòng thành công!' })
-      
+
       if (onUpdateSuccess) onUpdateSuccess()
       onClose()
     } catch (error) {
@@ -49,7 +41,7 @@ const NoteModal = ({ open, onClose, room, onUpdateSuccess }) => {
         <EditNoteIcon />
         Ghi chú phòng &quot;{room?.name}&quot;
       </DialogTitle>
-      
+
       <DialogContent sx={{ mt: 2 }}>
         <Typography variant="body2" color="text.secondary" gutterBottom>
           Ghi chú nội bộ cho phòng này (chỉ quản lý mới xem được).
@@ -65,17 +57,12 @@ const NoteModal = ({ open, onClose, room, onUpdateSuccess }) => {
           sx={{ mt: 1 }}
         />
       </DialogContent>
-      
+
       <DialogActions sx={{ p: 3, pt: 0 }}>
         <Button onClick={onClose} variant="outlined" color="inherit">
           Hủy bỏ
         </Button>
-        <Button 
-          onClick={handleSave} 
-          variant="contained" 
-          color="primary"
-          disabled={loading}
-        >
+        <Button onClick={handleSave} variant="contained" color="primary" disabled={loading}>
           {loading ? 'Đang lưu...' : 'Lưu ghi chú'}
         </Button>
       </DialogActions>
