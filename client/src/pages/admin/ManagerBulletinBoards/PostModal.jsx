@@ -21,6 +21,7 @@ import {
   Typography
 } from '@mui/material'
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
+import CloseIcon from '@mui/icons-material/Close'
 import { useEffect, useState } from 'react'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import LocationSelect from '~/components/ProvinceSelect'
@@ -401,11 +402,16 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
       aria-describedby="modal-modal-description">
       <Box sx={style}>
         <Box sx={{ p: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <ViewInArIcon />
-            <Typography id="modal-modal-title" variant="h6" component={'h2'}>
-              Thêm tin đăng
-            </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ViewInArIcon />
+              <Typography id="modal-modal-title" variant="h6" component={'h2'}>
+                Thêm tin đăng
+              </Typography>
+            </Box>
+            <IconButton onClick={handleClose} sx={{ border: '1px solid #e0e0e0', p: 0.5 }}>
+              <CloseIcon />
+            </IconButton>
           </Box>
           <Divider sx={{ bgcolor: '#333' }} />
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, mt: 1 }}>
@@ -1016,13 +1022,13 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
             p: 2,
             zIndex: 9999
           }}>
-          <Button variant="contained" sx={{ bgcolor: '#2f3542' }} onClick={handleClose}>
+          <Button variant="contained" sx={{ bgcolor: '#7f8c8d', color: 'white', '&:hover': { bgcolor: '#636e72' } }} onClick={handleClose}>
             Đóng
           </Button>
           <Button
             variant="contained"
             disabled={!formik.isValid || !formik.dirty}
-            sx={{ bgcolor: '#2ed573' }}
+            sx={{ bgcolor: '#20a9e7', color: 'white', '&:hover': { bgcolor: '#219653' } }}
             onClick={handlePost}>
             Thêm tin đăng
           </Button>

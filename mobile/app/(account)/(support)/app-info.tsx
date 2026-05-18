@@ -4,9 +4,9 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   Platform,
 } from "react-native";
+import { RefreshableScrollView as ScrollView } from "@/components/ui/refreshable-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -59,7 +59,7 @@ export default function AppInfoScreen() {
         <View style={styles.banner}>
           <View style={styles.logoContainer}>
             <Text style={styles.logoTextMain}>
-              <Text style={{ color: Colors.textSuccess }}>// </Text>RRMS
+              <Text style={{ color: Colors.textSuccess }}>{'// '}</Text>RRMS
             </Text>
             <Text style={styles.logoTextSub}>
               Quản lý{" "}

@@ -3,7 +3,8 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Platform, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, Platform, TouchableOpacity, Image } from 'react-native';
+import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';

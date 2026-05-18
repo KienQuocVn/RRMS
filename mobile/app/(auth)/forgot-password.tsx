@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -9,6 +8,7 @@ import {
   Text,
   Alert,
 } from 'react-native';
+import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { authService } from '@/services/api/auth.service';

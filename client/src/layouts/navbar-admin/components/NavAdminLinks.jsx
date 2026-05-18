@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Box, Stack } from '@mui/material'
+import { Box, Stack, Popover, List, ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Badge, Divider } from '@mui/material'
 import HomeIcon from '@mui/icons-material/Home'
 import PieChartIcon from '@mui/icons-material/PieChart'
 import AddIcon from '@mui/icons-material/Add'
@@ -8,6 +9,7 @@ import BusinessIcon from '@mui/icons-material/Business'
 import SettingsIcon from '@mui/icons-material/Settings'
 import PersonIcon from '@mui/icons-material/Person'
 import LogoutIcon from '@mui/icons-material/Logout'
+import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined'
 import NotificationBadge from './NotificationBadge'
 
 const navLinkSx = {
@@ -23,6 +25,7 @@ const navLinkSx = {
   py: 1,
   fontSize: 17,
   textDecoration: 'none',
+  cursor: 'pointer',
   '&:hover, &.active': {
     bgcolor: '#2b7ed7',
     color: '#fff',
@@ -43,9 +46,53 @@ const NavLink = ({ to, icon, label, isActive, onClick }) => (
   </Box>
 )
 
+const mockNotifications = [
+  {
+    id: 1,
+    title: "📌 Ktx WEBSITE MỸ PHẨM HÀN QUỐC vừa thêm giường mới",
+    body: "Bánh mì: thêm giường mới",
+    time: "2026-05-17T14:40:51.000000Z",
+    read: false
+  },
+  {
+    id: 2,
+    title: "📌 quoc, Ktx WEBSITE MỸ PHẨM HÀN QUỐC đã bị xóa",
+    body: "Bánh mì: đã xóa giường",
+    time: "2026-05-17T14:40:22.000000Z",
+    read: false
+  },
+  {
+    id: 3,
+    title: "💵 quoc, Ktx WEBSITE MỸ PHẨM HÀN QUỐC thanh toán 🎉 xong hóa đơn T.5/2026",
+    body: "Bánh mì: thanh toán xong hóa đơn T.5/2026, với số tiền: 5.300.000đ, phương thức: Tiền mặt",
+    time: "2026-05-09T17:03:55.000000Z",
+    read: false
+  },
+  {
+    id: 4,
+    title: "💰 quoc, Ktx WEBSITE MỸ PHẨM HÀN QUỐC lập hóa đơn",
+    body: "Bánh mì: lập hóa đơn cho quoc, cho T.5/2026, với số tiền: 5.300.000đ",
+    time: "2026-05-09T17:01:00.000000Z",
+    read: false
+  }
+];
+
 const NavAdminLinks = ({ motel, setIsNavAdmin, handleLogout, tokenExists }) => {
   const location = useLocation()
   const id = motel?.motelId
+  const [anchorEl, setAnchorEl] = useState(null)
+
+  const handleNotificationClick = (event) => {
+    event.preventDefault()
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleClosePopover = () => {
+    setAnchorEl(null)
+  }
+
+  const open = Boolean(anchorEl)
+  const popoverId = open ? 'notification-popover' : undefined
 
   const links = [
     { to: id ? `/quanlytro/${id}` : '/quanlytro', icon: <HomeIcon />, label: 'Quản lý trọ' },
@@ -75,17 +122,78 @@ const NavAdminLinks = ({ motel, setIsNavAdmin, handleLogout, tokenExists }) => {
         />
       ))}
 
-      {/* Notification (kept as separate item for dropdown support) */}
+      {/* Notification */}
       <Box
-        component={Link}
-        to="#"
-        sx={{ ...navLinkSx, position: 'relative' }}
+        component="div"
+        onClick={handleNotificationClick}
+        aria-describedby={popoverId}
+        sx={{ ...navLinkSx, position: 'relative', ...(open ? { bgcolor: '#2b7ed7' } : {}) }}
       >
         <NotificationBadge count={0} />
         <Box component="span" sx={{ mt: '5px', fontSize: 14 }}>
           Thông báo
         </Box>
       </Box>
+
+      <Popover
+        id={popoverId}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClosePopover}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        sx={{ mt: 1 }}
+        slotProps={{
+          paper: {
+            sx: {
+              width: 450,
+              maxHeight: 500,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              borderRadius: 2
+            }
+          }
+        }}
+      >
+        <List sx={{ p: 0 }}>
+          {mockNotifications.map((notification, index) => (
+            <Box key={notification.id}>
+              <ListItem alignItems="flex-start" sx={{ py: 2, px: 3, '&:hover': { bgcolor: '#f5f5f5' }, cursor: 'pointer' }}>
+                <ListItemAvatar sx={{ mt: 0.5, mr: 1 }}>
+                  <Badge color="success" variant="dot" overlap="circular" anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+                    <Avatar sx={{ bgcolor: '#f0f0f0', color: '#555' }}>
+                      <NotificationsNoneOutlinedIcon />
+                    </Avatar>
+                  </Badge>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={
+                    <Typography variant="subtitle1" fontWeight="bold" sx={{ lineHeight: 1.3, mb: 0.5, color: '#333' }}>
+                      {notification.title}
+                    </Typography>
+                  }
+                  secondary={
+                    <>
+                      <Typography variant="body2" color="text.primary" sx={{ display: 'block', mb: 1 }}>
+                        {notification.body}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {notification.time}
+                      </Typography>
+                    </>
+                  }
+                />
+              </ListItem>
+              {index < mockNotifications.length - 1 && <Divider component="li" />}
+            </Box>
+          ))}
+        </List>
+      </Popover>
 
       {/* Logout */}
       {tokenExists && (

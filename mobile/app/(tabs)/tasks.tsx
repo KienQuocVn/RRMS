@@ -1,12 +1,13 @@
 /**
- * Tasks Screen - Công việc
+ * Tasks Screen - Cong viec
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Platform, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, FontSizes, FontWeights, Spacing, BorderRadius } from '@/constants/theme';
+import { RefreshableScreenView } from '@/components/ui/refreshable-screen-view';
 
 export default function TasksScreen() {
   const insets = useSafeAreaInsets();
@@ -14,83 +15,102 @@ export default function TasksScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: Platform.OS === 'ios' ? insets.top : 0 }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerTextWrap}>
-          <Text style={styles.headerTitle}>🔥 Giải quyết thôi nào</Text>
-          <Text style={styles.headerSubtitle}>Quản lý hiệu quả với tính năng việc cần làm</Text>
-        </View>
-        <TouchableOpacity style={styles.headerIconWrap}>
-          <MaterialCommunityIcons name="clipboard-check-outline" size={24} color={Colors.success} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Custom Tabs */}
-      <View style={styles.tabContainer}>
-        <View style={styles.tabBackground}>
-          <TouchableOpacity
-            style={[styles.tabButton, activeTab === 'rental' && styles.activeTabButton]}
-            onPress={() => setActiveTab('rental')}
-          >
-            <View style={styles.tabContent}>
-               <Ionicons name="home-outline" size={16} color={activeTab === 'rental' ? Colors.textPrimary : Colors.white} />
-               <Text style={[styles.tabText, activeTab === 'rental' && styles.activeTabText]}>
-                 Nhà cho thuê
-               </Text>
-            </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>0</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.tabButton, activeTab === 'personal' && styles.activeTabButton]}
-            onPress={() => setActiveTab('personal')}
-          >
-            <View style={styles.tabContent}>
-               <Ionicons name="briefcase-outline" size={16} color={activeTab === 'personal' ? Colors.textPrimary : Colors.white} />
-               <Text style={[styles.tabText, activeTab === 'personal' && styles.activeTabText]}>
-                 Cá nhân
-               </Text>
-            </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>0</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.tabButton, activeTab === 'system' && styles.activeTabButton]}
-            onPress={() => setActiveTab('system')}
-          >
-            <View style={styles.tabContent}>
-               <Ionicons name="person-outline" size={16} color={activeTab === 'system' ? Colors.textPrimary : Colors.white} />
-               <Text style={[styles.tabText, activeTab === 'system' && styles.activeTabText]}>
-                 Hệ thống
-               </Text>
-            </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>0</Text>
-            </View>
+      <RefreshableScreenView showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.headerTitle}>Giải quyết thôi nào</Text>
+            <Text style={styles.headerSubtitle}>Quản lý hiệu quả với tính năng việc cần làm</Text>
+          </View>
+          <TouchableOpacity style={styles.headerIconWrap}>
+            <MaterialCommunityIcons name="clipboard-check-outline" size={24} color={Colors.success} />
           </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Empty state */}
-      <View style={styles.emptyState}>
-        <View style={styles.illustrationWrap}>
-          {/* We use an icon since we don't have the exact illustration */}
-          <MaterialCommunityIcons name="file-document-edit-outline" size={100} color={Colors.gray300} />
+        <View style={styles.tabContainer}>
+          <View style={styles.tabBackground}>
+            <TouchableOpacity
+              style={[styles.tabButton, activeTab === 'rental' && styles.activeTabButton]}
+              onPress={() => setActiveTab('rental')}
+            >
+              <View style={styles.tabContent}>
+                <Ionicons
+                  name="home-outline"
+                  size={16}
+                  color={activeTab === 'rental' ? Colors.textPrimary : Colors.white}
+                />
+                <Text style={[styles.tabText, activeTab === 'rental' && styles.activeTabText]}>
+                  Nhà cho thuê
+                </Text>
+              </View>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>0</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.tabButton, activeTab === 'personal' && styles.activeTabButton]}
+              onPress={() => setActiveTab('personal')}
+            >
+              <View style={styles.tabContent}>
+                <Ionicons
+                  name="briefcase-outline"
+                  size={16}
+                  color={activeTab === 'personal' ? Colors.textPrimary : Colors.white}
+                />
+                <Text style={[styles.tabText, activeTab === 'personal' && styles.activeTabText]}>
+                  Cá nhân
+                </Text>
+              </View>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>0</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.tabButton, activeTab === 'system' && styles.activeTabButton]}
+              onPress={() => setActiveTab('system')}
+            >
+              <View style={styles.tabContent}>
+                <Ionicons
+                  name="person-outline"
+                  size={16}
+                  color={activeTab === 'system' ? Colors.textPrimary : Colors.white}
+                />
+                <Text style={[styles.tabText, activeTab === 'system' && styles.activeTabText]}>
+                  Hệ thống
+                </Text>
+              </View>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>0</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
-        <Text style={styles.emptyTitle}>Chưa có việc nào trong nhà cho thuê</Text>
-        <Text style={styles.emptyDescription}>
-          Quản lý việc nhà cho thuê giúp bạn giải quyết các công việc tồn đọng trong nhà cho thuê của bạn. Ví dụ: Hợp đồng sắp hết hạn, Yêu cầu/phản ánh từ khách thuê...
-        </Text>
-      </View>
 
-      {/* Floating Action Buttons */}
+        <View style={styles.emptyState}>
+          <View style={styles.illustrationWrap}>
+            <MaterialCommunityIcons
+              name="file-document-edit-outline"
+              size={100}
+              color={Colors.gray300}
+            />
+          </View>
+          <Text style={styles.emptyTitle}>Chưa có việc nào trong nhà cho thuê</Text>
+          <Text style={styles.emptyDescription}>
+            Quản lý việc nhà cho thuê giúp bạn giải quyết các công việc tồn đọng trong nhà
+            cho thuê của bạn. Ví dụ: hợp đồng sắp hết hạn, yêu cầu và phản ánh từ khách
+            thuê...
+          </Text>
+        </View>
+      </RefreshableScreenView>
+
       <View style={styles.fabContainer}>
         <TouchableOpacity style={styles.fabSecondary}>
-          <MaterialCommunityIcons name="chevron-double-down" size={24} color={Colors.success} />
+          <MaterialCommunityIcons
+            name="chevron-double-down"
+            size={24}
+            color={Colors.success}
+          />
         </TouchableOpacity>
         <TouchableOpacity style={styles.fabPrimary}>
           <Ionicons name="add" size={32} color={Colors.white} />
@@ -158,7 +178,12 @@ const styles = StyleSheet.create({
   activeTabButton: {
     backgroundColor: Colors.white,
     ...Platform.select({
-      ios: { shadowColor: Colors.black, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+      ios: {
+        shadowColor: Colors.black,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
       android: { elevation: 2 },
     }),
   },
@@ -198,7 +223,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.xl,
-    paddingBottom: 100, // Make room for FAB
+    paddingBottom: 100,
+    minHeight: 420,
   },
   illustrationWrap: {
     marginBottom: Spacing.xl,
@@ -218,33 +244,36 @@ const styles = StyleSheet.create({
   },
   fabContainer: {
     position: 'absolute',
-    right: Spacing.base,
-    bottom: Spacing.xl,
+    right: 20,
+    bottom: 24,
     alignItems: 'center',
-    gap: Spacing.md,
+    gap: 12,
   },
   fabSecondary: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: Colors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    ...Platform.select({
-      ios: { shadowColor: Colors.black, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
-      android: { elevation: 3 },
-    }),
+    borderWidth: 1,
+    borderColor: Colors.success,
   },
   fabPrimary: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: Colors.success,
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
-      ios: { shadowColor: Colors.black, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 6 },
-      android: { elevation: 4 },
+      ios: {
+        shadowColor: Colors.black,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.16,
+        shadowRadius: 12,
+      },
+      android: { elevation: 6 },
     }),
   },
 });

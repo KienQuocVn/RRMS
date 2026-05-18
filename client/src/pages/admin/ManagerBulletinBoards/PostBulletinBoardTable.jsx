@@ -142,16 +142,26 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
                   <TableCell>{row.roomArea}</TableCell>
                   <TableCell>
                     <Chip
-                      variant="outlined"
-                      sx={{ color: row.available ? '#7bed9f' : '#ff6b81' }}
+                      sx={{ 
+                        bgcolor: 'black', 
+                        color: 'white', 
+                        fontWeight: '500', 
+                        fontSize: '0.75rem',
+                        borderRadius: '6px'
+                      }}
                       label={row.available ? 'Đang cho thuê' : 'Đã cho thuê'}
                     />
                   </TableCell>
                   <TableCell>
                     <Chip
-                      variant="outlined"
-                      sx={{ color: row.isActive ? '#7bed9f' : '#ff6b81' }}
-                      label={row.isActive ? 'Đã phê duyệt' : 'Chưa phê duyệt'}
+                      sx={{ 
+                        bgcolor: 'black', 
+                        color: 'white', 
+                        fontWeight: '500', 
+                        fontSize: '0.75rem',
+                        borderRadius: '6px'
+                      }}
+                      label={row.isActive ? 'Đã phê duyệt' : 'Chờ phê duyệt'}
                     />
                   </TableCell>
                   <TableCell>

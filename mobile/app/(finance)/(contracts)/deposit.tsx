@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Colors, Spacing } from '@/constants/theme';
+import { View, StyleSheet } from 'react-native';
+import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
+import { Spacing } from '@/constants/theme';
 import { useDeposit } from '@/hooks/use-deposit';
 import {
   DepositHeader,

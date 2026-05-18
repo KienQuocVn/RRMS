@@ -9,10 +9,10 @@ const GoogleLoginRedirect = lazy(() => import('../pages/auth/Login/GoogleLoginRe
 const Login = lazy(() => import('../pages/auth/Login/Login'))
 const Register = lazy(() => import('../pages/auth/Register/Register'))
 const ForgotPassword = lazy(() => import('../pages/auth/ForgotPassword/ForgotPassword'))
-const Support = lazy(() => import('../pages/Support/Support'))
+const Support = lazy(() => import('../pages/support/Support'))
 const Contact = lazy(() => import('../pages/contact/Contact'))
-const Introduce = lazy(() => import('../pages/Introduce/Introduce'))
-const Profile = lazy(() => import('../pages/Profile/Profile'))
+const Introduce = lazy(() => import('../pages/introduce/Introduce'))
+const Profile = lazy(() => import('../pages/profile/Profile'))
 const PaymentPage = lazy(() => import('../pages/cart/PaymentPage'))
 const Heart = lazy(() => import('../pages/cart/Heart'))
 const RRMS = lazy(() => import('../pages/RRMS/RRMS'))
@@ -22,7 +22,7 @@ const FaceMatch = lazy(() => import('../pages/ai/FaceMatch'))
 const ImageComparison = lazy(() => import('../pages/ai/ImageComparison'))
 const PassportRecognition = lazy(() => import('../pages/ai/PassportRecognition'))
 const RatingHistory = lazy(() => import('../pages/RatingHistory/RatingHistory'))
-const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage.jsx'))
+const NotFoundPage = lazy(() => import('../pages/notfoundpage/NotFoundPage.jsx'))
 
 const PublicRoutes = ({ auth }) => {
   const { username, setUsername, setAvatar, setIsAdmin } = auth

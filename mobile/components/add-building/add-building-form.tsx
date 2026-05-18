@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { RefreshableScrollView } from "@/components/ui/refreshable-scroll-view";
 import {
   BorderRadius,
   Colors,
@@ -226,7 +227,7 @@ export const AddBuildingForm = ({
 
   return (
     <>
-      <ScrollView
+      <RefreshableScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -490,7 +491,7 @@ export const AddBuildingForm = ({
             </Text>
           </View>
         </View>
-      </ScrollView>
+      </RefreshableScrollView>
 
       <PickerModal
         visible={activeModal === "rentType"}

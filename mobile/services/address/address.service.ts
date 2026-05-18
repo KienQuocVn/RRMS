@@ -1,3 +1,5 @@
+import { safeAsyncStorage } from '@/services/storage/safe-async-storage';
+
 export interface AddressOption {
   code: string;
   name: string;
@@ -6,358 +8,204 @@ export interface AddressOption {
   longitude?: number;
 }
 
-type WardRecord = AddressOption;
-
-interface DistrictRecord extends AddressOption {
-  wards: WardRecord[];
+interface AddressKitProvince {
+  code: string;
+  name: string;
+  englishName?: string;
+  administrativeLevel?: string;
 }
 
-interface ProvinceRecord extends AddressOption {
-  districts: DistrictRecord[];
+interface AddressKitCommune {
+  code: string;
+  name: string;
+  englishName?: string;
+  administrativeLevel?: string;
+  provinceCode?: string;
+  provinceID?: string;
+  province_id?: string;
 }
 
-const VIETNAM_ADDRESS_TREE: ProvinceRecord[] = [
-  {
-    code: '79',
-    name: 'Thành phố Hồ Chí Minh',
-    latitude: 10.7769,
-    longitude: 106.7009,
-    districts: [
-      {
-        code: '760',
-        name: 'Quận 1',
-        parentCode: '79',
-        latitude: 10.7756,
-        longitude: 106.7004,
-        wards: [
-          {
-            code: '26734',
-            name: 'Phường Bến Nghé',
-            parentCode: '760',
-            latitude: 10.7797,
-            longitude: 106.7046,
-          },
-          {
-            code: '26737',
-            name: 'Phường Bến Thành',
-            parentCode: '760',
-            latitude: 10.7723,
-            longitude: 106.6984,
-          },
-          {
-            code: '26740',
-            name: 'Phường Đa Kao',
-            parentCode: '760',
-            latitude: 10.7871,
-            longitude: 106.6978,
-          },
-        ],
-      },
-      {
-        code: '778',
-        name: 'Quận 7',
-        parentCode: '79',
-        latitude: 10.7342,
-        longitude: 106.7218,
-        wards: [
-          {
-            code: '27496',
-            name: 'Phường Tân Phú',
-            parentCode: '778',
-            latitude: 10.7308,
-            longitude: 106.7302,
-          },
-          {
-            code: '27499',
-            name: 'Phường Tân Hưng',
-            parentCode: '778',
-            latitude: 10.7424,
-            longitude: 106.7069,
-          },
-          {
-            code: '27511',
-            name: 'Phường Phú Mỹ',
-            parentCode: '778',
-            latitude: 10.7282,
-            longitude: 106.7431,
-          },
-        ],
-      },
-      {
-        code: '769',
-        name: 'Thành phố Thủ Đức',
-        parentCode: '79',
-        latitude: 10.8404,
-        longitude: 106.8105,
-        wards: [
-          {
-            code: '27166',
-            name: 'Phường An Khánh',
-            parentCode: '769',
-            latitude: 10.7867,
-            longitude: 106.7449,
-          },
-          {
-            code: '27169',
-            name: 'Phường Thảo Điền',
-            parentCode: '769',
-            latitude: 10.8036,
-            longitude: 106.7467,
-          },
-          {
-            code: '27175',
-            name: 'Phường Linh Đông',
-            parentCode: '769',
-            latitude: 10.8498,
-            longitude: 106.7726,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    code: '01',
-    name: 'Thành phố Hà Nội',
-    latitude: 21.0285,
-    longitude: 105.8542,
-    districts: [
-      {
-        code: '001',
-        name: 'Quận Ba Đình',
-        parentCode: '01',
-        latitude: 21.0367,
-        longitude: 105.8148,
-        wards: [
-          {
-            code: '00001',
-            name: 'Phường Kim Mã',
-            parentCode: '001',
-            latitude: 21.0339,
-            longitude: 105.8232,
-          },
-          {
-            code: '00004',
-            name: 'Phường Liễu Giai',
-            parentCode: '001',
-            latitude: 21.0392,
-            longitude: 105.8141,
-          },
-          {
-            code: '00007',
-            name: 'Phường Điện Biên',
-            parentCode: '001',
-            latitude: 21.0321,
-            longitude: 105.8394,
-          },
-        ],
-      },
-      {
-        code: '005',
-        name: 'Quận Cầu Giấy',
-        parentCode: '01',
-        latitude: 21.0362,
-        longitude: 105.7906,
-        wards: [
-          {
-            code: '00169',
-            name: 'Phường Dịch Vọng',
-            parentCode: '005',
-            latitude: 21.0391,
-            longitude: 105.7864,
-          },
-          {
-            code: '00175',
-            name: 'Phường Quan Hoa',
-            parentCode: '005',
-            latitude: 21.0431,
-            longitude: 105.7996,
-          },
-          {
-            code: '00181',
-            name: 'Phường Yên Hòa',
-            parentCode: '005',
-            latitude: 21.0158,
-            longitude: 105.7935,
-          },
-        ],
-      },
-      {
-        code: '268',
-        name: 'Quận Hà Đông',
-        parentCode: '01',
-        latitude: 20.9548,
-        longitude: 105.7564,
-        wards: [
-          {
-            code: '10117',
-            name: 'Phường Mộ Lao',
-            parentCode: '268',
-            latitude: 20.9833,
-            longitude: 105.7851,
-          },
-          {
-            code: '10123',
-            name: 'Phường Phú La',
-            parentCode: '268',
-            latitude: 20.9611,
-            longitude: 105.7735,
-          },
-          {
-            code: '10129',
-            name: 'Phường Nguyễn Trãi',
-            parentCode: '268',
-            latitude: 20.9528,
-            longitude: 105.7607,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    code: '48',
-    name: 'Thành phố Đà Nẵng',
-    latitude: 16.0544,
-    longitude: 108.2022,
-    districts: [
-      {
-        code: '490',
-        name: 'Quận Hải Châu',
-        parentCode: '48',
-        latitude: 16.0471,
-        longitude: 108.2197,
-        wards: [
-          {
-            code: '20194',
-            name: 'Phường Hải Châu I',
-            parentCode: '490',
-            latitude: 16.0682,
-            longitude: 108.2218,
-          },
-          {
-            code: '20212',
-            name: 'Phường Bình Thuận',
-            parentCode: '490',
-            latitude: 16.0476,
-            longitude: 108.2228,
-          },
-          {
-            code: '20224',
-            name: 'Phường Hòa Thuận Tây',
-            parentCode: '490',
-            latitude: 16.0352,
-            longitude: 108.2065,
-          },
-        ],
-      },
-      {
-        code: '492',
-        name: 'Quận Sơn Trà',
-        parentCode: '48',
-        latitude: 16.0939,
-        longitude: 108.2518,
-        wards: [
-          {
-            code: '20266',
-            name: 'Phường An Hải Bắc',
-            parentCode: '492',
-            latitude: 16.0792,
-            longitude: 108.2339,
-          },
-          {
-            code: '20278',
-            name: 'Phường Phước Mỹ',
-            parentCode: '492',
-            latitude: 16.0668,
-            longitude: 108.2451,
-          },
-          {
-            code: '20281',
-            name: 'Phường Nại Hiên Đông',
-            parentCode: '492',
-            latitude: 16.0819,
-            longitude: 108.2443,
-          },
-        ],
-      },
-      {
-        code: '494',
-        name: 'Quận Ngũ Hành Sơn',
-        parentCode: '48',
-        latitude: 16.0046,
-        longitude: 108.257,
-        wards: [
-          {
-            code: '20311',
-            name: 'Phường Mỹ An',
-            parentCode: '494',
-            latitude: 16.0394,
-            longitude: 108.2448,
-          },
-          {
-            code: '20314',
-            name: 'Phường Khuê Mỹ',
-            parentCode: '494',
-            latitude: 16.0222,
-            longitude: 108.2505,
-          },
-          {
-            code: '20320',
-            name: 'Phường Hòa Hải',
-            parentCode: '494',
-            latitude: 15.9987,
-            longitude: 108.2671,
-          },
-        ],
-      },
-    ],
-  },
-];
+interface AddressKitProvinceResponse {
+  provinces?: AddressKitProvince[];
+}
 
-function delay<T>(value: T) {
-  return new Promise<T>((resolve) => {
-    setTimeout(() => resolve(value), 120);
+interface AddressKitCommuneResponse {
+  communes?: AddressKitCommune[];
+}
+
+interface CachedPayload<T> {
+  expiresAt: number;
+  data: T;
+}
+
+const ADDRESSKIT_BASE_URL = 'https://production.cas.so/address-kit';
+const ADDRESSKIT_EFFECTIVE_DATE = 'latest';
+const ADDRESS_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const STORAGE_PREFIX = 'rrms.address-cache';
+
+const memoryCache = new Map<string, unknown>();
+const inflightRequests = new Map<string, Promise<unknown>>();
+
+const DEFAULT_CENTER = {
+  latitude: 16.047079,
+  longitude: 108.20623,
+};
+
+const PROVINCE_CENTER_MAP: Record<string, { latitude: number; longitude: number }> = {
+  '01': { latitude: 21.028511, longitude: 105.804817 },
+  '31': { latitude: 20.844911, longitude: 106.688087 },
+  '46': { latitude: 16.463713, longitude: 107.590866 },
+  '48': { latitude: 16.054407, longitude: 108.202164 },
+  '79': { latitude: 10.77689, longitude: 106.700806 },
+  '92': { latitude: 10.034185, longitude: 105.72255 },
+};
+
+function getStorageKey(key: string) {
+  return `${STORAGE_PREFIX}.${key}`;
+}
+
+function sortOptions(options: AddressOption[]) {
+  return [...options].sort((left, right) =>
+    left.name.localeCompare(right.name, 'vi', { sensitivity: 'base' }),
+  );
+}
+
+function mapProvinceToOption(province: AddressKitProvince): AddressOption {
+  return {
+    code: province.code,
+    name: province.name,
+    ...PROVINCE_CENTER_MAP[province.code],
+  };
+}
+
+function mapCommuneToOption(commune: AddressKitCommune, provinceCode: string): AddressOption {
+  return {
+    code: commune.code,
+    name: commune.name,
+    parentCode:
+      commune.provinceCode ?? commune.provinceID ?? commune.province_id ?? provinceCode,
+  };
+}
+
+async function fetchJson<T>(path: string): Promise<T> {
+  const response = await fetch(`${ADDRESSKIT_BASE_URL}/${ADDRESSKIT_EFFECTIVE_DATE}${path}`, {
+    headers: {
+      Accept: 'application/json',
+    },
   });
+
+  if (!response.ok) {
+    throw new Error(`Address API request failed with status ${response.status}`);
+  }
+
+  return (await response.json()) as T;
+}
+
+async function readCache<T>(key: string, allowExpired: boolean): Promise<T | null> {
+  const raw = await safeAsyncStorage.getItem(getStorageKey(key));
+
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(raw) as CachedPayload<T>;
+
+    if (
+      !allowExpired &&
+      typeof payload.expiresAt === 'number' &&
+      payload.expiresAt < Date.now()
+    ) {
+      return null;
+    }
+
+    return payload.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function writeCache<T>(key: string, data: T) {
+  const payload: CachedPayload<T> = {
+    expiresAt: Date.now() + ADDRESS_CACHE_TTL_MS,
+    data,
+  };
+
+  await safeAsyncStorage.setItem(getStorageKey(key), JSON.stringify(payload));
+}
+
+async function loadCachedResource<T>(key: string, loader: () => Promise<T>): Promise<T> {
+  if (memoryCache.has(key)) {
+    return memoryCache.get(key) as T;
+  }
+
+  const activeRequest = inflightRequests.get(key);
+
+  if (activeRequest) {
+    return activeRequest as Promise<T>;
+  }
+
+  const request = (async () => {
+    const cached = await readCache<T>(key, false);
+
+    if (cached) {
+      memoryCache.set(key, cached);
+      return cached;
+    }
+
+    try {
+      const freshData = await loader();
+      memoryCache.set(key, freshData);
+      await writeCache(key, freshData);
+      return freshData;
+    } catch (error) {
+      const staleData = await readCache<T>(key, true);
+
+      if (staleData) {
+        memoryCache.set(key, staleData);
+        return staleData;
+      }
+
+      throw error;
+    }
+  })().finally(() => {
+    inflightRequests.delete(key);
+  });
+
+  inflightRequests.set(key, request);
+  return request;
 }
 
 export async function getProvinces() {
-  return delay(
-    VIETNAM_ADDRESS_TREE.map(({ code, name, latitude, longitude }) => ({
-      code,
-      name,
-      latitude,
-      longitude,
-    })),
-  );
+  return loadCachedResource('provinces', async () => {
+    const response = await fetchJson<AddressKitProvinceResponse>('/provinces');
+
+    return sortOptions((response.provinces ?? []).map(mapProvinceToOption));
+  });
 }
 
-export async function getDistricts(provinceCode: string) {
-  const province = VIETNAM_ADDRESS_TREE.find((item) => item.code === provinceCode);
-
-  return delay(
-    (province?.districts ?? []).map(({ code, name, parentCode, latitude, longitude }) => ({
-      code,
-      name,
-      parentCode,
-      latitude,
-      longitude,
-    })),
-  );
+export async function getDistricts(_provinceCode: string) {
+  return [];
 }
 
-export async function getWards(districtCode: string) {
-  const district = VIETNAM_ADDRESS_TREE.flatMap((province) => province.districts).find(
-    (item) => item.code === districtCode,
-  );
+export async function getCommunes(provinceCode: string) {
+  if (!provinceCode) {
+    return [];
+  }
 
-  return delay(
-    (district?.wards ?? []).map(({ code, name, parentCode, latitude, longitude }) => ({
-      code,
-      name,
-      parentCode,
-      latitude,
-      longitude,
-    })),
-  );
+  return loadCachedResource(`communes.${provinceCode}`, async () => {
+    const response = await fetchJson<AddressKitCommuneResponse>(
+      `/provinces/${provinceCode}/communes`,
+    );
+
+    return sortOptions(
+      (response.communes ?? []).map((commune) => mapCommuneToOption(commune, provinceCode)),
+    );
+  });
+}
+
+export async function getWards(provinceCode: string) {
+  return getCommunes(provinceCode);
 }
 
 export async function getAddressCenter(params: {
@@ -365,26 +213,9 @@ export async function getAddressCenter(params: {
   districtCode?: string;
   wardCode?: string;
 }) {
-  const ward = VIETNAM_ADDRESS_TREE.flatMap((province) => province.districts)
-    .flatMap((district) => district.wards)
-    .find((item) => item.code === params.wardCode);
-
-  if (ward?.latitude && ward?.longitude) {
-    return delay({ latitude: ward.latitude, longitude: ward.longitude });
+  if (params.provinceCode && PROVINCE_CENTER_MAP[params.provinceCode]) {
+    return PROVINCE_CENTER_MAP[params.provinceCode];
   }
 
-  const district = VIETNAM_ADDRESS_TREE.flatMap((province) => province.districts).find(
-    (item) => item.code === params.districtCode,
-  );
-
-  if (district?.latitude && district?.longitude) {
-    return delay({ latitude: district.latitude, longitude: district.longitude });
-  }
-
-  const province = VIETNAM_ADDRESS_TREE.find((item) => item.code === params.provinceCode);
-
-  return delay({
-    latitude: province?.latitude ?? 10.7769,
-    longitude: province?.longitude ?? 106.7009,
-  });
+  return DEFAULT_CENTER;
 }

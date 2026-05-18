@@ -6,7 +6,8 @@
  */
 
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Platform, View } from 'react-native';
+import { StyleSheet, Platform, View } from 'react-native';
+import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';

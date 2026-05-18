@@ -2,12 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -124,7 +124,13 @@ export default function AddBuildingMapPickerScreen() {
       hasMapPin: true,
       latitude: selectedPin.latitude,
       longitude: selectedPin.longitude,
-      mapLabel: `Đã ghim vị trí ${selectedPin.label.toLowerCase()} tại ${address.ward}, ${address.district}`,
+      mapLabel: `Đã ghim vị trí ${selectedPin.label.toLowerCase()} tại ${[
+        address.ward,
+        address.district,
+        address.city,
+      ]
+        .filter(Boolean)
+        .join(', ')}`,
     });
     router.back();
   };

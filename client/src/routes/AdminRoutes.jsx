@@ -11,7 +11,7 @@ const ManagerSettings = lazy(() => import('../pages/admin/ManagerSettings/Manage
 const AdminManagerGroup = lazy(() => import('../pages/admin/AdminManagerGroup'))
 const AdminManagerBoard = lazy(() => import('../pages/admin/AdminManageBoard'))
 const AdminManageBoker = lazy(() => import('../pages/admin/AdminManageBoker/AdminManageBoker'))
-const PostRooms = lazy(() => import('../pages/bulletinboards/PostBulletinBoards'))
+const PostRooms = lazy(() => import('../pages/admin/ManagerBulletinBoards/PostBulletinBoards'))
 const AdminManage = lazy(() => import('../pages/admin/AdminManage/AdminManage'))
 const RoomManagement = lazy(() => import('../pages/admin/AdminManage/RoomManagement'))
 const InvoiceManager = lazy(() => import('../pages/admin/NavContentAdmin/InvoiceManager/InvoiceManager'))

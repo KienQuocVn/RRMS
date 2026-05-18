@@ -64,9 +64,12 @@ const Post = () => {
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Box>
-          <Typography variant="h5">Danh sách tin đăng </Typography>
-          <Typography variant="subtitle1">Danh sách tin đăng tìm kiếm khách thuê</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ bgcolor: '#20a9e7', width: '4px', height: '45px', mr: 1, borderRadius: '4px' }}></Box>
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: '500' }}>Danh sách tin đăng </Typography>
+            <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#555' }}>Danh sách tin đăng tìm kiếm khách thuê</Typography>
+          </Box>
         </Box>
         <Fab
           aria-label="add"
@@ -78,7 +81,9 @@ const Post = () => {
             boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
             width: '52px',
             height: '52px',
-            bgcolor: '#ffa502'
+            bgcolor: '#20a9e7',
+            color: 'white',
+            '&:hover': { bgcolor: '#2b7ed7' }
           }}>
           <AddIcon />
         </Fab>

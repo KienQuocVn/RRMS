@@ -15,6 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RefreshableScrollView } from '@/components/ui/refreshable-scroll-view';
 import {
   BorderRadius,
   Colors,
@@ -26,12 +27,11 @@ import {
 import { useAddBuildingFlow } from '@/hooks/use-add-building-flow';
 import {
   AddressOption,
-  getDistricts,
+  getCommunes,
   getProvinces,
-  getWards,
 } from '@/services/address/address.service';
 
-type ActiveModal = 'province' | 'district' | 'ward' | null;
+type ActiveModal = 'province' | 'ward' | null;
 
 function AddressPickerModal({
   visible,
@@ -141,10 +141,8 @@ export default function AddBuildingAddressScreen() {
   const [longitude, setLongitude] = useState<number | null>(savedAddress.longitude);
 
   const [provinceOptions, setProvinceOptions] = useState<AddressOption[]>([]);
-  const [districtOptions, setDistrictOptions] = useState<AddressOption[]>([]);
   const [wardOptions, setWardOptions] = useState<AddressOption[]>([]);
   const [loadingProvince, setLoadingProvince] = useState(true);
-  const [loadingDistrict, setLoadingDistrict] = useState(false);
   const [loadingWard, setLoadingWard] = useState(false);
 
   useEffect(() => {
@@ -152,14 +150,20 @@ export default function AddBuildingAddressScreen() {
 
     const loadProvinces = async () => {
       setLoadingProvince(true);
-      const data = await getProvinces();
 
-      if (!mounted) {
-        return;
+      try {
+        const data = await getProvinces();
+
+        if (!mounted) {
+          return;
+        }
+
+        setProvinceOptions(data);
+      } finally {
+        if (mounted) {
+          setLoadingProvince(false);
+        }
       }
-
-      setProvinceOptions(data);
-      setLoadingProvince(false);
     };
 
     void loadProvinces();
@@ -172,56 +176,35 @@ export default function AddBuildingAddressScreen() {
   useEffect(() => {
     let mounted = true;
 
-    const loadDistricts = async () => {
+    const loadCommunes = async () => {
       if (!provinceCode) {
-        setDistrictOptions([]);
-        return;
-      }
-
-      setLoadingDistrict(true);
-      const data = await getDistricts(provinceCode);
-
-      if (!mounted) {
-        return;
-      }
-
-      setDistrictOptions(data);
-      setLoadingDistrict(false);
-    };
-
-    void loadDistricts();
-
-    return () => {
-      mounted = false;
-    };
-  }, [provinceCode]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadWards = async () => {
-      if (!districtCode) {
         setWardOptions([]);
         return;
       }
 
       setLoadingWard(true);
-      const data = await getWards(districtCode);
 
-      if (!mounted) {
-        return;
+      try {
+        const data = await getCommunes(provinceCode);
+
+        if (!mounted) {
+          return;
+        }
+
+        setWardOptions(data);
+      } finally {
+        if (mounted) {
+          setLoadingWard(false);
+        }
       }
-
-      setWardOptions(data);
-      setLoadingWard(false);
     };
 
-    void loadWards();
+    void loadCommunes();
 
     return () => {
       mounted = false;
     };
-  }, [districtCode]);
+  }, [provinceCode]);
 
   useEffect(() => {
     setHasMapPin(savedAddress.hasMapPin);
@@ -242,7 +225,7 @@ export default function AddBuildingAddressScreen() {
     return '';
   }, [hasMapPin, latitude, longitude, mapLabel]);
 
-  const isValid = Boolean(provinceCode && districtCode && wardCode && detail.trim());
+  const isValid = Boolean(provinceCode && wardCode && detail.trim());
 
   const resetMapSelection = () => {
     setHasMapPin(false);
@@ -265,21 +248,15 @@ export default function AddBuildingAddressScreen() {
     resetMapSelection();
   };
 
-  const handleSelectDistrict = (option: AddressOption) => {
-    if (option.code === districtCode) {
+  const handleSelectWard = (option: AddressOption) => {
+    if (option.code === wardCode) {
       return;
     }
 
-    setDistrictCode(option.code);
-    setDistrict(option.name);
-    setWardCode('');
-    setWard('');
-    resetMapSelection();
-  };
-
-  const handleSelectWard = (option: AddressOption) => {
     setWardCode(option.code);
     setWard(option.name);
+    setDistrictCode('');
+    setDistrict('');
     resetMapSelection();
   };
 
@@ -367,7 +344,7 @@ export default function AddBuildingAddressScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
+      <RefreshableScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -377,8 +354,9 @@ export default function AddBuildingAddressScreen() {
             <Ionicons name="warning" size={24} color={Colors.white} />
           </View>
           <Text style={styles.warningText}>
-            <Text style={styles.warningStrong}>Thông tin:</Text> Nếu địa chỉ của bạn không có
-            trong danh sách bên dưới. Vui lòng liên hệ với nhân viên để được hỗ trợ!
+            <Text style={styles.warningStrong}>Thông tin:</Text> Danh mục địa chỉ đang dùng theo
+            đơn vị hành chính mới. Nếu địa chỉ của bạn không có trong danh sách, vui lòng liên hệ
+            nhân viên để được hỗ trợ.
           </Text>
         </View>
 
@@ -403,33 +381,13 @@ export default function AddBuildingAddressScreen() {
             activeOpacity={0.85}
             onPress={() => {
               if (provinceCode) {
-                setActiveModal('district');
+                setActiveModal('ward');
               }
             }}
             style={[styles.selector, !provinceCode && styles.selectorDisabled]}
           >
             <Text style={styles.selectorLabel}>
-              Quận/Huyện <Text style={styles.required}>*</Text>
-            </Text>
-            <View style={styles.selectorValueRow}>
-              <Text style={[styles.selectorValue, !district && styles.placeholderText]}>
-                {district || 'Chọn giá trị'}
-              </Text>
-              <Ionicons name="chevron-down" size={24} color={Colors.textPrimary} />
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => {
-              if (districtCode) {
-                setActiveModal('ward');
-              }
-            }}
-            style={[styles.selector, !districtCode && styles.selectorDisabled]}
-          >
-            <Text style={styles.selectorLabel}>
-              Phường/Xã <Text style={styles.required}>*</Text>
+              Phường/Xã hiện hành <Text style={styles.required}>*</Text>
             </Text>
             <View style={styles.selectorValueRow}>
               <Text style={[styles.selectorValue, !ward && styles.placeholderText]}>
@@ -481,7 +439,7 @@ export default function AddBuildingAddressScreen() {
 
           {currentMapMeta ? <Text style={styles.mapMeta}>{currentMapMeta}</Text> : null}
         </View>
-      </ScrollView>
+      </RefreshableScrollView>
 
       <View
         style={[
@@ -517,24 +475,12 @@ export default function AddBuildingAddressScreen() {
       />
 
       <AddressPickerModal
-        visible={activeModal === 'district'}
-        title="Quận/Huyện"
-        icon="map-outline"
-        options={districtOptions}
-        selectedCode={districtCode}
-        emptyText="Hãy chọn Tỉnh/Thành phố trước để tải Quận/Huyện."
-        loading={loadingDistrict}
-        onSelect={handleSelectDistrict}
-        onClose={() => setActiveModal(null)}
-      />
-
-      <AddressPickerModal
         visible={activeModal === 'ward'}
-        title="Phường/Xã"
+        title="Phường/Xã hiện hành"
         icon="location-outline"
         options={wardOptions}
         selectedCode={wardCode}
-        emptyText="Hãy chọn Quận/Huyện trước để tải Phường/Xã."
+        emptyText="Hãy chọn Tỉnh/Thành phố trước để tải Phường/Xã."
         loading={loadingWard}
         onSelect={handleSelectWard}
         onClose={() => setActiveModal(null)}

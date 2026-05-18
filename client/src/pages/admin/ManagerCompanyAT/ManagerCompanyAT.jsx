@@ -1,105 +1,205 @@
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import {
+  Alert,
+  Box,
+  Paper,
+  Typography
+} from '@mui/material'
+import BusinessCenterIcon from '@mui/icons-material/BusinessCenter'
+import PlayCircleIcon from '@mui/icons-material/PlayCircle'
+import InfoIcon from '@mui/icons-material/Info'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
+
+// ── Sub-component: Sidebar tab ──────────────────────────────────────────────
+const SidebarTab = ({ icon, label, active }) => (
+  <Box
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 1.5,
+      px: 2,
+      py: 1.5,
+      cursor: 'pointer',
+      bgcolor: active ? '#20a9e7' : 'transparent',
+      color: active ? '#fff' : '#555',
+      fontWeight: active ? 700 : 400,
+      fontSize: '14px',
+      borderRadius: '8px 8px 0 0',
+      userSelect: 'none',
+      transition: 'background 0.2s'
+    }}
+  >
+    {icon}
+    <span>{label}</span>
+  </Box>
+)
+
+// ── Sub-component: Video button ─────────────────────────────────────────────
+const VideoButton = ({ label }) => (
+  <Box
+    component="a"
+    href="#"
+    sx={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 1,
+      bgcolor: '#e53935',
+      color: '#fff',
+      borderRadius: '20px',
+      px: 2,
+      py: 0.7,
+      fontSize: '13px',
+      fontWeight: 600,
+      textDecoration: 'none',
+      boxShadow: '0 2px 8px rgba(229,57,53,0.3)',
+      '&:hover': { bgcolor: '#b71c1c' },
+      transition: 'background 0.2s'
+    }}
+  >
+    <PlayCircleIcon sx={{ fontSize: 22 }} />
+    {label}
+  </Box>
+)
+
+// ── Sub-component: Upgrade alert ────────────────────────────────────────────
+const UpgradeAlert = ({ message }) => (
+  <Alert
+    icon={<InfoIcon sx={{ color: '#e65100', fontSize: 22 }} />}
+    severity="warning"
+    sx={{
+      mx: 3,
+      mb: 3,
+      borderRadius: '8px',
+      bgcolor: '#fff8e1',
+      border: '1px solid #ffe082',
+      color: '#5d4037',
+      fontSize: '13px',
+      fontWeight: 600,
+      alignItems: 'center',
+      '& .MuiAlert-icon': { mr: 1.5 }
+    }}
+  >
+    {message}
+  </Alert>
+)
+
+// ── Main Component ───────────────────────────────────────────────────────────
 const ManagerCompanyAT = ({ setIsAdmin, motels, setmotels }) => {
   useEffect(() => {
     setIsAdmin(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
   return (
     <div>
       <NavAdmin setIsAdmin={setIsAdmin} setmotels={setmotels} motels={motels} />
-      <div className="page-permission mb-4" id="permission">
-        <div className="container">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <h4 className="title-item">
+
+      <Box sx={{minHeight: '100vh', pb: 5 }}>
+        {/* Page title row */}
+        <Box
+          sx={{
+            maxWidth: '1000px',
+            mx: 'auto',
+            pt: 3,
+            px: 2,
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between'
+          }}
+        >
+          <Box>
+            <Typography
+              sx={{ fontWeight: 700, fontSize: '22px', color: '#1a1a1a', lineHeight: 1.3 }}
+            >
+              <Box component="span" sx={{ color: '#20a9e7', mr: 1 }}>
+                |
+              </Box>
               Tính năng công ty - nhóm
-              <i style={{ fontSize: '14px', fontWeight: 'normal' }}>
-                Tạo tài khoản cho nhân viên, chia quyền quản lý...
-              </i>
-            </h4>
-          </div>
-          <div className="card-feature2 overflow-hidden">
-            <div className="d-flex">
-              <div className="col-md-3" style={{ borderRight: '1px solid #eee', padding: '0' }}>
-                {/* Nav tabs  */}
-                <ul className="nav setting-tabs permission-tabs" role="tablist" style={{ display: 'unset' }}>
-                  <li className="nav-item active">
-                    <Link className="nav-link active " data-bs-toggle="tab" to="#company">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="feather feather-briefcase">
-                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                      </svg>
-                      Công ty / nhóm
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-              <div className="col-md-9">
-                <div style={{ padding: '15px' }}>
-                  {/* tab panes */}
-                  <div className="tab-content">
-                    <div className="container tab-pane active" id="company">
-                      <div
-                        className="text-center"
-                        style={{ backgroundColor: '#cbf6fb', borderRadius: '15px', overflow: 'hidden' }}>
-                        <img
-                          src="/groups_baner.png"
-                          height="200px"
-                          style={{ maxWidth: '100%' }}
-                        />
-                        <div className="mt-5">
-                          <h3>Thiết lập công ty hoặc nhóm của bạn</h3>
-                          <p>
-                            Phần mềm sẽ giúp bạn tạo ra một công ty hoặc một đội nhóm và được chia quyền hạn để quản lý
-                            phần mềm!
-                          </p>
-                          <p>
-                            Bạn chưa có nhóm/công ty. Hãy tạo 1 nhóm/công ty để cấp quyền cho nhân viên quản lý của bạn
-                          </p>
-                          <div className="loz-alert warning" style={{ margin: '15px' }}>
-                            <div className="icon flex-0">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="feather feather-info"
-                                size="20">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="16" x2="12" y2="12"></line>
-                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                              </svg>
-                            </div>
-                            <div className="des flex-1">
-                              <b>Để sử dụng tính năng này bạn phải nâng cấp gói có phí để tiếp tục sử dụng!</b>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            </Typography>
+            <Typography sx={{ fontSize: '13px', color: '#555', fontStyle: 'italic', mt: 0.3 }}>
+              Tạo tài khoản cho nhân viên, chia quyền quản lý...
+            </Typography>
+          </Box>
+
+          <VideoButton label="Xem video tính năng" />
+        </Box>
+
+        {/* Card */}
+        <Box sx={{ maxWidth: '1000px', mx: 'auto', mt: 2.5, px: 2 }}>
+          <Paper
+            elevation={0}
+            sx={{
+              borderRadius: '12px',
+              overflow: 'hidden',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+              display: 'flex',
+              minHeight: '360px'
+            }}
+          >
+            {/* Sidebar */}
+            <Box
+              sx={{
+                width: '220px',
+                flexShrink: 0,
+                bgcolor: '#fafafa',
+                borderRight: '1px solid #e8e8e8'
+              }}
+            >
+              <SidebarTab
+                icon={<BusinessCenterIcon sx={{ fontSize: 18 }} />}
+                label="Công ty / nhóm"
+                active={true}
+              />
+            </Box>
+
+            {/* Main panel */}
+            <Box sx={{ flex: 1 }}>
+              {/* Banner area */}
+              <Box
+                sx={{
+                  bgcolor: '#cbf6fb',
+                  mx: 3,
+                  mt: 3,
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  minHeight: '200px'
+                }}
+              >
+                <Box
+                  component="img"
+                  src="/groups_baner.png"
+                  alt="Công ty nhóm"
+                  sx={{
+                    maxHeight: '200px',
+                    maxWidth: '100%',
+                    objectFit: 'contain',
+                    display: 'block'
+                  }}
+                />
+              </Box>
+
+              {/* Text content */}
+              <Box sx={{ textAlign: 'center', px: 3, mt: 3, mb: 2 }}>
+                <Typography sx={{ fontWeight: 700, fontSize: '20px', color: '#1a1a1a', mb: 1 }}>
+                  Thiết lập công ty hoặc nhóm của bạn
+                </Typography>
+                <Typography sx={{ fontSize: '14px', color: '#555', mb: 1 }}>
+                  Phần mềm sẽ giúp bạn tạo ra một công ty hoặc một đội nhóm và được chia quyền hạn để quản lý phần mềm!
+                </Typography>
+                <Typography sx={{ fontSize: '14px', color: '#555', mb: 2.5 }}>
+                  Bạn chưa có nhóm/công ty. Hãy tạo 1 nhóm/công ty để cấp quyền cho nhân viên quản lý của bạn
+                </Typography>
+              </Box>
+
+              {/* Upgrade alert */}
+              <UpgradeAlert message="Để sử dụng tính năng này bạn phải nâng cấp gói có phí để tiếp tục sử dụng!" />
+            </Box>
+          </Paper>
+        </Box>
+      </Box>
     </div>
   )
 }

@@ -115,9 +115,9 @@ export default function HomeHeader({
                   <Ionicons name="add" size={24} color={Colors.primary} />
                 </View>
                 <View style={styles.menuItemContent}>
-                  <Text style={styles.menuItemTitle}>Them moi toa nha cho thue</Text>
+                  <Text style={styles.menuItemTitle}>Thêm mới tòa nhà cho thuê</Text>
                   <Text style={styles.menuItemDesc}>
-                    Ban co the them nhieu nha tai san cho thue de quan ly
+                    Bạn có thể thêm nhiều nhà tài sản cho thuê để quản lý
                   </Text>
                 </View>
                 <Ionicons
@@ -139,10 +139,10 @@ export default function HomeHeader({
                 </View>
                 <View style={styles.menuItemContent}>
                   <Text style={styles.menuItemTitle}>
-                    {`Chinh sua thong tin "${userName}"`}
+                    {`Chỉnh sửa thông tin "${userName}"`}
                   </Text>
                   <Text style={styles.menuItemDesc}>
-                    Chinh sua nha tro hien tai, bao gom ten, dia chi...
+                    Chỉnh sửa nhà trọ hiện tại, bao gồm tên, địa chỉ...
                   </Text>
                 </View>
                 <Ionicons
@@ -167,9 +167,9 @@ export default function HomeHeader({
                   />
                 </View>
                 <View style={styles.menuItemContent}>
-                  <Text style={styles.menuItemTitle}>Cai dat</Text>
+                  <Text style={styles.menuItemTitle}>Cài đặt</Text>
                   <Text style={styles.menuItemDesc}>
-                    Cai dat nhu may in, chuc nang, tien ich, gio giac, noi quy...
+                    Cài đặt như máy in, chức năng, tiện ích, giờ giấc, nội quy...
                   </Text>
                 </View>
                 <Ionicons

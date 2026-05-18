@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import {
   View,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
   TouchableOpacity,
   Text,
 } from 'react-native';
+import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
 import { useRouter } from 'expo-router';
 import {
   AuthLogo,

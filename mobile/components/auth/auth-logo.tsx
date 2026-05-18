@@ -13,19 +13,16 @@ interface AuthLogoProps {
 }
 
 export default function AuthLogo({ size = "normal" }: AuthLogoProps) {
-  const logoSize = size === "normal" ? 80 : 60;
+  const logoSize = size === "normal" ? 100 : 80;
 
   return (
     <View style={styles.container}>
       <Image
-        source={require("@/assets/images/logo.png")}
+        source={require("@/assets/images/RRMS.png")}
         style={[styles.logo, { width: logoSize, height: logoSize }]}
         resizeMode="contain"
       />
       <View style={styles.textContainer}>
-        <Text style={[styles.appName, size === "small" && styles.appNameSmall]}>
-          RRMS
-        </Text>
         <Text style={[styles.tagline, size === "small" && styles.taglineSmall]}>
           Quản lý <Text style={styles.taglineHighlight}>NHÀ CHO THUÊ</Text>
         </Text>

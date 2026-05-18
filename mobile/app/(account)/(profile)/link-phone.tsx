@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   Platform,
   TextInput,
   Image,
 } from "react-native";
+import { RefreshableScrollView as ScrollView } from "@/components/ui/refreshable-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -19,8 +19,12 @@ import {
   Spacing,
   BorderRadius,
 } from "@/constants/theme";
-
-export default function LinkPhoneScreen() {
+interface AuthLogoProps {
+  size?: "normal" | "small";
+}
+export default function LinkPhoneScreen({ size = "normal" }: AuthLogoProps) {
+  const logoWidth = size === "normal" ? 84 : 72;
+  const logoHeight = size === "normal" ? 34 : 28;
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -55,8 +59,8 @@ export default function LinkPhoneScreen() {
         {/* Logo Area */}
         <View style={styles.logoContainer}>
           <Image
-            source={require("@/assets/images/logo.png")}
-            style={styles.logoImage}
+            source={require("@/assets/images/RRMS.png")}
+            style={[styles.logo, { width: logoWidth, height: logoHeight }]}
             resizeMode="contain"
           />
           <Text style={styles.logoTextSub}>
@@ -155,7 +159,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: "center",
-    marginVertical: Spacing["3xl"],
+    marginVertical: Spacing.lg,
   },
   logoImage: {
     width: 96,
@@ -240,5 +244,8 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     fontWeight: "bold",
     color: Colors.white,
+  },
+  logo: {
+    marginBottom: Spacing.sm,
   },
 });

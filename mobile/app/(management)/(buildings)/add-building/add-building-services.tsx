@@ -13,6 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { RefreshableScrollView } from "@/components/ui/refreshable-scroll-view";
 import {
   BorderRadius,
   Colors,
@@ -347,7 +348,7 @@ export default function AddBuildingServicesScreen() {
         <Text style={styles.headerTitle}>Thêm mới nhà cho thuê</Text>
       </View>
 
-      <ScrollView
+      <RefreshableScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -478,7 +479,7 @@ export default function AddBuildingServicesScreen() {
             </View>
           ) : null}
         </View>
-      </ScrollView>
+      </RefreshableScrollView>
 
       <ServiceModeModal
         service={activeService}
