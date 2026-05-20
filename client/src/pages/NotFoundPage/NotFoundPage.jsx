@@ -4,28 +4,31 @@ import GoBackButton from './GoBackButton'
 import { Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
 
 const NotFoundPage = () => {
   const { t } = useTranslation()
-  anime({
-    targets: '.row svg',
-    translateY: 10,
-    autoplay: true,
-    loop: true,
-    easing: 'easeInOutSine',
-    direction: 'alternate'
-  })
+  useEffect(() => {
+    anime({
+      targets: '.row svg',
+      translateY: 10,
+      autoplay: true,
+      loop: true,
+      easing: 'easeInOutSine',
+      direction: 'alternate'
+    })
 
-  anime({
-    targets: '#zero',
-    translateX: 10,
-    autoplay: true,
-    loop: true,
-    easing: 'easeInOutSine',
-    direction: 'alternate',
-    scale: [{ value: 1 }, { value: 1.4 }, { value: 1, delay: 250 }],
-    rotateY: { value: '+=180', delay: 200 }
-  })
+    anime({
+      targets: '#zero',
+      translateX: 10,
+      autoplay: true,
+      loop: true,
+      easing: 'easeInOutSine',
+      direction: 'alternate',
+      scale: [{ value: 1 }, { value: 1.4 }, { value: 1, delay: 250 }],
+      rotateY: { value: '+=180', delay: 200 }
+    })
+  }, [])
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
@@ -33,7 +36,7 @@ const NotFoundPage = () => {
         <div className="container">
           <div className="row">
             <div className="col-sm-12 col-md-12 mt-5 mb-5" style={{ width: '800px' }}>
-              <svg width="100%" height="auto" viewBox="0 0 636 324" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg style={{ width: '100%', height: 'auto' }} viewBox="0 0 636 324" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g id="OBJECTS">
                   <g id="Group">
                     <path
@@ -1182,7 +1185,7 @@ const NotFoundPage = () => {
           </div>
         </div>
       </Link>
-      <Typography variant="h6" component="body" sx={{ fontWeight: 'normal', fontSize: '20px', mx: 2 }}>
+      <Typography variant="h6" component="div" sx={{ fontWeight: 'normal', fontSize: '20px', mx: 2 }}>
         {t('404-xin-loi-khong-ton-tai')}
       </Typography>
       <GoBackButton />

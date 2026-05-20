@@ -2,7 +2,6 @@ package com.rrms.rrms.controllers;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.UUID;
 
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
@@ -66,21 +65,20 @@ public class AuthenController {
 
         String email = oauthUser.getAttribute("email");
         String name = oauthUser.getAttribute("name");
+        String avatar = oauthUser.getAttribute("picture");
 
         if (email == null || name == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Không lấy được thông tin email hoặc tên");
             return;
         }
 
-        Account account = accountService.findByEmail(email).orElseGet(() -> {
-            RegisterRequest registerRequest = RegisterRequest.builder()
-                    .username(name)
-                    .email(email)
-                    .password(UUID.randomUUID().toString())
-                    .userType("CUSTOMER")
-                    .build();
-            return accountService.registergg(registerRequest);
-        });
+        Account account = accountService.findOrCreateSocialAccount(SocialLoginRequest.builder()
+                .provider("google")
+                .providerId(email)
+                .email(email)
+                .name(name)
+                .avatar(avatar)
+                .build());
 
         String token = authorityService.generateToken(account);
 
@@ -129,6 +127,17 @@ public class AuthenController {
         response.setUsername(account.getUsername());
 
         return ApiResponse.<RegisterResponse>builder().result(response).build();
+    }
+
+    @PostMapping("/social-login")
+    public ApiResponse<LoginResponse> socialLogin(@RequestBody @Valid SocialLoginRequest socialLoginRequest) {
+        Account account = accountService.findOrCreateSocialAccount(socialLoginRequest);
+        LoginResponse loginResponse = authorityService.buildLoginResponse(account);
+
+        return ApiResponse.<LoginResponse>builder()
+                .message("Social login successful")
+                .result(loginResponse)
+                .build();
     }
 
     @PostMapping("/refreshToken")

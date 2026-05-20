@@ -45,7 +45,7 @@ export default function TenantsListScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Quay lại"
         >
-          <Ionicons name="arrow-back" size={24} color={Colors.textSuccess} />
+          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Danh sách khách thuê</Text>
       </View>
@@ -129,7 +129,7 @@ export default function TenantsListScreen() {
         <Text style={styles.emptyStateTitle}>Không có dữ liệu!</Text>
         <Text style={styles.emptyStateDesc}>Chưa có khách thuê nào...</Text>
         <Text style={styles.emptyStateHint}>
-          Bạn chưa "Lập hợp đồng mới" nào cho nhà trọ của bạn
+          Bạn chưa Lập hợp đồng mới nào cho nhà trọ của bạn
         </Text>
       </View>
     </View>
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
 
   // Action bar
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.textSuccess,
+    backgroundColor: Colors.textPrimary,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   dropdownValue: {
     fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
   searchInputWrap: {
     flex: 1,
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingRight: Spacing["2xl"],
     fontSize: FontSizes.sm,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
   searchIcon: {
     position: "absolute",
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: FontSizes.lg,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
     marginBottom: Spacing.xs,
   },
   emptyStateDesc: {

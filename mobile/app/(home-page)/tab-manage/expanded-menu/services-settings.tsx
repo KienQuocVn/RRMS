@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#15B44A',
+    backgroundColor: Colors.success,
     marginRight: 6,
   },
   badgeText: {
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#14B24B',
+    backgroundColor: Colors.success,
     alignItems: 'center',
     justifyContent: 'center',
     ...Shadows.lg,

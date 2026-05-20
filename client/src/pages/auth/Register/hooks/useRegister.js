@@ -4,30 +4,29 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 import { useTranslation } from 'react-i18next'
 import { env } from '~/configs/environment'
-import { acceptAuthenticationRegister, email_valid, sendOTPRegister } from '~/apis/accountAPI'
 
 export const useRegister = () => {
   const { t } = useTranslation()
   const [form, setForm] = useState({
     username: '',
-    gmail: '',
     phone: '',
     password: '',
     passwordConfirmation: '',
     userType: 'CUSTOMER'
   })
-  const [gmailErr, setGmailErr] = useState('')
-  const [pageOTP, setPageOTP] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [otp, setOtp] = useState('')
   const navigate = useNavigate()
 
-  const updateField = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
+  const updateField = (field) => (event) => {
+    setForm((previous) => ({ ...previous, [field]: event.target.value }))
+  }
 
   const validate = () => {
-    const { username, phone, gmail, password, passwordConfirmation } = form
+    const username = form.username.trim()
+    const phone = form.phone.trim()
+    const { password, passwordConfirmation, userType } = form
 
-    if (!username || !phone || !gmail || !password || !passwordConfirmation) {
+    if (!userType || !username || !phone || !password || !passwordConfirmation) {
       Swal.fire({
         icon: 'warning',
         title: t('auth.register.alerts.warningTitle'),
@@ -35,7 +34,8 @@ export const useRegister = () => {
       })
       return false
     }
-    if (!/^(0[3-9]{1}[0-9]{8})$/.test(phone)) {
+
+    if (!/^(03|05|07|08|09)\d{8}$/.test(phone)) {
       Swal.fire({
         icon: 'error',
         title: t('auth.register.alerts.errorTitle'),
@@ -43,6 +43,7 @@ export const useRegister = () => {
       })
       return false
     }
+
     if (password.length < 8) {
       Swal.fire({
         icon: 'error',
@@ -51,6 +52,7 @@ export const useRegister = () => {
       })
       return false
     }
+
     if (password !== passwordConfirmation) {
       Swal.fire({
         icon: 'error',
@@ -59,101 +61,49 @@ export const useRegister = () => {
       })
       return false
     }
+
     return true
   }
 
   const handleRegister = async (event) => {
     event.preventDefault()
-    if (!validate()) return
+
+    if (!validate()) {
+      return
+    }
+
+    setLoading(true)
 
     try {
-      const { username, phone, gmail } = form
-      const response = await axios.post(`${env.API_URL}/api/v1/authen/checkregister`, { username, phone, email: gmail })
-      if (response.data.result) {
-        requestEmailVerification()
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: t('auth.register.alerts.errorTitle'),
-          text: response.data.message || t('auth.register.alerts.invalidInfo')
-        })
-      }
-    } catch {
-      Swal.fire({
-        icon: 'error',
-        title: t('auth.register.alerts.errorTitle'),
-        text: t('auth.register.alerts.checkInfoFailed')
-      })
-    }
-  }
+      const username = form.username.trim()
+      const phone = form.phone.trim()
+      const { password, userType } = form
 
-  const requestEmailVerification = async () => {
-    const response = await email_valid(form.gmail)
-    if (response.result === false) {
-      setGmailErr('')
-      setPageOTP(true)
-      await handleSendOtp()
-    } else {
-      setGmailErr(t('auth.register.alerts.invalidEmail'))
-    }
-  }
-
-  const handleSendOtp = async () => {
-    setLoading(true)
-    const response = await sendOTPRegister({ gmail: form.gmail, code: otp })
-    setTimeout(() => {
-      setLoading(false)
-      if (response.result === true) {
-        Swal.fire({
-          icon: 'success',
-          title: t('auth.register.alerts.sendOtpSuccessTitle'),
-          text: t('auth.register.alerts.sendOtpSuccessText')
-        })
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: t('auth.register.alerts.sendOtpErrorTitle'),
-          text: t('auth.register.alerts.sendOtpErrorText')
-        })
-      }
-    }, 1000)
-  }
-
-  const handleAcceptChangePass = async () => {
-    setLoading(true)
-    const response = await acceptAuthenticationRegister({ gmail: form.gmail, code: otp })
-    if (response.result === true) {
-      setTimeout(() => {
-        setLoading(false)
-        registerAccount()
-      }, 1000)
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: t('auth.register.alerts.invalidOtpTitle'),
-        text: t('auth.register.alerts.invalidOtpText')
-      })
-      setLoading(false)
-    }
-  }
-
-  const registerAccount = async () => {
-    const { username, phone, gmail, password, userType } = form
-    try {
       const response = await axios.post(
         `${env.API_URL}/api/v1/authen/register`,
-        { username, phone, email: gmail, password, userType },
+        { username, phone, password, userType },
         { headers: { 'ngrok-skip-browser-warning': '69420' } }
       )
+
       Swal.fire({
         icon: 'success',
         title: t('auth.register.alerts.successTitle'),
-        text: response.data.message || t('auth.register.alerts.successText')
+        text: response.data?.message || t('auth.register.alerts.successText')
       })
+
       navigate('/login')
     } catch (error) {
-      const msg = error.response?.data?.message || t('auth.register.alerts.genericError')
-      Swal.fire({ icon: 'error', title: t('auth.register.alerts.errorTitle'), text: msg })
+      const message =
+        error.code === 'ERR_NETWORK'
+          ? t('auth.register.alerts.backendUnavailable')
+          : error.response?.data?.message || t('auth.register.alerts.genericError')
+      Swal.fire({
+        icon: 'error',
+        title: t('auth.register.alerts.errorTitle'),
+        text: message
+      })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -161,13 +111,7 @@ export const useRegister = () => {
     form,
     updateField,
     setForm,
-    gmailErr,
-    pageOTP,
     loading,
-    otp,
-    setOtp,
-    handleRegister,
-    handleSendOtp,
-    handleAcceptChangePass
+    handleRegister
   }
 }

@@ -5,12 +5,12 @@
  * DesktopVersion, SupportFooter.
  */
 
-import React, { useState } from 'react';
-import { StyleSheet, Platform, View } from 'react-native';
-import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Colors } from '@/constants/theme';
+import React, { useState } from "react";
+import { StyleSheet, Platform, View } from "react-native";
+import { RefreshableScrollView as ScrollView } from "@/components/ui/refreshable-scroll-view";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { Colors } from "@/constants/theme";
 import {
   HomeHeader,
   TabSwitcher,
@@ -23,16 +23,22 @@ import {
   TenantApp,
   DesktopVersion,
   HomeSupportFooter,
-} from '@/components/home';
-import OverviewTab from '@/components/home/OverviewTab';
+} from "@/components/home";
+import OverviewTab from "@/app/(home-page)/tab-overview/overviewTab";
+import { homeQuickActionScreens } from "@/src/features/tabs";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'manage' | 'overview'>('manage');
+  const [activeTab, setActiveTab] = useState<"manage" | "overview">("manage");
 
   return (
-    <View style={[styles.container, { paddingTop: Platform.OS === 'ios' ? insets.top : 0 }]}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: Platform.OS === "ios" ? insets.top : 0 },
+      ]}
+    >
       {/* ── Sticky Header + Tab Switcher (green area) ── */}
       <View style={styles.stickyHeader}>
         <HomeHeader userName="Quoc" />
@@ -46,13 +52,20 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         bounces={true}
       >
-        {activeTab === 'manage' ? (
+        {activeTab === "manage" ? (
           <>
             {/* Section 1: Thông báo (Ảnh 1) */}
             <NotificationBanner />
 
             {/* Section 2: Thao tác thường dùng (Ảnh 1) */}
-            <QuickActions onItemPress={(id) => router.push(`/${id}` as any)} />
+            <QuickActions
+              onItemPress={(id) => {
+                const route = homeQuickActionScreens.find(
+                  (screen: any) => screen.id === id,
+                )?.route;
+                router.push((route || `/${id}`) as any);
+              }}
+            />
 
             {/* Section 3: Menu quản lý nhà trọ (Ảnh 1 + 2) */}
             <ManagementMenu />

@@ -644,14 +644,13 @@
     },
     "register": {
       "title": "REGISTER ACCOUNT",
-      "host": "I am a landlord or staff member",
-      "customer": "I am looking for a room or lodging",
+      "host": "I am a landlord",
+      "customer": "I am a tenant",
+      "broker": "Broker",
       "username": "Username",
       "usernamePlaceholder": "Enter username",
       "phone": "Phone number",
       "phonePlaceholder": "Enter phone number",
-      "gmail": "Gmail",
-      "gmailPlaceholder": "Enter Gmail",
       "password": "Password",
       "passwordPlaceholder": "Enter password",
       "confirmPassword": "Confirm password",
@@ -680,7 +679,8 @@
         "invalidOtpText": "Please try again!",
         "successTitle": "Success",
         "successText": "Registration successful",
-        "genericError": "Something went wrong. Please try again."
+        "genericError": "Something went wrong. Please try again.",
+        "backendUnavailable": "Cannot connect to the registration server. Please check that the backend is running on port 7000."
       }
     },
     "forgotPassword": {

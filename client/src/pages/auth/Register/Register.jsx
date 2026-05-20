@@ -5,12 +5,10 @@ import LoadingPage from '~/components/LoadingPage/LoadingPage'
 import { useRegister } from './hooks/useRegister'
 import RegisterHeader from './sections/RegisterHeader'
 import RegisterForm from './sections/RegisterForm'
-import OTPSection from './sections/OTPSection'
 
 const Register = ({ setIsAdmin }) => {
   const { t } = useTranslation()
-  const { form, updateField, gmailErr, pageOTP, loading, otp, setOtp, handleRegister, handleSendOtp, handleAcceptChangePass } =
-    useRegister()
+  const { form, updateField, loading, handleRegister } = useRegister()
 
   useEffect(() => {
     setIsAdmin(false)
@@ -35,17 +33,7 @@ const Register = ({ setIsAdmin }) => {
           <Box className="login-content-container" sx={{ maxWidth: 800, minWidth: 300, width: '100%', alignSelf: 'center' }}>
             <RegisterHeader />
 
-            {!pageOTP ? (
-              <RegisterForm form={form} updateField={updateField} gmailErr={gmailErr} onSubmit={handleRegister} />
-            ) : (
-              <OTPSection
-                gmail={form.gmail}
-                otp={otp}
-                onOtpChange={setOtp}
-                onResend={handleSendOtp}
-                onConfirm={handleAcceptChangePass}
-              />
-            )}
+            <RegisterForm form={form} updateField={updateField} onSubmit={handleRegister} />
 
             <Typography textAlign="center" mt={5} variant="body2">
               {t('auth.copyright')}

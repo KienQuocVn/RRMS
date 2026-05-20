@@ -107,7 +107,6 @@ export default function AccountMenu({ username, avatar, tokenExists, onMenuClose
           />
         </>
       )}
-      <SectionLabel label={t('header.accountMenu.sections.others')} />
       {tokenExists && (
         <MenuItem
           to="/profile"

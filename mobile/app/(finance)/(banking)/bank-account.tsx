@@ -77,8 +77,8 @@ export default function BankAccountScreen() {
             </View>
           </View>
 
-          <Text style={styles.heroTitle}>Kết nối tài khoản với LOZIDO</Text>
-          <Text style={styles.heroSubtitle}>Các ngân hàng hợp tác với LOZIDO</Text>
+          <Text style={styles.heroTitle}>Kết nối tài khoản với RRMS</Text>
+          <Text style={styles.heroSubtitle}>Các ngân hàng hợp tác với RRMS</Text>
 
           <View style={styles.bankRow}>
             <View style={styles.bankBox}>

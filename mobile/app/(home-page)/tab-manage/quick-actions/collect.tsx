@@ -105,7 +105,7 @@ export default function CollectScreen() {
           Chưa có hóa đơn nào cần thu tiền.
         </Text>
         <Text style={styles.emptyStateDesc}>
-          Vui lòng "Lập hóa đơn" trước khi thu tiền.
+          Vui lòng Lập hóa đơn trước khi thu tiền.
         </Text>
       </View>
     </View>
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   filterTabActive: {
-    backgroundColor: '#8BC34A',
+    backgroundColor: Colors.success,
   },
   filterTabInactive: {
     backgroundColor: Colors.white,

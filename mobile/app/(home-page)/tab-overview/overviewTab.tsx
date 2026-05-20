@@ -121,7 +121,7 @@ export default function OverviewTab() {
         />
         <RoomStatCard
           icon="time"
-          iconColor={Colors.textSuccess}
+          iconColor={Colors.textPrimary}
           title="Số phòng quá hạn hợp đồng"
           count={0}
           percent={0}
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   },
   greenLink: {
     fontSize: FontSizes.md,
-    color: Colors.success,
+    color: Colors.primary,
     fontWeight: FontWeights.medium,
   },
   linkUnderline: {
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   boldText: {
     fontSize: FontSizes.lg,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
   normalText: {
     fontSize: FontSizes.md,
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FontSizes.md,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
   sectionSubtitle: {
     fontSize: FontSizes.xs,
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
   statCount: {
     fontSize: FontSizes.lg,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
     marginRight: Spacing.xs,
   },
   percentBadge: {
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
   bannerTitle: {
     fontSize: FontSizes.md,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
     marginBottom: Spacing.xs,
   },
   bannerHighlight: {
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
   financeTitle: {
     fontSize: FontSizes.md,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
     marginBottom: 2,
   },
   financeSubtitle: {
@@ -534,6 +534,6 @@ const styles = StyleSheet.create({
   financeAmount: {
     fontSize: FontSizes.md,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
 });

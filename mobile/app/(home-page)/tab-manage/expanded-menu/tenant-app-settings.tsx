@@ -84,7 +84,7 @@ function Toggle({
 export default function TenantAppSettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [password, setPassword] = useState('lozido123');
+  const [password, setPassword] = useState('RRMS123');
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>(
     SETTING_TOGGLES.reduce((acc, item) => ({ ...acc, [item.id]: item.defaultValue }), {} as Record<string, boolean>)
   );
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   toggleActive: {
-    backgroundColor: '#DFF5E3',
+    backgroundColor: Colors.success,
   },
   toggleThumb: {
     width: 24,
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#BDBDBD',
   },
   toggleThumbActive: {
-    backgroundColor: '#7ED321',
+    backgroundColor: Colors.white,
     alignSelf: 'flex-end',
   },
   footer: {
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#E5E7EB',
   },
   saveButton: {
-    backgroundColor: '#13AA47',
+    backgroundColor: Colors.success,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

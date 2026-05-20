@@ -150,7 +150,7 @@ const FEATURE_ITEMS: FeatureItem[] = [
     iconTint: "#36C5F0",
     title: "Tính năng đăng tin tiếp cận khách thuê",
     description:
-      "Đăng tin tìm khách thuê, khách tiềm năng... trên hệ thống LOZIDO",
+      "Đăng tin tìm khách thuê, khách tiềm năng... trên hệ thống RRMS",
   },
   {
     id: "files",

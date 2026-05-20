@@ -58,8 +58,8 @@ export default function ExpandedMenu({
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         accessibilityLabel="Quản lý môi giới"
       >
-        <View style={[styles.cardIcon, { backgroundColor: "#E8F5E9" }]}>
-          <Ionicons name="megaphone-outline" size={28} color={Colors.primary} />
+        <View style={[styles.cardIcon, { backgroundColor: Colors.success }]}>
+          <Ionicons name="megaphone-outline" size={28} color={Colors.white} />
         </View>
         <View style={styles.cardContent}>
           <Text style={styles.cardTitle}>Quản lý môi giới</Text>

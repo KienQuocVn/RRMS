@@ -62,7 +62,7 @@ export default function HomeHeader({
 
   const handleSettingsPress = () => {
     closeMenu(() => {
-      router.push("/motel-settings");
+      router.push("/tab-manage/expanded-menu/motel-settings");
     });
   };
 
@@ -74,7 +74,7 @@ export default function HomeHeader({
         </View>
 
         <View style={styles.userInfo}>
-          <Text style={styles.subtitle}>Dang quan ly Nha tro</Text>
+          <Text style={styles.subtitle}>Đang quản lý Nhà trọ</Text>
           <View style={styles.userNameRow}>
             <Text style={styles.userName}>{userName}</Text>
             <Ionicons name="chevron-down" size={16} color={Colors.white} />

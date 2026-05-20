@@ -2,7 +2,9 @@ package com.rrms.rrms.services.servicesImp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -15,6 +17,7 @@ import com.rrms.rrms.dto.request.AccountRequest;
 import com.rrms.rrms.dto.request.ChangePasswordByEmail;
 import com.rrms.rrms.dto.request.ChangePasswordRequest;
 import com.rrms.rrms.dto.request.RegisterRequest;
+import com.rrms.rrms.dto.request.SocialLoginRequest;
 import com.rrms.rrms.dto.response.AccountResponse;
 import com.rrms.rrms.enums.ErrorCode;
 import com.rrms.rrms.enums.Roles;
@@ -128,35 +131,19 @@ public class AccountService implements IAccountService {
             throw new AppException(ErrorCode.INVALID_PASSWORD);
         }
 
+        if (!isValidVietnamesePhone(request.getPhone())) {
+            throw new AppException(ErrorCode.INVALID_PHONE2);
+        }
+
         Account account = new Account();
-        account.setUsername(request.getUsername());
-        account.setPhone(request.getPhone());
-        account.setEmail(request.getEmail());
+        account.setUsername(request.getUsername().trim());
+        account.setFullName(request.getUsername().trim());
+        account.setPhone(request.getPhone().trim());
+        account.setEmail(trimToNull(request.getEmail()));
         account.setPassword(passwordEncoder.encode(request.getPassword()));
 
         Account savedAccount = accountRepository.save(account);
-
-        Roles roleEnum;
-        switch (request.getUserType().toUpperCase()) {
-            case "HOST":
-                roleEnum = Roles.HOST;
-                break;
-            case "BROKER":
-                roleEnum = Roles.BROKER;
-                break;
-            default:
-                roleEnum = Roles.CUSTOMER;
-                break;
-        }
-
-        Role role =
-                roleRepository.findByRoleName(roleEnum).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-
-        Auth auth = new Auth();
-        auth.setAccount(savedAccount);
-        auth.setRole(role);
-        authRepository.save(auth);
-
+        assignRole(savedAccount, resolveRole(request.getUserType()));
         return savedAccount;
     }
 
@@ -168,31 +155,42 @@ public class AccountService implements IAccountService {
 
         Account account = new Account();
         account.setUsername(request.getUsername());
+        account.setFullName(trimToNull(request.getUsername()));
         account.setEmail(request.getEmail());
         account.setPassword(passwordEncoder.encode(request.getPassword()));
         account.setPhone(request.getPhone());
         Account savedAccount = accountRepository.save(account);
 
-        Roles roleEnum;
-        switch (request.getUserType().toUpperCase()) {
-            case "HOST":
-                roleEnum = Roles.HOST;
-                break;
-            case "BROKER":
-                roleEnum = Roles.BROKER;
-                break;
-            default:
-                roleEnum = Roles.CUSTOMER;
-                break;
+        assignRole(savedAccount, resolveRole(request.getUserType()));
+        return savedAccount;
+    }
+
+    @Override
+    public Account findOrCreateSocialAccount(SocialLoginRequest request) {
+        String normalizedEmail = trimToNull(request.getEmail());
+        String socialUsername = buildSocialUsername(request.getProvider(), request.getProviderId());
+
+        Optional<Account> existingAccount = normalizedEmail != null
+                ? accountRepository.findByEmail(normalizedEmail)
+                : accountRepository.findByUsername(socialUsername);
+
+        if (existingAccount.isEmpty()) {
+            existingAccount = accountRepository.findByUsername(socialUsername);
         }
 
-        Role role =
-                roleRepository.findByRoleName(roleEnum).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-        Auth auth = new Auth();
-        auth.setAccount(savedAccount);
-        auth.setRole(role);
-        authRepository.save(auth);
+        if (existingAccount.isPresent()) {
+            return updateSocialProfile(existingAccount.get(), normalizedEmail, request);
+        }
 
+        Account account = new Account();
+        account.setUsername(socialUsername);
+        account.setFullName(resolveSocialDisplayName(request));
+        account.setEmail(normalizedEmail);
+        account.setAvatar(trimToNull(request.getAvatar()));
+        account.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+
+        Account savedAccount = accountRepository.save(account);
+        assignRole(savedAccount, Roles.CUSTOMER);
         return savedAccount;
     }
 
@@ -393,6 +391,111 @@ public class AccountService implements IAccountService {
         } catch (Exception exception) {
             return false;
         }
+    }
+
+    private Account updateSocialProfile(Account account, String normalizedEmail, SocialLoginRequest request) {
+        boolean changed = false;
+
+        if (account.getEmail() == null && normalizedEmail != null) {
+            account.setEmail(normalizedEmail);
+            changed = true;
+        }
+
+        if (isBlank(account.getFullName())) {
+            String displayName = resolveSocialDisplayName(request);
+            if (displayName != null) {
+                account.setFullName(displayName);
+                changed = true;
+            }
+        }
+
+        if (isBlank(account.getAvatar())) {
+            String avatar = trimToNull(request.getAvatar());
+            if (avatar != null) {
+                account.setAvatar(avatar);
+                changed = true;
+            }
+        }
+
+        return changed ? accountRepository.save(account) : account;
+    }
+
+    private void assignRole(Account account, Roles roleEnum) {
+        Role role =
+                roleRepository.findByRoleName(roleEnum).orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+
+        Auth auth = new Auth();
+        auth.setAccount(account);
+        auth.setRole(role);
+        authRepository.save(auth);
+    }
+
+    private Roles resolveRole(String userType) {
+        if (userType == null || userType.isBlank()) {
+            throw new AppException(ErrorCode.ROLE_NOT_PROVIDED);
+        }
+
+        switch (userType.trim().toUpperCase(Locale.ROOT)) {
+            case "HOST":
+                return Roles.HOST;
+            case "BROKER":
+                return Roles.BROKER;
+            case "CUSTOMER":
+                return Roles.CUSTOMER;
+            default:
+                throw new AppException(ErrorCode.ROLE_NOT_FOUND);
+        }
+    }
+
+    private boolean isValidVietnamesePhone(String phone) {
+        return phone != null && phone.trim().matches("^(03|05|07|08|09)\\d{8}$");
+    }
+
+    private String resolveSocialDisplayName(SocialLoginRequest request) {
+        String name = trimToNull(request.getName());
+        if (name != null) {
+            return name;
+        }
+
+        String email = trimToNull(request.getEmail());
+        if (email != null && email.contains("@")) {
+            return email.substring(0, email.indexOf('@'));
+        }
+
+        return "Social User";
+    }
+
+    private String buildSocialUsername(String provider, String providerId) {
+        String providerKey = sanitizeProvider(provider);
+        String providerHash =
+                UUID.nameUUIDFromBytes(providerId.trim().getBytes()).toString().replace("-", "");
+        return providerKey + "_" + providerHash;
+    }
+
+    private String sanitizeProvider(String provider) {
+        if (provider == null || provider.isBlank()) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Social provider is required");
+        }
+
+        String normalized = provider.trim().toLowerCase(Locale.ROOT);
+        if (!normalized.matches("[a-z0-9_]+")) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Unsupported social provider");
+        }
+
+        return normalized;
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     @Override

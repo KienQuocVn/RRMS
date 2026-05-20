@@ -38,3 +38,7 @@ but they skip broken legacy test compilation.
 
 Make sure the IDE has annotation processing enabled for Maven projects. If that setting is off,
 MapStruct mappers can disappear again after a restart or after cleaning the project.
+
+This repository now includes IntelliJ's `.idea/compiler.xml` with annotation processing enabled.
+If you already opened the project before that file was added, re-import the Maven project or restart
+the IDE once so IntelliJ picks up the new compiler setting.

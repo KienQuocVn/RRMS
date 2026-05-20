@@ -9,18 +9,18 @@
 
 ## 📊 TỔNG QUAN ĐÁNH GIÁ
 
-| Tiêu chí | Điểm (1-10) | Ghi chú |
-|----------|-------------|---------|
-| Kiến trúc tổng thể | 9/10 | Cấu trúc chuẩn Senior (Service, Storage, Hooks, Types) |
-| Code Quality | 9/10 | TypeScript chặt chẽ, định nghĩa đầy đủ DTOs |
-| Design System | 8/10 | Theme constants được define rõ ràng |
-| Performance | 8/10 | Web: Ổn định. Native: Cần bật lại React Compiler |
-| API Integration | 9/10 | Đã kết nối toàn bộ ~40 API, cấu hình client hoàn hảo |
-| State Management | 10/10 | Đã implement Zustand 4.5.5 (Ổn định nhất đa nền tảng) |
-| Testing | 5/10 | Đã có màn hình Login test API thực tế & Auth Guard |
-| Documentation | 10/10 | Đã bổ sung ghi chú cấu hình Web vs Native |
-| Security | 9/10 | Đã implement JWT flow, Secure storage & Auth Guard |
-| Feature Completeness | 8/10 | Cơ sở hạ tầng API đã sẵn sàng 100% |
+| Tiêu chí             | Điểm (1-10) | Ghi chú                                                |
+| -------------------- | ----------- | ------------------------------------------------------ |
+| Kiến trúc tổng thể   | 9/10        | Cấu trúc chuẩn Senior (Service, Storage, Hooks, Types) |
+| Code Quality         | 9/10        | TypeScript chặt chẽ, định nghĩa đầy đủ DTOs            |
+| Design System        | 8/10        | Theme constants được define rõ ràng                    |
+| Performance          | 8/10        | Web: Ổn định. Native: Cần bật lại React Compiler       |
+| API Integration      | 9/10        | Đã kết nối toàn bộ ~40 API, cấu hình client hoàn hảo   |
+| State Management     | 10/10       | Đã implement Zustand 4.5.5 (Ổn định nhất đa nền tảng)  |
+| Testing              | 5/10        | Đã có màn hình Login test API thực tế & Auth Guard     |
+| Documentation        | 10/10       | Đã bổ sung ghi chú cấu hình Web vs Native              |
+| Security             | 9/10        | Đã implement JWT flow, Secure storage & Auth Guard     |
+| Feature Completeness | 8/10        | Cơ sở hạ tầng API đã sẵn sàng 100%                     |
 
 **Điểm trung bình: 8.7/10** - Dự án đã đạt chuẩn Senior Web-First, sẵn sàng scale sang Native.
 
@@ -31,6 +31,7 @@
 ### 1. Tài liệu Coding Standards xuất sắc (8/10)
 
 `mobile/docs/CODING_STANDARDS.md` là file documentation tốt nhất trong toàn bộ dự án:
+
 - Quy tắc đặt tên rõ ràng (file, component, function, variable)
 - Design system tokens đầy đủ (colors, spacing, typography, shadows)
 - Import conventions có thứ tự
@@ -62,7 +63,7 @@ app/
 
 ```typescript
 // constants/theme.ts
-export const Colors = { primary: '#1DB954', ... };
+export const Colors = { primary: Colors.success, ... };
 export const Spacing = { xs: 4, sm: 8, md: 12, base: 16, ... };
 export const FontSize = { xs: 10, sm: 12, md: 14, base: 16, ... };
 export const BorderRadius = { sm: 4, md: 8, lg: 12, xl: 16, ... };
@@ -79,6 +80,7 @@ export const Shadows = { sm: {...}, md: {...}, lg: {...} };
 > **Trạng thái: HOÀN THÀNH** - Đã thiết lập Network Layer chuyên nghiệp sử dụng Axios Interceptors.
 
 **Cấu trúc đã thiết lập:**
+
 ```
 services/
   api/
@@ -87,29 +89,31 @@ services/
 ```
 
 **Toàn bộ data trong các screens vẫn là hardcoded/mock:**
+
 - Home screen: mock data cho menu, notifications
 - Deposit screen: mock data
 - Contract screen: mock data
 - Invoice screen: mock data
 
 **Giải pháp tiếp theo**: Khởi tạo các services cụ thể (như auth.service) thay vì file code mẫu, và kết nối với màn hình:
+
 ```typescript
 // services/api/client.ts
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE_URL = __DEV__ 
-  ? 'http://192.168.x.x:8080'  // Dev
-  : 'https://api.rrms.com';     // Production
+const API_BASE_URL = __DEV__
+  ? "http://192.168.x.x:8080" // Dev
+  : "https://api.rrms.com"; // Production
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 15000,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { "Content-Type": "application/json" },
 });
 
 // Request interceptor
 apiClient.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('auth_token');
+  const token = await AsyncStorage.getItem("auth_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -122,11 +126,11 @@ apiClient.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       // Handle token refresh or logout
-      await AsyncStorage.removeItem('auth_token');
-      router.replace('/login');
+      await AsyncStorage.removeItem("auth_token");
+      router.replace("/login");
     }
     throw error;
-  }
+  },
 );
 
 export default apiClient;
@@ -137,12 +141,14 @@ export default apiClient;
 ### 2. Không có Authentication State Management (✅ ĐÃ GIẢI QUYẾT)
 
 **Trạng thái: HOÀN THÀNH**:
+
 - Đã implement **AuthStore (Zustand)** quản lý token & user profile.
 - Đã implement **authStorage (AsyncStorage)** lưu trữ bền vững.
 - Đã tích hợp **Axios Interceptors** tự động đính kèm token.
 - Màn hình Login đã kết nối API thực tế từ Java Backend.
 
 **Giải pháp - Auth Context + Secure Storage**:
+
 ```typescript
 // contexts/AuthContext.tsx
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -175,9 +181,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Protect routes
   useEffect(() => {
     if (isLoading) return;
-    
+
     const inAuthGroup = segments[0] === '(auth)';
-    
+
     if (!token && !inAuthGroup) {
       router.replace('/login');
     } else if (token && inAuthGroup) {
@@ -227,6 +233,7 @@ export const useAuth = () => useContext(AuthContext);
 ### 3. Thiếu Essential Dependencies
 
 **Cần cài đặt ngay**:
+
 ```bash
 npx expo install @react-native-async-storage/async-storage  # ✅ Đã cài
 npx expo install axios                                        # ✅ Đã cài
@@ -234,6 +241,7 @@ npx expo install react-native-toast-message                   # Chờ cài
 ```
 
 **Nên cài thêm khi cần**:
+
 ```bash
 npx expo install zustand          # ✅ Đã cài
 npx expo install dayjs            # Chờ cài
@@ -250,6 +258,7 @@ npx expo install zod              # Chờ cài
 Vấn đề các file màn hình như `add-building.tsx`, `deposit.tsx`, `edit-building.tsx` quá dài đã được tái cấu trúc thành công theo Single Responsibility Principle.
 
 **Cấu trúc mới đã áp dụng:**
+
 ```
 app/
   deposit.tsx          ← Chỉ chứa layout + navigation logic (< 60 dòng)
@@ -273,11 +282,13 @@ types/
 ### 5. Thiếu Type Definitions cho Backend APIs
 
 `types/` folder tồn tại nhưng chưa có types cho:
+
 - API response/request formats
 - Room, Motel, Contract, Invoice, Tenant data models
 - Form data types
 
 **Giải pháp**: Đã hoàn thành định nghĩa types cho:
+
 - `common.types.ts`: ApiResponse, BackendResponse format.
 - `auth.types.ts`: LoginRequest, LoginResponse, Gender.
 - `room.types.ts`: Room, RoomService.
@@ -290,12 +301,14 @@ types/
 ### 6. Không có Error Handling Pattern
 
 Hiện tại không có:
+
 - Global error boundary
 - Network error handling
 - Form validation error display pattern
 - Retry mechanism cho failed requests
 
 **Giải pháp - Error Boundary**:
+
 ```typescript
 // components/error-boundary.tsx
 import React, { Component, ErrorInfo, ReactNode } from 'react';
@@ -330,7 +343,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <View style={styles.container}>
           <Text style={styles.title}>Đã xảy ra lỗi</Text>
           <Text style={styles.message}>{this.state.error?.message}</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.button}
             onPress={() => this.setState({ hasError: false })}
           >
@@ -349,6 +362,7 @@ export class ErrorBoundary extends Component<Props, State> {
 ## 📋 DANH SÁCH CẦN CẢI THIỆN
 
 ### API & Backend Integration (✅ HOÀN TẤT 100%)
+
 - [x] Cài đặt `axios` + cấu trúc thư mục
 - [x] Tạo `services/api/client.ts` (HTTP client + interceptors + Token Injection)
 - [x] Đồng bộ `services/api/endpoints.ts` với `BACKEND_API_DOCS.md` (Toàn bộ ~40 API)
@@ -358,6 +372,7 @@ export class ErrorBoundary extends Component<Props, State> {
 - [ ] Kết nối tất cả các màn hình còn lại với real API data (Sử dụng service đã tạo)
 
 ### Authentication (✅ HOÀN TẤT)
+
 - [x] Implement Auth State Management (Zustand)
 - [x] Implement Auth Guard tại Root Layout (Tự động điều hướng Login/Home)
 - [x] Implement Session Persistence (Tự động đăng nhập khi mở App)
@@ -365,6 +380,7 @@ export class ErrorBoundary extends Component<Props, State> {
 - [ ] Implement token refresh logic thêm vào interceptor (Optional)
 
 ### State Management (✅ HOÀN THÀNH)
+
 - [x] Cài đặt `zustand`
 - [x] Implement `useAuth` store với `persist` middleware
 - [x] Đồng bộ state tự động với `AsyncStorage`
@@ -372,12 +388,14 @@ export class ErrorBoundary extends Component<Props, State> {
 - [ ] UIStore: loading states, modals, toasts
 
 ### Type Safety
+
 - [ ] Tạo types cho tất cả API request/response
 - [ ] Tạo types cho tất cả data models
 - [ ] Enable `strict: true` trong `tsconfig.json`
 - [ ] Xóa tất cả `any` types
 
 ### Screen Optimization
+
 - [x] Tách `add-building.tsx` thành sub-components
 - [x] Tách `deposit.tsx` thành sub-components
 - [x] Tách `edit-building.tsx` thành sub-components
@@ -385,6 +403,7 @@ export class ErrorBoundary extends Component<Props, State> {
 - [ ] Implement proper form validation (react-hook-form + zod)
 
 ### UX/UI Enhancement
+
 - [ ] Implement pull-to-refresh cho danh sách
 - [ ] Implement skeleton loading
 - [ ] Implement toast notifications
@@ -393,12 +412,14 @@ export class ErrorBoundary extends Component<Props, State> {
 - [ ] Implement proper keyboard avoiding behavior
 
 ### Offline & Performance
+
 - [ ] Implement offline caching cho critical data
 - [ ] Implement image caching
 - [ ] Optimize FlatList performance (keyExtractor, getItemLayout)
 - [ ] Implement pagination cho danh sách lớn
 
 ### Testing
+
 - [ ] Setup Jest + React Native Testing Library
 - [ ] Unit tests cho services
 - [ ] Unit tests cho custom hooks
@@ -410,15 +431,17 @@ export class ErrorBoundary extends Component<Props, State> {
 ## 🔄 LUỒNG XỬ LÝ CẦN IMPLEMENT
 
 ### 1. Luồng Authentication (✅ ĐÃ IMPLEMENT)
+
 ```
 [Tích hợp Zustand + AsyncStorage + Axios Interceptors]
 
-Login (app/auth/login.tsx) → useAuth.login() → authService.login() → 
-  Success → authStorage.saveToken() → Store update state → 
+Login (app/auth/login.tsx) → useAuth.login() → authService.login() →
+  Success → authStorage.saveToken() → Store update state →
     Auto redirect via root layout (TBD)
 ```
 
 ### 2. Luồng CRUD Nhà trọ (MỚI CHỈ CÓ UI)
+
 ```
 Home → Chọn nhà trọ → Load rooms →
   Thêm phòng → Form → API call → Refresh list
@@ -427,16 +450,18 @@ Home → Chọn nhà trọ → Load rooms →
 ```
 
 ### 3. Luồng Hợp đồng (MỚI CHỈ CÓ UI)
+
 ```
-Chọn phòng → Lập hợp đồng → 
+Chọn phòng → Lập hợp đồng →
   Chọn khách thuê (tìm hoặc tạo mới) →
   Điền thông tin hợp đồng →
   Preview hợp đồng →
-  Xác nhận → API call → 
+  Xác nhận → API call →
     Success → Cập nhật trạng thái phòng
 ```
 
 ### 4. Luồng Hóa đơn (MỚI CHỈ CÓ UI)
+
 ```
 Chọn phòng → Lập hóa đơn →
   Auto load dịch vụ (điện, nước, internet...) →
@@ -448,6 +473,7 @@ Chọn phòng → Lập hóa đơn →
 ```
 
 ### 5. Luồng cần bổ sung hoàn toàn mới
+
 - [ ] Push notifications (Expo Notifications)
 - [ ] Deep linking (mở app từ notification)
 - [ ] QR code scan cho check-in khách thuê
@@ -460,24 +486,28 @@ Chọn phòng → Lập hóa đơn →
 ## 🗺️ ROADMAP ĐỀ XUẤT
 
 ### Phase 1: API Foundation (2 tuần)
+
 1. Setup HTTP client + interceptors
 2. Implement auth service + AuthContext
 3. Kết nối Login/Register/Forgot Password
 4. Token management (store, refresh, expire)
 
 ### Phase 2: Core Features Connection (3-4 tuần)
+
 1. Kết nối Home screen (real data)
 2. CRUD Motel (thêm, sửa, xóa nhà trọ)
 3. CRUD Room (thêm, sửa, xóa phòng)
 4. Danh sách khách thuê
 
 ### Phase 3: Business Flows (3-4 tuần)
+
 1. Luồng tạo hợp đồng hoàn chỉnh
 2. Luồng lập hóa đơn hoàn chỉnh
 3. Luồng thanh toán
 4. Luồng cọc giữ chỗ
 
 ### Phase 4: Polish & Enhance (2-3 tuần)
+
 1. Push notifications
 2. Offline support
 3. Performance optimization
@@ -488,14 +518,14 @@ Chọn phòng → Lập hóa đơn →
 
 ## 📝 SO SÁNH VỚI CLIENT WEB
 
-| Tiêu chí | Client Web (React) | Mobile (React Native) |
-|----------|--------------------|-----------------------|
-| Documentation | 4/10 | 8/10 ✅ |
-| Architecture | 4/10 | 7/10 ✅ |
-| API Integration | 6/10 (kết nối nhưng messy) | 2/10 ❌ (chưa kết nối) |
-| Type Safety | 1/10 (JS thuần) | 6/10 (TypeScript) |
-| Design System | 3/10 | 8/10 ✅ |
-| State Management | 3/10 | 3/10 |
+| Tiêu chí         | Client Web (React)         | Mobile (React Native)  |
+| ---------------- | -------------------------- | ---------------------- |
+| Documentation    | 4/10                       | 8/10 ✅                |
+| Architecture     | 4/10                       | 7/10 ✅                |
+| API Integration  | 6/10 (kết nối nhưng messy) | 2/10 ❌ (chưa kết nối) |
+| Type Safety      | 1/10 (JS thuần)            | 6/10 (TypeScript)      |
+| Design System    | 3/10                       | 8/10 ✅                |
+| State Management | 3/10                       | 3/10                   |
 
 > [!IMPORTANT]
 > Mobile đặt nền tảng tốt hơn Web (TypeScript, Design System, Coding Standards), nhưng cần ưu tiên kết nối API backend ngay để không chỉ là UI shell.
@@ -507,12 +537,15 @@ Chọn phòng → Lập hóa đơn →
 Hiện tại, App đang được tối ưu hoá cho môi trường Web (Chrome/Edge) để đảm bảo độ ổn định và hiển thị Icon chính xác.
 
 ### 1. Cấu hình hiện tại (Web-Optimized)
+
 - **Zustand**: Phiên bản `4.5.5` (tránh lỗi `import.meta` trên trình duyệt).
 - **`newArchEnabled`**: `false` (tránh xung đột font/icon trên web).
 - **`reactCompiler`**: `false` (tránh lỗi biên dịch bundling web).
 
 ### 2. Hướng dẫn khôi phục cho Native (Android/iOS)
+
 Khi tiến hành test trên thiết bị thật hoăc Emulator nặng, hãy thực hiện:
+
 1. Nâng cấp Zustand: `npm install zustand@latest`.
 2. Trong `app.json`: Sửa `newArchEnabled: true` và `reactCompiler: true`.
 3. Clear cache: `npx expo start -c`.

@@ -16,20 +16,20 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RegisterRequest {
-    @NotBlank(message = "Tên đăng nhập không được để trống")
-    @Size(min = 3, message = "Tên đăng nhập phải có ít nhất 3 ký tự")
+    @NotBlank(message = "Username must not be blank")
+    @Size(min = 3, message = "Username must have at least 3 characters")
     String username;
 
-    @NotBlank(message = "Số điện thoại không được để trống")
-    @Size(min = 10, max = 11, message = "Số điện thoại phải từ 10 đến 11 số")
+    @NotBlank(message = "Phone number must not be blank")
+    @Size(min = 10, max = 11, message = "Phone number must be 10 or 11 digits")
     String phone;
 
     String email;
 
-    @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 6, message = "Mật khẩu phải có ít nhất 6 ký tự")
+    @NotBlank(message = "Password must not be blank")
+    @Size(min = 8, message = "Password must have at least 8 characters")
     String password;
 
-    @NotBlank(message = "Loại người dùng không được để trống")
+    @NotBlank(message = "User type must not be blank")
     String userType;
 }

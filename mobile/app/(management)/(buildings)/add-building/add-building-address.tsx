@@ -364,17 +364,17 @@ export default function AddBuildingAddressScreen() {
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={() => setActiveModal('province')}
-            style={styles.selector}
+            style={[styles.selectorField, styles.selectorFieldCompact]}
           >
-            <Text style={styles.selectorLabel}>
-              Tỉnh/Thành phố <Text style={styles.required}>*</Text>
-            </Text>
-            <View style={styles.selectorValueRow}>
+            <View style={styles.selectorTextWrap}>
+              <Text style={styles.selectorLabel}>
+                Tỉnh/Thành phố <Text style={styles.required}>*</Text>
+              </Text>
               <Text style={[styles.selectorValue, !city && styles.placeholderText]}>
                 {city || 'Chọn giá trị'}
               </Text>
-              <Ionicons name="chevron-down" size={24} color={Colors.textPrimary} />
             </View>
+            <Ionicons name="chevron-down" size={20} color={Colors.gray800} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -384,17 +384,17 @@ export default function AddBuildingAddressScreen() {
                 setActiveModal('ward');
               }
             }}
-            style={[styles.selector, !provinceCode && styles.selectorDisabled]}
+            style={[styles.selectorField, styles.selectorFieldCompact, !provinceCode && styles.selectorDisabled]}
           >
-            <Text style={styles.selectorLabel}>
-              Phường/Xã hiện hành <Text style={styles.required}>*</Text>
-            </Text>
-            <View style={styles.selectorValueRow}>
+            <View style={styles.selectorTextWrap}>
+              <Text style={styles.selectorLabel}>
+                Phường/Xã hiện hành <Text style={styles.required}>*</Text>
+              </Text>
               <Text style={[styles.selectorValue, !ward && styles.placeholderText]}>
                 {ward || 'Chọn giá trị'}
               </Text>
-              <Ionicons name="chevron-down" size={24} color={Colors.textPrimary} />
             </View>
+            <Ionicons name="chevron-down" size={20} color={Colors.gray800} />
           </TouchableOpacity>
 
           <View style={styles.detailWrap}>
@@ -589,15 +589,24 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.base,
     paddingBottom: Spacing.base,
   },
-  selector: {
+  selectorField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
     borderWidth: 1,
     borderColor: Colors.borderLight,
-    borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.base,
+    borderRadius: BorderRadius.lg,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  selectorFieldCompact: {
     minHeight: 48,
+  },
+  selectorTextWrap: {
+    flex: 1,
     justifyContent: 'center',
-    marginBottom: Spacing.base,
-    backgroundColor: Colors.white,
+    paddingVertical: Spacing.sm,
+    paddingRight: Spacing.md,
   },
   selectorDisabled: {
     opacity: 0.6,
@@ -605,12 +614,7 @@ const styles = StyleSheet.create({
   selectorLabel: {
     fontSize: FontSizes.sm,
     color: Colors.textPrimary,
-    marginBottom: 6,
-  },
-  selectorValueRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    marginBottom: 2,
   },
   selectorValue: {
     fontSize: FontSizes.base,

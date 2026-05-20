@@ -10,5 +10,6 @@ export const tasksTabScreens: TabOwnedScreen[] = [
     label: 'Cong viec',
     route: '/tasks',
     source: 'app/(tabs)/tasks.tsx',
+    notes: 'Tab wrapper re-exporting the job tasks screen.',
   },
 ];

@@ -42,7 +42,7 @@ const FEATURES: FeatureItem[] = [
     id: 'posting',
     icon: 'cloud-upload-outline',
     title: 'Tính năng đăng tin tiếp cận khách thuê',
-    description: 'Đăng tin tìm khách thuê, khách tiềm năng... trên hệ thống LOZIDO',
+    description: 'Đăng tin tìm khách thuê, khách tiềm năng... trên hệ thống RRMS',
     enabled: true,
     iconTint: '#36C5F0',
   },

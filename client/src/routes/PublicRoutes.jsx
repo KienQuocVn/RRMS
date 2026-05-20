@@ -22,14 +22,11 @@ const FaceMatch = lazy(() => import('../pages/ai/FaceMatch'))
 const ImageComparison = lazy(() => import('../pages/ai/ImageComparison'))
 const PassportRecognition = lazy(() => import('../pages/ai/PassportRecognition'))
 const RatingHistory = lazy(() => import('../pages/ratingHistory/RatingHistory'))
-const NotFoundPage = lazy(() => import('../pages/notFoundPage/NotFoundPage.jsx'))
-
 const PublicRoutes = ({ auth }) => {
   const { username, setUsername, setAvatar, setIsAdmin } = auth
 
   return (
     <>
-      <Route path="*" element={<NotFoundPage styled />} />
       <Route path="/" element={<Home setIsAdmin={setIsAdmin} />} />
       <Route path="/login" element={<Login setUsername={setUsername} setAvatar={setAvatar} setIsAdmin={setIsAdmin} />} />
       <Route path="/oauth2/redirect" element={<GoogleLoginRedirect />} />

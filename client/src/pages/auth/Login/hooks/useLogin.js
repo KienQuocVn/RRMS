@@ -4,13 +4,13 @@ import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
-import { jwtDecode } from 'jwt-decode'
+import { useGoogleLogin } from '@react-oauth/google'
 import { env } from '~/configs/environment'
-import { checkRegister } from '~/apis/accountAPI'
 
 export const useLogin = ({ setUsername, setAvatar }) => {
   const LOGIN_ENDPOINT = `${env.API_URL}/authen/login`
-  const REGISTER_ENDPOINT = `${env.API_URL}/authen/register`
+  const SOCIAL_LOGIN_ENDPOINT = `${env.API_URL}/authen/social-login`
+  const GOOGLE_USER_INFO_ENDPOINT = 'https://www.googleapis.com/oauth2/v3/userinfo'
   const { t } = useTranslation()
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
@@ -19,93 +19,112 @@ export const useLogin = ({ setUsername, setAvatar }) => {
   const navigate = useNavigate()
 
   const showError = (text) => Swal.fire({ icon: 'error', title: t('auth.login.alerts.errorTitle'), text })
+
   const resetCaptcha = () => {
     setValidCaptcha(false)
     setCaptchaResetKey((previous) => previous + 1)
   }
 
-  const saveSessionAndNavigate = ({ phone, username, avatar, token, roles }) => {
-    sessionStorage.setItem('user', JSON.stringify({ phone, username, avatar, token, roles }))
-    setUsername(username)
+  const saveSessionAndNavigate = ({ phone, username, fullName, avatar, token, roles }) => {
+    const displayName = fullName?.trim() || username
+
+    sessionStorage.setItem(
+      'user',
+      JSON.stringify({
+        phone,
+        username,
+        displayName,
+        avatar,
+        token,
+        roles
+      })
+    )
+
+    setUsername(displayName)
     setAvatar(avatar)
     resetCaptcha()
     navigate('/RRMS')
   }
 
-  const loginSocial = async (phoneValue, pass) => {
+  const handleLoginSuccess = (result) => {
+    const { username, fullName, phone, avatar, token, roles } = result || {}
+
+    if (!username) {
+      throw new Error(t('auth.login.alerts.usernameMissing'))
+    }
+
+    Swal.fire({
+      icon: 'success',
+      title: t('auth.login.alerts.successTitle'),
+      text: t('auth.login.alerts.successText')
+    })
+
+    saveSessionAndNavigate({ phone, username, fullName, avatar, token, roles })
+  }
+
+  const loginWithSocialProfile = async ({ provider, providerId, email, name, avatar }) => {
     try {
-      const response = await axios.post(LOGIN_ENDPOINT, {
-        phone: phoneValue,
-        password: pass
+      const response = await axios.post(SOCIAL_LOGIN_ENDPOINT, {
+        provider,
+        providerId,
+        email,
+        name,
+        avatar
       })
 
       if (response.status === 200) {
-        Swal.fire({
-          icon: 'success',
-          title: t('auth.login.alerts.successTitle'),
-          text: t('auth.login.alerts.successText')
-        })
-
-        const { username, avatar, token } = response.data.result
-
-        if (!username) throw new Error(t('auth.login.alerts.usernameMissing'))
-
-        saveSessionAndNavigate({ phone: phoneValue, username, avatar, token })
-      }
-    } catch {
-      resetCaptcha()
-      showError(t('auth.login.alerts.genericError'))
-    }
-  }
-
-  const registerAndLoginSocial = async (id) => {
-    try {
-      const response = await axios.post(
-        REGISTER_ENDPOINT,
-        { username: id, phone: id, password: id },
-        { headers: { 'ngrok-skip-browser-warning': '69420' } }
-      )
-
-      if (response.data.status === true) {
-        await loginSocial(id, id)
-      } else {
-        showError(t('auth.login.alerts.genericError'))
+        handleLoginSuccess(response.data.result)
       }
     } catch (error) {
       showError(error.response?.data?.message || t('auth.login.alerts.genericError'))
     }
   }
 
-  const loginWithGoogle = async (credentialResponse) => {
-    try {
-      const decoded = jwtDecode(credentialResponse.credential)
-      if (!decoded) return
+  const googleAuthLogin = useGoogleLogin({
+    scope: 'openid profile email',
+    prompt: 'select_account',
+    onSuccess: async (tokenResponse) => {
+      try {
+        const profileResponse = await axios.get(GOOGLE_USER_INFO_ENDPOINT, {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+        })
 
-      const response = await checkRegister(decoded.sub)
-      if (!response.result) {
-        await registerAndLoginSocial(decoded.sub)
-      } else {
-        await loginSocial(decoded.sub, decoded.sub)
+        const profile = profileResponse.data
+
+        await loginWithSocialProfile({
+          provider: 'GOOGLE',
+          providerId: profile.sub,
+          email: profile.email,
+          name: profile.name,
+          avatar: profile.picture
+        })
+      } catch (error) {
+        showError(error.response?.data?.message || t('auth.login.alerts.genericError'))
       }
-    } catch (error) {
-      console.error('Google login error:', error)
-    }
+    },
+    onError: () => showError(t('auth.login.alerts.genericError'))
+  })
+
+  const loginWithGoogle = () => {
+    googleAuthLogin()
   }
 
-  const loginWithFacebook = async (param) => {
-    try {
-      const id = param?.data?.userID
-      if (!id) return
+  const loginWithFacebook = async (params) => {
+    const profile = params?.data
+    const providerId = profile?.id || profile?.userID
 
-      const response = await checkRegister(id)
-      if (!response.result) {
-        await registerAndLoginSocial(id)
-      } else {
-        await loginSocial(id, id)
-      }
-    } catch (error) {
-      console.error('Facebook login error:', error)
+    if (!providerId) {
+      showError(t('auth.login.alerts.genericError'))
+      return
     }
+
+    await loginWithSocialProfile({
+      provider: 'FACEBOOK',
+      providerId,
+      email: profile?.email || '',
+      name: profile?.name || '',
+      avatar: profile?.picture?.data?.url || profile?.picture?.url || ''
+    })
   }
 
   const handleSubmit = async (event) => {
@@ -129,29 +148,18 @@ export const useLogin = ({ setUsername, setAvatar }) => {
       const response = await axios.post(LOGIN_ENDPOINT, { phone, password })
 
       if (response.status === 200) {
-        Swal.fire({
-          icon: 'success',
-          title: t('auth.login.alerts.successTitle'),
-          text: t('auth.login.alerts.successText')
-        })
-
-        const { username, avatar, token, roles } = response.data.result
-
-        if (!username) throw new Error(t('auth.login.alerts.usernameMissing'))
-
-        saveSessionAndNavigate({ phone, username, avatar, token, roles })
+        handleLoginSuccess(response.data.result)
       }
     } catch (error) {
       resetCaptcha()
+
       if (error.response) {
         const status = error.response.status
         const backendMessage = String(error.response?.data?.message || '').toLowerCase()
 
         if (status === 400 && backendMessage.includes('password')) {
           showError(t('auth.login.alerts.passwordWrong'))
-        } else if (status === 401) {
-          showError(t('auth.login.alerts.accountMissing'))
-        } else if (status === 404) {
+        } else if (status === 401 || status === 404) {
           showError(t('auth.login.alerts.accountMissing'))
         } else {
           showError(t('auth.login.alerts.serverError'))

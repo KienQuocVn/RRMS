@@ -28,11 +28,11 @@ import {
 import SearchIcon from '@mui/icons-material/Search'
 import PrintIcon from '@mui/icons-material/Print'
 import * as XLSX from 'xlsx'
-import AddTenantModal from './ModalTenant'
+import AddTenantModal from '../ModalTenant'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
-import TenantMenuUpdate from './TenantMenuUpdate'
+import TenantMenuUpdate from '../TenantMenuUpdate'
 import { env } from '~/configs/environment'
 import { Colors } from '~/theme'
 const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {

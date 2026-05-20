@@ -10,6 +10,7 @@ import com.rrms.rrms.dto.request.AccountRequest;
 import com.rrms.rrms.dto.request.ChangePasswordByEmail;
 import com.rrms.rrms.dto.request.ChangePasswordRequest;
 import com.rrms.rrms.dto.request.RegisterRequest;
+import com.rrms.rrms.dto.request.SocialLoginRequest;
 import com.rrms.rrms.dto.response.AccountResponse;
 import com.rrms.rrms.enums.Roles;
 import com.rrms.rrms.models.Account;
@@ -36,6 +37,8 @@ public interface IAccountService {
     Account register(RegisterRequest request);
 
     Account registergg(RegisterRequest request);
+
+    Account findOrCreateSocialAccount(SocialLoginRequest request);
 
     Optional<Account> login(String phone, String password);
 

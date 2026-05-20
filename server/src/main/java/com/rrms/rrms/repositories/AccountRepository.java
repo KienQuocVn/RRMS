@@ -26,8 +26,10 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     @Query("SELECT a FROM Account a JOIN a.authorities auth WHERE auth.role.roleName = :roleName")
     Page<Account> findAllByAuthorities_Role_RoleName(@Param("roleName") Roles roleName, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"authorities", "authorities.role", "authorities.role.permissions"})
     Optional<Account> findByPhone(String phone);
 
+    @EntityGraph(attributePaths = {"authorities", "authorities.role", "authorities.role.permissions"})
     Optional<Account> findByEmail(String email);
 
     boolean existsByUsername(String username);

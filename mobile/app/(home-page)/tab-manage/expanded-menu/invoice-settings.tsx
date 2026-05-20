@@ -156,11 +156,11 @@ export default function InvoiceSettingsScreen() {
                   Khi bật tính năng này hóa đơn sẽ được gửi tự cho khách thuê qua Zalo
                 </Text>
                 <Text style={styles.zaloNote}>- Tính năng này có áp dụng phí dịch vụ.</Text>
-                <Text style={styles.zaloNote}>- Gửi theo thương hiệu LOZIDO</Text>
+                <Text style={styles.zaloNote}>- Gửi theo thương hiệu RRMS</Text>
                 <Text style={styles.zaloNote}>- Không gửi được khung giờ:</Text>
                 <Text style={styles.zaloNote}>10h PM - 6h AM</Text>
                 <Text style={styles.zaloNote}>
-                  - Gửi qua APP LOZIDO sẽ không bị bất cứ hạn chế nào từ ZALO
+                  - Gửi qua APP RRMS sẽ không bị bất cứ hạn chế nào từ ZALO
                 </Text>
               </View>
 
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   toggleActive: {
-    backgroundColor: '#DFF5E3',
+    backgroundColor: Colors.success,
   },
   toggleThumb: {
     width: 24,
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#BDBDBD',
   },
   toggleThumbActive: {
-    backgroundColor: '#7ED321',
+    backgroundColor: Colors.white,
     alignSelf: 'flex-end',
   },
   footer: {
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#E5E7EB',
   },
   saveButton: {
-    backgroundColor: '#13AA47',
+    backgroundColor: Colors.success,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

@@ -44,7 +44,7 @@ export default function AssetsListScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Quay lại"
         >
-          <Ionicons name="arrow-back" size={24} color={Colors.textSuccess} />
+          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Danh sách tài sản</Text>
       </View>
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
 
   // Empty card
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
     marginBottom: Spacing.xs,
     textAlign: "center",
   },

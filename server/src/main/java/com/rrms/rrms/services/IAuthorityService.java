@@ -15,6 +15,8 @@ import com.rrms.rrms.models.Auth;
 public interface IAuthorityService {
     LoginResponse loginResponse(LoginRequest request);
 
+    LoginResponse buildLoginResponse(Account account);
+
     LoginResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException;
 
     IntrospecTokenResponse introspect(IntrospecTokenRequest request) throws ParseException, JOSEException;

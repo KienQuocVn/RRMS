@@ -1,4 +1,4 @@
-import { Routes, useLocation } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect, Suspense, useRef, useMemo, useCallback, useState } from 'react'
 import Header from './layouts/Header/Header'
 import Footer from './layouts/Footer/Footer'
@@ -15,6 +15,7 @@ import { useAuth } from './hooks/useAuth'
 import { useMotel } from './hooks/useMotel'
 import { normalizeProfileResponse } from './apis/profileAPI'
 import ChatAI from './pages/ai/ChatAI.jsx'
+import NotFoundPage from './pages/notFoundPage/NotFoundPage.jsx'
 
 function AppShell() {
   const location = useLocation()
@@ -79,7 +80,7 @@ function AppShell() {
       return
     }
 
-    setUsername(user.username)
+    setUsername(user.displayName || user.username)
     setAvatar(user.avatar)
     setToken(user.token)
 
@@ -122,6 +123,7 @@ function AppShell() {
           <Routes>
             {PublicRoutes({ auth: routeContext.auth })}
             {AdminRoutes({ auth: routeContext.auth, motel: routeContext.motel })}
+            <Route path="*" element={<NotFoundPage styled />} />
           </Routes>
         </Suspense>
       </ErrorBoundary>

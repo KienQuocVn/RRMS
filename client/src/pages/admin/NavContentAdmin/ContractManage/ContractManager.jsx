@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import { Box } from '@mui/material'
 import { useParams } from 'react-router-dom'
-import { ReactTabulator } from 'react-tabulator'
 import ContractHeader from './components/ContractHeader'
 import ContractFilters from './components/ContractFilters'
+import ContractListTable from './components/ContractListTable'
 
 import { Modal, Button, Form } from 'react-bootstrap'
 import { getPhuongXa, getQuanHuyen, getTinhThanh } from '~/apis/addressAPI'
@@ -32,17 +32,21 @@ import {
   getContractById
 } from '~/apis/contractTemplateAPI'
 import Swal from 'sweetalert2'
-const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmotels }) => {
+const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const username = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).username : null
   const { motelId } = useParams()
   const [show, setShow] = useState(false)
-  const menuRef = useRef(null) // Tham chiếu đến menu
   const [provinces, setProvinces] = useState([])
   const [districts, setDistricts] = useState([])
   const [wards, setWards] = useState([])
 
-  const [showMenu, setShowMenu] = useState(null) // Trạng thái của menu hiện tại
-  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilters, setStatusFilters] = useState({
+    ACTIVE: true,
+    ReportEnd: true,
+    IATExpire: true,
+    ENDED: true
+  })
   const [selectedProvince, setSelectedProvince] = useState('')
   const [selectedDistrict, setSelectedDistrict] = useState('')
   const [selectedWard, setSelectedWard] = useState('')
@@ -110,19 +114,131 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
   }
 
   // Hàm xử lý nhấn ngoài menu
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      // Kiểm tra xem nhấn ngoài menu hay không
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setShowMenu(null)
+  const contractCounts = useMemo(() => {
+    return contracts.reduce(
+      (counts, currentContract) => {
+        const statusKey = currentContract?.status
+        if (statusKey && counts[statusKey] !== undefined) {
+          counts[statusKey] += 1
+        }
+        return counts
+      },
+      {
+        ACTIVE: 0,
+        ReportEnd: 0,
+        IATExpire: 0,
+        ENDED: 0
       }
+    )
+  }, [contracts])
+
+  const filteredContracts = useMemo(() => {
+    const normalizedSearchTerm = searchTerm.trim().toLowerCase()
+    const hasSelectedStatus = Object.values(statusFilters).some(Boolean)
+
+    return contracts.filter((currentContract) => {
+      const statusMatch = !hasSelectedStatus || Boolean(statusFilters[currentContract?.status])
+
+      if (!normalizedSearchTerm) {
+        return statusMatch
+      }
+
+      const searchableText = [
+        currentContract?.room?.name,
+        currentContract?.tenant?.fullName,
+        currentContract?.tenant?.fullname,
+        currentContract?.contractTemplate?.templatename,
+        currentContract?.contracttemplate?.templatename
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      return statusMatch && searchableText.includes(normalizedSearchTerm)
+    })
+  }, [contracts, searchTerm, statusFilters])
+
+  const handleStatusFilterChange = (statusKey, checked) => {
+    setStatusFilters((previousFilters) => ({
+      ...previousFilters,
+      [statusKey]: checked
+    }))
+  }
+
+  const handleContractTableAction = async (action, selectedContract) => {
+    const contractId = selectedContract?.contractId
+    if (!contractId) {
+      return
     }
 
-    document.addEventListener('click', handleClickOutside)
-    return () => {
-      document.removeEventListener('click', handleClickOutside)
+    if (action === 'view') {
+      window.open(`/quanlytro/${motelId}/Contract-Preview/${contractId}`, '_blank')
+      return
     }
-  }, [])
+
+    if (action === 'assets') {
+      await fetchDataRoomByContract(contractId)
+      setTimeout(() => {
+        document.getElementById('open-asset-select-trigger')?.click()
+      }, 0)
+      return
+    }
+
+    if (action === 'share') {
+      const shareLink = `${window.location.origin}/quanlytro/${motelId}/Contract-Preview/${contractId}`
+
+      navigator.clipboard
+        .writeText(shareLink)
+        .then(() => {
+          Swal.fire({
+            title: '<strong><u>ThÃ´ng bÃ¡o!</u></strong>',
+            icon: 'info',
+            html: `
+            ÄÃ£ sao chÃ©p liÃªn káº¿t há»£p Ä‘á»“ng! Báº¡n cÃ³ thá»ƒ chia sáº» cho bÃªn thá»© ba.<br>
+            <a href="${shareLink}" target="_blank">${shareLink}</a>
+          `,
+            showCloseButton: true,
+            showCancelButton: true,
+            focusConfirm: false,
+            confirmButtonText: 'Äi Ä‘áº¿n Ä‘Æ°á»ng dáº«n',
+            cancelButtonText: 'ÄÃ³ng'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.open(shareLink, '_blank')
+            }
+          })
+        })
+        .catch((error) => {
+          console.error('KhÃ´ng thá»ƒ sao chÃ©p liÃªn káº¿t:', error)
+          Swal.fire({
+            title: 'Lá»—i',
+            text: 'KhÃ´ng thá»ƒ sao chÃ©p liÃªn káº¿t. Vui lÃ²ng thá»­ láº¡i.',
+            icon: 'error'
+          })
+        })
+      return
+    }
+
+    if (action === 'print') {
+      handlePrintContract(contractId)
+      return
+    }
+
+    if (action === 'shareCode') {
+      navigator.clipboard
+        .writeText(contractId)
+        .then(() => {
+          Swal.fire({
+            icon: 'success',
+            title: 'ThÃ nh cÃ´ng',
+            text: 'ÄÃ£ sao chÃ©p mÃ£ káº¿t ná»‘i há»£p Ä‘á»“ng.'
+          })
+        })
+        .catch((error) => {
+          console.error('KhÃ´ng thá»ƒ sao chÃ©p mÃ£ káº¿t ná»‘i:', error)
+        })
+    }
+  }
 
   // Hàm onChange để cập nhật các trường trong tenant
   const handleTenantChange = (event) => {
@@ -200,7 +316,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
     if (!roomId) {
       console.warn('Room ID is invalid')
       setdeviceByRoom([])
-      return
+      return { result: [] }
     }
     const response = await getAllDeviceByRomId(roomId)
     console.log(response.result)
@@ -210,6 +326,8 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
     } else {
       setdeviceByRoom([])
     }
+
+    return response
   }
 
   const handleChangeQuantityRoomDevice = async (roomId, motel_device_id, quantity) => {
@@ -609,8 +727,12 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
     }
   }
 
-  const handlePrintContract = () => {
-    const contractUrl = `/quanlytro/${motelId}/Contract-Preview/${showMenu}`
+  const handlePrintContract = (contractId) => {
+    if (!contractId) {
+      return
+    }
+
+    const contractUrl = `/quanlytro/${motelId}/Contract-Preview/${contractId}`
 
     // Mở cửa sổ mới để in nội dung hợp đồng
     const printWindow = window.open(contractUrl, '_blank')
@@ -699,359 +821,16 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
     }))
   }, [username]) // Chỉ chạy khi username thay đổi
 
-  // Định dạng tiền tệ Việt Nam (VND)
-  const currencyFormatter = (cell) => {
-    const value = cell.getValue()
-    if (value !== null && value !== undefined) {
-      return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-      }).format(value)
-    }
-    if (value === null || value === undefined) {
-      return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-      }).format(0)
-    }
-    return value
-  }
-  // Định dạng tiền tệ Việt Nam (VND) va khac chua dua tien coc
-  const currencyDepositFormatter = (cell) => {
-    const value = cell.getValue()
-    let displayValue = ''
 
-    // Nếu giá trị tiền cọc hợp lệ
-    if (value !== null && value !== undefined && value !== 0) {
-      displayValue =
-        new Intl.NumberFormat('vi-VN', {
-          style: 'currency',
-          currency: 'VND'
-        }).format(value) +
-        '<br/> <div style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;"><i style="font-size: 11px;color:#ff0000;">(Chưa thu tiền cọc)</i></div>'
-    } else {
-      // Nếu giá trị là 0 hoặc null/undefined, hiển thị "Chưa thu tiền cọc"
-      displayValue = new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-      }).format(0)
+  const formatCurrencyValue = (value) => {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) {
+      return 'Chưa cập nhật'
     }
 
-    return displayValue
+    return `${Number(value).toLocaleString('vi-VN')}đ`
   }
 
-  // Định dạng thêm "/1 người" vào cột countTenant
-  // const tenantFormatter = (cell) => {
-  //   const countTenant = cell.getValue()
-  //   const svgiconuser = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" strokeLinecap="round" strokeLinejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`
-  //   if (countTenant !== null && countTenant !== undefined) {
-  //     return `${svgiconuser} ${countTenant} người`
-  //   }
-  //   if (countTenant === null && countTenant === 0) {
-  //     return `Không xác định`
-  //   }
-
-  //   return countTenant
-  // }
-
-  // Hàm định dạng ngày
-  const formatDate = (dateString) => {
-    const date = new Date(dateString) // Chuyển đổi chuỗi thành đối tượng Date
-    const day = String(date.getDate()).padStart(2, '0') // Lấy ngày
-    const month = String(date.getMonth() + 1).padStart(2, '0') // Lấy tháng (lưu ý là tháng trong JavaScript bắt đầu từ 0)
-    const year = date.getFullYear() // Lấy năm
-
-    // Trả về ngày theo định dạng dd/mm/yyyy
-    return `${day}/${month}/${year}`
-  }
-
-  //ham dinh dang chu ky cua khac hang
-  const sighTenantFormatter = (cell) => {
-    const countTenant = cell.getValue()
-    if (countTenant !== null && countTenant !== undefined) {
-      return `${countTenant}`
-    }
-    return countTenant
-  }
-
-  // Formatter cho cột "Status"
-  const StatusFormatter = (cell) => {
-    const financeValue = cell.getValue()
-    // Nếu giá trị tài chính là "Đang trống", hiển thị badge với màu cam
-    if (financeValue === 'ACTIVE') {
-      return `<span class="badge mt-2" style="background-color: #7dc242; padding: 6px 12px; border-radius: 20px; font-weight: normal;">Trong thời hạn hợp đồng</span>`
-    }
-    if (financeValue === 'IATExpire') {
-      return `<span class="badge mt-2" style="background-color: #ED6004; padding: 6px 12px; border-radius: 20px; font-weight: normal;">Đang trống</span>`
-    }
-    if (financeValue === 'ENDED') {
-      return `<span class="badge mt-2" style="background-color: #ED6004; padding: 6px 12px; border-radius: 20px; font-weight: normal;">Đang trống</span>`
-    }
-
-    // Nếu không phải "Đang trống", hiển thị giá trị tài chính
-    return financeValue
-  }
-
-  const collectionCycleOptions = [
-    { value: '0', label: 'Tùy chỉnh' },
-    { value: '1', label: '1 tháng' },
-    { value: '2', label: '2 tháng' },
-    { value: '3', label: '3 tháng' },
-    { value: '4', label: '4 tháng' },
-    { value: '5', label: '5 tháng' },
-    { value: '6', label: '6 tháng' },
-    { value: '7', label: '7 tháng' },
-    { value: '8', label: '8 tháng' },
-    { value: '9', label: '9 tháng' },
-    { value: '10', label: '10 tháng' },
-    { value: '11', label: '11 tháng' },
-    { value: '12', label: '1 năm' },
-    { value: '18', label: '1 năm, 6 tháng' },
-    { value: '24', label: '2 năm' },
-    { value: '32', label: '3 năm' },
-    { value: '48', label: '4 năm' },
-    { value: '60', label: '5 năm' }
-  ]
-
-  const getCollectionCycleLabel = (value) => {
-    const option = collectionCycleOptions.find((opt) => opt.value === value)
-    return option ? option.label : 'Không xác định'
-  }
-
-  const menuItems = [
-    { id: 1, label: 'Xem văn bản hợp đồng', icon: 'arrow-right-circle' },
-    { id: 2, label: 'Thiết lập tài sản', icon: 'trello' },
-    { id: 3, label: 'In văn bản hợp đồng', icon: 'printer' },
-    { id: 4, label: 'Chia sẻ văn bản hợp đồng', icon: 'share' },
-    { id: 5, label: 'Chia sẻ mã kết nối', icon: 'share-2' }
-  ]
-
-  const handleActionClick = (e, roomId) => {
-    e.stopPropagation() // Ngừng sự kiện click để không bị bắt bởi sự kiện ngoài
-    // In ra tọa độ
-    // Sử dụng getBoundingClientRect để lấy vị trí chính xác của phần tử được nhấn
-    const targetElement = e.currentTarget
-    const rect = targetElement.getBoundingClientRect()
-
-    // Cập nhật vị trí của menu sao cho hiển thị gần biểu tượng Action
-    setMenuPosition({
-      x: rect.left + window.scrollX + rect.width / 2, // Centered horizontally
-      y: rect.top + window.scrollY + rect.height // Below the icon
-    })
-    setShowMenu(roomId) // Hiển thị menu cho hàng với roomId tương ứng
-  }
-
-  // Hàm xử lý khi người dùng chọn một mục trong menu
-  const handleItemClick = (label) => {
-    if (label === 'Xem văn bản hợp đồng') {
-      window.open(`/quanlytro/${motelId}/Contract-Preview/${showMenu}`, '_blank')
-      setShowMenu(null) // Đóng menu
-    } else if (label === 'Thiết lập tài sản') {
-      setShowMenu(null) // Đóng menu
-      fetchDataRoomByContract(showMenu)
-    } else if (label === 'Chia sẻ văn bản hợp đồng') {
-      const baseUrl = 'http://localhost:5173'
-      const shareLink = `${baseUrl}/quanlytro/${motelId}/Contract-Preview/${showMenu}`
-
-      // Sao chép liên kết vào clipboard
-      navigator.clipboard
-        .writeText(shareLink)
-        .then(() => {
-          Swal.fire({
-            title: '<strong><u>Thông báo!</u></strong>',
-            icon: 'info',
-            html: `
-            Đã sao chép liên kết hợp đồng! Bạn có thể chia sẻ cho bên thứ ba.<br>
-            <a href="${shareLink}" target="_blank">${shareLink}</a>
-          `,
-            showCloseButton: true,
-            showCancelButton: true,
-            focusConfirm: false,
-            confirmButtonText: `Đi đến đường dẫn`,
-            confirmButtonAriaLabel: 'Thumbs up, great!',
-            cancelButtonText: `Đóng`,
-            cancelButtonAriaLabel: 'Thumbs down'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              // Người dùng chọn "Đi đến đường dẫn"
-              window.open(shareLink, '_blank')
-            }
-          })
-        })
-        .catch((err) => {
-          console.error('Không thể sao chép liên kết:', err)
-          Swal.fire({
-            title: 'Lỗi',
-            text: 'Không thể sao chép liên kết. Vui lòng thử lại.',
-            icon: 'error'
-          })
-        })
-
-      setShowMenu(null) // Đóng menu
-    } else if (label === 'In văn bản hợp đồng') {
-      setShowMenu(null) // Đóng menu
-      // Thực hiện chức năng in hợp đồng
-      handlePrintContract()
-    } else {
-      setShowMenu(null) // Đóng menu
-      alert(`Action: ${label} on room ${showMenu}`)
-    }
-  }
-
-  const columns = [
-    { title: 'id', field: 'contractId', hozAlign: 'center', minWidth: 40, visible: false },
-    {
-      title: 'Phòng & người đại diện',
-      field: 'room.name',
-      hozAlign: 'left',
-      minWidth: 250,
-      formatter: (cell) => {
-        const data = cell.getData();
-        const roomName = data.room ? data.room.name : 'Unknown';
-        const tenantName = data.tenant ? data.tenant.fullname : (data.tenantName || 'Khách chưa ký');
-        const countTenant = data.countTenant || 0;
-        return `
-          <div style="display: flex; align-items: center; padding: 4px 0;">
-            <div style="position: relative; background-color: #4caf50; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0;">
-              <img width="20px" src="/room.png" style="filter: brightness(0) invert(1);">
-              <span style="position: absolute; top: -5px; right: -5px; background-color: #ff9800; border: 1.5px solid white; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center;">${countTenant}</span>
-            </div>
-            <div style="display: flex; flex-direction: column; text-align: left;">
-              <span style="font-weight: bold; color: #333;">${roomName}</span>
-              <span style="color: #4caf50; font-size: 12px;">${tenantName}</span>
-            </div>
-          </div>
-        `;
-      }
-    },
-    {
-      title: 'Giá Thuê',
-      field: 'price',
-      hozAlign: 'center',
-      minWidth: 100,
-      editor: 'input',
-      cssClass: 'bold-text',
-      formatter: currencyFormatter
-    },
-    {
-      title: 'Mức Giá Tiền Cọc',
-      field: 'deposit',
-      hozAlign: 'center',
-      minWidth: 150,
-      editor: 'input',
-      cssClass: 'bold-text',
-      formatter: currencyDepositFormatter
-    },
-    {
-      title: 'Chu Kỳ Thu',
-      field: 'collectioncycle',
-      hozAlign: 'center',
-      minWidth: 100,
-      editor: 'input',
-      formatter: (cell) => {
-        const value = cell.getValue() // Lấy giá trị của collectioncycle
-        return getCollectionCycleLabel(value) // Hiển thị label tương ứng
-      }
-    },
-    {
-      title: 'Mẫu Hợp Đồng',
-      field: 'contracttemplate.templatename',
-      hozAlign: 'center',
-      minWidth: 40,
-      editor: 'input'
-    },
-    {
-      title: 'Ngày Lập',
-      field: 'createdate',
-      hozAlign: 'center',
-      minWidth: 150,
-      editor: 'input',
-      formatter: (cell) => formatDate(cell.getValue())
-    },
-    {
-      title: 'Ngày Vào Ở',
-      field: 'moveinDate',
-      hozAlign: 'center',
-      minWidth: 150,
-      editor: 'input',
-      formatter: (cell) => formatDate(cell.getValue())
-    },
-    {
-      title: 'Thời Hạn Hợp Đồng',
-      field: 'closeContract',
-      hozAlign: 'center',
-      minWidth: 150,
-      editor: 'input',
-      formatter: (cell) => formatDate(cell.getValue())
-    },
-    {
-      title: 'Hình ảnh chứng từ',
-      field: 'documentImage',
-      hozAlign: 'center',
-      minWidth: 150,
-      formatter: () => 'Chưa ghi nhận'
-    },
-    {
-      title: 'Ký Hợp Đồng',
-      field: 'signcontract',
-      hozAlign: 'center',
-      minWidth: 150,
-      editor: 'input',
-      formatter: sighTenantFormatter
-    },
-    { title: 'Ngôn Ngữ', field: 'language', hozAlign: 'center', minWidth: 100, editor: 'input' },
-    {
-      title: 'Tình Trạng',
-      field: 'status',
-      hozAlign: 'center',
-      minWidth: 100,
-      editor: 'input',
-      formatter: StatusFormatter
-    },
-    {
-      title: '',
-      field: 'Action',
-      hozAlign: 'center',
-      minWidth: 60,
-      formatter: (cell) => {
-        const rowId = cell.getRow().getData().contractId
-        const element = document.createElement('div')
-        element.classList.add('icon-menu-action')
-        element.innerHTML = `
-          <div style="border: 1px solid #ccc; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical">
-              <circle cx="12" cy="12" r="1"></circle>
-              <circle cx="12" cy="5" r="1"></circle>
-              <circle cx="12" cy="19" r="1"></circle>
-            </svg>
-          </div>
-        `
-
-        element.addEventListener('click', (e) => handleActionClick(e, rowId))
-        return element
-      }
-    }
-  ]
-
-  const options = {
-    height: '500px', // Chiều cao của bảng
-    movableColumns: true, // Cho phép di chuyển cột
-    resizableRows: true, // Cho phép thay đổi kích thước hàng
-    movableRows: true,
-    resizableColumns: true, // Cho phép thay đổi kích thước cột
-    resizableColumnFit: true,
-    layout: 'fitColumns',
-    responsiveLayout: 'collapse',
-    rowHeader: {
-      formatter: 'responsiveCollapse',
-      width: 30,
-      minWidth: 30,
-      hozAlign: 'center',
-      resizable: false,
-      headerSort: false
-    }
-  }
-
+  // Run the initial motel contract bootstrap once when the page mounts.
   useEffect(() => {
     setIsAdmin(true)
     fetchDevices()
@@ -1059,7 +838,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
     if (motelId) {
       fetchMotelContract(motelId)
     }
-    console.log(isNavAdmin)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return (
     <div>
@@ -1072,13 +851,27 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
       />
       <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '10px', margin: '0 10px 10px 10px' }}>
         <ContractHeader onAddContract={handleShow} />
-        <ContractFilters />
+        <ContractFilters
+          counts={contractCounts}
+          statusFilters={statusFilters}
+          onStatusFilterChange={handleStatusFilterChange}
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
+        />
       </div>
 
       <div style={{ marginLeft: '15px', marginRight: '10px' }}>
         <Box display="flex" justifyContent="flex-end">
           {/* Nút này được ẩn đi vì đã có trên ContractHeader, nhưng giữ lại Modal để không gãy logic */}
 
+          <button
+            id="open-asset-select-trigger"
+            type="button"
+            data-bs-toggle="modal"
+            data-bs-target="#assetSelect"
+            style={{ display: 'none' }}
+            aria-hidden="true"
+          />
           <Modal show={show} onHide={handleClose} dialogClassName="custom-modal" size="xl">
             {/* size modal*/}
             <Modal.Header closeButton>
@@ -1642,7 +1435,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
                                 <label htmlFor="room_check_asset_344">
                                   <b>{motelDevice.deviceName}</b>
                                   <p>
-                                    Giá trị: <b>{motelDevice.value.toLocaleString('vi-VN')}đ</b> / {motelDevice.unit}
+                                    Giá trị: <b>{formatCurrencyValue(motelDevice.value)}</b> / {motelDevice.unit}
                                   </p>
                                 </label>
                               </div>
@@ -1721,157 +1514,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
         </Box>
       </div>
       <div className="mt-3" style={{ marginLeft: '15px', marginRight: '10px', position: 'relative' }}>
-        <ReactTabulator
-          className="my-custom-table rounded" // Thêm lớp tùy chỉnh nếu cần
-          columns={columns}
-          options={options}
-          data={contracts}
-          placeholder="Không tìm thấy dữ liệu!"
-        />
-        {showMenu && (
-          <div
-            className="tabulator-menu tabulator-popup-container "
-            ref={menuRef} // Gán ref đúng cách cho menu
-            style={{
-              position: 'absolute',
-              top: menuPosition.y - 610,
-              left: menuPosition.x - 350,
-              transform: 'translateX(-50%)'
-            }}>
-            {menuItems.map((item) => (
-              <div
-                key={item.id}
-                // Gắn ref vào tag này
-                className={`tabulator-menu-item ${item.textClass || ''}`}
-                onClick={() => handleItemClick(item.label)} // Đóng menu khi chọn item
-                {...(item.label === 'Thiết lập tài sản' && {
-                  'data-bs-toggle': 'modal',
-                  'data-bs-target': '#assetSelect'
-                })}>
-                {item.icon && (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className={`feather feather-${item.icon}`}>
-                    {item.icon === 'dollar-sign' && (
-                      <>
-                        <line x1="12" y1="1" x2="12" y2="23" />
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                      </>
-                    )}
-                    {item.icon === 'arrow-right-circle' && (
-                      <>
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 16 16 12 12 8" />
-                        <line x1="8" y1="12" x2="16" y2="12" />
-                      </>
-                    )}
-                    {item.icon === 'user' && (
-                      <>
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </>
-                    )}
-                    {item.icon === 'refresh-ccw' && (
-                      <>
-                        <polyline points="1 4 1 10 7 10" />
-                        <polyline points="23 20 23 14 17 14" />
-                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
-                      </>
-                    )}
-                    {item.icon === 'bell' && (
-                      <>
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                      </>
-                    )}
-                    {item.icon === 'settings' && (
-                      <>
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                      </>
-                    )}
-                    {item.icon === 'log-out' && (
-                      <>
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                      </>
-                    )}
-                    {item.icon === 'trello' && (
-                      <>
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <rect x="7" y="7" width="3" height="9"></rect>
-                        <rect x="14" y="7" width="3" height="5"></rect>
-                      </>
-                    )}
-                    {item.icon === 'printer' && (
-                      <>
-                        <polyline points="6 9 6 2 18 2 18 9" />
-                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                        <rect x="6" y="14" width="12" height="8" />
-                      </>
-                    )}
-                    {item.icon === 'edit-3' && (
-                      <>
-                        <path d="M12 20h9" />
-                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                      </>
-                    )}
-                    {item.icon === 'share' && (
-                      <>
-                        <path d="M4 12v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
-                        <polyline points="16 6 12 2 8 6" />
-                        <line x1="12" y1="2" x2="12" y2="15" />
-                      </>
-                    )}
-                    {item.icon === 'trash-2' && (
-                      <>
-                        <polyline points="3 6 5 6 21 6" />
-                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m5 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-                        <line x1="10" y1="11" x2="10" y2="17" />
-                        <line x1="14" y1="11" x2="14" y2="17" />
-                      </>
-                    )}
-                    {item.icon === 'share-2' && (
-                      <>
-                        <circle cx="18" cy="5" r="3" />
-                        <circle cx="6" cy="12" r="3" />
-                        <circle cx="18" cy="19" r="3" />
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                      </>
-                    )}
-                    {item.icon === 'x-circle' && (
-                      <>
-                        <circle cx="12" cy="12" r="10" />
-                        <line x1="15" y1="9" x2="9" y2="15" />
-                        <line x1="9" y1="9" x2="15" y2="15" />
-                      </>
-                    )}
-                    {item.icon === 'truck' && (
-                      <>
-                        <rect x="1" y="3" width="15" height="13" />
-                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-                        <circle cx="5.5" cy="18.5" r="2.5" />
-                        <circle cx="18.5" cy="18.5" r="2.5" />
-                      </>
-                    )}
-                    {/* Thêm các biểu tượng khác nếu cần */}
-                  </svg>
-                )}
-                {item.label}
-              </div>
-            ))}
-          </div>
-        )}
+        <ContractListTable contracts={filteredContracts} onActionClick={handleContractTableAction} />
       </div>
 
       {/* Modal hiển thị tai san */}
@@ -1947,7 +1590,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
                         <div className="flex-grow-1">
                           <h6 className="mb-1">{item.deviceName}</h6>
                           <p className="mb-0">
-                            Giá: <strong>{item.value}</strong> /{' '}
+                            Giá: <strong>{formatCurrencyValue(item.value)}</strong> /{' '}
                             {item.unit == 'CAI'
                               ? 'Cái'
                               : item.unit == 'CHIEC'
@@ -2031,3 +1674,4 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmot
 }
 
 export default ContractManager
+

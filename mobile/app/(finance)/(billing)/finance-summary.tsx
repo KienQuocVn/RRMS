@@ -4,18 +4,25 @@
  * Điều hướng từ: OtherActions > "Khoản thu / chi & Tổng kết"
  */
 
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Platform,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  BorderRadius,
+  Shadows,
+} from "@/constants/theme";
 
 // ── Component ──
 export default function FinanceSummaryScreen() {
@@ -25,7 +32,12 @@ export default function FinanceSummaryScreen() {
   return (
     <View style={styles.container}>
       {/* ── Header ── */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : Spacing.xl }]}>
+      <View
+        style={[
+          styles.header,
+          { paddingTop: Platform.OS === "ios" ? insets.top : Spacing.xl },
+        ]}
+      >
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
@@ -40,7 +52,12 @@ export default function FinanceSummaryScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Cài đặt"
         >
-          <Ionicons name="settings-outline" size={18} color={Colors.textPrimary} style={{ marginRight: 4 }} />
+          <Ionicons
+            name="settings-outline"
+            size={18}
+            color={Colors.textPrimary}
+            style={{ marginRight: 4 }}
+          />
           <Text style={styles.settingsBtnText}>Cài đặt</Text>
         </TouchableOpacity>
       </View>
@@ -55,7 +72,11 @@ export default function FinanceSummaryScreen() {
           <View style={styles.filterBadge}>
             <Text style={styles.filterBadgeText}>1</Text>
           </View>
-          <Ionicons name="filter-outline" size={20} color={Colors.textPrimary} />
+          <Ionicons
+            name="filter-outline"
+            size={20}
+            color={Colors.textPrimary}
+          />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.monthDropdown}
@@ -72,26 +93,44 @@ export default function FinanceSummaryScreen() {
         <View style={styles.summaryRow}>
           <View style={styles.summaryCol}>
             <View style={styles.summaryLabelRow}>
-              <Ionicons name="trending-up" size={14} color={Colors.textSuccess} style={{ marginRight: 4 }} />
+              <Ionicons
+                name="trending-up"
+                size={14}
+                color={Colors.textSuccess}
+                style={{ marginRight: 4 }}
+              />
               <Text style={styles.summaryLabel}>Khoản thu</Text>
             </View>
-            <Text style={[styles.summaryValue, { color: '#4CAF50' }]}>+ 0 đ</Text>
+            <Text style={[styles.summaryValue, { color: Colors.success }]}>
+              + 0 đ
+            </Text>
           </View>
           <View style={styles.summaryCol}>
             <View style={styles.summaryLabelRow}>
               <Text style={styles.summaryLabel}>Khoản chi</Text>
-              <Ionicons name="arrow-forward" size={14} color={Colors.textPrimary} style={{ marginLeft: 4 }} />
+              <Ionicons
+                name="arrow-forward"
+                size={14}
+                color={Colors.textPrimary}
+                style={{ marginLeft: 4 }}
+              />
             </View>
-            <Text style={[styles.summaryValue, { color: Colors.error }]}>- 0 đ</Text>
+            <Text style={[styles.summaryValue, { color: Colors.error }]}>
+              - 0 đ
+            </Text>
           </View>
           <View style={styles.summaryCol}>
             <View style={styles.summaryLabelRow}>
               <View style={styles.totalIcon}>
-                <Ionicons name="calculator-outline" size={10} color={Colors.white} />
+                <Ionicons
+                  name="calculator-outline"
+                  size={10}
+                  color={Colors.white}
+                />
               </View>
               <Text style={styles.summaryLabel}>Tổng kết</Text>
             </View>
-            <Text style={[styles.summaryValue, { color: '#FF9800' }]}>0 đ</Text>
+            <Text style={[styles.summaryValue, { color: "#FF9800" }]}>0 đ</Text>
           </View>
         </View>
       </View>
@@ -118,7 +157,12 @@ export default function FinanceSummaryScreen() {
         accessibilityLabel="Tải xuống"
       >
         <Ionicons name="chevron-down" size={28} color={Colors.textSuccess} />
-        <Ionicons name="chevron-down" size={28} color={Colors.textSuccess} style={{ marginTop: -18 }} />
+        <Ionicons
+          name="chevron-down"
+          size={28}
+          color={Colors.textSuccess}
+          style={{ marginTop: -18 }}
+        />
       </TouchableOpacity>
 
       {/* ── FAB ── */}
@@ -137,11 +181,11 @@ export default function FinanceSummaryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
@@ -152,8 +196,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: Colors.borderLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.md,
   },
   headerTitle: {
@@ -163,8 +207,8 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   settingsBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: BorderRadius.full,
@@ -179,8 +223,8 @@ const styles = StyleSheet.create({
 
   // Month filter
   monthFilter: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.md,
     backgroundColor: Colors.white,
@@ -188,19 +232,19 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.borderLight,
   },
   filterIconWrap: {
-    position: 'relative',
+    position: "relative",
     marginRight: Spacing.md,
   },
   filterBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: -6,
     right: -6,
     backgroundColor: Colors.error,
     borderRadius: 8,
     width: 16,
     height: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     zIndex: 1,
   },
   filterBadgeText: {
@@ -209,8 +253,8 @@ const styles = StyleSheet.create({
     fontWeight: FontWeights.bold,
   },
   monthDropdown: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   monthText: {
@@ -229,15 +273,15 @@ const styles = StyleSheet.create({
     ...Shadows.sm,
   },
   summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   summaryCol: {
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
   },
   summaryLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 4,
   },
   summaryLabel: {
@@ -252,9 +296,9 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 4,
-    backgroundColor: '#4CAF50',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: Colors.success,
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 4,
   },
 
@@ -264,16 +308,16 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.base,
     marginTop: Spacing.md,
     borderRadius: BorderRadius.lg,
-    padding: Spacing['2xl'],
-    alignItems: 'center',
+    padding: Spacing["2xl"],
+    alignItems: "center",
     ...Shadows.sm,
   },
   emptyIconWrap: {
-    position: 'relative',
+    position: "relative",
     marginBottom: Spacing.lg,
   },
   emptySearchIcon: {
-    position: 'absolute',
+    position: "absolute",
     top: -8,
     right: -12,
   },
@@ -286,7 +330,7 @@ const styles = StyleSheet.create({
   emptyStateDesc: {
     fontSize: FontSizes.md,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
   },
 
   // Empty area
@@ -296,23 +340,23 @@ const styles = StyleSheet.create({
 
   // Download button
   downloadBtn: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 90,
     right: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
 
   // FAB
   fab: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 24,
     right: 20,
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#4CAF50',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: Colors.success,
+    alignItems: "center",
+    justifyContent: "center",
     ...Shadows.lg,
   },
 });

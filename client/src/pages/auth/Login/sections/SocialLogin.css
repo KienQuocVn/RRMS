@@ -1,5 +1,42 @@
-/* Override font-size của Facebook button vì thư viện không expose prop này */
-.facebook-login-btn {
+.social-login-slot {
+  width: min(100%, 320px);
+  display: flex;
+  justify-content: center;
+}
+
+.social-login-control {
+  width: 100% !important;
+  max-width: 320px !important;
+  min-height: 44px !important;
   margin: 0 !important;
-  font-size: 12px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 20px rgba(40, 73, 140, 0.16) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  padding: 0 16px !important;
+}
+
+.social-login-control > div {
+  gap: 10px;
+}
+
+.social-login-control--google {
+  background: #ffffff !important;
+  color: #2f3b52 !important;
+  border: 1px solid #d9e1ec !important;
+}
+
+.social-login-control--google:hover {
+  background: #f7fbff !important;
+}
+
+.social-login-control--facebook {
+  background: #4267b2 !important;
+}
+
+@media (max-width: 600px) {
+  .social-login-slot,
+  .social-login-control {
+    width: 100% !important;
+  }
 }

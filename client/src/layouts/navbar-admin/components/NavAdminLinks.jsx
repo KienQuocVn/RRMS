@@ -80,6 +80,7 @@ const mockNotifications = [
 const NavAdminLinks = ({ motel, setIsNavAdmin, handleLogout, tokenExists }) => {
   const location = useLocation()
   const id = motel?.motelId
+  const accountPath = id ? `/tai-khoan/${id}` : '/tai-khoan'
   const [anchorEl, setAnchorEl] = useState(null)
 
   const handleNotificationClick = (event) => {
@@ -106,7 +107,7 @@ const NavAdminLinks = ({ motel, setIsNavAdmin, handleLogout, tokenExists }) => {
     { to: id ? `/moi-gioi/${id}` : '#', icon: <PeopleIcon />, label: 'Môi giới' },
     { to: id ? `/phan-quyen/${id}` : '#', icon: <BusinessIcon />, label: 'Công ty/nhóm' },
     { to: id ? `/cai-dat/${id}` : '#', icon: <SettingsIcon />, label: 'Cài đặt chung' },
-    { to: '/tai-khoan', icon: <PersonIcon />, label: 'Tài khoản' },
+    { to: accountPath, icon: <PersonIcon />, label: 'Tài khoản' },
   ]
 
   return (
@@ -117,7 +118,9 @@ const NavAdminLinks = ({ motel, setIsNavAdmin, handleLogout, tokenExists }) => {
           to={to}
           icon={icon}
           label={label}
-          isActive={location.pathname === to}
+          isActive={label === 'Tài khoản'
+            ? location.pathname === '/tai-khoan' || location.pathname.startsWith('/tai-khoan/')
+            : location.pathname === to}
           onClick={onClick}
         />
       ))}
@@ -172,17 +175,19 @@ const NavAdminLinks = ({ motel, setIsNavAdmin, handleLogout, tokenExists }) => {
                   </Badge>
                 </ListItemAvatar>
                 <ListItemText
+                  primaryTypographyProps={{ component: 'div' }}
+                  secondaryTypographyProps={{ component: 'div' }}
                   primary={
-                    <Typography variant="subtitle1" fontWeight="bold" sx={{ lineHeight: 1.3, mb: 0.5, color: '#333' }}>
+                    <Typography component="div" variant="subtitle1" fontWeight="bold" sx={{ lineHeight: 1.3, mb: 0.5, color: '#333' }}>
                       {notification.title}
                     </Typography>
                   }
                   secondary={
                     <>
-                      <Typography variant="body2" color="text.primary" sx={{ display: 'block', mb: 1 }}>
+                      <Typography component="div" variant="body2" color="text.primary" sx={{ display: 'block', mb: 1 }}>
                         {notification.body}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography component="div" variant="caption" color="text.secondary">
                         {notification.time}
                       </Typography>
                     </>

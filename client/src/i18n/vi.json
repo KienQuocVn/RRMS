@@ -644,14 +644,13 @@
     },
     "register": {
       "title": "ĐĂNG KÝ TÀI KHOẢN",
-      "host": "Tôi là Chủ nhà, Nhân viên",
-      "customer": "Tôi tìm nhà trọ, phòng trọ",
+      "host": "Tôi là chủ nhà",
+      "customer": "Tôi là người thuê",
+      "broker": "Môi giới",
       "username": "Tên người dùng",
       "usernamePlaceholder": "Nhập tên người dùng",
       "phone": "Số điện thoại",
       "phonePlaceholder": "Nhập số điện thoại",
-      "gmail": "Gmail",
-      "gmailPlaceholder": "Nhập Gmail",
       "password": "Mật khẩu",
       "passwordPlaceholder": "Nhập mật khẩu",
       "confirmPassword": "Nhập lại mật khẩu",
@@ -680,7 +679,8 @@
         "invalidOtpText": "Vui lòng thử lại !",
         "successTitle": "Thành công",
         "successText": "Đăng ký thành công",
-        "genericError": "Có lỗi xảy ra, vui lòng thử lại."
+        "genericError": "Có lỗi xảy ra, vui lòng thử lại.",
+        "backendUnavailable": "Không kết nối được máy chủ đăng ký. Hãy kiểm tra backend đang chạy ở cổng 7000."
       }
     },
     "forgotPassword": {

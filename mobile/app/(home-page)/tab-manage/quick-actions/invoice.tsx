@@ -52,7 +52,7 @@ export default function InvoiceScreen() {
           <Ionicons name="cube-outline" size={80} color={Colors.gray400} style={styles.emptyIcon} />
           <Text style={styles.emptyStateTitle}>Không có dữ liệu!</Text>
           <Text style={styles.emptyStateDesc}>Chưa có phòng đang ở để lập hóa đơn.</Text>
-          <Text style={styles.emptyStateDesc}>Vui lòng "Lập hợp đồng mới" trước khi lập hóa đơn.</Text>
+          <Text style={styles.emptyStateDesc}>Vui lòng Lập hợp đồng mới trước khi lập hóa đơn.</Text>
         </View>
       </View>
     </View>

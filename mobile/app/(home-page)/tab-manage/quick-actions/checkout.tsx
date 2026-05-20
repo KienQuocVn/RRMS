@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -13,9 +13,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSizes, FontWeights, BorderRadius, Shadows } from '@/constants/theme';
 
+type FilterTab = 'all' | 'ending' | 'soon' | 'overdue';
+
 export default function CheckoutScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
 
   const Header = () => (
     <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : Spacing.xl }]}>
@@ -44,31 +47,37 @@ export default function CheckoutScreen() {
 
       <View style={{ backgroundColor: Colors.white }}>
         <ScrollView horizontal contentContainerStyle={styles.filterTabs} showsHorizontalScrollIndicator={false}>
-          <TouchableOpacity style={[styles.filterTab, styles.filterTabActive]}>
-            <Ionicons name="funnel-outline" size={16} color={Colors.white} style={{ marginRight: 4 }} />
-            <Text style={styles.filterTextActive}>Tất cả</Text>
-            <View style={styles.tabBadgeOrange}>
-              <Text style={styles.tabBadgeText}>0</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filterTabInactive}>
-            <Text style={styles.filterTextInactive}>Đang báo kết thúc</Text>
-            <View style={styles.tabBadgeOrange}>
-              <Text style={styles.tabBadgeText}>0</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filterTabInactive}>
-            <Text style={styles.filterTextInactive}>Sắp kết thúc</Text>
-            <View style={styles.tabBadgeOrange}>
-              <Text style={styles.tabBadgeText}>0</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filterTabInactive}>
-            <Text style={styles.filterTextInactive}>Quá hạn</Text>
-            <View style={styles.tabBadgeOrange}>
-              <Text style={styles.tabBadgeText}>0</Text>
-            </View>
-          </TouchableOpacity>
+          {[
+            { key: 'all' as FilterTab, label: 'Tất cả', count: 0, icon: 'funnel-outline' as const },
+            { key: 'ending' as FilterTab, label: 'Đang báo kết thúc', count: 0 },
+            { key: 'soon' as FilterTab, label: 'Sắp kết thúc', count: 0 },
+            { key: 'overdue' as FilterTab, label: 'Quá hạn', count: 0 },
+          ].map((tab) => (
+            <TouchableOpacity
+              key={tab.key}
+              style={[
+                styles.filterTab,
+                activeFilter === tab.key ? styles.filterTabActive : styles.filterTabInactive,
+              ]}
+              onPress={() => setActiveFilter(tab.key)}
+              activeOpacity={0.7}
+            >
+              {tab.icon && (
+                <Ionicons
+                  name={tab.icon}
+                  size={14}
+                  color={activeFilter === tab.key ? Colors.white : Colors.textPrimary}
+                  style={{ marginRight: 4 }}
+                />
+              )}
+              <Text style={activeFilter === tab.key ? styles.filterTextActive : styles.filterTextInactive}>
+                {tab.label}
+              </Text>
+              <View style={styles.tabBadgeOrange}>
+                <Text style={styles.tabBadgeText}>{tab.count}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
         </ScrollView>
       </View>
 
@@ -156,7 +165,7 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   filterTabActive: {
-    backgroundColor: '#8BC34A', // Light green
+    backgroundColor: Colors.success, 
   },
   filterTabInactive: {
     backgroundColor: Colors.white,

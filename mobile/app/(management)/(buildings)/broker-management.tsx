@@ -45,7 +45,7 @@ export default function BrokerManagementScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Quay lại"
         >
-          <Ionicons name="arrow-back" size={24} color={Colors.textSuccess} />
+          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <View style={styles.headerTitleWrap}>
           <Text style={styles.headerTitle}>Quản lý môi giới</Text>
@@ -89,7 +89,7 @@ export default function BrokerManagementScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Tìm kiếm"
         >
-          <Ionicons name="search" size={22} color={Colors.textSuccess} />
+          <Ionicons name="search" size={22} color={Colors.textPrimary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
   headerSubtitle: {
     fontSize: FontSizes.sm,
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: FontSizes.lg,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
     marginBottom: Spacing.xs,
   },
   emptyStateDesc: {
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,
     fontSize: FontSizes.md,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
     backgroundColor: Colors.white,
   },
   searchIconBtn: {

@@ -43,7 +43,7 @@ public class AccountController {
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection) {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        // var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Pageable pageable = PageableUtils.of(page, size, sortBy, sortDirection);
         PageResponse<AccountResponse> result = PageResponse.from(accountService.findAll(pageable));

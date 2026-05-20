@@ -97,7 +97,7 @@ export default function RoomsListScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Quay lại"
         >
-          <Ionicons name="arrow-back" size={24} color={Colors.textSuccess} />
+          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Danh sách phòng</Text>
         <TouchableOpacity
@@ -108,7 +108,7 @@ export default function RoomsListScreen() {
           <Ionicons
             name="filter-outline"
             size={22}
-            color={Colors.textSuccess}
+            color={Colors.textPrimary}
           />
         </TouchableOpacity>
       </View>
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
     marginLeft: Spacing.md,
   },
   filterButton: {
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
 
   // Status box
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: FontSizes.xs,
     fontWeight: FontWeights.semiBold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
 
   // Footer
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
   priceValue: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
   actionsBox: {
     flexDirection: "row",

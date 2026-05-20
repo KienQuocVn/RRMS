@@ -19,7 +19,7 @@ const ServiceManager = lazy(() => import('../pages/admin/NavContentAdmin/Service
 const AssetManager = lazy(() => import('../pages/admin/NavContentAdmin/AssetManager'))
 const ContractManager = lazy(() => import('../pages/admin/NavContentAdmin/ContractManage/ContractManager'))
 const ContractPreview = lazy(() => import('../pages/admin/NavContentAdmin/ContractManage/ContractPreview'))
-const TenantManager = lazy(() => import('../pages/admin/NavContentAdmin/TenantManager'))
+const TenantManager = lazy(() => import('../pages/admin/NavContentAdmin/tenantManagement/TenantManager'))
 const IncomeSummary = lazy(() => import('../pages/admin/NavContentAdmin/IncomeSummary/IncomeSummary'))
 const Zalo_history = lazy(() => import('../pages/admin/NavContentAdmin/Zalo_history'))
 const SettingMotel = lazy(() => import('../pages/admin/NavContentAdmin/SettingMotel/SettingMotel'))
@@ -71,7 +71,10 @@ const AdminRoutes = ({ auth, motel }) => {
           </ProtectedRoute>
         }
       />
-      <Route path="/moi-gioi/:motelId" element={<AdminManageBoker setIsAdmin={setIsAdmin} motels={motels} setmotels={setMotels} />} />
+      <Route
+        path="/moi-gioi/:motelId"
+        element={<AdminManageBoker setIsAdmin={setIsAdmin} motels={motels} setmotels={setMotels} />}
+      />
       <Route
         path="/adminManage"
         element={
@@ -166,9 +169,19 @@ const AdminRoutes = ({ auth, motel }) => {
       />
       <Route path="/dang-tin" element={<PostRooms setIsAdmin={setIsAdmin} />} />
       <Route path="/dang-tin/:motelId" element={<PostRooms setIsAdmin={setIsAdmin} />} />
-      <Route path="/tai-khoan" element={<ManagerMyAccount TaiKhoan={username} setIsAdmin={setIsAdmin} />} />
+      <Route
+        path="/tai-khoan"
+        element={<ManagerMyAccount TaiKhoan={username} setIsAdmin={setIsAdmin} motels={motels} setmotels={setMotels} />}
+      />
+      <Route
+        path="/tai-khoan/:motelId"
+        element={<ManagerMyAccount TaiKhoan={username} setIsAdmin={setIsAdmin} motels={motels} setmotels={setMotels} />}
+      />
       <Route path="/phan-quyen" element={<ManagerCompanyAT setIsAdmin={setIsAdmin} />} />
-      <Route path="/phan-quyen/:motelId" element={<ManagerCompanyAT setIsAdmin={setIsAdmin} motels={motels} setmotels={setMotels} />} />
+      <Route
+        path="/phan-quyen/:motelId"
+        element={<ManagerCompanyAT setIsAdmin={setIsAdmin} motels={motels} setmotels={setMotels} />}
+      />
       <Route
         path="/cai-dat"
         element={
@@ -197,7 +210,13 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro/:motelId/quan-ly-hoa-don"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <InvoiceManager motels={motels} setmotels={setMotels} setIsAdmin={setIsAdmin} isNavAdmin={isNavAdmin} setIsNavAdmin={setIsNavAdmin} />
+            <InvoiceManager
+              motels={motels}
+              setmotels={setMotels}
+              setIsAdmin={setIsAdmin}
+              isNavAdmin={isNavAdmin}
+              setIsNavAdmin={setIsNavAdmin}
+            />
           </ProtectedRoute>
         }
       />
@@ -205,7 +224,13 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro/:motelId/quan-ly-dich-vu"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <ServiceManager motels={motels} setmotels={setMotels} setIsAdmin={setIsAdmin} isNavAdmin={isNavAdmin} setIsNavAdmin={setIsNavAdmin} />
+            <ServiceManager
+              motels={motels}
+              setmotels={setMotels}
+              setIsAdmin={setIsAdmin}
+              isNavAdmin={isNavAdmin}
+              setIsNavAdmin={setIsNavAdmin}
+            />
           </ProtectedRoute>
         }
       />
@@ -213,7 +238,13 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro/:motelId/quan-ly-tai-san"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <AssetManager motels={motels} setmotels={setMotels} setIsAdmin={setIsAdmin} isNavAdmin={isNavAdmin} setIsNavAdmin={setIsNavAdmin} />
+            <AssetManager
+              motels={motels}
+              setmotels={setMotels}
+              setIsAdmin={setIsAdmin}
+              isNavAdmin={isNavAdmin}
+              setIsNavAdmin={setIsNavAdmin}
+            />
           </ProtectedRoute>
         }
       />
@@ -221,7 +252,13 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro/:motelId/tat-ca-hop-dong"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <ContractManager motels={motels} setmotels={setMotels} setIsAdmin={setIsAdmin} isNavAdmin={isNavAdmin} setIsNavAdmin={setIsNavAdmin} />
+            <ContractManager
+              motels={motels}
+              setmotels={setMotels}
+              setIsAdmin={setIsAdmin}
+              isNavAdmin={isNavAdmin}
+              setIsNavAdmin={setIsNavAdmin}
+            />
           </ProtectedRoute>
         }
       />
@@ -229,7 +266,13 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro/:motelId/tat-ca-khach-thue"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <TenantManager motels={motels} setmotels={setMotels} setIsAdmin={setIsAdmin} isNavAdmin={isNavAdmin} setIsNavAdmin={setIsNavAdmin} />
+            <TenantManager
+              motels={motels}
+              setmotels={setMotels}
+              setIsAdmin={setIsAdmin}
+              isNavAdmin={isNavAdmin}
+              setIsNavAdmin={setIsNavAdmin}
+            />
           </ProtectedRoute>
         }
       />
@@ -237,7 +280,13 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro/:motelId/thu-chi-tong-ket"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <IncomeSummary motels={motels} setmotels={setMotels} setIsAdmin={setIsAdmin} isNavAdmin={isNavAdmin} setIsNavAdmin={setIsNavAdmin} />
+            <IncomeSummary
+              motels={motels}
+              setmotels={setMotels}
+              setIsAdmin={setIsAdmin}
+              isNavAdmin={isNavAdmin}
+              setIsNavAdmin={setIsNavAdmin}
+            />
           </ProtectedRoute>
         }
       />
@@ -245,7 +294,13 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro/:motelId/cai-dat-nha-tro"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <SettingMotel motels={motels} setmotels={setMotels} setIsAdmin={setIsAdmin} isNavAdmin={isNavAdmin} setIsNavAdmin={setIsNavAdmin} />
+            <SettingMotel
+              motels={motels}
+              setmotels={setMotels}
+              setIsAdmin={setIsAdmin}
+              isNavAdmin={isNavAdmin}
+              setIsNavAdmin={setIsNavAdmin}
+            />
           </ProtectedRoute>
         }
       />
@@ -253,7 +308,13 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro/:motelId/lich-su-gui-zalo"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <Zalo_history motels={motels} setmotels={setMotels} setIsAdmin={setIsAdmin} isNavAdmin={isNavAdmin} setIsNavAdmin={setIsNavAdmin} />
+            <Zalo_history
+              motels={motels}
+              setmotels={setMotels}
+              setIsAdmin={setIsAdmin}
+              isNavAdmin={isNavAdmin}
+              setIsNavAdmin={setIsNavAdmin}
+            />
           </ProtectedRoute>
         }
       />
@@ -261,7 +322,13 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro/:motelId/import-data-from-file"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <ImportFileExcel motels={motels} setmotels={setMotels} setIsAdmin={setIsAdmin} isNavAdmin={isNavAdmin} setIsNavAdmin={setIsNavAdmin} />
+            <ImportFileExcel
+              motels={motels}
+              setmotels={setMotels}
+              setIsAdmin={setIsAdmin}
+              isNavAdmin={isNavAdmin}
+              setIsNavAdmin={setIsNavAdmin}
+            />
           </ProtectedRoute>
         }
       />
@@ -269,7 +336,13 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro/:motelId/Chi-tiet-phong/:roomId"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <DetailRoom motels={motels} setmotels={setMotels} setIsAdmin={setIsAdmin} isNavAdmin={isNavAdmin} setIsNavAdmin={setIsNavAdmin} />
+            <DetailRoom
+              motels={motels}
+              setmotels={setMotels}
+              setIsAdmin={setIsAdmin}
+              isNavAdmin={isNavAdmin}
+              setIsNavAdmin={setIsNavAdmin}
+            />
           </ProtectedRoute>
         }
       />
@@ -285,7 +358,13 @@ const AdminRoutes = ({ auth, motel }) => {
         path="/quanlytro/:motelId/phuong-tien"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <VehicleManager motels={motels} setmotels={setMotels} setIsAdmin={setIsAdmin} isNavAdmin={isNavAdmin} setIsNavAdmin={setIsNavAdmin} />
+            <VehicleManager
+              motels={motels}
+              setmotels={setMotels}
+              setIsAdmin={setIsAdmin}
+              isNavAdmin={isNavAdmin}
+              setIsNavAdmin={setIsNavAdmin}
+            />
           </ProtectedRoute>
         }
       />

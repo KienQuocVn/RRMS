@@ -74,7 +74,7 @@ export default function ContractsListScreen() {
         </View>
         <Text style={styles.emptyStateTitle}>Không có dữ liệu!</Text>
         <Text style={styles.emptyStateDesc}>
-          Hiện tại chưa có hợp đồng nào được tạo. Hãy "Lập hợp đồng mới"
+          Hiện tại chưa có hợp đồng nào được tạo. Hãy Lập hợp đồng mới
         </Text>
       </View>
     </View>

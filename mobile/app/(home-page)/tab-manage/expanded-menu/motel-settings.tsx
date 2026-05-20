@@ -49,14 +49,14 @@ const BASIC_SETTINGS: SettingItem[] = [
     icon: 'business-outline',
     title: 'Dịch vụ',
     desc: 'Tiền điện, nước, tiền rác, tiền wifi hay các tiền phụ thu khác...',
-    route: '/services-settings',
+    route: '/tab-manage/expanded-menu/services-settings',
   },
   {
     id: 'invoice-settings',
     icon: 'receipt-outline',
     title: 'Cài đặt hóa đơn',
     desc: 'Các cài đặt hóa đơn như: Làm tròn, hình thức thanh toán, gửi tự qua ZALO, mã QR...',
-    route: '/invoice-settings',
+    route: '/tab-manage/expanded-menu/invoice-settings',
   },
   {
     id: 'bank-account',
@@ -78,7 +78,7 @@ const BASIC_SETTINGS: SettingItem[] = [
     icon: 'phone-portrait-outline',
     title: 'APP dành cho khách thuê',
     desc: 'Mật khẩu tài khoản khách, cho phép cập nhật thông tin...',
-    route: '/tenant-app-settings',
+    route: '/tab-manage/expanded-menu/tenant-app-settings',
     isPro: true,
   },
   {
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     marginRight: Spacing.sm,
   },
   proBadge: {
-    backgroundColor: '#1DB954',
+    backgroundColor: Colors.success,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,

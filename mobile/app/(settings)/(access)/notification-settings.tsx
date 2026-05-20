@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Switch } from 'react-native';
-import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Colors, FontSizes, FontWeights, Spacing } from '@/constants/theme';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  Switch,
+} from "react-native";
+import { RefreshableScrollView as ScrollView } from "@/components/ui/refreshable-scroll-view";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Colors, FontSizes, FontWeights, Spacing } from "@/constants/theme";
 
 export default function NotificationSettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -19,11 +26,19 @@ export default function NotificationSettingsScreen() {
   });
 
   const toggleSetting = (key: keyof typeof settings) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const Header = () => (
-    <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : insets.top + Spacing.sm }]}>
+    <View
+      style={[
+        styles.header,
+        {
+          paddingTop:
+            Platform.OS === "ios" ? insets.top : insets.top + Spacing.sm,
+        },
+      ]}
+    >
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
       </TouchableOpacity>
@@ -31,14 +46,24 @@ export default function NotificationSettingsScreen() {
     </View>
   );
 
-  const SettingItem = ({ title, description, value, onValueChange }: { title: string, description: string, value: boolean, onValueChange: () => void }) => (
+  const SettingItem = ({
+    title,
+    description,
+    value,
+    onValueChange,
+  }: {
+    title: string;
+    description: string;
+    value: boolean;
+    onValueChange: () => void;
+  }) => (
     <View style={styles.settingItem}>
       <View style={styles.settingTextWrap}>
         <Text style={styles.settingTitle}>{title}</Text>
         <Text style={styles.settingDesc}>{description}</Text>
       </View>
       <Switch
-        trackColor={{ false: '#E5E7EB', true: '#8BC34A' }}
+        trackColor={{ false: "#E5E7EB", true: Colors.success }}
         thumbColor={Colors.white}
         ios_backgroundColor="#E5E7EB"
         onValueChange={onValueChange}
@@ -55,31 +80,31 @@ export default function NotificationSettingsScreen() {
           title="Thông báo hệ thống"
           description="Là thông báo từ hệ thống"
           value={settings.system}
-          onValueChange={() => toggleSetting('system')}
+          onValueChange={() => toggleSetting("system")}
         />
         <SettingItem
           title="Thông báo khuyến mãi"
           description="Các thông báo khuyến mãi từ hệ thống"
           value={settings.promo}
-          onValueChange={() => toggleSetting('promo')}
+          onValueChange={() => toggleSetting("promo")}
         />
         <SettingItem
           title="Thông báo quản lý dãy trọ"
           description="Các thông báo từ việc quản lý dãy trọ"
           value={settings.manage}
-          onValueChange={() => toggleSetting('manage')}
+          onValueChange={() => toggleSetting("manage")}
         />
         <SettingItem
           title="Thông báo quản lý đăng tin dãy trọ"
           description="Các thông báo từ việc quản lý dãy trọ"
           value={settings.listing}
-          onValueChange={() => toggleSetting('listing')}
+          onValueChange={() => toggleSetting("listing")}
         />
         <SettingItem
           title="Thông báo ứng dụng chat"
           description="Khi có tin nhắn từ người thuê chat để lấy thêm thông tin chúng tôi sẽ gửi tin nhắn tới cho bạn"
           value={settings.chat}
-          onValueChange={() => toggleSetting('chat')}
+          onValueChange={() => toggleSetting("chat")}
         />
       </ScrollView>
     </View>
@@ -89,11 +114,11 @@ export default function NotificationSettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
@@ -105,8 +130,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: Colors.gray50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: Spacing.md,
   },
   headerTitle: {
@@ -120,8 +145,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: Spacing.lg,
     paddingHorizontal: Spacing.base,
     borderBottomWidth: 1,

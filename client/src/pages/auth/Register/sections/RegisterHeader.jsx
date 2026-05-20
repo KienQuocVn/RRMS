@@ -23,11 +23,7 @@ const RegisterHeader = () => {
         />
       </Link>
 
-      <Typography variant="h4" fontWeight={800} mb={2}>
-        <Box component="span" sx={{ color: '#4bcffa' }}>
-          {t('auth.register.title')}
-        </Box>
-      </Typography>
+      
 
       <Typography variant="h5" fontWeight={700} mb={2}>
         <Box component="span" sx={{ color: '#4bcffa' }}>
@@ -35,6 +31,9 @@ const RegisterHeader = () => {
         </Box>
         <br />
         {t('auth.brandSubtitle')}
+      </Typography>
+      <Typography variant="h4" fontWeight={800} mb={2} sx={{ color: '#111827' }}>
+        {t('auth.register.title')}
       </Typography>
     </Box>
   )
