@@ -18,16 +18,16 @@ import {
 
 /** Map menu id → route path */
 const MENU_ROUTES: Record<string, string> = {
-  rooms: "/tab-manage/expanded-menu/rooms-list",
-  invoices: "/tab-manage/expanded-menu/invoices-list",
-  services: "/tab-manage/expanded-menu/services-settings",
-  contracts: "/tab-manage/expanded-menu/contracts-list",
-  tenants: "/tab-manage/expanded-menu/tenants-list",
-  assets: "/tab-manage/expanded-menu/assets-list",
-  vehicles: "/tab-manage/expanded-menu/vehicles-list",
-  "tenant-app": "/tab-manage/expanded-menu/tenant-app-settings",
-  "invoice-settings": "/tab-manage/expanded-menu/invoice-settings",
-  "motel-settings": "/tab-manage/expanded-menu/motel-settings",
+  rooms: "/tab-manage/management-menu/rooms-list",
+  invoices: "/tab-manage/management-menu/invoices-list",
+  services: "/tab-manage/management-menu/services-settings",
+  contracts: "/tab-manage/management-menu/contracts-list",
+  tenants: "/tab-manage/management-menu/tenants-list",
+  assets: "/tab-manage/management-menu/assets-list",
+  vehicles: "/tab-manage/management-menu/vehicles-list",
+  "tenant-app": "/tab-manage/management-menu/tenant-app-settings",
+  "invoice-settings": "/tab-manage/management-menu/invoice-settings",
+  "motel-settings": "/tab-manage/management-menu/motel-settings",
 };
 
 interface MenuGridItem {

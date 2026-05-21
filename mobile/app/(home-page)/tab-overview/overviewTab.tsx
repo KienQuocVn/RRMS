@@ -57,10 +57,7 @@ export default function OverviewTab() {
           percent={0}
           percentColor={Colors.error}
           onPress={() =>
-            router.push({
-              pathname: "/tab-overview/room-status/rooms-for-rent",
-              params: { type: "available" },
-            })
+            router.push("/tab-overview/room-status/available-rooms")
           }
         />
         <RoomStatCard
@@ -71,10 +68,7 @@ export default function OverviewTab() {
           percent={100}
           percentColor={Colors.error}
           onPress={() =>
-            router.push({
-              pathname: "/tab-overview/room-status/rooms-for-rent",
-              params: { type: "empty" },
-            })
+            router.push("/tab-overview/room-status/empty-rooms")
           }
         />
         <RoomStatCard
@@ -85,10 +79,7 @@ export default function OverviewTab() {
           percent={0}
           percentColor={Colors.success}
           onPress={() =>
-            router.push({
-              pathname: "/tab-overview/room-status/rooms-for-rent",
-              params: { type: "renting" },
-            })
+            router.push("/tab-overview/room-status/renting-rooms")
           }
         />
         <RoomStatCard
@@ -99,10 +90,7 @@ export default function OverviewTab() {
           percent={0}
           percentColor={Colors.error}
           onPress={() =>
-            router.push({
-              pathname: "/tab-overview/room-status/rooms-for-rent",
-              params: { type: "expiring" },
-            })
+            router.push("/tab-overview/room-status/expiring-rooms")
           }
         />
         <RoomStatCard
@@ -114,10 +102,7 @@ export default function OverviewTab() {
           percentColor={Colors.error}
           iconType="material"
           onPress={() =>
-            router.push({
-              pathname: "/tab-overview/room-status/rooms-for-rent",
-              params: { type: "reported_leaving" },
-            })
+            router.push("/tab-overview/room-status/reported-leaving-rooms")
           }
         />
         <RoomStatCard
@@ -128,10 +113,7 @@ export default function OverviewTab() {
           percent={0}
           percentColor={Colors.error}
           onPress={() =>
-            router.push({
-              pathname: "/tab-overview/room-status/rooms-for-rent",
-              params: { type: "overdue" },
-            })
+            router.push("/tab-overview/room-status/overdue-rooms")
           }
         />
         <RoomStatCard
@@ -142,10 +124,7 @@ export default function OverviewTab() {
           percent={0}
           percentColor={Colors.error}
           onPress={() =>
-            router.push({
-              pathname: "/tab-overview/room-status/rooms-for-rent",
-              params: { type: "debt" },
-            })
+            router.push("/tab-overview/room-status/debt-rooms")
           }
         />
         <RoomStatCard
@@ -157,10 +136,7 @@ export default function OverviewTab() {
           percentColor={Colors.success}
           iconType="material"
           onPress={() =>
-            router.push({
-              pathname: "/tab-overview/room-status/rooms-for-rent",
-              params: { type: "deposited" },
-            })
+            router.push("/tab-overview/room-status/deposited-rooms")
           }
         />
       </View>
@@ -208,10 +184,7 @@ export default function OverviewTab() {
           subtitle="Tổng tiền khách thuê đang nợ"
           amount="0 đ"
           onPress={() =>
-            router.push({
-              pathname: "/tab-overview/financial-statistics/finance-stats",
-              params: { type: "debt" },
-            })
+            router.push("/tab-overview/financial-statistics/customer-debt")
           }
         />
         <FinanceCard
@@ -221,10 +194,7 @@ export default function OverviewTab() {
           subtitle="Tổng tiền khách thuê đặt cọc khi ở"
           amount="0 đ"
           onPress={() =>
-            router.push({
-              pathname: "/tab-overview/financial-statistics/finance-stats",
-              params: { type: "deposit" },
-            })
+            router.push("/tab-overview/financial-statistics/room-deposit")
           }
         />
         <FinanceCard
@@ -234,10 +204,7 @@ export default function OverviewTab() {
           subtitle="Tổng tiền khách thuê đang cọc giữ chỗ"
           amount="0 đ"
           onPress={() =>
-            router.push({
-              pathname: "/tab-overview/financial-statistics/finance-stats",
-              params: { type: "deposit_holding" },
-            })
+            router.push("/tab-overview/financial-statistics/holding-deposit")
           }
         />
       </View>

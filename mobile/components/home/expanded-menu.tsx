@@ -33,7 +33,7 @@ export default function ExpandedMenu({
     if (onBrokerPress) {
       onBrokerPress();
     } else {
-      router.push("/broker-management" as any);
+      router.push("/tab-manage/expanded-menu/broker-management" as any);
     }
   };
 
@@ -41,7 +41,7 @@ export default function ExpandedMenu({
     if (onBankPress) {
       onBankPress();
     } else {
-      router.push("/bank-account" as any);
+      router.push("/tab-manage/expanded-menu/bank-account" as any);
     }
   };
 

@@ -18,10 +18,10 @@ import {
 
 /** Map action id → route path */
 const ACTION_ROUTES: Record<string, string> = {
-  finance: "/finance-summary",
-  "service-summary": "/service-summary",
-  "zalo-history": "/zalo-history",
-  "transfer-history": "/transfer-history",
+  finance: "/other-actions/finance-summary",
+  "service-summary": "/other-actions/service-summary",
+  "zalo-history": "/other-actions/zalo-history",
+  "transfer-history": "/other-actions/transfer-history",
 };
 
 interface ActionListItem {

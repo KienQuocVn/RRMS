@@ -62,7 +62,7 @@ export default function HomeHeader({
 
   const handleSettingsPress = () => {
     closeMenu(() => {
-      router.push("/tab-manage/expanded-menu/motel-settings");
+      router.push("/tab-manage/management-menu/motel-settings");
     });
   };
 
@@ -109,13 +109,17 @@ export default function HomeHeader({
               <TouchableOpacity
                 style={styles.menuItem}
                 activeOpacity={0.7}
-                onPress={() => closeMenu(() => router.push("/add-building/add-building"))}
+                onPress={() =>
+                  closeMenu(() => router.push("/add-building/add-building"))
+                }
               >
                 <View style={[styles.menuIconWrap, styles.iconAdd]}>
                   <Ionicons name="add" size={24} color={Colors.primary} />
                 </View>
                 <View style={styles.menuItemContent}>
-                  <Text style={styles.menuItemTitle}>Thêm mới tòa nhà cho thuê</Text>
+                  <Text style={styles.menuItemTitle}>
+                    Thêm mới tòa nhà cho thuê
+                  </Text>
                   <Text style={styles.menuItemDesc}>
                     Bạn có thể thêm nhiều nhà tài sản cho thuê để quản lý
                   </Text>
@@ -132,7 +136,9 @@ export default function HomeHeader({
               <TouchableOpacity
                 style={styles.menuItem}
                 activeOpacity={0.7}
-                onPress={() => closeMenu(() => router.push("/edit-building/edit-building"))}
+                onPress={() =>
+                  closeMenu(() => router.push("/edit-building/edit-building"))
+                }
               >
                 <View style={[styles.menuIconWrap, styles.iconDefault]}>
                   <Ionicons name="pencil" size={20} color={Colors.gray800} />
@@ -169,7 +175,8 @@ export default function HomeHeader({
                 <View style={styles.menuItemContent}>
                   <Text style={styles.menuItemTitle}>Cài đặt</Text>
                   <Text style={styles.menuItemDesc}>
-                    Cài đặt như máy in, chức năng, tiện ích, giờ giấc, nội quy...
+                    Cài đặt như máy in, chức năng, tiện ích, giờ giấc, nội
+                    quy...
                   </Text>
                 </View>
                 <Ionicons

@@ -21,4 +21,13 @@ export const inboxMessageScreens: TabOwnedScreen[] = [
     route: "/new-chat",
     source: "app/(mail-box-page)/(chat)/new-chat.tsx",
   },
+  {
+    id: "notification-settings",
+    tab: "inbox",
+    section: "messages",
+    label: "Cai dat thong bao",
+    route: "/notification-settings",
+    source: "app/(mail-box-page)/notification-settings.tsx",
+    notes: "Shared screen used by inbox and more tab.",
+  },
 ];
