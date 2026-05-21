@@ -4,8 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
-  Image,
   Platform,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -60,7 +58,7 @@ export default function OverviewTab() {
           percentColor={Colors.error}
           onPress={() =>
             router.push({
-              pathname: "/room-stats",
+              pathname: "/tab-overview/room-status/rooms-for-rent",
               params: { type: "available" },
             })
           }
@@ -73,7 +71,10 @@ export default function OverviewTab() {
           percent={100}
           percentColor={Colors.error}
           onPress={() =>
-            router.push({ pathname: "/room-stats", params: { type: "empty" } })
+            router.push({
+              pathname: "/tab-overview/room-status/rooms-for-rent",
+              params: { type: "empty" },
+            })
           }
         />
         <RoomStatCard
@@ -85,7 +86,7 @@ export default function OverviewTab() {
           percentColor={Colors.success}
           onPress={() =>
             router.push({
-              pathname: "/room-stats",
+              pathname: "/tab-overview/room-status/rooms-for-rent",
               params: { type: "renting" },
             })
           }
@@ -99,7 +100,7 @@ export default function OverviewTab() {
           percentColor={Colors.error}
           onPress={() =>
             router.push({
-              pathname: "/room-stats",
+              pathname: "/tab-overview/room-status/rooms-for-rent",
               params: { type: "expiring" },
             })
           }
@@ -114,7 +115,7 @@ export default function OverviewTab() {
           iconType="material"
           onPress={() =>
             router.push({
-              pathname: "/room-stats",
+              pathname: "/tab-overview/room-status/rooms-for-rent",
               params: { type: "reported_leaving" },
             })
           }
@@ -128,7 +129,7 @@ export default function OverviewTab() {
           percentColor={Colors.error}
           onPress={() =>
             router.push({
-              pathname: "/room-stats",
+              pathname: "/tab-overview/room-status/rooms-for-rent",
               params: { type: "overdue" },
             })
           }
@@ -141,7 +142,10 @@ export default function OverviewTab() {
           percent={0}
           percentColor={Colors.error}
           onPress={() =>
-            router.push({ pathname: "/room-stats", params: { type: "debt" } })
+            router.push({
+              pathname: "/tab-overview/room-status/rooms-for-rent",
+              params: { type: "debt" },
+            })
           }
         />
         <RoomStatCard
@@ -154,7 +158,7 @@ export default function OverviewTab() {
           iconType="material"
           onPress={() =>
             router.push({
-              pathname: "/room-stats",
+              pathname: "/tab-overview/room-status/rooms-for-rent",
               params: { type: "deposited" },
             })
           }
@@ -205,7 +209,7 @@ export default function OverviewTab() {
           amount="0 đ"
           onPress={() =>
             router.push({
-              pathname: "/finance-stats",
+              pathname: "/tab-overview/financial-statistics/finance-stats",
               params: { type: "debt" },
             })
           }
@@ -218,7 +222,7 @@ export default function OverviewTab() {
           amount="0 đ"
           onPress={() =>
             router.push({
-              pathname: "/finance-stats",
+              pathname: "/tab-overview/financial-statistics/finance-stats",
               params: { type: "deposit" },
             })
           }
@@ -231,7 +235,7 @@ export default function OverviewTab() {
           amount="0 đ"
           onPress={() =>
             router.push({
-              pathname: "/finance-stats",
+              pathname: "/tab-overview/financial-statistics/finance-stats",
               params: { type: "deposit_holding" },
             })
           }

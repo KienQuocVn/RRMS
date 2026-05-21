@@ -1,29 +1,13 @@
 import type { TabOwnedScreen } from '../../types';
 
-export { default as RoomStatsScreen } from '@/app/(management)/(occupancy)/room-stats';
-export { default as FinanceStatsScreen } from '@/app/(finance)/(billing)/finance-stats';
 export { default as FinanceSummaryScreen } from '@/app/(finance)/(billing)/finance-summary';
 export { default as ServiceSummaryScreen } from '@/app/(finance)/(billing)/service-summary';
 export { default as ZaloHistoryScreen } from '@/app/(finance)/(banking)/zalo-history';
 export { default as TransferHistoryScreen } from '@/app/(finance)/(banking)/transfer-history';
 
 export const homeAnalyticsScreens: TabOwnedScreen[] = [
-  {
-    id: 'room-stats',
-    tab: 'home',
-    section: 'analytics',
-    label: 'Thong ke phong',
-    route: '/room-stats',
-    source: 'app/(management)/(occupancy)/room-stats.tsx',
-  },
-  {
-    id: 'finance-stats',
-    tab: 'home',
-    section: 'analytics',
-    label: 'Thong ke tai chinh',
-    route: '/finance-stats',
-    source: 'app/(finance)/(billing)/finance-stats.tsx',
-  },
+
+
   {
     id: 'finance-summary',
     tab: 'home',

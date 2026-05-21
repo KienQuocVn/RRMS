@@ -1,6 +1,6 @@
 import type { TabOwnedScreen } from '../../types';
 
-export { default as MoreTabScreen } from '@/app/(tabs)/more';
+export { default as MoreTabScreen } from '@/app/(more-page)/more';
 export { default as ProfileScreen } from '@/app/(account)/(profile)/profile';
 export { default as EditProfileScreen } from '@/app/(account)/(profile)/edit-profile';
 export { default as RepresentativeInfoScreen } from '@/app/(account)/(profile)/representative-info';
@@ -15,7 +15,7 @@ export const moreAccountScreens: TabOwnedScreen[] = [
     section: 'account',
     label: 'Them plus',
     route: '/more',
-    source: 'app/(tabs)/more.tsx',
+    source: 'app/(more-page)/more.tsx',
   },
   {
     id: 'profile',

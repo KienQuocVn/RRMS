@@ -136,7 +136,7 @@ export default function RoomStatsScreen() {
       ]}
     >
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={22} color={Colors.textSuccess} />
+        <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
       </TouchableOpacity>
       <Text style={styles.headerTitle}>{config.title}</Text>
     </View>
@@ -246,7 +246,7 @@ export default function RoomStatsScreen() {
             <Ionicons
               name="pricetag-outline"
               size={14}
-              color={Colors.textSuccess}
+              color={Colors.textPrimary}
               style={{ marginRight: 6 }}
             />
             <Text style={styles.statusBoxTitle}>Trạng thái</Text>
@@ -337,7 +337,7 @@ export default function RoomStatsScreen() {
             <Ionicons
               name="calendar-outline"
               size={14}
-              color={Colors.textSuccess}
+              color={Colors.textPrimary}
               style={{ marginRight: 6 }}
             />
             <Text style={styles.detailLabel}>Hạn h.đồng</Text>
@@ -350,7 +350,7 @@ export default function RoomStatsScreen() {
             <Ionicons
               name="phone-portrait-outline"
               size={14}
-              color={Colors.textSuccess}
+              color={Colors.textPrimary}
               style={{ marginRight: 6 }}
             />
             <Text style={styles.detailLabel}>Sử dụng APP</Text>
@@ -373,7 +373,7 @@ export default function RoomStatsScreen() {
             <Ionicons
               name="pencil-outline"
               size={14}
-              color={Colors.textSuccess}
+              color={Colors.textPrimary}
               style={{ marginRight: 6 }}
             />
             <Text style={styles.detailLabel}>Hợp đồng online</Text>
@@ -397,7 +397,7 @@ export default function RoomStatsScreen() {
               <Ionicons
                 name="calendar-outline"
                 size={14}
-                color={Colors.textSuccess}
+                color={Colors.textPrimary}
                 style={{ marginRight: 6 }}
               />
               <Text style={styles.detailLabel}>Báo rời đi</Text>
@@ -422,7 +422,7 @@ export default function RoomStatsScreen() {
             <Ionicons
               name="pricetag-outline"
               size={14}
-              color={Colors.textSuccess}
+              color={Colors.textPrimary}
               style={{ marginRight: 6 }}
             />
             <Text style={styles.detailLabel}>Trạng thái</Text>
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
     flex: 1,
   },
   tabsContainer: {
@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
     marginRight: Spacing.lg,
   },
   tabTextActive: {
-    color: Colors.success,
+    color: Colors.textPrimary,
     fontWeight: FontWeights.bold,
     fontSize: FontSizes.sm,
   },
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   roomTitle: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
   dotsBtn: {
     width: 32,
@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 11,
     fontWeight: FontWeights.semiBold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
   cardFooter: {
     flexDirection: "row",
@@ -724,7 +724,7 @@ const styles = StyleSheet.create({
   priceValue: {
     fontSize: 13,
     fontWeight: FontWeights.bold,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
   actionButtons: {
     flexDirection: "row",
@@ -776,7 +776,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 13,
-    color: Colors.textSuccess,
+    color: Colors.textPrimary,
   },
   detailValue: {
     fontSize: 13,
