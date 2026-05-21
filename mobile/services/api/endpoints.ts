@@ -36,23 +36,23 @@ export const API_ENDPOINTS = {
 
   // 🏠 Motels
   MOTELS: {
-    BASE: '/motels',
-    GET_BY_ID: (id: string) => `/motels/get-motel-id?id=${id}`,
-    CREATE: '/motels/create',
+    BASE: '/api/v1/motels',
+    GET_BY_ID: (id: string) => `/api/v1/motels/${id}`,
+    CREATE: '/api/v1/motels',
   },
 
   // 🛏️ Rooms
   ROOMS: {
-    BASE: '/room',
-    GET_BY_MOTEL: (motelId: string) => `/room/motel/${motelId}`,
+    BASE: '/api/v1/rooms',
+    GET_BY_MOTEL: (motelId: string) => `/api/v1/rooms/motel/${motelId}`,
   },
 
   // 🛠️ Services & Devices
   SERVICES: {
-    GET_BY_ROOM: (roomId: string) => `/room-service/room/${roomId}`,
+    GET_BY_ROOM: (roomId: string) => `/api/v1/room-services/room/${roomId}`,
   },
   DEVICES: {
-    GET_BY_ROOM: (roomId: string) => `/roomdevices/${roomId}`,
+    GET_BY_ROOM: (roomId: string) => `/api/v1/room-devices/${roomId}`,
   },
 
   // 📜 Contracts
@@ -89,10 +89,10 @@ export const API_ENDPOINTS = {
 
   // 📢 Bulletin Board & Search
   BULLETIN: {
-    BASE: '/bulletin-board',
+    BASE: '/api/v1/bulletin-boards',
   },
   SEARCH: {
-    ADDRESS: '/searchs/addressBullet',
+    ADDRESS: '/api/v1/search/by-address',
   },
 
   // 📊 Statistics & Reports
@@ -110,7 +110,7 @@ export const API_ENDPOINTS = {
     READINGS: '/api/meter-readings',
   },
   RESERVE: {
-    BASE: '/reserve-a-place',
+    BASE: '/room-reservations',
   },
   SUPPORT: {
     CREATE: '/support/create',

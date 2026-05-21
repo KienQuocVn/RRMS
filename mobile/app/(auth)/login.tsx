@@ -18,7 +18,11 @@ import {
 } from '@/components/auth';
 import { Colors, Spacing, FontSizes, FontWeights } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
-import { API_BASE_URL, API_BASE_URL_DIAGNOSTICS } from '@/services/api/client';
+import {
+  API_BASE_URL,
+  API_BASE_URL_DIAGNOSTICS,
+  getApiBaseUrlCandidates,
+} from '@/services/api/client';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -26,6 +30,7 @@ export default function LoginScreen() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const showDevNetworkHint = __DEV__ && API_BASE_URL_DIAGNOSTICS.isLanOnlyHost;
+  const apiCandidates = getApiBaseUrlCandidates().join(' | ');
 
   const handleLogin = async () => {
     const trimmedPhone = phone.trim();
@@ -85,8 +90,8 @@ export default function LoginScreen() {
               <Text style={styles.devHintTitle}>Dev API: {API_BASE_URL}</Text>
               <Text style={styles.devHintText}>
                 Dia chi nay chi dung duoc khi dien thoai cung Wi-Fi/LAN voi may chay backend.
-                Neu status bar hien 4G hoac IP PC da doi, login se timeout. Neu bat buoc dung Expo
-                tunnel, chay npm run start:tunnel trong mobile.
+                App se tu thu lan luot: {apiCandidates}. Neu status bar hien 4G hoac backend dang
+                o may khac, hay dung npm run start:tunnel hoac khai bao EXPO_PUBLIC_API_URL.
               </Text>
             </View>
           ) : null}

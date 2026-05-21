@@ -16,6 +16,12 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
+### RRMS development modes
+
+- `npm run start`: auto-detect backend on the current dev machine at port `7000`, plus emulator/local fallbacks.
+- `npm run start:tunnel`: opens a public Expo tunnel and a public API tunnel together, then injects the reachable backend URL automatically.
+- `npm run start:tunnell`: alias of `npm run start:tunnel`.
+
 In the output, you'll find options to open the app in a
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)

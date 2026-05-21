@@ -1,7 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { authService } from '@/services/api/auth.service';
-import { API_BASE_URL, API_BASE_URL_DIAGNOSTICS } from '@/services/api/client';
+import {
+  API_BASE_URL,
+  API_BASE_URL_DIAGNOSTICS,
+  getApiBaseUrlCandidates,
+} from '@/services/api/client';
 import { authStorage } from '@/services/storage/auth.storage';
 import { LoginRequest, LoginResponse } from '@/types/auth.types';
 import { zustandSafeStorage } from '@/services/storage/safe-async-storage';
@@ -34,8 +38,9 @@ function buildNetworkErrorMessage(err: any) {
     err?.message === 'Network Error' ||
     err?.code === 'ERR_NETWORK' ||
     !err?.response;
+  const candidateHint = getApiBaseUrlCandidates().join(' , ');
   const lanOnlyApiHint = API_BASE_URL_DIAGNOSTICS.isLanOnlyHost
-    ? `API ${API_BASE_URL} chi reachable khi dien thoai cung Wi-Fi/LAN voi may chay backend. Neu may dang hien 4G hoac IP PC da doi, hay cap nhat mobile/.env va restart Expo.`
+    ? `API hien tai la ${API_BASE_URL} va chi reachable khi dien thoai cung Wi-Fi/LAN voi may chay backend. App da thu cac dia chi: ${candidateHint}. Neu backend dang chay tren may khac, them no vao EXPO_PUBLIC_API_URL hoac EXPO_PUBLIC_API_URL_CANDIDATES.`
     : null;
 
   if (timeoutError) {
@@ -47,7 +52,7 @@ function buildNetworkErrorMessage(err: any) {
   if (networkError) {
     return lanOnlyApiHint
       ? `Khong the ket noi may chu tai ${API_BASE_URL}. ${lanOnlyApiHint} Neu bat buoc dung Expo tunnel, hay chay npm run start:tunnel trong mobile.`
-      : `Khong the ket noi may chu tai ${API_BASE_URL}. Neu dang chay Expo tunnel, hay dung EXPO_PUBLIC_API_URL tro toi backend reachable (LAN IP hoac public URL).`;
+      : `Khong the ket noi may chu tai ${API_BASE_URL}. App da thu cac dia chi: ${candidateHint}. Neu dang chay Expo tunnel, hay dung npm run start:tunnel hoac EXPO_PUBLIC_API_URL tro toi backend reachable.`;
   }
 
   if (status === 502 || status === 503 || status === 504) {
