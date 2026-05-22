@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   Platform,
@@ -22,6 +23,7 @@ import {
   Spacing,
 } from "@/constants/theme";
 import { useAddBuildingFlow } from "@/hooks/use-add-building-flow";
+import { motelService } from "@/services/api/motel.service";
 
 interface ServiceItem {
   id: string;
@@ -296,13 +298,31 @@ function ServiceModeModal({
   );
 }
 
+// --- Validation errors ---
+interface ValidationErrors {
+  buildingName?: string;
+  sampleRoomCount?: string;
+  sampleArea?: string;
+  samplePrice?: string;
+  invoiceDay?: string;
+  paymentDeadline?: string;
+  address?: string;
+}
+
 export default function AddBuildingServicesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+
+  // Flow state
+  const basicInfo = useAddBuildingFlow((state) => state.basicInfo);
   const address = useAddBuildingFlow((state) => state.address);
+  const resetAll = useAddBuildingFlow((state) => state.resetAll);
+
   const [services, setServices] = useState(INITIAL_SERVICES);
   const [featureState, setFeatureState] = useState(INITIAL_FEATURES);
   const [activeServiceId, setActiveServiceId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<ValidationErrors>({});
 
   const addressSummary = [
     address.detail,
@@ -313,13 +333,6 @@ export default function AddBuildingServicesScreen() {
     .filter(Boolean)
     .join(", ");
 
-  const handleSave = () => {
-    Alert.alert(
-      "Đã lưu thông tin",
-      "Thiết lập dịch vụ và tính năng đã được cập nhật trong giao diện mẫu.",
-    );
-  };
-
   const activeService =
     services.find((service) => service.id === activeServiceId) ?? null;
 
@@ -329,6 +342,159 @@ export default function AddBuildingServicesScreen() {
         service.id === serviceId ? { ...service, mode } : service,
       ),
     );
+  };
+
+  // --- Validate ---
+  const validate = (): { isValid: boolean; errors: ValidationErrors } => {
+    const newErrors: ValidationErrors = {};
+
+    // 1. Tên nhà trọ
+    if (!basicInfo.buildingName.trim()) {
+      newErrors.buildingName = "Tên nhà trọ không được để trống";
+    }
+
+    // 2. Số lượng phòng mẫu
+    const roomCount = basicInfo.sampleRoomCount.trim();
+    if (!roomCount) {
+      newErrors.sampleRoomCount = "Số lượng phòng mẫu không được để trống";
+    } else {
+      const num = Number(roomCount);
+      if (isNaN(num) || !Number.isInteger(num) || num <= 0) {
+        newErrors.sampleRoomCount = "Số lượng phòng mẫu phải là số nguyên dương";
+      }
+    }
+
+    // 3. Diện tích mẫu
+    const area = basicInfo.sampleArea.trim();
+    if (!area) {
+      newErrors.sampleArea = "Diện tích mẫu không được để trống";
+    } else {
+      const num = Number(area);
+      if (isNaN(num) || num <= 0) {
+        newErrors.sampleArea = "Diện tích mẫu phải là số dương";
+      }
+    }
+
+    // 4. Giá thuê mẫu
+    const price = basicInfo.samplePrice.trim();
+    if (!price) {
+      newErrors.samplePrice = "Giá thuê mẫu không được để trống";
+    } else {
+      const num = Number(price);
+      if (isNaN(num) || num <= 0) {
+        newErrors.samplePrice = "Giá thuê mẫu phải là số dương";
+      }
+    }
+
+    // 5. Ngày lập hóa đơn
+    const invDay = basicInfo.invoiceDay.trim();
+    if (!invDay) {
+      newErrors.invoiceDay = "Ngày lập hóa đơn không được để trống";
+    } else {
+      const num = Number(invDay);
+      if (isNaN(num) || !Number.isInteger(num) || num < 1 || num > 31) {
+        newErrors.invoiceDay = "Ngày lập hóa đơn phải từ 1 đến 31";
+      }
+    }
+
+    // 6. Hạn đóng tiền
+    const deadline = basicInfo.paymentDeadline.trim();
+    if (!deadline) {
+      newErrors.paymentDeadline = "Hạn đóng tiền không được để trống";
+    } else {
+      const num = Number(deadline);
+      if (isNaN(num) || !Number.isInteger(num) || num < 0) {
+        newErrors.paymentDeadline = "Hạn đóng tiền phải là số không âm";
+      }
+    }
+
+    // 7. Địa chỉ
+    if (!addressSummary) {
+      newErrors.address = "Địa chỉ & vị trí không được để trống. Vui lòng thêm địa chỉ.";
+    }
+
+    setErrors(newErrors);
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors,
+    };
+  };
+
+  // --- Submit API ---
+  const handleSave = async () => {
+    const { isValid, errors: currentErrors } = validate();
+    if (!isValid) {
+      Alert.alert(
+        "Thông tin chưa hợp lệ",
+        Object.values(currentErrors).join("\n"),
+        [{ text: "Đã hiểu", style: "default" }],
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Build address string
+      const fullAddress = [
+        address.detail,
+        address.ward,
+        address.district,
+        address.city,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      // Build full motel name
+      const motelName = basicInfo.buildingName.trim().endsWith("Nhà trọ")
+        ? basicInfo.buildingName.trim()
+        : `${basicInfo.buildingName.trim()} Nhà trọ`;
+
+      // Payload gửi lên BE Java
+      const payload = {
+        motelName,
+        area: Number(basicInfo.sampleArea) || 0,
+        averagePrice: Number(basicInfo.samplePrice),
+        address: fullAddress,
+        maxperson: basicInfo.maxOccupancy ? Number(basicInfo.maxOccupancy) : 2,
+        invoicedate: Number(basicInfo.invoiceDay) || 1,
+        paymentdeadline: Number(basicInfo.paymentDeadline) || 5,
+      };
+
+      const response = await motelService.createMotel(payload);
+
+      if (response?.code === 200 || response?.result) {
+        resetAll();
+        Alert.alert(
+          "Tạo nhà trọ thành công!",
+          `Nhà trọ "${motelName}" đã được tạo thành công.`,
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                // Navigate về trang chủ
+                router.dismissAll?.();
+                router.replace("/(tabs)" as any);
+              },
+            },
+          ],
+        );
+      } else {
+        Alert.alert(
+          "Tạo thất bại",
+          response?.message || "Đã có lỗi xảy ra, vui lòng thử lại.",
+          [{ text: "Đóng" }],
+        );
+      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Không thể kết nối máy chủ. Vui lòng kiểm tra mạng và thử lại.";
+      Alert.alert("Lỗi", message, [{ text: "Đóng" }]);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -353,6 +519,7 @@ export default function AddBuildingServicesScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* === Dịch vụ === */}
         <SectionTitle
           title="Cài đặt dịch vụ Nhà trọ"
           subtitle="Thiết lập các dịch vụ khách thuê sử dụng khi thuê"
@@ -400,6 +567,7 @@ export default function AddBuildingServicesScreen() {
 
         <View style={styles.sectionSpacer} />
 
+        {/* === Tính năng === */}
         <SectionTitle
           title="Cài đặt tính năng"
           subtitle="Tùy chỉnh tính năng sử dụng cho Nhà trọ"
@@ -443,15 +611,20 @@ export default function AddBuildingServicesScreen() {
 
         <View style={styles.sectionSpacer} />
 
+        {/* === Địa chỉ & vị trí === */}
         <SectionTitle
-          title="Địa chỉ & vị trí"
+          title="Địa chỉ & vị trí *"
           subtitle="Địa chỉ giúp khách tìm đến chính xác để xem nhà cho thuê"
         />
 
         <View style={styles.card}>
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => router.push("/add-building/add-building-address")}
+            onPress={() =>
+              router.push(
+                "/menu-management-home/add-building/add-building-address",
+              )
+            }
             style={styles.addressAction}
           >
             <View style={styles.addressActionIcon}>
@@ -478,7 +651,65 @@ export default function AddBuildingServicesScreen() {
               </View>
             </View>
           ) : null}
+
+          {/* Error address */}
+          {errors.address ? (
+            <View style={styles.errorBanner}>
+              <Ionicons
+                name="alert-circle-outline"
+                size={16}
+                color={Colors.error}
+              />
+              <Text style={styles.errorBannerText}>{errors.address}</Text>
+            </View>
+          ) : null}
         </View>
+
+        {/* === Tóm tắt validate === */}
+        {(errors.buildingName || errors.sampleRoomCount || errors.sampleArea || errors.samplePrice || errors.invoiceDay || errors.paymentDeadline) ? (
+          <View style={styles.validationCard}>
+            <View style={styles.validationHeader}>
+              <Ionicons
+                name="warning-outline"
+                size={18}
+                color="#D97706"
+              />
+              <Text style={styles.validationTitle}>
+                Cần kiểm tra lại bước 1:
+              </Text>
+            </View>
+            {errors.buildingName ? (
+              <Text style={styles.validationItem}>
+                • {errors.buildingName}
+              </Text>
+            ) : null}
+            {errors.sampleRoomCount ? (
+              <Text style={styles.validationItem}>
+                • {errors.sampleRoomCount}
+              </Text>
+            ) : null}
+            {errors.sampleArea ? (
+              <Text style={styles.validationItem}>
+                • {errors.sampleArea}
+              </Text>
+            ) : null}
+            {errors.samplePrice ? (
+              <Text style={styles.validationItem}>
+                • {errors.samplePrice}
+              </Text>
+            ) : null}
+            {errors.invoiceDay ? (
+              <Text style={styles.validationItem}>
+                • {errors.invoiceDay}
+              </Text>
+            ) : null}
+            {errors.paymentDeadline ? (
+              <Text style={styles.validationItem}>
+                • {errors.paymentDeadline}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
       </RefreshableScrollView>
 
       <ServiceModeModal
@@ -487,6 +718,7 @@ export default function AddBuildingServicesScreen() {
         onSelect={handleChangeServiceMode}
       />
 
+      {/* Footer */}
       <View
         style={[
           styles.footer,
@@ -509,11 +741,24 @@ export default function AddBuildingServicesScreen() {
           <TouchableOpacity
             style={styles.secondaryButton}
             onPress={() => router.back()}
+            disabled={isSubmitting}
           >
             <Text style={styles.secondaryButtonText}>Quay lại trước</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.primaryButton} onPress={handleSave}>
-            <Text style={styles.primaryButtonText}>Lưu thông tin</Text>
+
+          <TouchableOpacity
+            style={[
+              styles.primaryButton,
+              isSubmitting && styles.primaryButtonLoading,
+            ]}
+            onPress={handleSave}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color={Colors.white} />
+            ) : (
+              <Text style={styles.primaryButtonText}>Lưu thông tin</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -850,6 +1095,48 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.xs,
     color: Colors.textSecondary,
   },
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: Spacing.base,
+    marginTop: Spacing.sm,
+    padding: Spacing.sm,
+    backgroundColor: "#FEF2F2",
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    gap: Spacing.xs,
+  },
+  errorBannerText: {
+    flex: 1,
+    fontSize: FontSizes.sm,
+    color: Colors.error,
+  },
+  validationCard: {
+    marginHorizontal: Spacing.base,
+    marginTop: Spacing.base,
+    padding: Spacing.md,
+    backgroundColor: "#FFFBEB",
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+  },
+  validationHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+    marginBottom: Spacing.sm,
+  },
+  validationTitle: {
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.bold,
+    color: "#92400E",
+  },
+  validationItem: {
+    fontSize: FontSizes.sm,
+    color: "#92400E",
+    marginBottom: 2,
+  },
   footer: {
     position: "absolute",
     left: 0,
@@ -883,6 +1170,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingHorizontal: Spacing.base,
     gap: Spacing.md,
+    paddingBottom: Spacing.sm,
   },
   secondaryButton: {
     flex: 1,
@@ -904,6 +1192,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: Spacing.md,
+  },
+  primaryButtonLoading: {
+    opacity: 0.75,
   },
   primaryButtonText: {
     fontSize: FontSizes.base,

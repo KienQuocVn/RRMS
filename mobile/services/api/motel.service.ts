@@ -1,27 +1,23 @@
-import { apiClient } from './client';
-import { API_ENDPOINTS } from './endpoints';
-import { BackendResponse } from '@/types/common.types';
+import { ApiResponse } from '@/types/common.types';
 import { MotelResponse } from '@/types/motel.types';
 
+import { apiClient } from './client';
+import { API_ENDPOINTS } from './endpoints';
+
 export const motelService = {
-  /**
-   * Lấy danh sách nhà trọ
-   */
-  getAllMotels: async (): Promise<BackendResponse<MotelResponse[]>> => {
+  getAllMotels: async (): Promise<ApiResponse<MotelResponse[]>> => {
     return apiClient.get(API_ENDPOINTS.MOTELS.BASE);
   },
 
-  /**
-   * Lấy chi tiết nhà trọ theo ID
-   */
-  getMotelById: async (id: string): Promise<BackendResponse<MotelResponse>> => {
+  getMotelById: async (id: string): Promise<ApiResponse<MotelResponse>> => {
     return apiClient.get(API_ENDPOINTS.MOTELS.GET_BY_ID(id));
   },
 
-  /**
-   * Tạo nhà trọ mới
-   */
-  createMotel: async (data: any): Promise<BackendResponse<MotelResponse>> => {
+  getMotelsByAccount: async (username: string): Promise<ApiResponse<MotelResponse[]>> => {
+    return apiClient.get(API_ENDPOINTS.MOTELS.GET_BY_ACCOUNT(username));
+  },
+
+  createMotel: async (data: any): Promise<ApiResponse<MotelResponse>> => {
     return apiClient.post(API_ENDPOINTS.MOTELS.CREATE, data);
   },
 };

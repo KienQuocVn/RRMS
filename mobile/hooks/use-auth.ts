@@ -5,6 +5,7 @@ import {
   API_BASE_URL,
   API_BASE_URL_DIAGNOSTICS,
   getApiBaseUrlCandidates,
+  registerUnauthorizedListener,
 } from '@/services/api/client';
 import { authStorage } from '@/services/storage/auth.storage';
 import { LoginRequest, LoginResponse } from '@/types/auth.types';
@@ -154,3 +155,8 @@ export const useAuth = create<AuthState>()(
     }
   )
 );
+
+registerUnauthorizedListener(() => {
+  useAuth.setState({ token: null, user: null, error: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' });
+});�p lại.' });
+});

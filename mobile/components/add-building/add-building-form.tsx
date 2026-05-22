@@ -19,6 +19,7 @@ import {
   Spacing,
 } from "@/constants/theme";
 import { RentType } from "@/types/building.types";
+import { useAddBuildingFlow } from "@/hooks/use-add-building-flow";
 
 interface AddBuildingFormProps {
   rentType: RentType;
@@ -203,14 +204,95 @@ export const AddBuildingForm = ({
   setIsAutoInit,
 }: AddBuildingFormProps) => {
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
-  const [buildingName, setBuildingName] = useState("");
-  const [floorValue, setFloorValue] = useState(FLOOR_OPTIONS[0].value);
-  const [sampleRoomCount, setSampleRoomCount] = useState("5");
-  const [sampleArea, setSampleArea] = useState("15");
-  const [samplePrice, setSamplePrice] = useState("");
-  const [maxOccupancy, setMaxOccupancy] = useState("");
-  const [invoiceDay, setInvoiceDay] = useState("1");
-  const [paymentDeadline, setPaymentDeadline] = useState("5");
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
+
+  const handleTouch = (field: string) => {
+    setTouchedFields((prev) => ({ ...prev, [field]: true }));
+  };
+
+  // Đọc/ghi basicInfo từ flow state
+  const basicInfo = useAddBuildingFlow((state) => state.basicInfo);
+  const setBasicInfo = useAddBuildingFlow((state) => state.setBasicInfo);
+
+  // Destructure để dùng
+  const {
+    buildingName,
+    floorValue,
+    sampleRoomCount,
+    sampleArea,
+    samplePrice,
+    maxOccupancy,
+    invoiceDay,
+    paymentDeadline,
+  } = basicInfo;
+
+  // Đồng bộ rentType & isAutoInit với basicInfo
+  const handleRentTypeChange = (type: RentType) => {
+    setRentType(type);
+    setBasicInfo({ rentType: type });
+  };
+
+  const handleIsAutoInitChange = (val: boolean) => {
+    setIsAutoInit(val);
+    setBasicInfo({ isAutoInit: val });
+  };
+
+  const handleFieldChange = (field: string, val: string) => {
+    setBasicInfo({ [field]: val });
+    setTouchedFields((prev) => ({ ...prev, [field]: true }));
+  };
+
+  // Validate inline
+  const buildingNameError = useMemo(() => {
+    if (!touchedFields.buildingName) return null;
+    if (buildingName.trim().length === 0) return "Vui lòng nhập tên nhà trọ";
+    return null;
+  }, [buildingName, touchedFields.buildingName]);
+
+  const sampleRoomCountError = useMemo(() => {
+    if (!touchedFields.sampleRoomCount) return null;
+    const val = sampleRoomCount.trim();
+    if (val.length === 0) return "Vui lòng nhập số lượng phòng mẫu";
+    const num = Number(val);
+    if (isNaN(num) || !Number.isInteger(num) || num <= 0) return "Số phòng phải là số nguyên dương";
+    return null;
+  }, [sampleRoomCount, touchedFields.sampleRoomCount]);
+
+  const sampleAreaError = useMemo(() => {
+    if (!touchedFields.sampleArea) return null;
+    const val = sampleArea.trim();
+    if (val.length === 0) return "Vui lòng nhập diện tích mẫu";
+    const num = Number(val);
+    if (isNaN(num) || num <= 0) return "Diện tích phải là số dương";
+    return null;
+  }, [sampleArea, touchedFields.sampleArea]);
+
+  const samplePriceError = useMemo(() => {
+    if (!touchedFields.samplePrice) return null;
+    const val = samplePrice.trim();
+    if (val.length === 0) return "Vui lòng nhập giá thuê mẫu";
+    const num = Number(val);
+    if (isNaN(num) || num <= 0) return "Giá thuê phải là số dương";
+    return null;
+  }, [samplePrice, touchedFields.samplePrice]);
+
+  const invoiceDayError = useMemo(() => {
+    if (!touchedFields.invoiceDay) return null;
+    const val = invoiceDay.trim();
+    if (val.length === 0) return "Vui lòng nhập ngày lập hóa đơn";
+    const num = Number(val);
+    if (isNaN(num) || !Number.isInteger(num) || num < 1 || num > 31) return "Ngày lập hóa đơn phải từ 1 đến 31";
+    return null;
+  }, [invoiceDay, touchedFields.invoiceDay]);
+
+  const paymentDeadlineError = useMemo(() => {
+    if (!touchedFields.paymentDeadline) return null;
+    const val = paymentDeadline.trim();
+    if (val.length === 0) return "Vui lòng nhập hạn đóng tiền";
+    const num = Number(val);
+    if (isNaN(num) || !Number.isInteger(num) || num < 0) return "Hạn đóng tiền phải là số không âm";
+    return null;
+  }, [paymentDeadline, touchedFields.paymentDeadline]);
 
   const selectedRentType = useMemo(
     () =>
@@ -251,21 +333,29 @@ export const AddBuildingForm = ({
             </View>
             <TouchableOpacity
               activeOpacity={0.85}
-              onPress={() => setRentType("room")}
+              onPress={() => handleRentTypeChange("room")}
               style={styles.clearButton}
             >
               <Ionicons name="close" size={16} color={Colors.textPrimary} />
             </TouchableOpacity>
           </TouchableOpacity>
 
+          {/* Tên nhà trọ */}
           <Text style={styles.label}>
             Tên Nhà trọ <Text style={styles.required}>*</Text>
           </Text>
-          <View style={[styles.inputContainer, styles.inputContainerBorder]}>
+          <View
+            style={[
+              styles.inputContainer,
+              styles.inputContainerBorder,
+              buildingNameError ? styles.inputErrorBorder : null,
+            ]}
+          >
             <TextInput
               style={styles.textInput}
               value={buildingName}
-              onChangeText={setBuildingName}
+              onChangeText={(text) => handleFieldChange("buildingName", text)}
+              onBlur={() => handleTouch("buildingName")}
               placeholder="Ví dụ: Nguyễn Thanh"
               placeholderTextColor={Colors.gray500}
             />
@@ -273,6 +363,9 @@ export const AddBuildingForm = ({
               <Text style={styles.inputSuffixText}>Nhà trọ</Text>
             </View>
           </View>
+          {buildingNameError ? (
+            <Text style={styles.errorText}>{buildingNameError}</Text>
+          ) : null}
         </View>
 
         <View style={styles.sectionGap} />
@@ -286,7 +379,7 @@ export const AddBuildingForm = ({
           <View style={styles.methodCards}>
             <TouchableOpacity
               activeOpacity={0.85}
-              onPress={() => setIsAutoInit(true)}
+              onPress={() => handleIsAutoInitChange(true)}
               style={[styles.methodCard, isAutoInit && styles.methodCardActive]}
             >
               <Ionicons
@@ -302,7 +395,7 @@ export const AddBuildingForm = ({
 
             <TouchableOpacity
               activeOpacity={0.85}
-              onPress={() => setIsAutoInit(false)}
+              onPress={() => handleIsAutoInitChange(false)}
               style={[
                 styles.methodCard,
                 !isAutoInit && styles.methodCardActive,
@@ -334,7 +427,7 @@ export const AddBuildingForm = ({
             </View>
             <TouchableOpacity
               activeOpacity={0.85}
-              onPress={() => setFloorValue(FLOOR_OPTIONS[0].value)}
+              onPress={() => setBasicInfo({ floorValue: FLOOR_OPTIONS[0].value })}
               style={styles.clearButton}
             >
               <Ionicons name="close" size={16} color={Colors.textPrimary} />
@@ -346,17 +439,27 @@ export const AddBuildingForm = ({
           <Text style={styles.label}>
             Số lượng phòng mẫu <Text style={styles.required}>*</Text>
           </Text>
-          <View style={[styles.inputContainer, styles.inputContainerBorder]}>
+          <View
+            style={[
+              styles.inputContainer,
+              styles.inputContainerBorder,
+              sampleRoomCountError ? styles.inputErrorBorder : null,
+            ]}
+          >
             <TextInput
               style={styles.textInput}
               value={sampleRoomCount}
-              onChangeText={setSampleRoomCount}
+              onChangeText={(text) => handleFieldChange("sampleRoomCount", text)}
+              onBlur={() => handleTouch("sampleRoomCount")}
               keyboardType="numeric"
             />
             <View style={styles.inputSuffixBox}>
               <Text style={styles.inputSuffixText}>phòng</Text>
             </View>
           </View>
+          {sampleRoomCountError ? (
+            <Text style={styles.errorText}>{sampleRoomCountError}</Text>
+          ) : null}
 
           <View style={styles.row}>
             <View style={styles.columnView}>
@@ -364,18 +467,26 @@ export const AddBuildingForm = ({
                 Diện tích mẫu <Text style={styles.required}>*</Text>
               </Text>
               <View
-                style={[styles.inputContainer, styles.inputContainerBorder]}
+                style={[
+                  styles.inputContainer,
+                  styles.inputContainerBorder,
+                  sampleAreaError ? styles.inputErrorBorder : null,
+                ]}
               >
                 <TextInput
                   style={styles.textInput}
                   value={sampleArea}
-                  onChangeText={setSampleArea}
+                  onChangeText={(text) => handleFieldChange("sampleArea", text)}
+                  onBlur={() => handleTouch("sampleArea")}
                   keyboardType="numeric"
                 />
                 <View style={styles.inputSuffixBox}>
                   <Text style={styles.inputSuffixText}>m2</Text>
                 </View>
               </View>
+              {sampleAreaError ? (
+                <Text style={styles.errorText}>{sampleAreaError}</Text>
+              ) : null}
             </View>
 
             <View style={styles.columnView}>
@@ -386,13 +497,14 @@ export const AddBuildingForm = ({
                 style={[
                   styles.inputContainer,
                   styles.inputContainerBorder,
-                  samplePrice.trim() ? null : styles.inputErrorBorder,
+                  samplePriceError ? styles.inputErrorBorder : null,
                 ]}
               >
                 <TextInput
                   style={styles.textInput}
                   value={samplePrice}
-                  onChangeText={setSamplePrice}
+                  onChangeText={(text) => handleFieldChange("samplePrice", text)}
+                  onBlur={() => handleTouch("samplePrice")}
                   placeholder="Nhập giá"
                   placeholderTextColor={Colors.gray500}
                   keyboardType="numeric"
@@ -401,6 +513,9 @@ export const AddBuildingForm = ({
                   <Text style={styles.inputSuffixText}>đ/tháng</Text>
                 </View>
               </View>
+              {samplePriceError ? (
+                <Text style={styles.errorText}>{samplePriceError}</Text>
+              ) : null}
             </View>
           </View>
 
@@ -438,21 +553,30 @@ export const AddBuildingForm = ({
         />
 
         <View style={styles.cardNoPadding}>
-          <View style={[styles.row, { padding: Spacing.base }]}>
+          <View style={[styles.row, { padding: Spacing.base, paddingBottom: 0 }]}>
             <View style={styles.columnView}>
               <Text style={styles.label}>
                 Ngày lập hóa đơn thu tiền <Text style={styles.required}>*</Text>
               </Text>
               <View
-                style={[styles.inputContainer, styles.inputContainerBorder]}
+                style={[
+                  styles.inputContainer,
+                  styles.inputContainerBorder,
+                  invoiceDayError ? styles.inputErrorBorder : null,
+                  { marginBottom: Spacing.xs },
+                ]}
               >
                 <TextInput
                   style={styles.textInput}
                   value={invoiceDay}
-                  onChangeText={setInvoiceDay}
+                  onChangeText={(text) => handleFieldChange("invoiceDay", text)}
+                  onBlur={() => handleTouch("invoiceDay")}
                   keyboardType="numeric"
                 />
               </View>
+              {invoiceDayError ? (
+                <Text style={[styles.errorText, { marginTop: 0, marginBottom: Spacing.xs }]}>{invoiceDayError}</Text>
+              ) : null}
               <Text style={styles.helperText}>
                 Nhập ngày cuối tháng hoặc ngày cố định trong tháng.
               </Text>
@@ -463,18 +587,27 @@ export const AddBuildingForm = ({
                 Hạn đóng tiền <Text style={styles.required}>*</Text>
               </Text>
               <View
-                style={[styles.inputContainer, styles.inputContainerBorder]}
+                style={[
+                  styles.inputContainer,
+                  styles.inputContainerBorder,
+                  paymentDeadlineError ? styles.inputErrorBorder : null,
+                  { marginBottom: Spacing.xs },
+                ]}
               >
                 <TextInput
                   style={styles.textInput}
                   value={paymentDeadline}
-                  onChangeText={setPaymentDeadline}
+                  onChangeText={(text) => handleFieldChange("paymentDeadline", text)}
+                  onBlur={() => handleTouch("paymentDeadline")}
                   keyboardType="numeric"
                 />
                 <View style={styles.inputSuffixBox}>
                   <Text style={styles.inputSuffixText}>Ngày</Text>
                 </View>
               </View>
+              {paymentDeadlineError ? (
+                <Text style={[styles.errorText, { marginTop: 0, marginBottom: Spacing.xs }]}>{paymentDeadlineError}</Text>
+              ) : null}
               <Text style={styles.helperText}>
                 Số ngày hết đóng tiền thuê kể từ ngày lập hóa đơn
               </Text>
@@ -499,7 +632,7 @@ export const AddBuildingForm = ({
         icon="home"
         options={RENT_TYPE_OPTIONS}
         selectedValue={rentType}
-        onSelect={(value) => setRentType(value as RentType)}
+        onSelect={(value) => handleRentTypeChange(value as RentType)}
         onClose={() => setActiveModal(null)}
       />
 
@@ -509,7 +642,7 @@ export const AddBuildingForm = ({
         icon="list"
         options={FLOOR_OPTIONS}
         selectedValue={floorValue}
-        onSelect={setFloorValue}
+        onSelect={(value) => setBasicInfo({ floorValue: value })}
         onClose={() => setActiveModal(null)}
       />
 
@@ -519,7 +652,7 @@ export const AddBuildingForm = ({
         icon="people"
         options={OCCUPANCY_OPTIONS}
         selectedValue={maxOccupancy}
-        onSelect={setMaxOccupancy}
+        onSelect={(value) => setBasicInfo({ maxOccupancy: value })}
         onClose={() => setActiveModal(null)}
       />
     </>
@@ -595,6 +728,12 @@ const styles = StyleSheet.create({
   },
   required: {
     color: Colors.error,
+  },
+  errorText: {
+    fontSize: FontSizes.xs,
+    color: Colors.error,
+    marginTop: -Spacing.sm,
+    marginBottom: Spacing.sm,
   },
   selectorField: {
     flexDirection: "row",

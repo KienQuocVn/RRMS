@@ -2,6 +2,8 @@
  * Motel Type Definitions
  */
 
+import { MotelServiceItem } from './service-settings.types';
+
 export interface MotelResponse {
   motelId: string;
   motelName: string;
@@ -11,4 +13,5 @@ export interface MotelResponse {
   maxperson: number;
   invoicedate: number;
   paymentdeadline: number;
+  motelServices?: MotelServiceItem[];
 }

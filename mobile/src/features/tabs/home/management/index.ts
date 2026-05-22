@@ -4,7 +4,7 @@ export { default as RoomsListScreen } from "@/app/(home-page)/tab-manage/managem
 export { default as ContractsListScreen } from "@/app/(home-page)/tab-manage/management-menu/contracts-list";
 export { default as InvoicesListScreen } from "@/app/(home-page)/tab-manage/management-menu/invoices-list";
 export { default as TenantsListScreen } from "@/app/(home-page)/tab-manage/management-menu/tenants-list";
-export { default as AssetsListScreen } from "@/app/(home-page)/tab-manage/management-menu/assets-list";
+export { default as AssetsListScreen } from "@/app/(home-page)/tab-manage/management-menu/assets-list/assets";
 export { default as VehiclesListScreen } from "@/app/(home-page)/tab-manage/management-menu/vehicles-list";
 
 export const homeManagementScreens: TabOwnedScreen[] = [
@@ -14,7 +14,7 @@ export const homeManagementScreens: TabOwnedScreen[] = [
     section: "management",
     label: "Them toa nha",
     route: "/add-building/add-building",
-    source: "app/(management)/(buildings)/add-building/add-building.tsx",
+    source: "app/(home-page)/menu-management-home/add-building/add-building.tsx",
   },
   {
     id: "edit-building",
@@ -22,7 +22,7 @@ export const homeManagementScreens: TabOwnedScreen[] = [
     section: "management",
     label: "Sua toa nha",
     route: "/edit-building/edit-building",
-    source: "app/(management)/(buildings)/edit-building/edit-building.tsx",
+    source: "app/(home-page)/menu-management-home/edit-building/edit-building.tsx",
   },
 
   {
@@ -62,8 +62,8 @@ export const homeManagementScreens: TabOwnedScreen[] = [
     tab: "home",
     section: "management",
     label: "Quan ly tai san",
-    route: "/tab-manage/management-menu/assets-list",
-    source: "app/(home-page)/tab-manage/management-menu/assets-list.tsx",
+    route: "/tab-manage/management-menu/assets-list/assets",
+    source: "app/(home-page)/tab-manage/management-menu/assets-list/assets.tsx",
   },
   {
     id: "vehicles-list",
@@ -74,12 +74,12 @@ export const homeManagementScreens: TabOwnedScreen[] = [
     source: "app/(home-page)/tab-manage/management-menu/vehicles-list.tsx",
   },
   {
-    id: "services-settings",
+    id: "services",
     tab: "home",
     section: "settings",
     label: "Cai dat dich vu",
-    route: "/tab-manage/management-menu/services-settings",
-    source: "app/(home-page)/tab-manage/management-menu/services-settings.tsx",
+    route: "/tab-manage/management-menu/service-settings/services",
+    source: "app/(home-page)/tab-manage/management-menu/service-settings/services.tsx",
   },
   {
     id: "tenant-app-settings",

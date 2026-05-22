@@ -38,7 +38,13 @@ export const API_ENDPOINTS = {
   MOTELS: {
     BASE: '/api/v1/motels',
     GET_BY_ID: (id: string) => `/api/v1/motels/${id}`,
+    GET_BY_ACCOUNT: (username: string) => `/api/v1/motels/account/${username}`,
     CREATE: '/api/v1/motels',
+  },
+
+  MOTEL_SERVICES: {
+    BASE: '/api/v1/motel-services',
+    BY_ID: (id: string) => `/api/v1/motel-services/${id}`,
   },
 
   // 🛏️ Rooms

@@ -1,6 +1,7 @@
 /**
  * HomeHeader - Header xanh la sticky tren dau trang chu
  * Hien thi: icon nha, ten user, dropdown, QR, hamburger menu
+ * Click vao icon nha / userInfo => hien danh sach nha dang quan ly
  */
 
 import React, { useRef, useState } from "react";
@@ -8,6 +9,7 @@ import {
   Animated,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -23,6 +25,32 @@ import {
   Spacing,
 } from "@/constants/theme";
 
+// --- Mock data danh sach nha ---
+interface BuildingItem {
+  id: string;
+  name: string;
+  address: string;
+  roomCount: number;
+  isActive: boolean;
+}
+
+const MOCK_BUILDINGS: BuildingItem[] = [
+  {
+    id: "1",
+    name: "Nhà Trọ Quoc",
+    address: "Hochiminh, Phường 16, Gò Vấp, Thành phố H...",
+    roomCount: 5,
+    isActive: false,
+  },
+  {
+    id: "2",
+    name: "Nhà Trọ Quoc2",
+    address: "Hochiminh, Phường 02, Phú Nhuận, Thàn...",
+    roomCount: 5,
+    isActive: true,
+  },
+];
+
 interface HomeHeaderProps {
   userName?: string;
   onMenuPress?: () => void;
@@ -34,10 +62,17 @@ export default function HomeHeader({
   onMenuPress,
   onQRPress,
 }: HomeHeaderProps) {
+  // Menu hamburger state
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(400)).current;
+
+  // Building list state
+  const [isBuildingListVisible, setIsBuildingListVisible] = useState(false);
+  const buildingSlideAnim = useRef(new Animated.Value(600)).current;
+
   const router = useRouter();
 
+  // --- Hamburger menu ---
   const handleMenuPress = () => {
     setIsMenuVisible(true);
     Animated.timing(slideAnim, {
@@ -45,7 +80,6 @@ export default function HomeHeader({
       duration: 250,
       useNativeDriver: true,
     }).start();
-
     onMenuPress?.();
   };
 
@@ -66,20 +100,48 @@ export default function HomeHeader({
     });
   };
 
+  // --- Building list modal ---
+  const handleBuildingListOpen = () => {
+    setIsBuildingListVisible(true);
+    Animated.timing(buildingSlideAnim, {
+      toValue: 0,
+      duration: 280,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeBuildingList = (callback?: () => void) => {
+    Animated.timing(buildingSlideAnim, {
+      toValue: 600,
+      duration: 220,
+      useNativeDriver: true,
+    }).start(() => {
+      setIsBuildingListVisible(false);
+      callback?.();
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.topRow}>
-        <View style={styles.homeIconWrap}>
-          <Ionicons name="home" size={22} color={Colors.primary} />
-        </View>
-
-        <View style={styles.userInfo}>
-          <Text style={styles.subtitle}>Đang quản lý Nhà trọ</Text>
-          <View style={styles.userNameRow}>
-            <Text style={styles.userName}>{userName}</Text>
-            <Ionicons name="chevron-down" size={16} color={Colors.white} />
+        {/* Click vao icon nha + thong tin user => hien danh sach nha */}
+        <TouchableOpacity
+          style={styles.buildingSelector}
+          activeOpacity={0.8}
+          onPress={handleBuildingListOpen}
+        >
+          <View style={styles.homeIconWrap}>
+            <Ionicons name="home" size={22} color={Colors.primary} />
           </View>
-        </View>
+
+          <View style={styles.userInfo}>
+            <Text style={styles.subtitle}>Đang quản lý Nhà trọ</Text>
+            <View style={styles.userNameRow}>
+              <Text style={styles.userName}>{userName}</Text>
+              <Ionicons name="chevron-down" size={16} color={Colors.white} />
+            </View>
+          </View>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.actionButton} onPress={onQRPress}>
           <Ionicons name="scan-outline" size={22} color={Colors.white} />
@@ -90,6 +152,124 @@ export default function HomeHeader({
         </TouchableOpacity>
       </View>
 
+      {/* ===== Modal: Danh sach nha dang quan ly ===== */}
+      <Modal
+        visible={isBuildingListVisible}
+        transparent
+        animationType="none"
+        onRequestClose={() => closeBuildingList()}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => closeBuildingList()}
+        >
+          <Animated.View
+            style={[
+              styles.bottomSheet,
+              { transform: [{ translateY: buildingSlideAnim }] },
+            ]}
+          >
+            <Pressable onPress={(e) => e.stopPropagation()}>
+              {/* Drag handle */}
+              <View style={styles.dragHandle} />
+
+              {/* Header */}
+              <View style={styles.sheetHeader}>
+                <View style={styles.sheetHeaderIcon}>
+                  <Ionicons
+                    name="pricetag-outline"
+                    size={20}
+                    color={Colors.primary}
+                  />
+                </View>
+                <View>
+                  <Text style={styles.sheetTitle}>
+                    Danh sách nhà đang quản lý
+                  </Text>
+                  <Text style={styles.sheetSubtitle}>
+                    Danh sách nhà đang quản lý
+                  </Text>
+                </View>
+              </View>
+
+              {/* Building list */}
+              <ScrollView
+                style={styles.buildingList}
+                showsVerticalScrollIndicator={false}
+              >
+                {MOCK_BUILDINGS.map((building) => (
+                  <View key={building.id} style={styles.buildingCard}>
+                    {/* Info row */}
+                    <View style={styles.buildingInfoRow}>
+                      <View style={styles.buildingIconWrap}>
+                        <Ionicons name="home" size={26} color={Colors.primary} />
+                      </View>
+                      <View style={styles.buildingInfo}>
+                        <Text style={styles.buildingName}>{building.name}</Text>
+                        <Text style={styles.buildingAddress} numberOfLines={1}>
+                          {building.address}
+                        </Text>
+                        <Text style={styles.buildingRooms}>
+                          {building.roomCount} phòng cho thuê
+                        </Text>
+                      </View>
+                      {building.isActive && (
+                        <View style={styles.activeBadge}>
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={26}
+                            color={Colors.primary}
+                          />
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Action buttons */}
+                    <View style={styles.buildingActions}>
+                      <TouchableOpacity
+                        style={styles.btnDelete}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          /* TODO: delete building */
+                        }}
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={16}
+                          color={Colors.white}
+                        />
+                        <Text style={styles.btnDeleteText}>Xóa nhà</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.btnManage}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          closeBuildingList();
+                        }}
+                      >
+                        <Ionicons
+                          name="refresh-outline"
+                          size={16}
+                          color={Colors.white}
+                        />
+                        <Text style={styles.btnManageText}>Quản lý</Text>
+                        <Ionicons
+                          name="chevron-forward"
+                          size={14}
+                          color={Colors.white}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            </Pressable>
+          </Animated.View>
+        </Pressable>
+      </Modal>
+
+      {/* ===== Modal: Hamburger menu ===== */}
       <Modal
         visible={isMenuVisible}
         transparent
@@ -110,7 +290,7 @@ export default function HomeHeader({
                 style={styles.menuItem}
                 activeOpacity={0.7}
                 onPress={() =>
-                  closeMenu(() => router.push("/add-building/add-building"))
+                  closeMenu(() => router.push("/menu-management-home/add-building/add-building"))
                 }
               >
                 <View style={[styles.menuIconWrap, styles.iconAdd]}>
@@ -137,7 +317,7 @@ export default function HomeHeader({
                 style={styles.menuItem}
                 activeOpacity={0.7}
                 onPress={() =>
-                  closeMenu(() => router.push("/edit-building/edit-building"))
+                  closeMenu(() => router.push("/menu-management-home/edit-building/edit-building"))
                 }
               >
                 <View style={[styles.menuIconWrap, styles.iconDefault]}>
@@ -206,6 +386,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  // Wrapper bao gom icon nha + userInfo (clickable)
+  buildingSelector: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
   homeIconWrap: {
     width: 40,
     height: 40,
@@ -241,6 +427,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginLeft: Spacing.sm,
   },
+
+  // Modal overlay
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -262,6 +450,117 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: Spacing.lg,
   },
+
+  // Sheet header (danh sach nha)
+  sheetHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  sheetHeaderIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: "#E8F5E9",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sheetTitle: {
+    fontSize: FontSizes.base,
+    fontWeight: FontWeights.bold,
+    color: Colors.textPrimary,
+  },
+  sheetSubtitle: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+
+  // Building list
+  buildingList: {
+    maxHeight: 420,
+  },
+  buildingCard: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  buildingInfoRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: Spacing.md,
+  },
+  buildingIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#E8F5E9",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: Spacing.md,
+  },
+  buildingInfo: {
+    flex: 1,
+  },
+  buildingName: {
+    fontSize: FontSizes.base,
+    fontWeight: FontWeights.bold,
+    color: Colors.textPrimary,
+    marginBottom: 2,
+  },
+  buildingAddress: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+    marginBottom: 4,
+  },
+  buildingRooms: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+  },
+  activeBadge: {
+    marginLeft: Spacing.sm,
+    marginTop: 2,
+  },
+  buildingActions: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+  },
+  btnDelete: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: "#E8601C",
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.sm,
+  },
+  btnDeleteText: {
+    color: Colors.white,
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.bold,
+  },
+  btnManage: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.sm,
+  },
+  btnManageText: {
+    color: Colors.white,
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.bold,
+  },
+
+  // Hamburger menu items
   menuItem: {
     flexDirection: "row",
     alignItems: "center",

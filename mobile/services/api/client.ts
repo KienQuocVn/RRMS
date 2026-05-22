@@ -258,6 +258,15 @@ if (
   );
 }
 
+export const unauthorizedListeners = new Set<() => void>();
+
+export function registerUnauthorizedListener(listener: () => void) {
+  unauthorizedListeners.add(listener);
+  return () => {
+    unauthorizedListeners.delete(listener);
+  };
+}
+
 export const apiClient = axios.create({
   timeout: 15000,
   headers: {
@@ -398,6 +407,13 @@ apiClient.interceptors.response.use(
 
     if (error.response?.status === 401) {
       await authStorage.clearAll();
+      unauthorizedListeners.forEach((listener) => {
+        try {
+          listener();
+        } catch (e) {
+          console.warn('[API] Error in unauthorized listener:', e);
+        }
+      });
     }
 
     return Promise.reject(error);

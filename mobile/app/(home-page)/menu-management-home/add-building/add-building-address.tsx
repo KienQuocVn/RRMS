@@ -225,6 +225,12 @@ export default function AddBuildingAddressScreen() {
     return '';
   }, [hasMapPin, latitude, longitude, mapLabel]);
 
+  const currentFullAddress = useMemo(() => {
+    return [detail.trim(), ward, district, city]
+      .filter(Boolean)
+      .join(', ');
+  }, [detail, ward, district, city]);
+
   const isValid = Boolean(provinceCode && wardCode && detail.trim());
 
   const resetMapSelection = () => {
@@ -278,7 +284,7 @@ export default function AddBuildingAddressScreen() {
 
   const handleOpenMapPicker = () => {
     persistDraftAddress();
-    router.push('/add-building/add-building-map-picker');
+    router.push('/menu-management-home/add-building/add-building-map-picker');
   };
 
   const handleConfirm = () => {
@@ -412,33 +418,62 @@ export default function AddBuildingAddressScreen() {
           </View>
         </View>
 
-        <View style={styles.mapPanel}>
-          <View style={styles.mapIllustration}>
-            <View style={styles.mapPinCircle}>
-              <View style={styles.mapPinInner} />
+        {hasMapPin && latitude !== null && longitude !== null ? (
+          <View style={styles.mapPanelActive}>
+            {/* Card vị trí hiện tại */}
+            <View style={styles.currentLocationCard}>
+              <View style={styles.mapIllustrationActive}>
+                <View style={styles.mapPinCircleActive}>
+                  <View style={styles.mapPinInnerActive} />
+                </View>
+                <View style={styles.mapPinStemActive} />
+              </View>
+              <Text style={styles.currentLocationTitle}>Vị trí hiện tại</Text>
+              <Text style={styles.currentLocationCoords}>
+                {latitude},{longitude}
+              </Text>
             </View>
-            <View style={styles.mapPinStem} />
-          </View>
 
-          <Text style={styles.mapText}>
-            Định vị vị trí nhà cho thuê trên bản đồ giúp cho người tìm trọ tìm thấy bạn. Tăng tỷ lệ
-            tiếp cận khách thuê.
-          </Text>
-
-          <TouchableOpacity
-            activeOpacity={0.85}
-            disabled={!wardCode}
-            onPress={handleOpenMapPicker}
-            style={[styles.mapButton, !wardCode && styles.mapButtonDisabled]}
-          >
-            <Ionicons name="location" size={22} color={Colors.textPrimary} />
-            <Text style={styles.mapButtonText}>
-              {hasMapPin ? 'Cập nhật vị trí trên bản đồ' : 'Lấy vị trí trên bản đồ'}
+            <Text style={styles.mapTextActive}>
+              Định vị vị trí nhà cho thuê trên bản đồ giúp cho người tìm trọ tìm thấy bạn. Tăng tỷ lệ
+              tiếp cận khách thuê.
             </Text>
-          </TouchableOpacity>
 
-          {currentMapMeta ? <Text style={styles.mapMeta}>{currentMapMeta}</Text> : null}
-        </View>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              disabled={!wardCode}
+              onPress={handleOpenMapPicker}
+              style={styles.editMapButton}
+            >
+              <Ionicons name="pencil" size={18} color={Colors.textPrimary} style={{ marginRight: 6 }} />
+              <Text style={styles.editMapButtonText}>Chỉnh sửa vị trí</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.mapPanel}>
+            <View style={styles.mapIllustration}>
+              <View style={styles.mapPinCircle}>
+                <View style={styles.mapPinInner} />
+              </View>
+              <View style={styles.mapPinStem} />
+            </View>
+
+            <Text style={styles.mapText}>
+              Định vị vị trí nhà cho thuê trên bản đồ giúp cho người tìm trọ tìm thấy bạn. Tăng tỷ lệ
+              tiếp cận khách thuê.
+            </Text>
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              disabled={!wardCode}
+              onPress={handleOpenMapPicker}
+              style={[styles.mapButton, !wardCode && styles.mapButtonDisabled]}
+            >
+              <Ionicons name="location" size={22} color={Colors.textPrimary} />
+              <Text style={styles.mapButtonText}>Lấy vị trí trên bản đồ</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </RefreshableScrollView>
 
       <View
@@ -447,10 +482,19 @@ export default function AddBuildingAddressScreen() {
           { paddingBottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 18) : Spacing.md },
         ]}
       >
-        <View style={styles.footerInfo}>
-          <Ionicons name="information-circle" size={20} color="#FF6B00" />
-          <Text style={styles.footerInfoText}>Nhập thông tin đầy đủ để tiếp tục!</Text>
-        </View>
+        {isValid ? (
+          <View style={styles.footerAddressRow}>
+            <Ionicons name="checkmark-circle" size={24} style={styles.informationCircle} />
+            <Text style={styles.footerAddressText} numberOfLines={2}>
+              {currentFullAddress}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.footerInfo}>
+            <Ionicons name="information-circle" size={20} style={styles.informationCircle} />
+            <Text style={styles.footerInfoText}>Nhập thông tin đầy đủ để tiếp tục!</Text>
+          </View>
+        )}
 
         <TouchableOpacity
           activeOpacity={0.9}
@@ -735,6 +779,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.base,
   },
+  informationCircle: {
+    color: Colors.success,
+  },
   footerInfoText: {
     marginLeft: Spacing.sm,
     fontSize: FontSizes.sm,
@@ -754,6 +801,99 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
     color: Colors.white,
+  },
+  mapPanelActive: {
+    marginTop: Spacing.base,
+    backgroundColor: Colors.white,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: Colors.borderLight,
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.lg,
+    alignItems: 'center',
+  },
+  currentLocationCard: {
+    width: '100%',
+    backgroundColor: '#F1F9F4',
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.base,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.lg,
+  },
+  mapIllustrationActive: {
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  mapPinCircleActive: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: Colors.success,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.white,
+  },
+  mapPinInnerActive: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: Colors.success,
+  },
+  mapPinStemActive: {
+    width: 3,
+    height: 24,
+    backgroundColor: Colors.textPrimary,
+    marginTop: -2,
+    borderRadius: 2,
+  },
+  currentLocationTitle: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+    marginBottom: 4,
+  },
+  currentLocationCoords: {
+    fontSize: FontSizes.lg,
+    fontWeight: FontWeights.bold,
+    color: Colors.textPrimary,
+    marginTop: 2,
+  },
+  mapTextActive: {
+    fontSize: FontSizes.base,
+    lineHeight: 24,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: Spacing.lg,
+  },
+  editMapButton: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EEEEEE',
+    borderRadius: BorderRadius.md,
+    minHeight: 48,
+  },
+  editMapButtonText: {
+    fontSize: FontSizes.base,
+    fontWeight: FontWeights.bold,
+    color: Colors.textPrimary,
+  },
+  footerAddressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.base,
+    paddingHorizontal: Spacing.xs,
+  },
+  footerAddressText: {
+    marginLeft: Spacing.sm,
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.medium,
+    color: Colors.textPrimary,
+    flex: 1,
+    lineHeight: 18,
   },
   modalOverlay: {
     flex: 1,
