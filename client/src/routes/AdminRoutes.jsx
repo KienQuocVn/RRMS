@@ -21,7 +21,7 @@ const ContractManager = lazy(() => import('../pages/admin/NavContentAdmin/Contra
 const ContractPreview = lazy(() => import('../pages/admin/NavContentAdmin/ContractManage/ContractPreview'))
 const TenantManager = lazy(() => import('../pages/admin/NavContentAdmin/tenantManagement/TenantManager'))
 const IncomeSummary = lazy(() => import('../pages/admin/NavContentAdmin/IncomeSummary/IncomeSummary'))
-const Zalo_history = lazy(() => import('../pages/admin/NavContentAdmin/Zalo_history'))
+const Zalo_history = lazy(() => import('../pages/admin/NavContentAdmin/ZaloHistory/Zalo'))
 const SettingMotel = lazy(() => import('../pages/admin/NavContentAdmin/SettingMotel/SettingMotel'))
 const ImportFileExcel = lazy(() => import('../pages/admin/NavContentAdmin/ImportFileExcel/ImportFileExcel'))
 const MotelSetting = lazy(() => import('../pages/admin/MotelSettings/MotelSetting'))

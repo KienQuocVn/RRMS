@@ -1,4 +1,4 @@
-import React from 'react'
+import { cloneElement } from 'react'
 import { Grid, Card, CardContent, Typography, Box, CircularProgress } from '@mui/material'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
@@ -20,15 +20,16 @@ const StatCard = ({ title, value, icon, color, loading }) => (
           </Typography>
         )}
       </Box>
-      <Box sx={{ 
-        backgroundColor: `${color}15`, 
-        p: 1.5, 
-        borderRadius: 2,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        {React.cloneElement(icon, { sx: { fontSize: 32, color: color } })}
+      <Box
+        sx={{
+          backgroundColor: `${color}15`,
+          p: 1.5,
+          borderRadius: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+        {cloneElement(icon, { sx: { fontSize: 32, color: color } })}
       </Box>
     </CardContent>
   </Card>
@@ -38,10 +39,12 @@ const MotelStatsCards = ({ rooms = [], loading = false }) => {
   // Calculate stats based on rooms array
   // Assuming room.status or room.latestContract.status determines these
   const totalDebt = rooms.reduce((sum, r) => sum + (Number(r.debt) || 0), 0)
-  
-  const emptyRooms = rooms.filter(r => !r.latestContract?.status && !r.reserveAPlace?.status).length
-  const occupiedRooms = rooms.filter(r => r.latestContract?.status === 'ACTIVE' || r.latestContract?.status === 'IATExpire').length
-  const depositedRooms = rooms.filter(r => r.reserveAPlace?.status).length
+
+  const emptyRooms = rooms.filter((r) => !r.latestContract?.status && !r.reserveAPlace?.status).length
+  const occupiedRooms = rooms.filter(
+    (r) => r.latestContract?.status === 'ACTIVE' || r.latestContract?.status === 'IATExpire'
+  ).length
+  const depositedRooms = rooms.filter((r) => r.reserveAPlace?.status).length
 
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -68,7 +71,7 @@ const MotelStatsCards = ({ rooms = [], loading = false }) => {
           title="ĐANG Ở"
           value={occupiedRooms}
           icon={<PersonIcon />}
-          color="#4caf50" // Green
+          color="#20a9e7" // Green
           loading={loading}
         />
       </Grid>

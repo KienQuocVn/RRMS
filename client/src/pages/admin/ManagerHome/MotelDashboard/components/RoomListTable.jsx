@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { cloneElement, useState } from 'react'
 import {
   TableContainer,
   Table,
@@ -11,26 +11,18 @@ import {
   Chip,
   IconButton,
   Popover,
-  Divider,
   Avatar,
   Box,
   Grid,
   ButtonBase
 } from '@mui/material'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import PaymentsIcon from '@mui/icons-material/Payments'
-import PersonAddIcon from '@mui/icons-material/PersonAdd'
-import EditIcon from '@mui/icons-material/Edit'
 import BuildIcon from '@mui/icons-material/Build'
 import ArticleIcon from '@mui/icons-material/Article'
-import WarningIcon from '@mui/icons-material/Warning'
 import InfoIcon from '@mui/icons-material/Info'
 import DeleteIcon from '@mui/icons-material/Delete'
 import MoneyOffIcon from '@mui/icons-material/MoneyOff'
 import ReceiptIcon from '@mui/icons-material/Receipt'
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
-import CancelIcon from '@mui/icons-material/Cancel'
 import MenuIcon from '@mui/icons-material/Menu'
 import HouseIcon from '@mui/icons-material/House'
 import CloseIcon from '@mui/icons-material/Close'
@@ -105,7 +97,7 @@ const ActionItem = ({ icon, label, color, onClick }) => (
       borderRadius: 1,
       '&:hover': { bgcolor: '#f5f5f5' }
     }}>
-    {React.cloneElement(icon, { sx: { fontSize: 20, color: color || '#555' } })}
+    {cloneElement(icon, { sx: { fontSize: 20, color: color || '#555' } })}
     <Typography variant="body2" sx={{ fontWeight: 600, color: color || '#333', whiteSpace: 'nowrap' }}>
       {label}
     </Typography>
@@ -146,11 +138,6 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
 
   const getMenuItems = () => {
     if (!selectedRoom) return []
-
-    const status = selectedRoom.latestContract?.status
-    const reserveStatus = selectedRoom.reserveAPlace?.status
-    const isEmpty = !status && !reserveStatus
-
     const items = []
 
     // Common items for all states - matching the design mockup layout

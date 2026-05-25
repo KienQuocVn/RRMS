@@ -1,7 +1,7 @@
 export const footerLinks = [
   { key: 'contact', href: '/contact', isInternal: true },
   { key: 'introduce', href: '/introduce', isInternal: true },
-  { key: 'privacy', href: '#', highlight: true },
+  { key: 'privacy', href: '#' },
   { key: 'terms', href: '#' },
   { key: 'regulation', href: '#' },
   { key: 'complaints', href: '#' }
@@ -9,8 +9,8 @@ export const footerLinks = [
 
 export const footerHotlines = [
   { cityKey: 'hcmCity', labelKey: 'policySupport', phone: '0965-227-453', accent: '#f58d1f' },
-  { cityKey: 'hanoi', labelKey: 'postingSupport', phone: '0868-000-845', accent: '#43a047' },
-  { cityKey: 'danang', labelKey: 'postingSupport', phone: '0868-000-845', accent: '#43a047' }
+  { cityKey: 'hanoi', labelKey: 'postingSupport', phone: '0868-000-845', accent: '#20a9e7' },
+  { cityKey: 'danang', labelKey: 'postingSupport', phone: '0868-000-845', accent: '#20a9e7' }
 ]
 
 export const footerSocialLinks = [

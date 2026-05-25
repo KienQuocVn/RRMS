@@ -1,6 +1,7 @@
 package com.rrms.rrms.services.servicesImp;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Service;
 import com.rrms.rrms.dto.request.ContractRequest;
 import com.rrms.rrms.dto.response.ContractResponse;
 import com.rrms.rrms.enums.ContractStatus;
+import com.rrms.rrms.enums.ErrorCode;
+import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.ContractMapper;
 import com.rrms.rrms.models.*;
 import com.rrms.rrms.repositories.*;
@@ -42,6 +45,8 @@ public class ContractService implements IContractService {
     private final ContractTemplateRepository contractTemplateRepository;
 
     private final ContractOccupantRepository contractOccupantRepository;
+
+    private final BrokerRepository brokerRepository;
 
     private final ContractMapper contractMapper;
 
@@ -77,10 +82,11 @@ public class ContractService implements IContractService {
                 request.getRoomId(),
                 request.getTenantId(),
                 request.getContractTemplateId());
+        validateCreateContractRequest(request);
         // Fetch related entities from the database using UUIDs
         Account username = accountRepository
                 .findByUsername(request.getUsername())
-                .orElseThrow(() -> new EntityNotFoundException("Room not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
 
         Room room = roomRepository
                 .findById(request.getRoomId())
@@ -94,12 +100,21 @@ public class ContractService implements IContractService {
                 .findById(request.getContractTemplateId())
                 .orElseThrow(() -> new EntityNotFoundException("ContractTemplate not found"));
 
+        Broker broker = null;
+        if (request.getBrokerId() != null) {
+            broker = brokerRepository
+                    .findById(request.getBrokerId())
+                    .orElseThrow(() -> new EntityNotFoundException("Broker not found"));
+        }
+
         // Create Contract entity from the request and set related entities
         Contract contract = contractMapper.toEntity(request);
+        applyContractDefaults(contract);
         contract.setAccount(username); // Set the fetched account entity
         contract.setRoom(room); // Set the fetched Room entity
         contract.setTenant(tenant); // Set the fetched Tenant entity
         contract.setContractTemplate(contractTemplate); // Set the fetched ContractTemplate entity
+        contract.setBroker(broker);
 
         // Save the contract
         contract = contractRepository.save(contract);
@@ -114,6 +129,61 @@ public class ContractService implements IContractService {
 
         // Return the response after saving the contract
         return contractMapper.toResponse(contract);
+    }
+
+    private void validateCreateContractRequest(ContractRequest request) {
+        if (request == null) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Contract payload is required");
+        }
+        if (isBlank(request.getUsername())) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Username is required");
+        }
+        if (request.getRoomId() == null) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Room id is required");
+        }
+        if (request.getTenantId() == null) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Tenant id is required");
+        }
+        if (request.getContractTemplateId() == null) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Contract template id is required");
+        }
+        if (request.getMoveInDate() == null) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Move-in date is required");
+        }
+    }
+
+    private void applyContractDefaults(Contract contract) {
+        if (contract.getMoveinDate() == null) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Move-in date is required");
+        }
+        if (contract.getCreatedate() == null) {
+            contract.setCreatedate(LocalDate.now());
+        }
+        if (isBlank(contract.getSigncontract())) {
+            contract.setSigncontract("Khach chua ky");
+        }
+        if (isBlank(contract.getLanguage())) {
+            contract.setLanguage("Tieng Viet");
+        }
+        if (isBlank(contract.getCollectioncycle())) {
+            contract.setCollectioncycle("1");
+        }
+        if (contract.getCountTenant() == null || contract.getCountTenant() <= 0) {
+            contract.setCountTenant(1);
+        }
+        if (contract.getDebt() == null) {
+            contract.setDebt(0.0);
+        }
+        if (contract.getStatus() == null) {
+            contract.setStatus(ContractStatus.ACTIVE);
+        }
+        if (contract.getActualPrice() == null && contract.getPrice() != null) {
+            contract.setActualPrice(contract.getPrice());
+        }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     @Override

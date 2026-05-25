@@ -1,90 +1,231 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react'
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  Box,
-  IconButton,
-  MenuItem,
-  Select,
-  Card,
-  CardContent,
-  Paper,
-  InputLabel,
-  FormControl,
-  Badge,
-  Checkbox
-} from '@mui/material'
-import { env } from '~/configs/environment'
-import { Modal, Form } from 'react-bootstrap'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import FilterAltIcon from '@mui/icons-material/FilterAlt'
-import AddIcon from '@mui/icons-material/Add'
-import ReceiptIcon from '@mui/icons-material/Receipt'
-import PrintIcon from '@mui/icons-material/Print'
-import FileDownloadIcon from '@mui/icons-material/FileDownload'
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-import MovingIcon from '@mui/icons-material/Moving'
-import NavAdmin from '~/layouts/admin/NavbarAdmin'
-import { ReactTabulator } from 'react-tabulator'
+import { Alert, Box, CircularProgress, Stack } from '@mui/material'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 import * as XLSX from 'xlsx'
+import { useParams } from 'react-router-dom'
+import { env } from '~/configs/environment'
+import NavAdmin from '~/layouts/admin/NavbarAdmin'
+import YearMonthFilter from '../YearMonthFilter'
+import { extractEntityId, unwrapApiResult, unwrapPageItems } from '~/utils/apiAdapters'
+import AddExpenseModal from './components/AddExpenseModal'
+import AddReceiptModal from './components/AddReceiptModal'
+import IncomeSummaryFilters from './components/IncomeSummaryFilters'
+import IncomeSummaryHeader from './components/IncomeSummaryHeader'
+import IncomeSummaryStats from './components/IncomeSummaryStats'
+import IncomeSummaryTable from './components/IncomeSummaryTable'
+import TransactionDetailModal from './components/TransactionDetailModal'
+
+const DEFAULT_SUMMARY = {
+  totalIncome: 0,
+  totalExpense: 0,
+  profit: 0
+}
+
+const PAYMENT_LOAD_WARNING = 'Không thể tải danh sách phương thức thanh toán. Bạn vẫn có thể xem báo cáo, nhưng thao tác thêm phiếu có thể bị hạn chế.'
+
+const DEFAULT_CATEGORY_OPTIONS = [
+  'Thu tiền phòng',
+  'Thu tiền cọc',
+  'Thu tiền dịch vụ',
+  'Thu nợ',
+  'Thu cộng thêm hóa đơn',
+  'Thu tiền giường',
+  'Thu tiền hàng tháng',
+  'Thu tiền tháng đầu tiên',
+  'Thu tiền kết thúc hợp đồng',
+  'Thu tiền theo chu kỳ',
+  'Thu cọc giữ chỗ',
+  'Chi phí quản lý',
+  'Chi hoàn tiền cọc',
+  'Chi trả tiền điện',
+  'Chi trả tiền nước',
+  'Chi trả tiền wifi',
+  'Chi trả tiền cáp TV',
+  'Chi Cho vay',
+  'Chi Trả nợ',
+  'Chi giảm trừ hóa đơn',
+  'Chi hoàn trả tiền kết thúc hợp đồng',
+  'Chi hoàn cọc giữ chỗ',
+  'Chi hoa hồng môi giới',
+  'Chi tiền thuê nhà'
+]
+
+const getSafeArray = (payload, fallback = []) => {
+  if (Array.isArray(payload)) return payload
+  return fallback
+}
+
+const parseApiArray = (response) => {
+  const pageItems = unwrapPageItems(response)
+  if (Array.isArray(pageItems) && pageItems.length > 0) return pageItems
+
+  const unwrapped = unwrapApiResult(response, response?.data)
+  if (Array.isArray(unwrapped)) return unwrapped
+  if (Array.isArray(response?.data)) return response.data
+  if (Array.isArray(response?.data?.items)) return response.data.items
+
+  return []
+}
+
+const parseSummary = (response) => {
+  const payload = unwrapApiResult(response, response?.data)
+
+  if (!payload || typeof payload !== 'object') {
+    return DEFAULT_SUMMARY
+  }
+
+  return {
+    totalIncome: Number(payload.totalIncome || 0),
+    totalExpense: Number(payload.totalExpense || 0),
+    profit: Number(payload.profit || 0)
+  }
+}
+
+const getTransactionPaymentName = (transaction) => {
+  return transaction?.payment?.paymentName || transaction?.paymentName || ''
+}
+
+const getTransactionDate = (value) => {
+  if (!value) return null
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+const normalizeText = (value) => {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+}
+
+const buildCategoryOptions = (categories = []) => {
+  const normalizedCategoryMap = new Map()
+
+  categories.filter(Boolean).forEach((category) => {
+    normalizedCategoryMap.set(normalizeText(category), category)
+  })
+
+  const mergedCategories = []
+  const seenCategories = new Set()
+
+  DEFAULT_CATEGORY_OPTIONS.forEach((category) => {
+    const resolvedCategory = normalizedCategoryMap.get(normalizeText(category)) || category
+    const normalizedCategory = normalizeText(resolvedCategory)
+
+    if (!seenCategories.has(normalizedCategory)) {
+      seenCategories.add(normalizedCategory)
+      mergedCategories.push(resolvedCategory)
+    }
+  })
+
+  categories.filter(Boolean).forEach((category) => {
+    const normalizedCategory = normalizeText(category)
+
+    if (!seenCategories.has(normalizedCategory)) {
+      seenCategories.add(normalizedCategory)
+      mergedCategories.push(category)
+    }
+  })
+
+  return mergedCategories
+}
 
 const IncomeSummary = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
-  const [modalOpen, setModalOpen] = useState(false)
-  const userData = JSON.parse(sessionStorage.getItem('user')) // Lấy dữ liệu người dùng từ session storage
-  const token = userData?.token // Lấy token
-  const username = userData?.username // **** Lấy tên tài khoản từ sessionStorage
-  const [transactionType, setTransactionType] = useState('receipt') // 'receipt' or 'expense'
+  const { motelId } = useParams()
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false)
+  const [expenseModalOpen, setExpenseModalOpen] = useState(false)
+  const [detailModalOpen, setDetailModalOpen] = useState(false)
+  const [selectedTransaction, setSelectedTransaction] = useState(null)
   const [payments, setPayments] = useState([])
-  const [setLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
-  const [setError] = useState(null)
-  const [summary, setSummary] = useState({
-    totalIncome: 0,
-    totalExpense: 0,
-    profit: 0
-  })
+  const [error, setError] = useState('')
+  const [summary, setSummary] = useState(DEFAULT_SUMMARY)
+
+  const today = new Date()
+  const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1)
+  const [selectedYear, setSelectedYear] = useState(today.getFullYear())
+  const [showReceipts, setShowReceipts] = useState(true)
+  const [showExpenses, setShowExpenses] = useState(true)
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState([])
+  const [includedCategories, setIncludedCategories] = useState([])
+  const [excludedCategories, setExcludedCategories] = useState([])
+  const [reportScope, setReportScope] = useState('month')
+  const [reportView, setReportView] = useState('detail')
+
+  const userData = JSON.parse(sessionStorage.getItem('user'))
+  const token = userData?.token
+  const username = userData?.username
+
+  const currentMotel = Array.isArray(motels)
+    ? motels.find((motel) => extractEntityId(motel, ['motelId', 'id']) === motelId)
+    : null
 
   useEffect(() => {
     setIsAdmin(true)
     fetchData()
   }, [setIsAdmin])
 
-  // **** Hàm để lấy dữ liệu giao dịch, phương thức thanh toán và tóm tắt
   const fetchData = async () => {
-    try {
-      console.log('Tên tài khoản:', username) // **** In ra tên tài khoản
+    if (!token || !username) {
+      setTransactions([])
+      setPayments([])
+      setSummary(DEFAULT_SUMMARY)
+      setLoading(false)
+      setError('Không tìm thấy thông tin đăng nhập để tải dữ liệu thu chi.')
+      return
+    }
 
-      const [transactionsResponse, paymentsResponse, summaryResponse] = await Promise.all([
-        axios.get(`${env.API_URL}/api/v1/transactions/${username}`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${env.API_URL}/api/v1/payment/list_payment`, { headers: { Authorization: `Bearer ${token}` } }),
+    setLoading(true)
+    setError('')
+
+    try {
+      const [transactionsResult, paymentsResult, summaryResult] = await Promise.allSettled([
+        axios.get(`${env.API_URL}/api/v1/transactions/${username}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${env.API_URL}/api/v1/payment/list_payment`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
         axios.get(`${env.API_URL}/api/v1/transactions/summary`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { username }
         })
       ])
 
-      // **** Cập nhật trạng thái với dữ liệu lấy được
-      setTransactions(transactionsResponse.data)
-      setPayments(paymentsResponse.data)
-      setSummary(summaryResponse.data)
+      if (transactionsResult.status === 'rejected') {
+        throw transactionsResult.reason
+      }
 
-      console.log(paymentsResponse.data)
-      console.log(typeof transactions)
+      if (summaryResult.status === 'rejected') {
+        throw summaryResult.reason
+      }
+
+      setTransactions(parseApiArray(transactionsResult.value))
+      setSummary(parseSummary(summaryResult.value))
+
+      if (paymentsResult.status === 'fulfilled') {
+        setPayments(getSafeArray(unwrapApiResult(paymentsResult.value, paymentsResult.value?.data), parseApiArray(paymentsResult.value)))
+      } else {
+        setPayments([])
+        setError(PAYMENT_LOAD_WARNING)
+        console.error('Không thể tải danh sách phương thức thanh toán:', paymentsResult.reason?.response?.data || paymentsResult.reason?.message)
+      }
     } catch (err) {
-      setError(err.message)
+      setError(err?.response?.data?.message || err.message || 'Có lỗi xảy ra khi lấy dữ liệu thu chi.')
+      setTransactions([])
+      setPayments([])
+      setSummary(DEFAULT_SUMMARY)
       console.error('Có lỗi xảy ra khi lấy dữ liệu:', err)
     } finally {
       setLoading(false)
     }
   }
 
-  // **** Hàm xóa giao dịch
-  const deleteTransaction = async (id) => {
+  const handleDeleteTransaction = async (id) => {
     const { isConfirmed } = await Swal.fire({
       title: 'Xác nhận',
       text: 'Bạn có chắc chắn muốn xóa giao dịch này không?',
@@ -94,72 +235,64 @@ const IncomeSummary = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       cancelButtonText: 'Hủy'
     })
 
-    if (isConfirmed) {
-      try {
-        await axios.delete(`${env.API_URL}/api/v1/transactions/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { username }
-        })
-        Swal.fire('Thành công!', 'Giao dịch đã được xóa.', 'success')
-        fetchData() // **** Cập nhật lại dữ liệu sau khi xóa
-      } catch (error) {
-        console.error('Có lỗi xảy ra khi xóa giao dịch:', error)
-        Swal.fire('Lỗi!', 'Có lỗi xảy ra khi xóa giao dịch.', 'error')
+    if (!isConfirmed) return
+
+    try {
+      await axios.delete(`${env.API_URL}/api/v1/transactions/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { username }
+      })
+
+      if (selectedTransaction?.transactionId === id) {
+        setDetailModalOpen(false)
+        setSelectedTransaction(null)
       }
+
+      Swal.fire('Thành công!', 'Giao dịch đã được xóa.', 'success')
+      fetchData()
+    } catch (deleteError) {
+      console.error('Có lỗi xảy ra khi xóa giao dịch:', deleteError)
+      Swal.fire('Lỗi!', 'Có lỗi xảy ra khi xóa giao dịch.', 'error')
     }
   }
 
-  // **** Mở modal để thêm giao dịch
-  const handleOpenModal = (type) => {
-    setTransactionType(type)
-    setModalOpen(true)
-  }
+  const handleSubmit = async (event, transactionType) => {
+    event.preventDefault()
 
-  const handleCloseModal = () => setModalOpen(false)
-
-  // **** Hàm xử lý nộp giao dịch
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    const formData = new FormData(e.target)
+    const formData = new FormData(event.currentTarget)
     const dateInput = formData.get('date')
-    const date = new Date(dateInput) // Lấy ngày từ form
-    const today = new Date() // Ngày hiện tại
+    const date = new Date(dateInput)
+    const currentDate = new Date()
 
-    // Đặt thời gian của ngày hiện tại về 00:00:00 để so sánh chỉ ngày
-
-    // Kiểm tra xem ngày lập phiếu có lớn hơn ngày hiện tại không
-    if (date > today) {
-      // Nếu lớn hơn, đặt ngày lập phiếu bằng ngày hiện tại
+    if (date > currentDate) {
       Swal.fire('Thông báo', 'Ngày lập phiếu đã được đặt về ngày hiện tại.', 'info')
-      // Đặt ngày về ngày hiện tại
-      e.target.date.value = today.toISOString().split('T')[0]
+      event.currentTarget.date.value = currentDate.toISOString().split('T')[0]
       return
     }
 
     const amount = parseFloat(formData.get('amount'))
-    if (isNaN(amount) || amount <= 0) {
+    if (Number.isNaN(amount) || amount <= 0) {
       Swal.fire('Lỗi!', 'Số tiền không hợp lệ.', 'error')
       return
     }
 
     const paymentMethod = formData.get('paymentMethod')
-    const payment = payments.find((payment) => payment.paymentName === paymentMethod)
+    const payment = payments.find((item) => item.paymentName === paymentMethod)
+
     if (!payment) {
-      console.error('Phương thức thanh toán không hợp lệ')
-      Swal.fire('Lỗi!', 'Phương thức thanh toán không hợp lệ.', 'error') // Thông báo lỗi
-      return // Ngăn không cho gửi yêu cầu
+      Swal.fire('Lỗi!', 'Phương thức thanh toán không hợp lệ.', 'error')
+      return
     }
 
     const data = {
-      amount: amount,
-      paymentId: payment.paymentId, // Lấy paymentId từ tên
+      amount,
+      paymentId: payment.paymentId,
       payerName: formData.get('payer'),
       paymentDescription: formData.get('description'),
       category: formData.get('category'),
       transactionDate: date.toISOString().split('T')[0]
     }
 
-    // Hiển thị thông báo xác nhận trước khi gửi
     const { isConfirmed } = await Swal.fire({
       title: 'Xác nhận',
       text: 'Bạn có chắc chắn muốn thêm giao dịch này không?',
@@ -169,150 +302,145 @@ const IncomeSummary = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       cancelButtonText: 'Hủy'
     })
 
-    if (isConfirmed) {
-      try {
-        const url =
-          transactionType === 'receipt'
-            ? `${env.API_URL}/api/v1/transactions/receipts`
-            : `${env.API_URL}/api/v1/transactions/expenses`
+    if (!isConfirmed) return
 
-        const response = await axios.post(url, data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          params: { username }
-        })
-        console.log(data)
-        // Cập nhật danh sách giao dịch
-        setTransactions((prev) => [...prev, response.data])
+    try {
+      const url =
+        transactionType === 'receipt'
+          ? `${env.API_URL}/api/v1/transactions/receipts`
+          : `${env.API_URL}/api/v1/transactions/expenses`
 
-        await fetchData()
-        // Gọi lại fetchTransactions để đảm bảo dữ liệu mới
+      const response = await axios.post(url, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        params: { username }
+      })
 
-        handleCloseModal()
-        Swal.fire('Thành công!', 'Giao dịch đã được thêm thành công!', 'success') // Thông báo thành công
-      } catch (error) {
-        console.error('Có lỗi xảy ra khi thêm giao dịch:', error.response ? error.response.data : error.message)
-        Swal.fire('Lỗi!', 'Có lỗi xảy ra khi thêm giao dịch.', 'error') // Thông báo lỗi
-        if (error.response) {
-          console.error('Response:', error.response)
-        }
+      const createdTransaction = unwrapApiResult(response, response?.data)
+      if (createdTransaction && typeof createdTransaction === 'object') {
+        setTransactions((prev) => [createdTransaction, ...prev])
       }
+
+      await fetchData()
+      setReceiptModalOpen(false)
+      setExpenseModalOpen(false)
+
+      Swal.fire(
+        'Thành công!',
+        transactionType === 'receipt' ? 'Phiếu thu đã được tạo thành công!' : 'Phiếu chi đã được tạo thành công!',
+        'success'
+      )
+    } catch (submitError) {
+      console.error('Có lỗi xảy ra khi thêm giao dịch:', submitError?.response?.data || submitError.message)
+      Swal.fire('Lỗi!', 'Có lỗi xảy ra khi thêm giao dịch.', 'error')
     }
   }
 
-  const label = { inputProps: { 'aria-label': 'Checkbox demo' } }
-
-  // Hàm định dạng giá tiền theo kiểu Việt Nam
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(amount || 0))
   }
-  window.deleteTransaction = deleteTransaction
-  // Cấu hình các cột của bảng
-  const columns = [
-    {
-      title: '',
-      field: 'id',
-      formatter: (cell) => {
-        const transactionType = cell.getRow().getData().transactionType
-        const iconColor = transactionType ? 'green' : 'red' // Xác định màu sắc của biểu tượng
-        return `
-        <span style="display: flex; align-items: center;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="${iconColor}" class="bi bi-card-list" viewBox="0 0 16 16">
-            <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
-            <path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 5 8m0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0M4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
-          </svg>
-       
-        </span>
-      `
-      }
-    },
-    { title: 'Danh mục thu chi', width: 220, field: 'category' },
-    { title: 'Số Tiền', width: 220, field: 'amount', formatter: (cell) => formatCurrency(cell.getValue()) },
-    { title: 'Tên Người Thanh Toán', width: 220, field: 'payerName' },
-    { title: 'Nội Dung Thanh Toán', width: 220, field: 'paymentDescription' },
-    { title: 'Phương thức thanh toán', width: 220, field: 'payment.paymentName' },
-    { title: 'Ngày lập phiếu', width: 220, field: 'transactionDate', sorter: 'date' },
-    {
-      title: 'Loại Giao Dịch',
-      field: 'transactionType',
-      width: 150,
-      formatter: (cell) => {
-        const type = cell.getValue() ? 'Thu' : 'Chi'
-        const backgroundColor = type === 'Chi' ? 'red' : 'green'
 
-        // Trả về một chuỗi HTML
+  const matchesSelectedPeriod = (transaction) => {
+    const transactionDate = getTransactionDate(transaction?.transactionDate)
+    if (!transactionDate) return true
 
-        cell.getElement().style.color = backgroundColor
-        cell.getElement().style.padding = '5px'
-        cell.getElement().style.borderRadius = '5px'
+    const transactionMonth = transactionDate.getMonth() + 1
+    const transactionYear = transactionDate.getFullYear()
+    const quarterStart = Math.floor((selectedMonth - 1) / 3) * 3 + 1
+    const quarterMonths = [quarterStart, quarterStart + 1, quarterStart + 2]
 
-        return type // Trả về giá trị hiển thị
-      }
-    },
-    {
-      title: 'Xóa',
-      field: 'delete',
-      width: 150,
-      formatter: (cell) => {
-        const transactionId = cell.getRow().getData().transactionId // Lấy ID giao dịch
-        return `
-          <span style="cursor: pointer; color: red; display: flex; align-items: center;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-trash-fill" viewBox="0 0 16 16" onclick="deleteTransaction('${transactionId}')">
-          <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
-        </svg>
-      </span>
-        `
-      }
+    if (reportScope === 'year') {
+      return transactionYear === selectedYear
     }
-  ]
 
-  // Tùy chọn cho bảng
-  const options = {
-    layout: 'fitDataStretch',
-    placeholder: 'Không có dữ liệu để hiển thị'
+    if (reportScope === 'quarter') {
+      return transactionYear === selectedYear && quarterMonths.includes(transactionMonth)
+    }
+
+    if (reportScope === 'day') {
+      // Trang hiện chỉ có bộ chọn tháng/năm, nên chế độ ngày sẽ bám theo tháng đang chọn.
+      return transactionMonth === selectedMonth && transactionYear === selectedYear
+    }
+
+    return transactionMonth === selectedMonth && transactionYear === selectedYear
   }
 
-  //Xuất excel
-  const downloadExcel = () => {
-    const data = transactions.map((transaction) => ({
+  const periodTransactions = transactions.filter(matchesSelectedPeriod)
+
+  const availableCategories = buildCategoryOptions(transactions.map((transaction) => transaction.category))
+
+  const paymentMethodOptions = [...new Set(
+    [
+      ...payments.map((payment) => payment.paymentName),
+      ...periodTransactions.map((transaction) => getTransactionPaymentName(transaction))
+    ].filter(Boolean)
+  )]
+
+  const visibleTransactions = periodTransactions
+    .filter((transaction) => {
+      if (transaction.transactionType && !showReceipts) return false
+      if (!transaction.transactionType && !showExpenses) return false
+
+      const paymentMethod = getTransactionPaymentName(transaction)
+      if (selectedPaymentMethods.length > 0 && !selectedPaymentMethods.includes(paymentMethod)) return false
+      if (includedCategories.length > 0 && !includedCategories.includes(transaction.category)) return false
+      if (excludedCategories.includes(transaction.category)) return false
+
+      return true
+    })
+    .sort((left, right) => {
+      const leftDate = getTransactionDate(left?.transactionDate)?.getTime() || 0
+      const rightDate = getTransactionDate(right?.transactionDate)?.getTime() || 0
+      return rightDate - leftDate
+    })
+
+  const displaySummary = visibleTransactions.reduce(
+    (result, transaction) => {
+      if (transaction.transactionType) {
+        result.totalIncome += Number(transaction.amount || 0)
+      } else {
+        result.totalExpense += Number(transaction.amount || 0)
+      }
+
+      result.profit = result.totalIncome - result.totalExpense
+      return result
+    },
+    { totalIncome: 0, totalExpense: 0, profit: 0 }
+  )
+
+  const summaryToDisplay = transactions.length === 0 ? summary : displaySummary
+  const totalReceiptCount = periodTransactions.filter((transaction) => transaction.transactionType === true).length
+  const totalExpenseCount = periodTransactions.filter((transaction) => transaction.transactionType === false).length
+
+  const handleDownloadExcel = () => {
+    const data = visibleTransactions.map((transaction) => ({
       'Danh mục thu chi': transaction.category,
-      'Số Tiền': transaction.amount,
-      'Tên Người Thanh Toán': transaction.payerName,
-      'Nội Dung Thanh Toán': transaction.paymentDescription,
-      'Ngày lập phiếu': transaction.transactionDate,
-      'Loại Giao Dịch': transaction.transactionType ? 'Thu' : 'Chi'
+      'Nội dung thanh toán': transaction.paymentDescription,
+      'Người thanh toán / nhận': transaction.payerName,
+      'Số tiền': Number(transaction.amount || 0),
+      'Phương thức thanh toán': getTransactionPaymentName(transaction),
+      'Ngày ghi nhận thu/chi': transaction.transactionDate,
+      'Ngày tạo phiếu': transaction.transactionDate,
+      'Loại giao dịch': transaction.transactionType ? 'Thu' : 'Chi'
     }))
 
-    // Thêm thông tin tổng quan vào mảng dữ liệu
     const summaryData = [
-      {
-        'Danh mục thu chi': 'Tổng khoản thu (tiền vào)',
-        'Số Tiền': summary.totalIncome
-      },
-      {
-        'Danh mục thu chi': 'Tổng khoản chi (tiền ra)',
-        'Số Tiền': summary.totalExpense
-      },
-      {
-        'Danh mục thu chi': 'Lợi nhuận',
-        'Số Tiền': summary.profit
-      }
+      { 'Danh mục thu chi': 'Tổng khoản thu (tiền vào)', 'Số tiền': summaryToDisplay.totalIncome },
+      { 'Danh mục thu chi': 'Tổng khoản chi (tiền ra)', 'Số tiền': summaryToDisplay.totalExpense },
+      { 'Danh mục thu chi': 'Lợi nhuận', 'Số tiền': summaryToDisplay.profit }
     ]
 
-    // Kết hợp dữ liệu giao dịch và dữ liệu tổng quan
-    const combinedData = [...data, ...summaryData]
-
-    const worksheet = XLSX.utils.json_to_sheet(combinedData)
+    const worksheet = XLSX.utils.json_to_sheet([...data, ...summaryData])
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Báo cáo thu chi')
 
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
     const file = new Blob([excelBuffer], { type: 'application/octet-stream' })
-
     const fileURL = URL.createObjectURL(file)
     const link = document.createElement('a')
+
     link.href = fileURL
     link.setAttribute('download', 'transactions.xlsx')
     document.body.appendChild(link)
@@ -326,77 +454,98 @@ const IncomeSummary = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         <head>
           <title>In thu/chi</title>
           <style>
-            body { font-family: Arial, sans-serif; }
+            body { font-family: Arial, sans-serif; padding: 24px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
-            .summary { margin-top: 20px; }
-            .summary-card { border: 1px solid #000; padding: 10px; margin-top: 10px; }
+            th, td { border: 1px solid #d4d4d8; padding: 10px; text-align: left; font-size: 13px; }
+            th { background-color: #f5f5f5; }
+            .summary { margin-top: 20px; display: flex; gap: 12px; }
+            .summary-card { border: 1px solid #d4d4d8; padding: 12px 16px; border-radius: 8px; min-width: 220px; }
+            .header { margin-bottom: 12px; }
+            .subtitle { color: #555; font-style: italic; }
           </style>
         </head>
         <body>
-          <h2>Bảng thu/chi</h2>
+          <div class="header">
+            <h2>Khoản thu / chi - tổng kết ${currentMotel?.motelName || 'nhà trọ'}</h2>
+            <div class="subtitle">Báo cáo được in từ giao diện quản lý thu chi.</div>
+          </div>
           <table>
             <thead>
               <tr>
                 <th>Danh mục thu chi</th>
-                <th>Số Tiền</th>
-                <th>Tên Người Thanh Toán</th>
-                <th>Nội Dung Thanh Toán</th>
-                <th>Ngày lập phiếu</th>
-                <th>Loại Giao Dịch</th>
+                <th>Nội dung thanh toán</th>
+                <th>Người thanh toán / nhận</th>
+                <th>Số tiền</th>
+                <th>Phương thức thanh toán</th>
+                <th>Ngày ghi nhận thu/chi</th>
+                <th>Loại giao dịch</th>
               </tr>
             </thead>
             <tbody>
-              ${transactions
+              ${visibleTransactions
                 .map(
                   (transaction) => `
-                <tr>
-                  <td>${transaction.category}</td>
-                  <td>${formatCurrency(transaction.amount)}</td>
-                  <td>${transaction.payerName}</td>
-                  <td>${transaction.paymentDescription}</td>
-                  <td>${transaction.transactionDate}</td>
-                  <td>${transaction.transactionType ? 'Thu' : 'Chi'}</td>
-                </tr>
-              `
+                    <tr>
+                      <td>${transaction.category || ''}</td>
+                      <td>${transaction.paymentDescription || ''}</td>
+                      <td>${transaction.payerName || ''}</td>
+                      <td>${formatCurrency(transaction.amount)}</td>
+                      <td>${getTransactionPaymentName(transaction)}</td>
+                      <td>${transaction.transactionDate || ''}</td>
+                      <td>${transaction.transactionType ? 'Thu' : 'Chi'}</td>
+                    </tr>
+                  `
                 )
                 .join('')}
             </tbody>
           </table>
           <div class="summary">
-            <div class="summary-card">
-              <strong>Tổng khoản thu (tiền vào):</strong> ${formatCurrency(summary.totalIncome)}
-            </div>
-            <div class="summary-card">
-              <strong>Tổng khoản chi (tiền ra):</strong> ${formatCurrency(summary.totalExpense)}
-            </div>
-            <div class="summary-card">
-              <strong>Lợi nhuận:</strong> ${formatCurrency(summary.profit)}
-            </div>
+            <div class="summary-card"><strong>Tổng khoản thu:</strong> ${formatCurrency(summaryToDisplay.totalIncome)}</div>
+            <div class="summary-card"><strong>Tổng khoản chi:</strong> ${formatCurrency(summaryToDisplay.totalExpense)}</div>
+            <div class="summary-card"><strong>Lợi nhuận:</strong> ${formatCurrency(summaryToDisplay.profit)}</div>
           </div>
         </body>
       </html>
     `
 
-    const WinPrint = window.open('', '', 'width=900,height=650')
-    WinPrint.document.write(printContent)
-    WinPrint.document.close()
-    WinPrint.focus()
-    WinPrint.print()
-    WinPrint.close()
+    const printWindow = window.open('', '', 'width=900,height=650')
+    printWindow.document.write(printContent)
+    printWindow.document.close()
+    printWindow.focus()
+    printWindow.print()
+    printWindow.close()
   }
-  let totalIncomeReceipts
-  let totalExpenseReceipts
-  if (transactions.length > 0) {
-    totalIncomeReceipts = transactions.filter((transaction) => transaction.transactionType).length
-    totalExpenseReceipts = transactions.filter((transaction) => !transaction.transactionType).length
 
-    console.log(totalIncomeReceipts)
-    console.log(totalExpenseReceipts)
+  const handleResetFilters = () => {
+    setShowReceipts(true)
+    setShowExpenses(true)
+    setSelectedPaymentMethods([])
+    setIncludedCategories([])
+    setExcludedCategories([])
+    setReportScope('month')
+    setReportView('detail')
   }
+
+  const handleMonthChange = (month, year) => {
+    setSelectedMonth(month)
+    setSelectedYear(year)
+  }
+
+  const handleOpenDetails = (transaction) => {
+    setSelectedTransaction(transaction)
+    setDetailModalOpen(true)
+  }
+
+  const handleManageCategories = () => {
+    Swal.fire('Thông báo', 'Chức năng quản lý danh mục sẽ được nối vào luồng hiện có ở bước tiếp theo.', 'info')
+  }
+
+  const handleImportClick = () => {
+    Swal.fire('Thông báo', 'Chức năng import thu/chi đang được chuẩn hóa theo giao diện mới.', 'info')
+  }
+
   return (
-    <div>
+    <Box>
       <NavAdmin
         setmotels={setmotels}
         motels={motels}
@@ -404,259 +553,98 @@ const IncomeSummary = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         setIsNavAdmin={setIsNavAdmin}
         isNavAdmin={true}
       />
+
       <Box
         sx={{
           backgroundColor: '#fff',
-          padding: '15px 15px 15px 15px',
-          borderRadius: '10px',
-          margin: '0 10px 10px 10px'
+          p: { xs: 1.5, md: 2 },
+          borderRadius: 3,
+          m: '0 10px 10px 10px'
         }}>
-        <Box sx={{ flexGrow: 1 }}>
-          {/* Header */}
-          <AppBar
-            position="static"
-            color="transparent"
-            elevation={0}
-            sx={{
-              '.MuiToolbar-root': {
-                p: '16px'
-              }
-            }}>
-            <Toolbar>
-              <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                Khoản thu / chi - tổng kết Nhà trọ
-              </Typography>
-              <Select defaultValue="Theo tháng" size="small">
-                <MenuItem value="Theo tháng">Theo tháng</MenuItem>
-                <MenuItem value="Theo quý">Theo quý</MenuItem>
-                <MenuItem value="Theo năm">Theo năm</MenuItem>
-              </Select>
-              <IconButton color="primary">
-                <CalendarMonthIcon />
-              </IconButton>
-            </Toolbar>
-            <Typography variant="body2" color="textSecondary" sx={{ paddingLeft: 2 }}>
-              Bạn sẽ thống kê được các khoản thu / chi qua hàng tháng, quý, năm.
-            </Typography>
-          </AppBar>
+        <Stack spacing={2}>
+          <YearMonthFilter onMonthChange={handleMonthChange} />
 
-          {/* Filters */}
-          <Paper
-            variant="outlined"
-            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1, mt: 2 }}>
-            <Badge
-              badgeContent={totalIncomeReceipts + totalExpenseReceipts}
-              sx={{
-                '.MuiBadge-badge': {
-                  backgroundColor: '#7bed9f',
-                  color: 'white'
-                },
-                '& .MuiButtonBase-root': {
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }
-              }}>
-              <FilterAltIcon color="primary" />
-            </Badge>
+          <IncomeSummaryHeader motelName={currentMotel?.motelName} onImportClick={handleImportClick} />
 
-            <Badge
-              badgeContent={totalIncomeReceipts}
-              sx={{
-                '& .MuiBadge-badge': {
-                  backgroundColor: '#2ed573',
-                  color: 'white'
-                }
-              }}>
-              <Paper variant="outlined" sx={{ pr: 1 }}>
-                <Checkbox {...label} defaultChecked />
-                Tất cả phiếu thu (tiền vào)
-              </Paper>
-            </Badge>
+          {error ? <Alert severity="error">{error}</Alert> : null}
 
-            <Badge
-              badgeContent={totalExpenseReceipts}
-              sx={{
-                '& .MuiBadge-badge': {
-                  backgroundColor: '#ff4757',
-                  color: 'white'
-                }
-              }}>
-              <Paper variant="outlined" sx={{ pr: 1 }}>
-                <Checkbox {...label} defaultChecked />
-                Tất cả phiếu chi (tiền ra)
-              </Paper>
-            </Badge>
+          <IncomeSummaryFilters
+            totalCount={periodTransactions.length}
+            receiptCount={totalReceiptCount}
+            expenseCount={totalExpenseCount}
+            paymentMethodOptions={paymentMethodOptions}
+            selectedPaymentMethods={selectedPaymentMethods}
+            onSelectedPaymentMethodsChange={setSelectedPaymentMethods}
+            showReceipts={showReceipts}
+            showExpenses={showExpenses}
+            onToggleReceipts={() => setShowReceipts((prev) => !prev)}
+            onToggleExpenses={() => setShowExpenses((prev) => !prev)}
+            categories={availableCategories}
+            includedCategories={includedCategories}
+            excludedCategories={excludedCategories}
+            onIncludedCategoriesChange={setIncludedCategories}
+            onExcludedCategoriesChange={setExcludedCategories}
+            reportScope={reportScope}
+            reportView={reportView}
+            onReportScopeChange={setReportScope}
+            onReportViewChange={setReportView}
+            onResetFilters={handleResetFilters}
+            onOpenExpense={() => setExpenseModalOpen(true)}
+            onOpenReceipt={() => setReceiptModalOpen(true)}
+            onPrint={handlePrint}
+            onDownloadExcel={handleDownloadExcel}
+            onManageCategories={handleManageCategories}
+          />
 
-            {/* Action Buttons */}
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<ReceiptIcon />}
-              onClick={() => handleOpenModal('receipt')}>
-              Thêm phiếu thu
-            </Button>
+          <IncomeSummaryStats summary={summaryToDisplay} formatCurrency={formatCurrency} />
 
-            <Button
-              variant="contained"
-              color="warning"
-              startIcon={<AddIcon />}
-              onClick={() => handleOpenModal('expense')}>
-              Thêm phiếu chi
-            </Button>
-
-            <Button variant="contained" startIcon={<PrintIcon />} onClick={handlePrint}>
-              In thu/chi
-            </Button>
-
-            <Button variant="contained" startIcon={<FileDownloadIcon />} onClick={downloadExcel}>
-              Xuất excel
-            </Button>
-          </Paper>
-
-          {/* Modal */}
-
-          <Modal show={modalOpen} onHide={handleCloseModal} size="md" centered>
-            <Modal.Header closeButton>
-              <Modal.Title>{transactionType === 'receipt' ? 'Thêm phiếu thu' : 'Thêm phiếu chi'}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3" controlId="amount">
-                  <Form.Label>Nhập số tiền *</Form.Label>
-                  <Form.Control type="number" name="amount" required />
-                </Form.Group>
-
-                <Form.Group className="mb-3" controlId="paymentMethod">
-                  <Form.Label>Phương thức thanh toán *</Form.Label>
-                  <Form.Control as="select" name="paymentMethod" required>
-                    <option value="">Chọn phương thức</option>
-                    {payments.map((payment) => (
-                      <option key={payment.paymentId} value={payment.paymentName}>
-                        {payment.paymentName}
-                      </option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-
-                <Form.Group className="mb-3" controlId="payer">
-                  <Form.Label>Người thanh toán *</Form.Label>
-                  <Form.Control type="text" name="payer" required />
-                </Form.Group>
-
-                <Form.Group className="mb-3" controlId="description">
-                  <Form.Label>Nội dung thanh toán *</Form.Label>
-                  <Form.Control type="text" name="description" required />
-                </Form.Group>
-
-                <Form.Group className="mb-3" controlId="category">
-                  <Form.Label>Danh mục phiếu *</Form.Label>
-                  <Form.Control type="text" name="category" required />
-                </Form.Group>
-
-                <Form.Group className="mb-3" controlId="date">
-                  <Form.Label>Ngày lập phiếu *</Form.Label>
-                  <Form.Control type="date" name="date" required />
-                </Form.Group>
-
-                <Box display="flex" justifyContent="flex-end">
-                  <Button className="me-2" variant="contained" color="error" onClick={handleCloseModal}>
-                    Hủy
-                  </Button>
-                  <Button variant="contained" color="success" type="submit">
-                    {transactionType === 'receipt' ? 'Thêm phiếu thu' : 'Thêm phiếu chi'}
-                  </Button>
-                </Box>
-              </Form>
-            </Modal.Body>
-          </Modal>
-
-          <Paper variant="outlined" sx={{ display: 'flex', justifyContent: 'space-between', p: 1, mt: 2 }}>
-            {/* Category and Report Type */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <FormControl sx={{ minWidth: 170 }} variant="standard" fullWidth>
-                <InputLabel id="demo-simple-select-label">Lọc theo danh mục</InputLabel>
-                <Select labelId="demo-simple-select-label" id="demo-simple-select" label="Gender">
-                  <MenuItem value={'MALE'}>Tất cả</MenuItem>
-                  <MenuItem value={'FEMALE'}>Female</MenuItem>
-                  <MenuItem value={'OTHER'}>Other</MenuItem>
-                </Select>
-              </FormControl>
-
-              <FormControl sx={{ minWidth: 130 }} variant="standard" fullWidth>
-                <InputLabel id="demo-simple-select-label">Mẫu báo cáo</InputLabel>
-                <Select labelId="demo-simple-select-label" id="demo-simple-select" label="Gender">
-                  <MenuItem value={'MALE'}>Theo chi tiết</MenuItem>
-                  <MenuItem value={'FEMALE'}>Female</MenuItem>
-                  <MenuItem value={'OTHER'}>Other</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-
-            {/* Summary */}
+          {loading ? (
             <Box
               sx={{
+                minHeight: 260,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1,
-                '.MuiCardContent-root': { bgcolor: '#E8F5E9' }
+                justifyContent: 'center'
               }}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography variant="h6" color="textPrimary" sx={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
-                    Tổng khoản thu (tiền vào)
-                  </Typography>
-                  <Typography variant="h4" color="green" sx={{ fontSize: '1.25rem' }}>
-                    <MovingIcon /> + {formatCurrency(summary.totalIncome)}
-                  </Typography>
-                </CardContent>
-              </Card>
-
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography variant="h6" color="textPrimary" sx={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
-                    Tổng khoản chi (tiền ra)
-                  </Typography>
-                  <Typography variant="h4" color="red" sx={{ fontSize: '1.25rem' }}>
-                    <MovingIcon sx={{ transform: 'rotate(70deg)' }} /> - {formatCurrency(summary.totalExpense)}
-                  </Typography>
-                </CardContent>
-              </Card>
-
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography variant="h6" color="textPrimary" sx={{ fontSize: '0.875rem', fontWeight: 'normal' }}>
-                    Lợi nhuận
-                  </Typography>
-                  <Typography variant="h4" color="green" sx={{ fontSize: '1.25rem' }}>
-                    {formatCurrency(summary.profit)}
-                  </Typography>
-                </CardContent>
-              </Card>
+              <CircularProgress size={28} />
             </Box>
-          </Paper>
-
-          {/* No Data Found */}
-          <Paper variant="outlined" sx={{ textAlign: 'center', marginTop: 2 }}>
-            <div className="mt-3" style={{ marginLeft: '15px', marginRight: '10px' }}>
-              <ReactTabulator
-                className="m-custom-table rounded"
-                columns={columns}
-                data={transactions}
-                options={options}
-                style={{
-                  backgroundColor: 'white', // Màu nền trắng
-                  width: '100%', // Chiều rộng 100%
-                  maxWidth: '100%', // Chiều rộng tối đa
-                  borderRadius: '8px', // Bo tròn góc
-                  overflow: 'hidden' // Ẩn phần thừa ra ngoài
-                }}
-              />
-            </div>
-          </Paper>
-        </Box>
+          ) : (
+            <IncomeSummaryTable
+              transactions={visibleTransactions}
+              reportView={reportView}
+              formatCurrency={formatCurrency}
+              onOpenDetails={handleOpenDetails}
+              onDelete={handleDeleteTransaction}
+            />
+          )}
+        </Stack>
       </Box>
-    </div>
+
+      <AddReceiptModal
+        open={receiptModalOpen}
+        payments={payments}
+        onClose={() => setReceiptModalOpen(false)}
+        onSubmit={(event) => handleSubmit(event, 'receipt')}
+      />
+
+      <AddExpenseModal
+        open={expenseModalOpen}
+        payments={payments}
+        onClose={() => setExpenseModalOpen(false)}
+        onSubmit={(event) => handleSubmit(event, 'expense')}
+      />
+
+      <TransactionDetailModal
+        open={detailModalOpen}
+        transaction={selectedTransaction}
+        formatCurrency={formatCurrency}
+        onClose={() => {
+          setDetailModalOpen(false)
+          setSelectedTransaction(null)
+        }}
+        onDelete={handleDeleteTransaction}
+      />
+    </Box>
   )
 }
 

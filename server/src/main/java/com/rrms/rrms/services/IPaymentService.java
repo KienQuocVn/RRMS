@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
+import com.rrms.rrms.dto.response.PaymentMethodResponse;
 
 /**
  * Service interface for Payment Gateway operations.
@@ -22,5 +23,5 @@ public interface IPaymentService {
 
     Payment executePayment(String paymentId, String payerId) throws PayPalRESTException;
 
-    List<com.rrms.rrms.models.Payment> getAllPayments();
+    List<PaymentMethodResponse> getAllPayments();
 }

@@ -35,6 +35,31 @@ import { getPhuongXa, getQuanHuyen, getTinhThanh } from '~/apis/addressAPI'
 import { getMotelById } from '~/apis/motelAPI'
 import { getAllMotelDevices, getAllDeviceByRomId, deleteRoomDevice, insertRoomDevice } from '~/apis/deviceAPT'
 import { getContractTemplatesByMotelId, createTenant, createContract } from '~/apis/contractTemplateAPI'
+import { deleteTenantById } from '~/apis/tenantAPI'
+
+const getErrorMessage = (error, fallback) => {
+  return error?.response?.data?.message || error?.message || fallback
+}
+
+const MODAL_ALERT_Z_INDEX = 2000
+
+const fireModalAlert = (options) => {
+  const originalDidOpen = options?.didOpen
+
+  return Swal.fire({
+    target: document.body,
+    ...options,
+    didOpen: (popup) => {
+      const container = Swal.getContainer()
+      if (container) {
+        container.style.zIndex = String(MODAL_ALERT_Z_INDEX)
+      }
+      if (typeof originalDidOpen === 'function') {
+        originalDidOpen(popup)
+      }
+    }
+  })
+}
 
 function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
   const username = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).username : null
@@ -58,7 +83,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
     cccd: '',
     email: '',
     birthday: null,
-    gender: 'OTHER',
+    gender: 'MALE',
     address: '',
     job: '',
     licenseDate: null,
@@ -66,6 +91,8 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
     frontPhoto: '',
     backPhoto: '',
     role: true,
+    relationship: '',
+    typeOfTenant: false,
     temporaryResidence: false,
     informationVerify: false
   })
@@ -86,7 +113,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
     collectioncycle: '1',
     createdate: new Date().toISOString().slice(0, 10),
     signcontract: 'Khách chưa ký',
-    language: 'Viêt Nam',
+    language: 'Tieng Viet',
     countTenant: 1,
     status: 'ACTIVE'
   })
@@ -130,7 +157,6 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
       console.error('Error fetching room services:', error)
     }
   }
-
   const fetchDataDeviceRooms = async (id) => {
     try {
       const roomDevicesResponse = await getAllDeviceByRomId(id)
@@ -299,50 +325,88 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
     await Promise.all([...deletePromises, ...addPromises])
   }
 
+  const buildTenantAddress = () => {
+    const provinceName = provinces.find((province) => String(province.id) === String(selectedProvince))?.full_name || ''
+    const districtName = districts.find((district) => String(district.id) === String(selectedDistrict))?.full_name || ''
+    const wardName = wards.find((ward) => String(ward.id) === String(selectedWard))?.full_name || ''
+
+    return [tenant.address, wardName, districtName, provinceName]
+      .map((part) => (part ? String(part).trim() : ''))
+      .filter(Boolean)
+      .join(', ')
+  }
+
+  const validateBeforeSubmit = () => {
+    if (!room?.roomId) return 'Chưa chọn phòng nào!'
+    if (!tenant.fullName?.trim()) return 'Vui lòng nhập tên người ở.'
+    if (!tenant.phone?.trim()) return 'Vui lòng nhập số điện thoại.'
+    if (!contract.contracttemplateId) return 'Vui lòng chọn mẫu văn bản hợp đồng.'
+    if (!contract.moveinDate) return 'Vui lòng chọn ngày vào ở.'
+    if (!contract.price) return 'Vui lòng nhập giá thuê.'
+    if (!contract.deposit) return 'Vui lòng nhập tiền cọc.'
+
+    return null
+  }
+
   const handleSubmit = async () => {
-    if (!room?.roomId) {
-      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Chưa chọn phòng nào!' })
+    const validationMessage = validateBeforeSubmit()
+    if (validationMessage) {
+      fireModalAlert({ icon: 'warning', title: 'Thông báo', text: validationMessage })
       return
     }
-
+    let createdTenantId = null
     try {
       setLoading(true)
-      Swal.fire({
+      fireModalAlert({
         title: 'Đang xử lý...',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       })
-
       await handleApplyServices()
       await handleApplyDevice()
-
-      const tenantResponse = await createTenant(room.roomId, tenant)
-
-      // Kiểm tra response hợp lệ từ createTenant
-      if (!tenantResponse?.result?.tenantId) {
-        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể tạo thông tin khách thuê. Vui lòng kiểm tra lại!' })
+      const tenantPayload = {
+        ...tenant,
+        address: buildTenantAddress()
+      }
+      const tenantResponse = await createTenant(room.roomId, tenantPayload)
+      createdTenantId = tenantResponse?.result?.tenantId || null
+      if (!createdTenantId) {
+        fireModalAlert({
+          icon: 'error',
+          title: 'Lỗi',
+          text: 'Không thể tạo thông tin khách thuê. Vui lòng kiểm tra lại!'
+        })
         return
       }
-
-      // Đổi contracttemplateId → contractTemplateId để khớp với backend DTO
       const { contracttemplateId, ...rest } = contract
       const updatedContract = {
         ...rest,
-        tenantId: tenantResponse.result.tenantId,
-        contractTemplateId: contracttemplateId
+        tenantId: createdTenantId,
+        contractTemplateId: contracttemplateId,
+        language: contract.language || 'Tieng Viet'
       }
       await createContract(updatedContract)
-
-      Swal.fire({ icon: 'success', title: 'Thành công', text: 'Tạo hợp đồng thành công!' })
+      fireModalAlert({ icon: 'success', title: 'Thành công', text: 'Tạo hợp đồng thành công!' })
       setTimeout(() => window.location.reload(), 1000)
     } catch (error) {
-      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra trong quá trình xử lý!' })
-      console.error(error)
+      const apiMessage = getErrorMessage(error, 'Có lỗi xảy ra trong quá trình xử lý!')
+      const normalizedMessage = String(apiMessage).toLowerCase()
+      if (createdTenantId && !normalizedMessage.includes('cccd already exists')) {
+        try {
+          await deleteTenantById(createdTenantId)
+        } catch (cleanupError) {
+          console.error('Failed to rollback tenant after contract creation error:', cleanupError)
+        }
+      }
+      const displayMessage = normalizedMessage.includes('cccd already exists')
+        ? 'CCCD đã tồn tại. Có thể khách thuê đã được tạo ở lần trước nhưng bước tạo hợp đồng bị lỗi. Vui lòng kiểm tra lại danh sách khách thuê hoặc đổi CCCD/passport khác.'
+        : apiMessage
+      fireModalAlert({ icon: 'error', title: 'Lỗi', text: displayMessage })
+      console.error('Create contract modal error:', error)
     } finally {
       setLoading(false)
     }
   }
-
   useEffect(() => {
     if (modalOpen && roomId && motelId) {
       fetchDataRoom(roomId)
@@ -351,7 +415,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
       fetchMotelContractTemplate(motelId)
       fetchCity()
     }
-  }, [modalOpen, roomId, motelId])
+  }, [modalOpen, roomId, motelId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Dialog open={modalOpen} onClose={toggleModal} maxWidth="md" fullWidth scroll="paper">
@@ -795,3 +859,4 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
 }
 
 export default ModalCreateContract
+

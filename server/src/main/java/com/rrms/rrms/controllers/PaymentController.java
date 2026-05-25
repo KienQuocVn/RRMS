@@ -24,6 +24,8 @@ import com.rrms.rrms.configs.MoMoEndpoint;
 import com.rrms.rrms.configs.PartnerInfo;
 import com.rrms.rrms.configs.VNPayConfig;
 import com.rrms.rrms.dto.request.StripeRequest;
+import com.rrms.rrms.dto.response.ApiResponse;
+import com.rrms.rrms.dto.response.PaymentMethodResponse;
 import com.rrms.rrms.dto.response.PaymentResponse;
 import com.rrms.rrms.dto.response.StripeResponse;
 import com.rrms.rrms.dto.response.VnPayRedirectResponse;
@@ -311,8 +313,10 @@ public class PaymentController {
 
     @Operation(summary = "Get all payment records")
     @GetMapping({"/list_payment", "/list"})
-    public ResponseEntity<List<com.rrms.rrms.models.Payment>> getAllPayments() {
-        List<com.rrms.rrms.models.Payment> payments = paymentService.getAllPayments();
-        return ResponseEntity.ok(payments);
+    public ApiResponse<List<PaymentMethodResponse>> getAllPayments() {
+        return ApiResponse.<List<PaymentMethodResponse>>builder()
+                .message("Lấy danh sách phương thức thanh toán thành công")
+                .result(paymentService.getAllPayments())
+                .build();
     }
 }

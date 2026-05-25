@@ -13,6 +13,8 @@ import com.rrms.rrms.dto.request.TenantRequest;
 import com.rrms.rrms.dto.response.TenantResponse;
 import com.rrms.rrms.dto.response.TenantSummaryDTO;
 import com.rrms.rrms.enums.ContractStatus;
+import com.rrms.rrms.enums.ErrorCode;
+import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.TenantMapper;
 import com.rrms.rrms.models.Contract;
 import com.rrms.rrms.models.ContractOccupant;
@@ -47,6 +49,8 @@ public class TenantService implements ITenantService {
     public TenantResponse insert(UUID roomId, TenantRequest tenant) {
         // Luôn tạo Tenant mới
         Tenant newt = tenantMapper.tenantRequestToTenant(tenant);
+        sanitizeTenant(newt);
+        validateTenantForInsert(newt);
         Tenant savedTenant = tenantRepository.save(newt);
 
         // Tìm xem phòng đã có hợp đồng đang active không (trường hợp thêm người vào phòng đang thuê)
@@ -68,6 +72,51 @@ public class TenantService implements ITenantService {
 
         // Luôn trả về thông tin khách thuê (để Frontend lấy tenantId tạo hợp đồng nếu phòng đang trống)
         return tenantMapper.toTenantResponse(savedTenant);
+    }
+
+    private void sanitizeTenant(Tenant tenant) {
+        tenant.setFullName(normalizeBlank(tenant.getFullName()));
+        tenant.setPhone(normalizeBlank(tenant.getPhone()));
+        tenant.setCccd(normalizeBlank(tenant.getCccd()));
+        tenant.setEmail(normalizeBlank(tenant.getEmail()));
+        tenant.setAddress(normalizeBlank(tenant.getAddress()));
+        tenant.setJob(normalizeBlank(tenant.getJob()));
+        tenant.setPlaceOfLicense(normalizeBlank(tenant.getPlaceOfLicense()));
+        tenant.setFrontPhoto(normalizeBlank(tenant.getFrontPhoto()));
+        tenant.setBackPhoto(normalizeBlank(tenant.getBackPhoto()));
+        tenant.setRelationship(normalizeBlank(tenant.getRelationship()));
+
+        if (tenant.getRole() == null) {
+            tenant.setRole(Boolean.TRUE);
+        }
+        if (tenant.getType_of_tenant() == null) {
+            tenant.setType_of_tenant(Boolean.FALSE);
+        }
+        if (tenant.getTemporaryResidence() == null) {
+            tenant.setTemporaryResidence(Boolean.FALSE);
+        }
+        if (tenant.getInformationVerify() == null) {
+            tenant.setInformationVerify(Boolean.FALSE);
+        }
+    }
+
+    private void validateTenantForInsert(Tenant tenant) {
+        if (tenant.getFullName() == null) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Tenant full name is required");
+        }
+
+        if (tenant.getCccd() != null && tenantRepository.existsByCccd(tenant.getCccd())) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "CCCD already exists");
+        }
+    }
+
+    private String normalizeBlank(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     @Override

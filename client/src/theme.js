@@ -2,12 +2,12 @@ import { createTheme } from '@mui/material/styles'
 
 // Shared color constants used across components
 export const Colors = {
-  success: '#4caf50',
+  success: '#20a9e7',
   warning: '#ff9800',
   error: '#f44336',
   info: '#2196f3',
   primary: '#20a9e7',
-  grey: '#757575',
+  grey: '#757575'
 }
 
 const theme = createTheme({

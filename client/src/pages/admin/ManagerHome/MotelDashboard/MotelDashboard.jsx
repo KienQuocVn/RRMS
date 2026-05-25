@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { Box, Typography, CircularProgress, Button } from '@mui/material'
-import AddIcon from '@mui/icons-material/Add'
+import { useParams } from 'react-router-dom'
+import { Box, CircularProgress } from '@mui/material'
 import Swal from 'sweetalert2'
 
 import MotelStatsCards from './components/MotelStatsCards'
@@ -38,7 +37,6 @@ import ModalListCar from '../ManagerCar/ModalListCar'
 const MotelDashboard = ({ Motel }) => {
   const { motelId } = useParams()
   const activeMotelId = isValidRouteParam(motelId) ? motelId : Motel?.[0]?.motelId
-  const navigate = useNavigate()
 
   const [rooms, setRooms] = useState([])
   const [loading, setLoading] = useState(true)

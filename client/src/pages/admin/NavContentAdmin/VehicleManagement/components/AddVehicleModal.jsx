@@ -14,7 +14,6 @@ import {
   MenuItem,
   Select,
   FormControl,
-  InputLabel
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'

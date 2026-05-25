@@ -4,10 +4,10 @@ import SearchIcon from '@mui/icons-material/Search'
 import { Colors } from '~/theme'
 
 const FILTER_CONFIGS = [
-  { key: 'ACTIVE', label: 'Trong thoi han hop dong', color: Colors.success },
-  { key: 'ReportEnd', label: 'Dang bao ket thuc', color: Colors.success },
-  { key: 'IATExpire', label: 'Sap den han', color: Colors.warning },
-  { key: 'ENDED', label: 'Da qua han', color: Colors.grey }
+  { key: 'ACTIVE', label: 'Trong thời hạn hợp đồng', color: Colors.info },
+  { key: 'ReportEnd', label: 'Đang báo kết thúc', color: Colors.warning },
+  { key: 'IATExpire', label: 'Sắp đến hạn', color: Colors.error },
+  { key: 'ENDED', label: 'Đã quá hạn', color: Colors.grey }
 ]
 
 const ContractFilters = ({ counts, statusFilters, onStatusFilterChange, searchTerm, onSearchTermChange }) => {
@@ -25,7 +25,7 @@ const ContractFilters = ({ counts, statusFilters, onStatusFilterChange, searchTe
               top: 6,
               right: 6,
               '& .MuiBadge-badge': {
-                bgcolor: Colors.success,
+                bgcolor: Colors.info,
                 color: 'white',
                 minWidth: '16px',
                 height: '16px',

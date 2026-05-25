@@ -141,7 +141,7 @@ const [data, setData] = useState([]); // tên không rõ nghĩa
 | `primaryLight`  | `#e8f8ee` | Background nhẹ                  |
 | `error`         | `#F44336` | Validation error, required (\*) |
 | `warning`       | `#FF9800` | Cảnh báo                        |
-| `success`       | `#4CAF50` | Thành công                      |
+| `success`       | `#20a9e7` | Thành công                      |
 | `textPrimary`   | `#212121` | Text chính                      |
 | `textSecondary` | `#757575` | Text phụ                        |
 | `border`        | `#E0E0E0` | Viền input, card                |

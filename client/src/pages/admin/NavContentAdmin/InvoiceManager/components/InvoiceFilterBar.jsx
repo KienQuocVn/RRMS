@@ -8,7 +8,7 @@ import {
   InputAdornment,
   OutlinedInput,
   Typography,
-  Tooltip,
+  Tooltip
 } from '@mui/material'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import SearchIcon from '@mui/icons-material/Search'
@@ -32,9 +32,8 @@ const StatusCount = ({ count, color }) => (
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
-      lineHeight: 1,
-    }}
-  >
+      lineHeight: 1
+    }}>
     {count}
   </Box>
 )
@@ -47,7 +46,7 @@ const InvoiceFilterBar = ({
   sortValue,
   onSortChange,
   searchText,
-  onSearchChange,
+  onSearchChange
 }) => {
   const paidCount = invoices.filter((inv) => inv.paymentStatus === 'PAID').length
   const unpaidCount = invoices.filter((inv) => inv.paymentStatus !== 'PAID' && inv.paymentStatus !== 'CANCELED').length
@@ -64,9 +63,8 @@ const InvoiceFilterBar = ({
         gap: 1,
         py: 0.5,
         borderTop: '1px solid #f0f0f0',
-        mt: 0.5,
-      }}
-    >
+        mt: 0.5
+      }}>
       {/* Left: Filter checkboxes */}
       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.5 }}>
         {/* Filter icon with total count */}
@@ -77,9 +75,8 @@ const InvoiceFilterBar = ({
               alignItems: 'center',
               gap: 0.3,
               mr: 0.5,
-              cursor: 'default',
-            }}
-          >
+              cursor: 'default'
+            }}>
             <FilterListIcon sx={{ fontSize: '1.3rem', color: '#555' }} />
             <Box
               sx={{
@@ -93,9 +90,8 @@ const InvoiceFilterBar = ({
                 fontWeight: 700,
                 display: 'inline-flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+                justifyContent: 'center'
+              }}>
               {filteredData.length}
             </Box>
           </Box>
@@ -111,8 +107,8 @@ const InvoiceFilterBar = ({
               onChange={handleFilterChange}
               sx={{
                 color: '#aaa',
-                '&.Mui-checked': { color: '#43a047' },
-                p: 0.4,
+                '&.Mui-checked': { color: '#20a9e7' },
+                p: 0.4
               }}
             />
           }
@@ -121,7 +117,7 @@ const InvoiceFilterBar = ({
               <Typography variant="body2" sx={{ fontSize: '0.8rem', color: '#444' }}>
                 Hóa đơn đã thu
               </Typography>
-              <StatusCount count={paidCount} color="#43a047" />
+              <StatusCount count={paidCount} color="#20a9e7" />
             </Box>
           }
           sx={{ mr: 0.5, ml: 0 }}
@@ -138,7 +134,7 @@ const InvoiceFilterBar = ({
               sx={{
                 color: '#aaa',
                 '&.Mui-checked': { color: '#f59e0b' },
-                p: 0.4,
+                p: 0.4
               }}
             />
           }
@@ -162,7 +158,7 @@ const InvoiceFilterBar = ({
               sx={{
                 color: '#aaa',
                 '&.Mui-checked': { color: '#ef5350' },
-                p: 0.4,
+                p: 0.4
               }}
             />
           }
@@ -186,7 +182,7 @@ const InvoiceFilterBar = ({
               sx={{
                 color: '#aaa',
                 '&.Mui-checked': { color: '#9e9e9e' },
-                p: 0.4,
+                p: 0.4
               }}
             />
           }
@@ -221,13 +217,20 @@ const InvoiceFilterBar = ({
             backgroundColor: '#fafafa',
             '& .MuiOutlinedInput-notchedOutline': { borderColor: '#ddd' },
             '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: PRIMARY },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: PRIMARY },
-          }}
-        >
-          <MenuItem value="room-asc" sx={{ fontSize: '0.8rem' }}>Thứ tự phòng tăng dần</MenuItem>
-          <MenuItem value="room-desc" sx={{ fontSize: '0.8rem' }}>Thứ tự phòng giảm dần</MenuItem>
-          <MenuItem value="date-desc" sx={{ fontSize: '0.8rem' }}>Sắp xếp theo ngày giảm dần</MenuItem>
-          <MenuItem value="date-asc" sx={{ fontSize: '0.8rem' }}>Sắp xếp theo ngày tăng dần</MenuItem>
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: PRIMARY }
+          }}>
+          <MenuItem value="room-asc" sx={{ fontSize: '0.8rem' }}>
+            Thứ tự phòng tăng dần
+          </MenuItem>
+          <MenuItem value="room-desc" sx={{ fontSize: '0.8rem' }}>
+            Thứ tự phòng giảm dần
+          </MenuItem>
+          <MenuItem value="date-desc" sx={{ fontSize: '0.8rem' }}>
+            Sắp xếp theo ngày giảm dần
+          </MenuItem>
+          <MenuItem value="date-asc" sx={{ fontSize: '0.8rem' }}>
+            Sắp xếp theo ngày tăng dần
+          </MenuItem>
         </Select>
 
         <OutlinedInput
@@ -248,7 +251,7 @@ const InvoiceFilterBar = ({
             backgroundColor: '#fafafa',
             '& .MuiOutlinedInput-notchedOutline': { borderColor: '#ddd' },
             '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: PRIMARY },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: PRIMARY },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: PRIMARY }
           }}
         />
       </Box>

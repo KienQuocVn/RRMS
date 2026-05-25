@@ -1,27 +1,36 @@
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
-import MicRoundedIcon from '@mui/icons-material/MicRounded'
+import KeyboardArrowRightRoundedIcon from '@mui/icons-material/KeyboardArrowRightRounded'
+import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded'
-import {
-  Box,
-  Button,
-  IconButton,
-  InputAdornment,
-  MenuItem,
-  Paper,
-  Select,
-  Slider,
-  Stack,
-  TextField,
-  Typography
-} from '@mui/material'
+import { Autocomplete, Box, Button, InputAdornment, Stack, TextField, Typography } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useDebounce } from '@uidotdev/usehooks'
-import AudioRecorderModal from '../AI/Audio'
 import { getSearchRooms } from '~/apis/searchAPI'
 import ModalSearch from './ModalSearch'
 import SearchSurfaceCard from './sections/SearchSurfaceCard'
+
+const CONTROL_HEIGHT = 50
+
+const PRICE_OPTIONS = [
+  { value: 'default', label: '' },
+  { value: 'all', label: 'Giá' },
+  { value: 'below-3', label: 'Dưới 3 triệu' },
+  { value: '3-5', label: '3 - 5 triệu' },
+  { value: '5-10', label: '5 - 10 triệu' },
+  { value: '10-15', label: '10 - 15 triệu' },
+  { value: 'above-15', label: 'Trên 15 triệu' }
+]
+
+const AREA_OPTIONS = [
+  { value: 'default', label: '' },
+  { value: 'all', label: 'Diện tích' },
+  { value: 'below-20', label: 'Dưới 20 m²' },
+  { value: '20-30', label: '20 - 30 m²' },
+  { value: '30-50', label: '30 - 50 m²' },
+  { value: '50-70', label: '50 - 70 m²' },
+  { value: 'above-70', label: 'Trên 70 m²' }
+]
 
 const getPricePreset = (minPrice, maxPrice) => {
   if (maxPrice === 3000000) return { value: 'below-3', range: [0, 3] }
@@ -29,7 +38,7 @@ const getPricePreset = (minPrice, maxPrice) => {
   if (minPrice === 5000000 && maxPrice === 10000000) return { value: '5-10', range: [5, 10] }
   if (minPrice === 10000000 && maxPrice === 15000000) return { value: '10-15', range: [10, 15] }
   if (minPrice === 15000000 && maxPrice === null) return { value: 'above-15', range: [15, 50] }
-  return { value: 'all', range: [0, 50] }
+  return { value: 'default', range: [0, 50] }
 }
 
 const getAreaPreset = (minArea, maxArea) => {
@@ -38,18 +47,50 @@ const getAreaPreset = (minArea, maxArea) => {
   if (minArea === 30 && maxArea === 50) return { value: '30-50', range: [30, 50] }
   if (minArea === 50 && maxArea === 70) return { value: '50-70', range: [50, 70] }
   if (minArea === 70 && maxArea === null) return { value: 'above-70', range: [70, 100] }
-  return { value: 'all', range: [0, 100] }
+  return { value: 'default', range: [0, 100] }
 }
 
+const getAutocompleteFieldSx = (highlightBorder = false) => ({
+  '& .MuiAutocomplete-popupIndicator': {
+    color: '#6b7280'
+  },
+  '& .MuiOutlinedInput-root': {
+    height: CONTROL_HEIGHT,
+    borderRadius: 2,
+    backgroundColor: '#fff',
+    paddingRight: '8px !important',
+    '& fieldset': {
+      borderColor: highlightBorder ? '#1590d8' : '#d7e0ea'
+    },
+    '&:hover fieldset': {
+      borderColor: highlightBorder ? '#1590d8' : '#b8c7d8'
+    },
+    '&.Mui-focused fieldset': {
+      borderWidth: 1,
+      borderColor: '#1590d8'
+    }
+  }
+})
+
+const getAutocompleteInputSx = (textColor = '#5f6b7a') => ({
+  '& .MuiOutlinedInput-input': {
+    px: 0.5,
+    fontSize: 16,
+    fontWeight: 600,
+    color: textColor
+  },
+  '& .MuiOutlinedInput-input::placeholder': {
+    color: '#8a94a6',
+    opacity: 1
+  }
+})
+
 function FilterSearch({ setSearchData, setKeyword, keyword, setTotalRooms, initialFilters }) {
-  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
-  const [openAudio, setOpenAudio] = useState(false)
   const [range, setRange] = useState([0, 50])
-  const [selectedValue, setSelectedValue] = useState('all')
+  const [priceInput, setPriceInput] = useState('')
   const [area, setArea] = useState([0, 100])
-  const [selectedValueArea, setSelectedValueArea] = useState('all')
-  const [isRecording, setIsRecording] = useState(false)
+  const [areaInput, setAreaInput] = useState('')
   const [cityValue, setCityValue] = useState('Hồ Chí Minh')
   const [districtValue, setDistrictValue] = useState('')
   const [isFirstSelection, setIsFirstSelection] = useState(true)
@@ -61,11 +102,22 @@ function FilterSearch({ setSearchData, setKeyword, keyword, setTotalRooms, initi
     const nextAreaPreset = getAreaPreset(initialFilters?.minArea, initialFilters?.maxArea)
 
     setRange(nextPricePreset.range)
-    setSelectedValue(nextPricePreset.value)
+    setPriceInput(PRICE_OPTIONS.find((option) => option.value === nextPricePreset.value)?.label || '')
     setArea(nextAreaPreset.range)
-    setSelectedValueArea(nextAreaPreset.value)
+    setAreaInput(AREA_OPTIONS.find((option) => option.value === nextAreaPreset.value)?.label || '')
     setDistrictValue(initialFilters?.district || '')
   }, [initialFilters])
+
+  const keywordOptions = useMemo(() => {
+    const suggestions = [
+      districtValue,
+      cityValue,
+      districtValue && cityValue ? `${districtValue}, ${cityValue}` : '',
+      keyword?.trim()
+    ]
+
+    return [...new Set(suggestions.filter(Boolean))]
+  }, [cityValue, districtValue, keyword])
 
   const requestParams = useMemo(
     () =>
@@ -140,54 +192,12 @@ function FilterSearch({ setSearchData, setKeyword, keyword, setTotalRooms, initi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedKeyword, districtValue])
 
-  const handleSearchChange = (event) => {
-    setKeyword(event.target.value)
-  }
-
   const handleSearchSubmit = () => {
     runSearch()
   }
 
-  const handleAreaChange = (event) => {
-    const nextValue = event.target.value
-    setSelectedValueArea(nextValue)
-
-    switch (nextValue) {
-      case 'below-20':
-        setArea([0, 20])
-        break
-      case '20-30':
-        setArea([20, 30])
-        break
-      case '30-50':
-        setArea([30, 50])
-        break
-      case '50-70':
-        setArea([50, 70])
-        break
-      case 'above-70':
-        setArea([70, 100])
-        break
-      default:
-        setArea([0, 100])
-    }
-  }
-
-  const handleSliderChangeArea = (event, newValue) => {
-    setArea(newValue)
-    const [min, max] = newValue
-
-    if (min === 0 && max === 20) setSelectedValueArea('below-20')
-    else if (min === 20 && max === 30) setSelectedValueArea('20-30')
-    else if (min === 30 && max === 50) setSelectedValueArea('30-50')
-    else if (min === 50 && max === 70) setSelectedValueArea('50-70')
-    else if (min === 70 && max === 100) setSelectedValueArea('above-70')
-    else setSelectedValueArea('all')
-  }
-
-  const handlePriceChange = (event) => {
-    const nextValue = event.target.value
-    setSelectedValue(nextValue)
+  const applyPricePreset = (nextValue) => {
+    setPriceInput(PRICE_OPTIONS.find((option) => option.value === nextValue)?.label || '')
 
     switch (nextValue) {
       case 'below-3':
@@ -210,216 +220,356 @@ function FilterSearch({ setSearchData, setKeyword, keyword, setTotalRooms, initi
     }
   }
 
-  const handleSliderChange = (event, newValue) => {
-    setRange(newValue)
-    const [min, max] = newValue
+  const applyAreaPreset = (nextValue) => {
+    setAreaInput(AREA_OPTIONS.find((option) => option.value === nextValue)?.label || '')
 
-    if (min === 0 && max === 3) setSelectedValue('below-3')
-    else if (min === 3 && max === 5) setSelectedValue('3-5')
-    else if (min === 5 && max === 10) setSelectedValue('5-10')
-    else if (min === 10 && max === 15) setSelectedValue('10-15')
-    else if (min === 15 && max === 50) setSelectedValue('above-15')
-    else setSelectedValue('all')
+    switch (nextValue) {
+      case 'below-20':
+        setArea([0, 20])
+        break
+      case '20-30':
+        setArea([20, 30])
+        break
+      case '30-50':
+        setArea([30, 50])
+        break
+      case '50-70':
+        setArea([50, 70])
+        break
+      case 'above-70':
+        setArea([70, 100])
+        break
+      default:
+        setArea([0, 100])
+    }
+  }
+
+  const applyManualPriceInput = (rawValue) => {
+    const normalizedValue = String(rawValue || '')
+      .trim()
+      .toLowerCase()
+
+    if (!normalizedValue) {
+      setPriceInput('')
+      applyPricePreset('all')
+      return
+    }
+
+    const matchedPreset = PRICE_OPTIONS.find((option) => option.label.toLowerCase() === normalizedValue)
+    if (matchedPreset) {
+      applyPricePreset(matchedPreset.value)
+      return
+    }
+
+    const numbers = normalizedValue
+      .replace(/triệu|trieu|tr|m|vnd|đ/g, ' ')
+      .match(/\d+([.,]\d+)?/g)
+      ?.map((item) => Number(item.replace(',', '.')))
+      .filter((item) => !Number.isNaN(item))
+
+    if (!numbers?.length) {
+      setPriceInput(rawValue)
+      return
+    }
+
+    if (normalizedValue.includes('-') && numbers.length >= 2) {
+      const min = Math.min(numbers[0], numbers[1])
+      const max = Math.max(numbers[0], numbers[1])
+      setRange([min, max])
+      setPriceInput(`${min} - ${max} triệu`)
+      return
+    }
+
+    const firstValue = numbers[0]
+
+    if (normalizedValue.includes('trên') || normalizedValue.includes('tren') || normalizedValue.includes('>')) {
+      setRange([firstValue, 50])
+      setPriceInput(`Trên ${firstValue} triệu`)
+      return
+    }
+
+    if (normalizedValue.includes('dưới') || normalizedValue.includes('duoi') || normalizedValue.includes('<')) {
+      setRange([0, firstValue])
+      setPriceInput(`Dưới ${firstValue} triệu`)
+      return
+    }
+
+    setRange([0, firstValue])
+    setPriceInput(`${firstValue} triệu`)
+  }
+
+  const applyManualAreaInput = (rawValue) => {
+    const normalizedValue = String(rawValue || '')
+      .trim()
+      .toLowerCase()
+
+    if (!normalizedValue) {
+      setAreaInput('')
+      applyAreaPreset('all')
+      return
+    }
+
+    const matchedPreset = AREA_OPTIONS.find((option) => option.label.toLowerCase() === normalizedValue)
+    if (matchedPreset) {
+      applyAreaPreset(matchedPreset.value)
+      return
+    }
+
+    const numbers = normalizedValue
+      .replace(/m²|m2|met vuong|m/g, ' ')
+      .match(/\d+([.,]\d+)?/g)
+      ?.map((item) => Number(item.replace(',', '.')))
+      .filter((item) => !Number.isNaN(item))
+
+    if (!numbers?.length) {
+      setAreaInput(rawValue)
+      return
+    }
+
+    if (normalizedValue.includes('-') && numbers.length >= 2) {
+      const min = Math.min(numbers[0], numbers[1])
+      const max = Math.max(numbers[0], numbers[1])
+      setArea([min, max])
+      setAreaInput(`${min} - ${max} m²`)
+      return
+    }
+
+    const firstValue = numbers[0]
+
+    if (normalizedValue.includes('trên') || normalizedValue.includes('tren') || normalizedValue.includes('>')) {
+      setArea([firstValue, 100])
+      setAreaInput(`Trên ${firstValue} m²`)
+      return
+    }
+
+    if (normalizedValue.includes('dưới') || normalizedValue.includes('duoi') || normalizedValue.includes('<')) {
+      setArea([0, firstValue])
+      setAreaInput(`Dưới ${firstValue} m²`)
+      return
+    }
+
+    setArea([0, firstValue])
+    setAreaInput(`${firstValue} m²`)
   }
 
   return (
     <SearchSurfaceCard
       sx={{
-        p: { xs: 2, md: 2.5 },
-        background: 'linear-gradient(135deg, #0f172a 0%, #1453d1 58%, #35b0ff 100%)',
-        color: '#fff',
-        boxShadow: '0 28px 70px rgba(20, 83, 209, 0.18)'
+        p: 1,
+        borderRadius: 3,
+        backgroundColor: '#eef4fb',
+        border: '1px solid #d9e4f1',
+        boxShadow: '0 10px 24px rgba(15, 23, 42, 0.06)'
       }}
     >
-      <Stack spacing={2.2}>
-        <Stack spacing={0.8}>
-          <Typography sx={{ fontSize: { xs: 26, md: 34 }, fontWeight: 900, lineHeight: 1.15 }}>
-            {t('searchPage.filter.title')}
-          </Typography>
-          <Typography sx={{ fontSize: 15, color: 'rgba(255,255,255,0.84)', maxWidth: 760 }}>{t('searchPage.filter.description')}</Typography>
-        </Stack>
-
-        <Box
+      <Stack direction={{ xs: 'column', lg: 'row' }} spacing={1} alignItems="stretch" sx={{ '& > *': { minWidth: 0 } }}>
+        <Button
+          variant="outlined"
+          onClick={() => setOpen(true)}
+          endIcon={<KeyboardArrowRightRoundedIcon sx={{ color: '#6b7280' }} />}
           sx={{
-            p: { xs: 1.5, md: 2 },
-            borderRadius: 3,
-            backgroundColor: 'rgba(255,255,255,0.12)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            backdropFilter: 'blur(8px)'
+            minWidth: { xs: '100%', lg: 172 },
+            height: CONTROL_HEIGHT,
+            px: 1.4,
+            justifyContent: 'space-between',
+            borderRadius: 2,
+            textTransform: 'none',
+            borderColor: '#d7e0ea',
+            backgroundColor: '#fff',
+            color: '#111827',
+            '&:hover': {
+              borderColor: '#b8c7d8',
+              backgroundColor: '#fff'
+            }
           }}
         >
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', lg: '160px 220px minmax(0, 1fr) 200px 200px 120px' },
-              gap: 1.5
-            }}
-          >
-            <Button
-              variant="contained"
-              startIcon={<TuneRoundedIcon />}
-              endIcon={<KeyboardArrowDownRoundedIcon />}
-              onClick={() => setOpen(true)}
-              sx={{
-                height: 56,
-                borderRadius: 2.5,
-                fontWeight: 800,
-                color: '#0f172a',
-                backgroundColor: '#fff',
-                '&:hover': {
-                  backgroundColor: '#f8fafc'
-                }
-              }}
-            >
-              {t('searchPage.filter.button')}
-            </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+            <PlaceOutlinedIcon sx={{ color: '#111827', fontSize: 20, flexShrink: 0 }} />
+            <Box sx={{ minWidth: 0, textAlign: 'left' }}>
+              <Typography noWrap sx={{ fontSize: 15, fontWeight: 700, lineHeight: 1.15, color: '#111827' }}>
+                {cityValue || 'Chọn thành phố'}
+              </Typography>
+              <Typography noWrap sx={{ mt: 0.2, fontSize: 12, color: '#111827' }}>
+                {districtValue || 'Toàn khu vực'}
+              </Typography>
+            </Box>
+          </Box>
+        </Button>
 
-            <Button
-              variant="outlined"
-              onClick={() => setOpen(true)}
-              sx={{
-                height: 56,
-                justifyContent: 'space-between',
-                borderRadius: 2.5,
-                px: 1.5,
-                color: '#fff',
-                borderColor: 'rgba(255,255,255,0.24)',
-                '&:hover': {
-                  borderColor: '#fff',
-                  backgroundColor: 'rgba(255,255,255,0.08)'
-                }
-              }}
-            >
-              <Box sx={{ textAlign: 'left' }}>
-                <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,0.72)' }}>{t('searchPage.filter.areaLabel')}</Typography>
-                <Typography sx={{ fontSize: 14, fontWeight: 700 }}>
-                  {cityValue} {districtValue ? `- ${districtValue}` : ''}
-                </Typography>
-              </Box>
-              <KeyboardArrowDownRoundedIcon />
-            </Button>
-
+        <Autocomplete
+          freeSolo
+          fullWidth
+          value={null}
+          inputValue={keyword}
+          options={keywordOptions}
+          forcePopupIcon
+          popupIcon={<KeyboardArrowDownRoundedIcon sx={{ color: '#6b7280' }} />}
+          onInputChange={(_, newInputValue) => {
+            setKeyword(newInputValue)
+          }}
+          onChange={(_, newValue) => {
+            setKeyword(typeof newValue === 'string' ? newValue : '')
+          }}
+          sx={{
+            flex: 1,
+            ...getAutocompleteFieldSx(true)
+          }}
+          renderInput={(params) => (
             <TextField
-              value={keyword}
-              onChange={handleSearchChange}
-              placeholder={t('searchPage.filter.keywordPlaceholder')}
+              {...params}
+              placeholder="Nhập nơi"
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   event.preventDefault()
                   handleSearchSubmit()
                 }
               }}
-              fullWidth
               InputProps={{
+                ...params.InputProps,
                 startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchRoundedIcon sx={{ color: '#667085' }} />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setOpenAudio(true)} sx={{ color: '#667085' }}>
-                      <MicRoundedIcon />
-                    </IconButton>
-                  </InputAdornment>
+                  <>
+                    <InputAdornment position="start">
+                      <SearchRoundedIcon sx={{ color: '#1590d8' }} />
+                    </InputAdornment>
+                    {params.InputProps.startAdornment}
+                  </>
                 )
               }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  height: 56,
-                  borderRadius: 2.5,
-                  backgroundColor: '#fff'
-                }
-              }}
+              sx={getAutocompleteInputSx('#111827')}
             />
+          )}
+        />
 
-            <Paper
-              variant="outlined"
-              sx={{
-                px: 1.5,
-                py: 1.1,
-                borderRadius: 2.5,
-                borderColor: 'rgba(255,255,255,0.16)',
-                backgroundColor: '#fff'
-              }}
-            >
-              <Typography sx={{ fontSize: 12, color: '#667085' }}>{t('searchPage.filter.areaTitle')}</Typography>
-              <Select
-                variant="standard"
-                disableUnderline
-                fullWidth
-                value={selectedValueArea}
-                onChange={handleAreaChange}
-                sx={{ mt: 0.3, fontWeight: 700 }}
-              >
-                <MenuItem value="below-20">Dưới 20 m²</MenuItem>
-                <MenuItem value="20-30">20 - 30 m²</MenuItem>
-                <MenuItem value="30-50">30 - 50 m²</MenuItem>
-                <MenuItem value="50-70">50 - 70 m²</MenuItem>
-                <MenuItem value="above-70">Trên 70 m²</MenuItem>
-                <MenuItem value="all">Tất cả diện tích</MenuItem>
-              </Select>
-              <Slider value={area} onChange={handleSliderChangeArea} max={100} size="small" sx={{ mt: 1 }} />
-            </Paper>
-
-            <Paper
-              variant="outlined"
-              sx={{
-                px: 1.5,
-                py: 1.1,
-                borderRadius: 2.5,
-                borderColor: 'rgba(255,255,255,0.16)',
-                backgroundColor: '#fff'
-              }}
-            >
-              <Typography sx={{ fontSize: 12, color: '#667085' }}>{t('searchPage.filter.priceTitle')}</Typography>
-              <Select
-                variant="standard"
-                disableUnderline
-                fullWidth
-                value={selectedValue}
-                onChange={handlePriceChange}
-                sx={{ mt: 0.3, fontWeight: 700 }}
-              >
-                <MenuItem value="below-3">Dưới 3 triệu</MenuItem>
-                <MenuItem value="3-5">3 - 5 triệu</MenuItem>
-                <MenuItem value="5-10">5 - 10 triệu</MenuItem>
-                <MenuItem value="10-15">10 - 15 triệu</MenuItem>
-                <MenuItem value="above-15">Trên 15 triệu</MenuItem>
-                <MenuItem value="all">Tất cả mức giá</MenuItem>
-              </Select>
-              <Slider value={range} onChange={handleSliderChange} max={50} size="small" sx={{ mt: 1 }} />
-            </Paper>
-
-            <Button
-              variant="contained"
-              onClick={handleSearchSubmit}
-              sx={{
-                height: 56,
-                borderRadius: 2.5,
-                fontWeight: 800,
-                background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                color: '#111827',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+        <Autocomplete
+          freeSolo
+          value={null}
+          inputValue={priceInput}
+          options={PRICE_OPTIONS.map((option) => option.label)}
+          forcePopupIcon
+          popupIcon={<KeyboardArrowDownRoundedIcon sx={{ color: '#6b7280' }} />}
+          onInputChange={(_, newInputValue) => {
+            setPriceInput(newInputValue)
+          }}
+          onChange={(_, newValue) => {
+            if (typeof newValue === 'string') {
+              const matchedPriceOption = PRICE_OPTIONS.find((option) => option.label === newValue)
+              if (matchedPriceOption) {
+                applyPricePreset(matchedPriceOption.value)
+                return
+              }
+              applyManualPriceInput(newValue)
+            }
+          }}
+          sx={{
+            width: { xs: '100%', sm: 152 },
+            ...getAutocompleteFieldSx()
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              placeholder="Giá"
+              onBlur={() => applyManualPriceInput(priceInput)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  applyManualPriceInput(priceInput)
+                  handleSearchSubmit()
                 }
               }}
-            >
-              {t('searchPage.filter.searchButton')}
-            </Button>
-          </Box>
-        </Box>
-
-        <ModalSearch filterSearch={filterSearchFunc} open={open} handleClose={() => setOpen(false)} />
-        <AudioRecorderModal
-          open={openAudio}
-          setRecordedText={setKeyword}
-          handleClose={() => setOpenAudio(false)}
-          setIsRecording={setIsRecording}
-          isRecording={isRecording}
-          handleSearch={handleSearchSubmit}
+              sx={getAutocompleteInputSx()}
+            />
+          )}
         />
+
+        <Autocomplete
+          freeSolo
+          value={null}
+          inputValue={areaInput}
+          options={AREA_OPTIONS.map((option) => option.label)}
+          forcePopupIcon
+          popupIcon={<KeyboardArrowDownRoundedIcon sx={{ color: '#6b7280' }} />}
+          onInputChange={(_, newInputValue) => {
+            setAreaInput(newInputValue)
+          }}
+          onChange={(_, newValue) => {
+            if (typeof newValue === 'string') {
+              const matchedAreaOption = AREA_OPTIONS.find((option) => option.label === newValue)
+              if (matchedAreaOption) {
+                applyAreaPreset(matchedAreaOption.value)
+                return
+              }
+              applyManualAreaInput(newValue)
+            }
+          }}
+          sx={{
+            width: { xs: '100%', sm: 152 },
+            ...getAutocompleteFieldSx()
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              placeholder="Diện tích"
+              onBlur={() => applyManualAreaInput(areaInput)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  applyManualAreaInput(areaInput)
+                  handleSearchSubmit()
+                }
+              }}
+              sx={getAutocompleteInputSx()}
+            />
+          )}
+        />
+
+        <Button
+          variant="outlined"
+          startIcon={<TuneRoundedIcon sx={{ fontSize: 18 }} />}
+          onClick={() => setOpen(true)}
+          sx={{
+            height: CONTROL_HEIGHT,
+            minWidth: { xs: '100%', sm: 126 },
+            borderRadius: 2,
+            textTransform: 'none',
+            fontSize: 16,
+            fontWeight: 700,
+            color: '#111827',
+            borderColor: '#d7e0ea',
+            backgroundColor: '#fff',
+            '&:hover': {
+              borderColor: '#b8c7d8',
+              backgroundColor: '#fff'
+            }
+          }}
+        >
+          ... Thêm
+        </Button>
+
+        <Button
+          variant="contained"
+          startIcon={<SearchRoundedIcon />}
+          onClick={handleSearchSubmit}
+          sx={{
+            height: CONTROL_HEIGHT,
+            minWidth: { xs: '100%', sm: 136 },
+            borderRadius: 2,
+            textTransform: 'none',
+            fontSize: 16,
+            fontWeight: 700,
+            backgroundColor: '#ff9800',
+            color: '#fff',
+            boxShadow: 'none',
+            '&:hover': {
+              backgroundColor: '#f08a00',
+              boxShadow: 'none'
+            }
+          }}
+        >
+          Tìm kiếm
+        </Button>
       </Stack>
+
+      <ModalSearch filterSearch={filterSearchFunc} open={open} handleClose={() => setOpen(false)} />
     </SearchSurfaceCard>
   )
 }

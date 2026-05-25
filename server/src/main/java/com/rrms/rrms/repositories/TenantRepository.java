@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.rrms.rrms.models.Tenant;
 
-public interface TenantRepository extends JpaRepository<Tenant, UUID> {}
+public interface TenantRepository extends JpaRepository<Tenant, UUID> {
+    boolean existsByCccd(String cccd);
+}

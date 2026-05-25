@@ -42,7 +42,7 @@ public class MailService implements IMailService {
                 + "<html>"
                 + "<head><style>"
                 + ".email-container { font-family: Arial, sans-serif; color: #333333; }"
-                + ".header { font-size: 24px; font-weight: bold; color: #4CAF50; text-align: center; }"
+                + ".header { font-size: 24px; font-weight: bold; color: #20a9e7; text-align: center; }"
                 + ".content { font-size: 16px; line-height: 1.6; margin-top: 20px; }"
                 + ".image { text-align: center; margin-top: 20px; }"
                 + ".code { font-size: 24px; font-weight: bold; }"

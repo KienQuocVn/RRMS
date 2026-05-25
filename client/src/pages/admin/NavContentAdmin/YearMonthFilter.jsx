@@ -18,8 +18,6 @@ const months = [
   { label: 'T.12', month: 12 },
 ]
 
-const PRIMARY = '#20a9e7'
-
 const MonthFilterContainer = styled('div')({
   backgroundColor: '#f0f0f0',
   borderRadius: '10px',

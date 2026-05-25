@@ -1,6 +1,12 @@
 import dayjs from 'dayjs' // Sử dụng thư viện dayjs để định dạng ngày
 import httpClient from './httpClient'
-import { extractEntityId, normalizeContractResponse, toBackendContractStatus } from '~/utils/apiAdapters'
+import {
+  extractEntityId,
+  normalizeContractPayload,
+  normalizeContractResponse,
+  normalizeTenantPayload,
+  toBackendContractStatus
+} from '~/utils/apiAdapters'
 
 // muc mau hop dong
 // Tạo mới một Contract Template
@@ -121,7 +127,7 @@ export const deleteContractByRoomId = async (id) => {
 
 // Tạo hợp đồng
 export const createContract = async (contractData) => {
-  const response = await httpClient.post('/contracts', contractData)
+  const response = await httpClient.post('/contracts', normalizeContractPayload(contractData))
   return normalizeContractResponse(response.data)
 }
 
@@ -234,6 +240,6 @@ export const getAllContractDevices = async () => {
 //-------------------------insert tenant
 
 export const createTenant = async (roomId,data) => {
-  const response = await httpClient.post(`/tenant/insert/${roomId}`, data)
+  const response = await httpClient.post(`/tenant/insert/${roomId}`, normalizeTenantPayload(data))
   return response.data
 }

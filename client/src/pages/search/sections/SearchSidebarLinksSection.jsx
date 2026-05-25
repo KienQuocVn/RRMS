@@ -24,7 +24,8 @@ function SearchSidebarLinksSection({ title, description, items, variant = 'chip'
                     minHeight: 42,
                     borderRadius: 2.5,
                     textTransform: 'none',
-                    fontWeight: 700
+                    fontWeight: 700,
+                    color: '#344054'
                   }}
                 >
                   {item}
@@ -39,6 +40,7 @@ function SearchSidebarLinksSection({ title, description, items, variant = 'chip'
                 key={item}
                 variant="outlined"
                 sx={{
+                  color: '#344054',
                   borderRadius: 999,
                   textTransform: 'none',
                   fontWeight: 700

@@ -311,24 +311,6 @@ public class AuthenController {
                     .build();
         }
 
-        // // Kiá»ƒm tra sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i chÆ°a
-        // if (accountRepository.existsByPhone(request.getPhone())) {
-        // return ApiResponse.<Boolean>builder()
-        // .code(HttpStatus.BAD_REQUEST.value())
-        // .message("Sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ tá»“n táº¡i!")
-        // .result(false)
-        // .build();
-        // }
-
-        // Kiá»ƒm tra email Ä‘Ã£ tá»“n táº¡i chÆ°a
-        // if (accountRepository.existsAccountByEmail(request.getEmail())) {
-        // return ApiResponse.<Boolean>builder()
-        // .code(HttpStatus.BAD_REQUEST.value())
-        // .message("Email Ä‘Ã£ tá»“n táº¡i!")
-        // .result(false)
-        // .build();
-        // }
-
         return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
                 .message("Thông tin hợp lệ")

@@ -127,6 +127,13 @@ const toNumberOrUndefined = (value) => {
   return Number.isNaN(parsed) ? undefined : parsed
 }
 
+const trimToNull = (value) => {
+  if (value === null || value === undefined) return null
+
+  const normalized = String(value).trim()
+  return normalized === '' ? null : normalized
+}
+
 const ROOM_STATUS_MAP = {
   available: 'AVAILABLE',
   available_room: 'AVAILABLE',
@@ -164,23 +171,56 @@ export const normalizeRoomPayload = (room = {}) => {
 
 export const normalizeTenantPayload = (tenant = {}) => {
   return {
-    avatar: tenant.avatar ?? '',
-    fullName: tenant.fullName ?? tenant.fullname ?? '',
-    phone: tenant.phone ?? '',
-    cccd: tenant.cccd ?? '',
-    email: tenant.email ?? '',
+    avatar: trimToNull(tenant.avatar),
+    fullName: trimToNull(tenant.fullName ?? tenant.fullname) ?? '',
+    phone: trimToNull(tenant.phone),
+    cccd: trimToNull(tenant.cccd),
+    email: trimToNull(tenant.email),
     birthday: tenant.birthday || null,
     gender: tenant.gender || null,
-    address: tenant.address ?? '',
-    job: tenant.job ?? '',
+    address: trimToNull(tenant.address),
+    job: trimToNull(tenant.job),
     licenseDate: tenant.licenseDate || null,
-    placeOfLicense: tenant.placeOfLicense ?? '',
-    frontPhoto: tenant.frontPhoto ?? '',
-    backPhoto: tenant.backPhoto ?? '',
+    placeOfLicense: trimToNull(tenant.placeOfLicense),
+    frontPhoto: trimToNull(tenant.frontPhoto),
+    backPhoto: trimToNull(tenant.backPhoto),
     role: tenant.role ?? false,
-    relationship: tenant.relationship ?? '',
+    relationship: trimToNull(tenant.relationship),
     typeOfTenant: tenant.typeOfTenant ?? tenant.type_of_tenant ?? false,
     temporaryResidence: tenant.temporaryResidence ?? false,
     informationVerify: tenant.informationVerify ?? false
+  }
+}
+
+export const normalizeContractPayload = (contract = {}) => {
+  const normalizedRoomId = extractEntityId(contract.roomId, ['roomId', 'id'])
+  const normalizedTenantId = extractEntityId(contract.tenantId, ['tenantId', 'id'])
+  const normalizedContractTemplateId = extractEntityId(
+    contract.contractTemplateId ?? contract.contracttemplateId,
+    ['contractTemplateId', 'contracttemplateId', 'id']
+  )
+  const normalizedBrokerId = extractEntityId(contract.brokerId, ['brokerId', 'id'])
+
+  return {
+    roomId: normalizedRoomId,
+    tenantId: normalizedTenantId,
+    username: trimToNull(contract.username),
+    contractTemplateId: normalizedContractTemplateId,
+    brokerId: normalizedBrokerId,
+    moveInDate: contract.moveInDate ?? contract.moveinDate ?? null,
+    leaseTerm: trimToNull(contract.leaseTerm),
+    closeContract: contract.closeContract ?? null,
+    description: trimToNull(contract.description),
+    debt: toNumberOrUndefined(contract.debt) ?? 0,
+    price: toNumberOrUndefined(contract.price),
+    actualPrice: toNumberOrUndefined(contract.actualPrice),
+    deposit: toNumberOrUndefined(contract.deposit),
+    collectionCycle: trimToNull(contract.collectionCycle ?? contract.collectioncycle) ?? '1',
+    createDate: contract.createDate ?? contract.createdate ?? new Date().toISOString().slice(0, 10),
+    signContract: trimToNull(contract.signContract ?? contract.signcontract) ?? 'Khach chua ky',
+    language: trimToNull(contract.language) ?? 'Tieng Viet',
+    countTenant: toNumberOrUndefined(contract.countTenant) ?? 1,
+    status: toBackendContractStatus(contract.status ?? 'ACTIVE'),
+    reportCloseContract: contract.reportCloseContract ?? contract.reportCloseDate ?? null
   }
 }

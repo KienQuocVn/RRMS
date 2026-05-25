@@ -60,9 +60,7 @@ export default function RoomDepositScreen() {
       />
       <Text style={[styles.alertText, { color: Colors.success }]}>
         Thống kê danh sách phòng hiện tại{" "}
-        <Text style={{ fontWeight: "bold" }}>
-          Đã thu tiền cọc
-        </Text>
+        <Text style={{ fontWeight: "bold" }}>Đã thu tiền cọc</Text>
       </Text>
     </View>
   );
@@ -168,13 +166,13 @@ export default function RoomDepositScreen() {
           ]}
         >
           <Text style={styles.moneyLabel}>Đã thu</Text>
-          <Text style={[styles.moneyValue, { color: "#4CAF50" }]}>3.000.000 đ</Text>
+          <Text style={[styles.moneyValue, { color: "#20a9e7" }]}>
+            3.000.000 đ
+          </Text>
         </View>
         <View style={[styles.moneyCol, { backgroundColor: "#FFF3E0" }]}>
           <Text style={styles.moneyLabel}>Còn thiếu</Text>
-          <Text style={[styles.moneyValue, { color: "#F57C00" }]}>
-            0 đ
-          </Text>
+          <Text style={[styles.moneyValue, { color: "#F57C00" }]}>0 đ</Text>
         </View>
       </View>
     </View>
@@ -262,7 +260,7 @@ const styles = StyleSheet.create({
     marginRight: Spacing.sm,
   },
   dateBadgeTop: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#20a9e7",
     paddingVertical: 4,
     alignItems: "center",
   },

@@ -17,11 +17,9 @@ import {
   TableRow,
   Typography
 } from '@mui/material'
-import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined'
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined'
-import MenuIcon from '@mui/icons-material/Menu'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline'
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined'
@@ -29,24 +27,24 @@ import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import { Colors } from '~/theme'
 
 const COLLECTION_CYCLE_LABELS = {
-  '0': 'Tuy chinh',
-  '1': '1 thang',
-  '2': '2 thang',
-  '3': '3 thang',
-  '4': '4 thang',
-  '5': '5 thang',
-  '6': '6 thang',
-  '7': '7 thang',
-  '8': '8 thang',
-  '9': '9 thang',
-  '10': '10 thang',
-  '11': '11 thang',
-  '12': '1 nam',
-  '18': '1 nam 6 thang',
-  '24': '2 nam',
-  '32': '3 nam',
-  '48': '4 nam',
-  '60': '5 nam'
+  0: 'Tuy chinh',
+  1: '1 thang',
+  2: '2 thang',
+  3: '3 thang',
+  4: '4 thang',
+  5: '5 thang',
+  6: '6 thang',
+  7: '7 thang',
+  8: '8 thang',
+  9: '9 thang',
+  10: '10 thang',
+  11: '11 thang',
+  12: '1 nam',
+  18: '1 nam 6 thang',
+  24: '2 nam',
+  32: '3 nam',
+  48: '4 nam',
+  60: '5 nam'
 }
 
 const formatCurrency = (value, fallback = '0 d') => {
@@ -71,22 +69,32 @@ const formatDate = (value) => {
 const getStatusChip = (status) => {
   switch (status) {
     case 'ACTIVE':
-      return <Chip label="Trong thoi han HD" size="small" sx={{ bgcolor: Colors.success, color: '#fff', fontWeight: 700 }} />
+      return (
+        <Chip
+          label="Trong thời hạn hợp đồng"
+          size="small"
+          sx={{ bgcolor: Colors.info, color: '#fff', fontWeight: 700 }}
+        />
+      )
     case 'ReportEnd':
-      return <Chip label="Dang bao ket thuc" size="small" sx={{ bgcolor: Colors.warning, color: '#fff', fontWeight: 700 }} />
+      return (
+        <Chip label="Đang báo kết thúc" size="small" sx={{ bgcolor: Colors.warning, color: '#fff', fontWeight: 700 }} />
+      )
     case 'IATExpire':
-      return <Chip label="Sap den han" size="small" sx={{ bgcolor: '#fb8c00', color: '#fff', fontWeight: 700 }} />
+      return <Chip label="Sắp đến hạn" size="small" sx={{ bgcolor: Colors.error, color: '#fff', fontWeight: 700 }} />
     case 'Stake':
-      return <Chip label="Dang coc" size="small" sx={{ bgcolor: Colors.info, color: '#fff', fontWeight: 700 }} />
+      return <Chip label="Đang cọc" size="small" sx={{ bgcolor: Colors.info, color: '#fff', fontWeight: 700 }} />
     case 'ENDED':
-      return <Chip label="Da qua han" size="small" sx={{ bgcolor: Colors.grey, color: '#fff', fontWeight: 700 }} />
+      return <Chip label="Đã quá hạn" size="small" sx={{ bgcolor: Colors.grey, color: '#fff', fontWeight: 700 }} />
     default:
-      return <Chip label={status || 'Khong xac dinh'} size="small" variant="outlined" />
+      return <Chip label={status || 'Không xác định'} size="small" variant="outlined" />
   }
 }
 
 const getSignatureChip = (signContract) => {
-  const normalizedValue = String(signContract || '').trim().toLowerCase()
+  const normalizedValue = String(signContract || '')
+    .trim()
+    .toLowerCase()
   const isSigned = normalizedValue.includes('da ky')
 
   return (
@@ -130,16 +138,32 @@ const ContractListTable = ({ contracts, onActionClick }) => {
   const [selectedContract, setSelectedContract] = useState(null)
 
   const actionItems = [
-    { action: 'view', label: 'Xem van ban hop dong', icon: <DescriptionOutlinedIcon sx={{ fontSize: 20, color: '#1565c0' }} /> },
+    {
+      action: 'view',
+      label: 'Xem văn bản hợp đồng',
+      icon: <DescriptionOutlinedIcon sx={{ fontSize: 20, color: '#1565c0' }} />
+    },
     {
       action: 'assets',
-      label: 'Thiet lap tai san',
+      label: 'Thiết lập tài sản',
       icon: <Inventory2OutlinedIcon sx={{ fontSize: 20, color: '#6d4c41' }} />,
       modalProps: { 'data-bs-toggle': 'modal', 'data-bs-target': '#assetSelect' }
     },
-    { action: 'print', label: 'In van ban hop dong', icon: <PrintOutlinedIcon sx={{ fontSize: 20, color: '#2e7d32' }} /> },
-    { action: 'share', label: 'Chia se van ban hop dong', icon: <ShareOutlinedIcon sx={{ fontSize: 20, color: '#7b1fa2' }} /> },
-    { action: 'shareCode', label: 'Chia se ma ket noi', icon: <LinkOutlinedIcon sx={{ fontSize: 20, color: '#ef6c00' }} /> }
+    {
+      action: 'print',
+      label: 'In văn bản hợp đồng',
+      icon: <PrintOutlinedIcon sx={{ fontSize: 20, color: '#2e7d32' }} />
+    },
+    {
+      action: 'share',
+      label: 'Chia sẻ văn bản hợp đồng',
+      icon: <ShareOutlinedIcon sx={{ fontSize: 20, color: '#7b1fa2' }} />
+    },
+    {
+      action: 'shareCode',
+      label: 'Chia sẻ mã kết nối',
+      icon: <LinkOutlinedIcon sx={{ fontSize: 20, color: '#ef6c00' }} />
+    }
   ]
 
   const handleOpenMenu = (event, contract) => {
@@ -162,19 +186,22 @@ const ContractListTable = ({ contracts, onActionClick }) => {
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow>
-              <TableCell sx={{ bgcolor: '#fff', width: 68 }}></TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Phong & nguoi dai dien</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Gia thue</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Muc tien coc</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Chu ky thu</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Mau hop dong</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Ngay lap</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Ngay vao o</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Thoi han hop dong</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Chung tu</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Ky hop dong</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Ngon ngu</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', textAlign: 'center' }}>Tinh trang</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>
+                Phòng & người đại diện
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Giá thuê</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Mức tiền cọc</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Chu kỳ thu</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Mẫu hợp đồng</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Ngày lập</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Ngày vào ở</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Thời hạn hợp đồng</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Hình ảnh chứng từ</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Ký hợp đồng</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Ngôn ngữ</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', textAlign: 'center' }}>
+                Tình trạng
+              </TableCell>
               <TableCell sx={{ bgcolor: '#fff', width: 64 }}></TableCell>
             </TableRow>
           </TableHead>
@@ -190,18 +217,10 @@ const ContractListTable = ({ contracts, onActionClick }) => {
             ) : (
               contracts.map((contract, index) => (
                 <TableRow hover key={contract.contractId} sx={{ bgcolor: index % 2 === 0 ? '#fff5f2' : '#ffffff' }}>
-                  <TableCell sx={{ borderRight: '1px solid #eeeeee' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <MenuIcon sx={{ color: 'action.active', fontSize: 20 }} />
-                      <Avatar sx={{ width: 24, height: 24, bgcolor: contract.status === 'ACTIVE' ? Colors.success : Colors.warning }}>
-                        <ArticleOutlinedIcon sx={{ fontSize: 15 }} />
-                      </Avatar>
-                    </Box>
-                  </TableCell>
                   <TableCell sx={{ borderRight: '1px solid #eeeeee', minWidth: 260 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Box sx={{ position: 'relative', flexShrink: 0 }}>
-                        <Avatar sx={{ width: 36, height: 36, bgcolor: Colors.success }}>
+                        <Avatar sx={{ width: 36, height: 36, bgcolor: Colors.info }}>
                           <DescriptionOutlinedIcon sx={{ fontSize: 20 }} />
                         </Avatar>
                         <Box
@@ -254,10 +273,16 @@ const ContractListTable = ({ contracts, onActionClick }) => {
                     )}
                   </TableCell>
                   <TableCell sx={{ borderRight: '1px solid #eeeeee', minWidth: 120 }}>
-                    <Typography variant="caption">{COLLECTION_CYCLE_LABELS[String(contract.collectioncycle ?? '')] || 'Khong xac dinh'}</Typography>
+                    <Typography variant="caption">
+                      {COLLECTION_CYCLE_LABELS[String(contract.collectioncycle ?? '')] || 'Khong xac dinh'}
+                    </Typography>
                   </TableCell>
                   <TableCell sx={{ borderRight: '1px solid #eeeeee', minWidth: 160 }}>
-                    <Typography variant="caption">{contract.contractTemplate?.templatename || contract.contracttemplate?.templatename || 'Chua chon'}</Typography>
+                    <Typography variant="caption">
+                      {contract.contractTemplate?.templatename ||
+                        contract.contracttemplate?.templatename ||
+                        'Chua chon'}
+                    </Typography>
                   </TableCell>
                   <TableCell sx={{ borderRight: '1px solid #eeeeee', minWidth: 115 }}>
                     <Typography variant="caption">{formatDate(contract.createdate)}</Typography>

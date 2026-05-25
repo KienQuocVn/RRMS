@@ -42,3 +42,17 @@ MapStruct mappers can disappear again after a restart or after cleaning the proj
 This repository now includes IntelliJ's `.idea/compiler.xml` with annotation processing enabled.
 If you already opened the project before that file was added, re-import the Maven project or restart
 the IDE once so IntelliJ picks up the new compiler setting.
+
+## If you open the monorepo from the workspace root
+
+The backend Maven project lives in `server/pom.xml`, not at the repository root.
+
+If IntelliJ opens `D:\RRMS` as a plain project without importing `server/pom.xml`, Spring Boot can
+start from stale classes and miss generated mapper beans such as `AccountMapperImpl`.
+
+This repository now includes root-level IntelliJ metadata that points the workspace to
+`server/pom.xml`, but if your IDE cached an older project model you should:
+
+1. Re-import the Maven project from `server/pom.xml`.
+2. Restart IntelliJ once.
+3. Run the backend again after Maven finishes compiling generated sources.

@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
   },
   verifiedText: {
     fontSize: FontSizes.xs,
-    color: "#4CAF50",
+    color: "#20a9e7",
     fontWeight: "600",
   },
   profileDivider: {

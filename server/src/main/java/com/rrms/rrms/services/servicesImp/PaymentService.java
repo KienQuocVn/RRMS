@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
+import com.rrms.rrms.dto.response.PaymentMethodResponse;
 import com.rrms.rrms.repositories.PaymentRepository;
 import com.rrms.rrms.services.IPaymentService;
 
@@ -88,7 +89,7 @@ public class PaymentService implements IPaymentService {
     }
 
     @Override
-    public List<com.rrms.rrms.models.Payment> getAllPayments() {
-        return paymentRepository.findAll();
+    public List<PaymentMethodResponse> getAllPayments() {
+        return paymentRepository.findAllPaymentMethods();
     }
 }

@@ -458,11 +458,11 @@ const AddTenantModal = ({ open, onClose, reloadData, avatar, editId }) => {
               backgroundColor: '#1e90ff',
               color: 'white',
               borderRadius: '50%',
-              '&:hover': { backgroundColor: '#43a047' }
+              '&:hover': { backgroundColor: '#20a9e7' }
             }}>
             <AddIcon />
           </IconButton>
-          Thêm thông tin khách thuê cho phòng
+          Thêm thông tin khách thuê cho phòng1
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6} style={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
@@ -517,11 +517,7 @@ const AddTenantModal = ({ open, onClose, reloadData, avatar, editId }) => {
                                                 <polyline points="20 6 9 17 4 12"></polyline>
                                               </svg>
                                             ) : (
-                                              <img
-                                                width="30px"
-                                                src="/room.png"
-                                                alt=""
-                                              />
+                                              <img width="30px" src="/room.png" alt="" />
                                             )}
                                           </div>
                                           <div
@@ -625,11 +621,7 @@ const AddTenantModal = ({ open, onClose, reloadData, avatar, editId }) => {
                                                   <polyline points="20 6 9 17 4 12"></polyline>
                                                 </svg>
                                               ) : (
-                                                <img
-                                                  width="30px"
-                                                  src="/room.png"
-                                                  alt=""
-                                                />
+                                                <img width="30px" src="/room.png" alt="" />
                                               )}
                                             </div>
                                             <div

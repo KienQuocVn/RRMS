@@ -32,8 +32,8 @@ export default function AppPromo() {
                 color="primary"
                 startIcon={<AndroidIcon />}
                 sx={{
-                  bgcolor: '#1e90ff',
-                  '&:hover': { bgcolor: '#34c174' },
+                  bgcolor: '#20a9e7',
+                  '&:hover': { bgcolor: '#2b7ed7' },
                   width: 300,
                   height: 50,
                   textTransform: 'none'
@@ -45,8 +45,8 @@ export default function AppPromo() {
                 color="primary"
                 startIcon={<AppleIcon />}
                 sx={{
-                  bgcolor: '#1e90ff',
-                  '&:hover': { bgcolor: '#34c174' },
+                  bgcolor: '#20a9e7',
+                  '&:hover': { bgcolor: '#2b7ed7' },
                   width: 300,
                   height: 50,
                   textTransform: 'none'

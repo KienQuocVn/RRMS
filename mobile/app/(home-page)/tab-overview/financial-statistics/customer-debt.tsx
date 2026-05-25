@@ -41,7 +41,9 @@ export default function CustomerDebtScreen() {
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>Thống kê hóa đơn đang nợ và chưa thu</Text>
+      <Text style={styles.headerTitle}>
+        Thống kê hóa đơn đang nợ và chưa thu
+      </Text>
     </View>
   );
 
@@ -104,7 +106,7 @@ export default function CustomerDebtScreen() {
               <Text style={styles.tagText}>Chưa thu</Text>
             </View>
             <View style={styles.tagBadge}>
-              <View style={[styles.dot, { backgroundColor: "#4CAF50" }]} />
+              <View style={[styles.dot, { backgroundColor: "#20a9e7" }]} />
               <Text style={styles.tagText}>Đã gửi hóa đơn qua ZALO</Text>
             </View>
           </View>
@@ -172,7 +174,7 @@ export default function CustomerDebtScreen() {
           ]}
         >
           <Text style={styles.moneyLabel}>Đã trả</Text>
-          <Text style={[styles.moneyValue, { color: "#4CAF50" }]}>0 đ</Text>
+          <Text style={[styles.moneyValue, { color: "#20a9e7" }]}>0 đ</Text>
         </View>
         <View style={[styles.moneyCol, { backgroundColor: "#FFEBEE" }]}>
           <Text style={styles.moneyLabel}>Còn lại</Text>

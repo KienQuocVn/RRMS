@@ -12,6 +12,11 @@ export const deleteTenant = async (tenantId) => {
   return response.data
 }
 
+export const deleteTenantById = async (tenantId) => {
+  const response = await httpClient.delete(`/tenant/${tenantId}`)
+  return response.data
+}
+
 export const updateTenant = async (id, tenant) => {
   try {
     const response = await httpClient.put(`/tenant/${id}`, normalizeTenantPayload(tenant))

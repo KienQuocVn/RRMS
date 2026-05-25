@@ -322,7 +322,7 @@ const EditTenantModal = ({ open, onClose, reloadData }) => {
               backgroundColor: '#1e90ff',
               color: 'white',
               borderRadius: '50%',
-              '&:hover': { backgroundColor: '#43a047' }
+              '&:hover': { backgroundColor: '#20a9e7' }
             }}>
             <AddIcon />
           </IconButton>

@@ -424,7 +424,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
               <Typography variant="inherit" component="h2">
                 Cho thuê
               </Typography>
-              <Typography>Khi bật cho thuê, khách thuê có thể tiếp cận tin của bạn </Typography>
+              <Typography>Khi bật cho thuê, khách thuê có thể tiếp cận tin của bạn 1</Typography>
             </Box>
           </Box>
           <Box sx={{ fontStyle: 'italic' }}>

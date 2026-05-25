@@ -1,10 +1,10 @@
-import { Box, Typography, IconButton, Paper } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import { Box, Typography, IconButton, Paper } from '@mui/material'
+import AddIcon from '@mui/icons-material/Add'
+import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined'
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined'
 
-const PRIMARY_COLOR = '#20a9e7';
+const PRIMARY_COLOR = '#20a9e7'
 
 const ServiceList = ({ motelServices, openEditModal, deleteMotelService }) => {
   return (
@@ -28,9 +28,8 @@ const ServiceList = ({ motelServices, openEditModal, deleteMotelService }) => {
             width: 36,
             height: 36,
             '&:hover': { backgroundColor: '#2b7ed7' },
-            boxShadow: '0 3px 8px rgba(67,160,71,0.3)',
-          }}
-        >
+            boxShadow: '0 3px 8px rgba(67,160,71,0.3)'
+          }}>
           <AddIcon sx={{ fontSize: '1.3rem' }} />
         </IconButton>
       </Box>
@@ -52,10 +51,9 @@ const ServiceList = ({ motelServices, openEditModal, deleteMotelService }) => {
                 transition: 'all 0.2s',
                 '&:hover': {
                   borderColor: PRIMARY_COLOR,
-                  boxShadow: '0 3px 10px rgba(32, 169, 231, 0.1)',
-                },
-              }}
-            >
+                  boxShadow: '0 3px 10px rgba(32, 169, 231, 0.1)'
+                }
+              }}>
               {/* Icon */}
               <Box
                 sx={{
@@ -67,26 +65,36 @@ const ServiceList = ({ motelServices, openEditModal, deleteMotelService }) => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
-                  border: '1px solid #eee',
-                }}
-              >
+                  border: '1px solid #eee'
+                }}>
                 <LocalOfferOutlinedIcon sx={{ color: '#555', fontSize: '1.3rem', transform: 'rotate(90deg)' }} />
               </Box>
 
               {/* Info */}
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#333', fontSize: '0.9rem', mb: 0.25, lineHeight: 1.3 }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 700, color: '#333', fontSize: '0.9rem', mb: 0.25, lineHeight: 1.3 }}>
                   {service.nameService}
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#555', fontWeight: 600, fontSize: '0.82rem' }}>
-                  {service.price?.toLocaleString('vi-VN')}đ/ {service.chargetype === 'nguoi' ? 'Người' : service.chargetype === 'thang' ? 'Tháng' : service.chargetype}
+                  {service.price?.toLocaleString('vi-VN')}đ/{' '}
+                  {service.chargetype === 'nguoi'
+                    ? 'Người'
+                    : service.chargetype === 'thang'
+                      ? 'Tháng'
+                      : service.chargetype}
                 </Typography>
                 {service.count > 0 ? (
-                  <Typography variant="caption" sx={{ color: '#43a047', fontStyle: 'italic', display: 'block', mt: 0.25, fontSize: '0.75rem' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: '#20a9e7', fontStyle: 'italic', display: 'block', mt: 0.25, fontSize: '0.75rem' }}>
                     Đang áp dụng cho {service.count} phòng
                   </Typography>
                 ) : (
-                  <Typography variant="caption" sx={{ color: '#e53935', fontStyle: 'italic', display: 'block', mt: 0.25, fontSize: '0.75rem' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: '#e53935', fontStyle: 'italic', display: 'block', mt: 0.25, fontSize: '0.75rem' }}>
                     Không áp dụng cho phòng nào
                   </Typography>
                 )}
@@ -104,9 +112,8 @@ const ServiceList = ({ motelServices, openEditModal, deleteMotelService }) => {
                     backgroundColor: '#f5f7fa',
                     border: '1px solid #ddd',
                     color: '#555',
-                    '&:hover': { backgroundColor: '#eef2f6', color: PRIMARY_COLOR, borderColor: PRIMARY_COLOR },
-                  }}
-                >
+                    '&:hover': { backgroundColor: '#eef2f6', color: PRIMARY_COLOR, borderColor: PRIMARY_COLOR }
+                  }}>
                   <EditOutlinedIcon sx={{ fontSize: '1rem' }} />
                 </IconButton>
                 <IconButton
@@ -117,9 +124,8 @@ const ServiceList = ({ motelServices, openEditModal, deleteMotelService }) => {
                     backgroundColor: '#fff1f0',
                     border: '1px solid #ffccc7',
                     color: '#ff4d4f',
-                    '&:hover': { backgroundColor: '#ffccc7' },
-                  }}
-                >
+                    '&:hover': { backgroundColor: '#ffccc7' }
+                  }}>
                   <DeleteOutlineOutlinedIcon sx={{ fontSize: '1rem' }} />
                 </IconButton>
               </Box>
@@ -132,7 +138,7 @@ const ServiceList = ({ motelServices, openEditModal, deleteMotelService }) => {
         )}
       </Box>
     </Box>
-  );
-};
+  )
+}
 
-export default ServiceList;
+export default ServiceList
