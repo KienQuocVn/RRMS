@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.request.AccountRequest;
 import com.rrms.rrms.dto.request.ChangePasswordRequest;
+import com.rrms.rrms.dto.request.UpdateProfileRequest;
 import com.rrms.rrms.dto.response.AccountResponse;
 import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.PageResponse;
@@ -132,9 +133,24 @@ public class AccountController {
                 .build();
     }
 
-    @Operation(summary = "Update profile by username")
+    @Operation(summary = "Update profile by username (không cần quyền ADMIN, dùng DTO riêng không bắt buộc password)")
     @PutMapping("/profile")
-    public ApiResponse<AccountResponse> updateProfile(@RequestBody @Valid AccountRequest accountRequest) {
+    public ApiResponse<AccountResponse> updateProfile(@RequestBody @Valid UpdateProfileRequest profileRequest) {
+        // Map sang AccountRequest để tái sử dụng service layer
+        AccountRequest accountRequest = AccountRequest.builder()
+                .username(profileRequest.getUsername())
+                .fullName(profileRequest.getFullName())
+                .phone(profileRequest.getPhone())
+                .email(profileRequest.getEmail())
+                .birthday(profileRequest.getBirthday())
+                .gender(profileRequest.getGender())
+                .cccd(profileRequest.getCccd())
+                .address(profileRequest.getAddress())
+                .job(profileRequest.getJob())
+                .placeOfIssue(profileRequest.getPlaceOfIssue())
+                .dateOfIssue(profileRequest.getDateOfIssue())
+                .avatar(profileRequest.getAvatar())
+                .build();
         return ApiResponse.<AccountResponse>builder()
                 .message("Cập nhật hồ sơ thành công")
                 .result(accountService.update(accountRequest))

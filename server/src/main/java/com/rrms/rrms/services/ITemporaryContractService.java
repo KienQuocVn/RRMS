@@ -14,6 +14,8 @@ public interface ITemporaryContractService {
 
     List<TemporaryContractResponse> findTRCByAccount_Username(String username);
 
+    TemporaryContractResponse findByMotelId(UUID motelId);
+
     List<TemporaryContractResponse> findAll();
 
     TemporaryContractResponse update(UUID id, TemporaryContractRequest temporaryContractRequest);

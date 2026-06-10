@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -16,9 +17,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rrms.rrms.dto.request.BrokerCreateRequest;
 import com.rrms.rrms.dto.response.BrokerResponse;
+import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.BrokerMapper;
 import com.rrms.rrms.models.Broker;
 import com.rrms.rrms.repositories.BrokerRepository;
+import com.rrms.rrms.repositories.ContractRepository;
 import com.rrms.rrms.services.servicesImp.BrokerService;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,6 +32,9 @@ public class BrokerServiceTest {
 
     @Mock
     private BrokerRepository brokerRepository;
+
+    @Mock
+    private ContractRepository contractRepository;
 
     @InjectMocks
     private BrokerService brokerService;
@@ -92,5 +98,57 @@ public class BrokerServiceTest {
         when(brokerRepository.save(any(Broker.class))).thenThrow(new RuntimeException("Database Error"));
 
         assertThrows(RuntimeException.class, () -> brokerService.createBroker(brokerRequest));
+    }
+
+    @Test
+    void testUpdateBroker() {
+        UUID brokerId = UUID.randomUUID();
+        UUID motelId = UUID.randomUUID();
+        BrokerCreateRequest brokerRequest = BrokerCreateRequest.builder()
+                .motelId(motelId)
+                .name("Broker updated")
+                .phone("0909000001")
+                .source("Website")
+                .commissionRate(15)
+                .build();
+        Broker broker = new Broker();
+        BrokerResponse brokerResponse = new BrokerResponse();
+
+        when(brokerRepository.findById(brokerId)).thenReturn(Optional.of(broker));
+        when(brokerRepository.save(broker)).thenReturn(broker);
+        when(brokerMapper.toBrokerResponse(broker)).thenReturn(brokerResponse);
+
+        BrokerResponse result = brokerService.updateBroker(brokerId, brokerRequest);
+
+        assertNotNull(result);
+        assertEquals("Broker updated", broker.getName());
+        assertEquals("0909000001", broker.getPhone());
+        assertEquals("Website", broker.getSource());
+        assertEquals(15, broker.getCommissionRate());
+        assertEquals(motelId, broker.getMotelId());
+        verify(brokerRepository, times(1)).save(broker);
+    }
+
+    @Test
+    void testDeleteBroker() {
+        UUID brokerId = UUID.randomUUID();
+
+        when(brokerRepository.existsById(brokerId)).thenReturn(true);
+        when(contractRepository.existsByBroker_BrokerId(brokerId)).thenReturn(false);
+
+        brokerService.deleteBroker(brokerId);
+
+        verify(brokerRepository, times(1)).deleteById(brokerId);
+    }
+
+    @Test
+    void testDeleteBrokerUsedInContractThrowsException() {
+        UUID brokerId = UUID.randomUUID();
+
+        when(brokerRepository.existsById(brokerId)).thenReturn(true);
+        when(contractRepository.existsByBroker_BrokerId(brokerId)).thenReturn(true);
+
+        assertThrows(AppException.class, () -> brokerService.deleteBroker(brokerId));
+        verify(brokerRepository, never()).deleteById(brokerId);
     }
 }

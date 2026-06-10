@@ -1,5 +1,6 @@
 package com.rrms.rrms.controllers;
 
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -28,8 +29,8 @@ import com.rrms.rrms.dto.response.BrokerResponse;
 import com.rrms.rrms.services.IBroker;
 
 @WebMvcTest(BrokerController.class)
-@TestPropertySource("/test.properties")
-@Import(SecurityConfigTest.class) // Bỏ qua bảo mật
+@TestPropertySource("classpath:application-test.properties")
+@Import(SecurityConfigTest.class)
 public class BrokerControllerTest {
 
     @Autowired
@@ -43,12 +44,25 @@ public class BrokerControllerTest {
     List<BrokerResponse> brokerResponseList;
     ObjectMapper objectMapper;
     UUID motelId = UUID.randomUUID();
+    UUID brokerId = UUID.randomUUID();
 
     @BeforeEach
     void init() {
-
-        brokerCreateRequest = BrokerCreateRequest.builder().name("Broker 1").build();
-        brokerResponse = BrokerResponse.builder().name("Broker 1").build();
+        brokerCreateRequest = BrokerCreateRequest.builder()
+                .motelId(motelId)
+                .name("Broker 1")
+                .phone("0909000000")
+                .source("Facebook")
+                .commissionRate(10)
+                .build();
+        brokerResponse = BrokerResponse.builder()
+                .brokerId(brokerId)
+                .motelId(motelId)
+                .name("Broker 1")
+                .phone("0909000000")
+                .source("Facebook")
+                .commissionRate(10)
+                .build();
         brokerResponseList = Collections.singletonList(brokerResponse);
 
         objectMapper = new ObjectMapper();
@@ -66,8 +80,10 @@ public class BrokerControllerTest {
                         .content(content))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Create broker successfully"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.result.name").value("Broker 1"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Tạo môi giới thành công"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result.brokerId").value(brokerId.toString()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result.name").value("Broker 1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result.source").value("Facebook"));
     }
 
     @Test
@@ -77,7 +93,9 @@ public class BrokerControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/broker/{motelId}", motelId))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("get all broker successfully"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Lấy tất cả môi giới thành công"))
+                .andExpect(
+                        MockMvcResultMatchers.jsonPath("$.result[0].brokerId").value(brokerId.toString()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result[0].name").value("Broker 1"));
     }
 
@@ -88,7 +106,34 @@ public class BrokerControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/broker/{motelId}", motelId))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("get all broker successfully"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Lấy tất cả môi giới thành công"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result").isEmpty());
+    }
+
+    @Test
+    void updateBrokerSuccess() throws Exception {
+        String content = objectMapper.writeValueAsString(brokerCreateRequest);
+
+        when(brokerService.updateBroker(ArgumentMatchers.eq(brokerId), ArgumentMatchers.any()))
+                .thenReturn(brokerResponse);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/broker/{brokerId}", brokerId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Cập nhật môi giới thành công"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result.brokerId").value(brokerId.toString()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result.name").value("Broker 1"));
+    }
+
+    @Test
+    void deleteBrokerSuccess() throws Exception {
+        doNothing().when(brokerService).deleteBroker(brokerId);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/broker/{brokerId}", brokerId))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Xóa môi giới thành công"));
     }
 }

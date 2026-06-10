@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import {
   Box,
+  CircularProgress,
   IconButton,
   Paper,
   Table,
@@ -16,14 +17,13 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import CloseIcon from '@mui/icons-material/Close'
 import PersonIcon from '@mui/icons-material/Person'
+import Swal from 'sweetalert2'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import BrokerModal from './BrokerModal'
 import { useParams } from 'react-router-dom'
-import { getBrokers } from '~/apis/brokerAPI'
+import { deleteBroker, getBrokers } from '~/apis/brokerAPI'
 
-// ── Sub-component: Sidebar tab ──────────────────────────────────────────────
 const SidebarTab = ({ label, icon, active }) => (
   <Box
     sx={{
@@ -47,7 +47,6 @@ const SidebarTab = ({ label, icon, active }) => (
   </Box>
 )
 
-// ── Sub-component: Status badge ─────────────────────────────────────────────
 const AccountStatusBadge = ({ status }) => {
   const isLoggedIn = status === 'active' || status === 'ACTIVE'
   return (
@@ -64,8 +63,7 @@ const AccountStatusBadge = ({ status }) => {
   )
 }
 
-// ── Sub-component: Action buttons ───────────────────────────────────────────
-const BrokerActions = ({ onEdit, onDelete, onRemove }) => (
+const BrokerActions = ({ onEdit, onDelete }) => (
   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
     <Tooltip title="Chỉnh sửa">
       <IconButton
@@ -99,48 +97,79 @@ const BrokerActions = ({ onEdit, onDelete, onRemove }) => (
         <DeleteIcon sx={{ fontSize: 18 }} />
       </IconButton>
     </Tooltip>
-    <Tooltip title="Loại bỏ">
-      <IconButton
-        onClick={onRemove}
-        size="small"
-        sx={{
-          bgcolor: '#f44336',
-          borderRadius: '8px',
-          width: 36,
-          height: 36,
-          color: '#fff',
-          '&:hover': { bgcolor: '#c62828' }
-        }}
-      >
-        <CloseIcon sx={{ fontSize: 18 }} />
-      </IconButton>
-    </Tooltip>
   </Box>
 )
 
-// ── Main Component ───────────────────────────────────────────────────────────
 const AdminManageBoker = ({ setIsAdmin, motels, setmotels }) => {
   const [open, setOpen] = useState(false)
   const [brokers, setBrokers] = useState([])
+  const [editingBroker, setEditingBroker] = useState(null)
+  const [loading, setLoading] = useState(false)
   const { motelId } = useParams()
 
   useEffect(() => {
     setIsAdmin(true)
   }, [])
 
-  const handleClickOpen = () => setOpen(true)
-  const handleClose = () => setOpen(false)
+  const handleClickOpen = () => {
+    setEditingBroker(null)
+    setOpen(true)
+  }
 
-  const refreshBrokers = () => {
-    getBrokers(motelId).then((res) => {
-      setBrokers(res.data.result)
+  const handleClose = () => {
+    setOpen(false)
+    setEditingBroker(null)
+  }
+
+  const refreshBrokers = async () => {
+    if (!motelId) return
+
+    setLoading(true)
+    try {
+      const res = await getBrokers(motelId)
+      setBrokers(res.data.result || [])
+    } catch (error) {
+      setBrokers([])
+      Swal.fire('Lỗi', error?.response?.data?.message || 'Không thể tải danh sách môi giới.', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleEditBroker = (broker) => {
+    setEditingBroker(broker)
+    setOpen(true)
+  }
+
+  const handleDeleteBroker = async (broker) => {
+    if (!broker?.brokerId) {
+      Swal.fire('Lỗi', 'Không tìm thấy mã môi giới để xóa.', 'error')
+      return
+    }
+
+    const result = await Swal.fire({
+      title: 'Xóa môi giới?',
+      text: `Bạn có chắc muốn xóa ${broker.name || 'môi giới này'} khỏi danh sách?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Xóa',
+      cancelButtonText: 'Hủy',
+      confirmButtonColor: '#f44336'
     })
+
+    if (!result.isConfirmed) return
+
+    try {
+      await deleteBroker(broker.brokerId)
+      await refreshBrokers()
+      Swal.fire('Thành công', 'Đã xóa môi giới.', 'success')
+    } catch (error) {
+      Swal.fire('Lỗi', error?.response?.data?.message || 'Không thể xóa môi giới.', 'error')
+    }
   }
 
   useEffect(() => {
-    getBrokers(motelId).then((res) => {
-      setBrokers(res.data.result)
-    })
+    refreshBrokers()
   }, [motelId])
 
   return (
@@ -148,7 +177,6 @@ const AdminManageBoker = ({ setIsAdmin, motels, setmotels }) => {
       <NavAdmin setmotels={setmotels} motels={motels} />
 
       <Box sx={{ minHeight: '100vh', pb: 5 }}>
-        {/* Page title */}
         <Box
           sx={{
             maxWidth: '1000px',
@@ -166,7 +194,6 @@ const AdminManageBoker = ({ setIsAdmin, motels, setmotels }) => {
           </Typography>
         </Box>
 
-        {/* Card content */}
         <Box sx={{ maxWidth: '1000px', mx: 'auto', mt: 2.5, px: 2 }}>
           <Paper
             elevation={0}
@@ -178,7 +205,6 @@ const AdminManageBoker = ({ setIsAdmin, motels, setmotels }) => {
               minHeight: '300px'
             }}
           >
-            {/* Sidebar */}
             <Box
               sx={{
                 width: '220px',
@@ -195,9 +221,7 @@ const AdminManageBoker = ({ setIsAdmin, motels, setmotels }) => {
               />
             </Box>
 
-            {/* Main panel */}
             <Box sx={{ flex: 1, p: 3 }}>
-              {/* Panel header */}
               <Box
                 sx={{
                   display: 'flex',
@@ -228,70 +252,35 @@ const AdminManageBoker = ({ setIsAdmin, motels, setmotels }) => {
                 </Tooltip>
               </Box>
 
-              {/* Table */}
               <TableContainer>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell
-                        sx={{
-                          fontWeight: 700,
-                          fontSize: '13px',
-                          color: '#333',
-                          borderBottom: '2px solid #e8e8e8',
-                          py: 1
-                        }}
-                      >
+                      <TableCell sx={{ fontWeight: 700, fontSize: '13px', color: '#333', borderBottom: '2px solid #e8e8e8', py: 1 }}>
                         Thông tin liên hệ
                       </TableCell>
-                      <TableCell
-                        sx={{
-                          fontWeight: 700,
-                          fontSize: '13px',
-                          color: '#333',
-                          borderBottom: '2px solid #e8e8e8',
-                          py: 1
-                        }}
-                      >
+                      <TableCell sx={{ fontWeight: 700, fontSize: '13px', color: '#333', borderBottom: '2px solid #e8e8e8', py: 1 }}>
                         Nguồn
                       </TableCell>
-                      <TableCell
-                        sx={{
-                          fontWeight: 700,
-                          fontSize: '13px',
-                          color: '#333',
-                          borderBottom: '2px solid #e8e8e8',
-                          py: 1
-                        }}
-                      >
+                      <TableCell sx={{ fontWeight: 700, fontSize: '13px', color: '#333', borderBottom: '2px solid #e8e8e8', py: 1 }}>
                         Tình trạng tài khoản sale
                       </TableCell>
-                      <TableCell
-                        sx={{
-                          fontWeight: 700,
-                          fontSize: '13px',
-                          color: '#333',
-                          borderBottom: '2px solid #e8e8e8',
-                          py: 1
-                        }}
-                      >
+                      <TableCell sx={{ fontWeight: 700, fontSize: '13px', color: '#333', borderBottom: '2px solid #e8e8e8', py: 1 }}>
                         Phần trăm hoa hồng
                       </TableCell>
-                      <TableCell
-                        sx={{
-                          fontWeight: 700,
-                          fontSize: '13px',
-                          color: '#333',
-                          borderBottom: '2px solid #e8e8e8',
-                          py: 1
-                        }}
-                      >
+                      <TableCell sx={{ fontWeight: 700, fontSize: '13px', color: '#333', borderBottom: '2px solid #e8e8e8', py: 1 }}>
                         Thao tác
                       </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {brokers.length === 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                          <CircularProgress size={28} sx={{ color: '#20a9e7' }} />
+                        </TableCell>
+                      </TableRow>
+                    ) : brokers.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} align="center" sx={{ py: 4, color: '#aaa', fontSize: '14px' }}>
                           Chưa có môi giới nào
@@ -300,13 +289,12 @@ const AdminManageBoker = ({ setIsAdmin, motels, setmotels }) => {
                     ) : (
                       brokers.map((broker) => (
                         <TableRow
-                          key={broker.brokerId}
+                          key={broker.brokerId || broker.phone}
                           sx={{
                             '&:hover': { bgcolor: '#f9f9f9' },
                             transition: 'background 0.15s'
                           }}
                         >
-                          {/* Thông tin liên hệ: tên + SĐT */}
                           <TableCell sx={{ py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
                             <Typography sx={{ fontWeight: 600, fontSize: '13px', color: '#222' }}>
                               {broker.name}
@@ -316,27 +304,22 @@ const AdminManageBoker = ({ setIsAdmin, motels, setmotels }) => {
                             </Typography>
                           </TableCell>
 
-                          {/* Nguồn */}
                           <TableCell sx={{ py: 1.5, fontSize: '13px', color: '#444', borderBottom: '1px solid #f0f0f0' }}>
                             {broker.source || '—'}
                           </TableCell>
 
-                          {/* Tình trạng */}
                           <TableCell sx={{ py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
-                            <AccountStatusBadge status={broker.accountStatus} />
+                            <AccountStatusBadge status={broker.accountStatus || broker.status} />
                           </TableCell>
 
-                          {/* Hoa hồng */}
                           <TableCell sx={{ py: 1.5, fontSize: '13px', color: '#444', borderBottom: '1px solid #f0f0f0' }}>
                             {broker.commissionRate}%
                           </TableCell>
 
-                          {/* Thao tác */}
                           <TableCell sx={{ py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
                             <BrokerActions
-                              onEdit={() => {}}
-                              onDelete={() => {}}
-                              onRemove={() => {}}
+                              onEdit={() => handleEditBroker(broker)}
+                              onDelete={() => handleDeleteBroker(broker)}
                             />
                           </TableCell>
                         </TableRow>
@@ -350,8 +333,7 @@ const AdminManageBoker = ({ setIsAdmin, motels, setmotels }) => {
         </Box>
       </Box>
 
-      {/* Modal */}
-      <BrokerModal handleClose={handleClose} open={open} refreshBrokers={refreshBrokers} />
+      <BrokerModal handleClose={handleClose} open={open} refreshBrokers={refreshBrokers} broker={editingBroker} />
     </>
   )
 }

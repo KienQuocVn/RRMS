@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getAccountByUsername } from '~/apis/accountAPI'
+import { getProfileByUsername } from '~/apis/accountAPI'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
-import { Box, Container, Typography } from '@mui/material'
+import { Box, Container, Typography, CircularProgress } from '@mui/material'
 
 import AccountHeader from './components/AccountHeader'
 import AccountTabs from './components/AccountTabs'
@@ -12,6 +12,7 @@ import LoginDevicesTab from './components/LoginDevicesTab'
 
 const ManagerMyAccount = ({ setIsAdmin, TaiKhoan, motels, setmotels }) => {
   const [account, setAccount] = useState({})
+  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState(0)
   const navigate = useNavigate()
   const { motelId } = useParams()
@@ -28,11 +29,25 @@ const ManagerMyAccount = ({ setIsAdmin, TaiKhoan, motels, setmotels }) => {
   }, [motelId, motels, navigate])
 
   const fetchAccountByUsername = async (username) => {
+    if (!username) return
+    setLoading(true)
     try {
-      const accountResponse = await getAccountByUsername(username)
+      const accountResponse = await getProfileByUsername(username)
       setAccount(accountResponse ?? {})
     } catch (error) {
       console.error('Error fetching account:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
+   * Callback khi AccountInfoTab lưu thành công → cập nhật state account
+   * để AccountHeader re-render ngay mà không cần fetch lại
+   */
+  const handleAccountUpdated = (updatedAccount) => {
+    if (updatedAccount) {
+      setAccount((prev) => ({ ...prev, ...updatedAccount }))
     }
   }
 
@@ -50,11 +65,27 @@ const ManagerMyAccount = ({ setIsAdmin, TaiKhoan, motels, setmotels }) => {
           </Typography>
         </Box>
 
-        <AccountHeader account={account} />
-        <AccountTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-        
-        {activeTab === 0 && <AccountInfoTab account={account} />}
-        {activeTab === 1 && <LoginDevicesTab />}
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <AccountHeader account={account} />
+            <AccountTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+
+            {activeTab === 0 && (
+              <AccountInfoTab
+                account={account}
+                onAccountUpdated={handleAccountUpdated}
+              />
+            )}
+
+            {activeTab === 1 && (
+              <LoginDevicesTab username={TaiKhoan} />
+            )}
+          </>
+        )}
       </Container>
     </Box>
   )

@@ -24,6 +24,7 @@ public class Broker {
 
     private String name;
     private String phone;
+    private String source;
     private UUID motelId;
     private int commissionRate;
 }

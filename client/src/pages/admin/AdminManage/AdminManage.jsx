@@ -42,7 +42,7 @@ const AdminManage = ({ setIsAdmin }) => {
   const [openReports, setOpenReports] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
-  const [user, setUser] = useState(JSON.parse(sessionStorage.getItem('user')))
+  const [user] = useState(JSON.parse(sessionStorage.getItem('user')))
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget)
   }

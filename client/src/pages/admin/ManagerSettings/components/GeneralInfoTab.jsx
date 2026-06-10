@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Typography, Button, TextField, Grid, MenuItem } from '@mui/material';
 import LaunchOutlinedIcon from '@mui/icons-material/LaunchOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
@@ -12,7 +11,7 @@ const SectionTitle = ({ title, subtitle }) => (
   </Box>
 );
 
-const GeneralInfoTab = ({ formData, handleInputChange, handleDateChange, handleSave, isExistingData }) => {
+const GeneralInfoTab = ({ formData, handleInputChange, handleDateChange, handleSave }) => {
   return (
     <Box sx={{ p: 1 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>

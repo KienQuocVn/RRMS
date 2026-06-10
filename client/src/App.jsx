@@ -5,7 +5,7 @@ import Footer from './layouts/Footer/Footer'
 import { getMotelByUsername } from './apis/motelAPI'
 import i18n from './i18n/i18n'
 import { Box, CircularProgress } from '@mui/material'
-import { getAccountByUsername } from './apis/accountAPI'
+import { getProfileByUsername } from './apis/accountAPI'
 import ErrorBoundary from './components/ErrorBoundary'
 import PublicRoutes from './routes/PublicRoutes'
 import AdminRoutes from './routes/AdminRoutes'
@@ -87,7 +87,7 @@ function AppShell() {
     if (lastFetchedUsernameRef.current === user.username) return
 
     lastFetchedUsernameRef.current = user.username
-    getAccountByUsername(user.username).then((accountResponse) => {
+    getProfileByUsername(user.username).then((accountResponse) => {
       setAccount(normalizeProfileResponse(accountResponse ?? {}))
     })
     fetchMotelsByUsername(user.username)

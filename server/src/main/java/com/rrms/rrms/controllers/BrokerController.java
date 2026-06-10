@@ -46,4 +46,24 @@ public class BrokerController {
                 .result(brokerResponse)
                 .build();
     }
+
+    @PutMapping("{brokerId}")
+    public ApiResponse<BrokerResponse> updateBroker(
+            @PathVariable UUID brokerId, @RequestBody BrokerCreateRequest brokerRequest) {
+        BrokerResponse brokerResponse = brokerService.updateBroker(brokerId, brokerRequest);
+        return ApiResponse.<BrokerResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Cập nhật môi giới thành công")
+                .result(brokerResponse)
+                .build();
+    }
+
+    @DeleteMapping("{brokerId}")
+    public ApiResponse<Void> deleteBroker(@PathVariable UUID brokerId) {
+        brokerService.deleteBroker(brokerId);
+        return ApiResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Xóa môi giới thành công")
+                .build();
+    }
 }

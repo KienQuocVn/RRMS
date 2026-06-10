@@ -1,0 +1,71 @@
+# 📋 HỆ THỐNG RRMS - DANH SÁCH CHỨC NĂNG CƠ BẢN & NÂNG CAO
+
+> Tài liệu tổng hợp toàn bộ các chức năng cốt lõi và nâng cao của Hệ thống Quản lý Phòng trọ RRMS (Rental Room Management System), được ánh xạ chi tiết giữa **React Frontend (Web/Mobile)**, **Spring Boot Backend Entities** và **MySQL Database**.
+>
+> Phiên bản: 1.0.0 | Cập nhật: 2026-06-01
+
+---
+
+> [!NOTE]
+> Hệ thống được phân quyền chặt chẽ dựa trên 4 tác nhân chính:
+> - **Customer (Khách thuê/Người dùng vãng lai)**: Tìm phòng, đặt cọc giữ chỗ, ký hợp đồng trực tuyến, thanh toán hóa đơn.
+> - **Host (Chủ nhà trọ)**: Quản lý nhà trọ, phòng trọ, tài sản, hợp đồng, chỉ số điện nước, lập hóa đơn và đối soát doanh thu.
+> - **Broker (Người môi giới)**: Ký gửi, tìm khách thuê và nhận hoa hồng.
+> - **Admin (Quản trị viên)**: Kiểm duyệt tin đăng, đánh giá, quản trị người dùng và cấu hình toàn hệ thống.
+
+---
+
+## 🔑 I. Danh sách các chức năng cơ bản (Basic Functions)
+
+Dưới đây là bảng tổng hợp các chức năng cốt lõi, phục vụ cho luồng nghiệp vụ cơ bản của hệ thống RRMS:
+
+| -- | Functions | Description | Entity | Models | Database | Diagram |
+|:---:|:---|:---|:---:|:---|:---|:---:|
+| **U-01** | Register (Đăng ký tài khoản) | 1. Người dùng nhập thông tin (Họ tên, SĐT làm username, email, mật khẩu).<br>2. Hệ thống kiểm tra trùng lặp email/SĐT trong CSDL.<br>3. Mã hóa mật khẩu bằng BCrypt.<br>4. Lưu thông tin người dùng mới với vai trò mặc định (CUSTOMER). | Customer / Host / Broker | `Account.java`, `Auth.java`, `Role.java` | `accounts`, `auths`, `roles` | Activity/Sequence |
+| **U-02** | Login (Đăng nhập) | 1. Người dùng nhập số điện thoại và mật khẩu.<br>2. Hệ thống kiểm tra tài khoản hoạt động và đối khớp BCrypt hash.<br>3. Tạo mã JWT Access Token và Refresh Token.<br>4. Lưu token tại Client (localStorage/cookies) và điều hướng theo phân quyền. | Customer / Host / Broker / Admin | `Account.java`, `Auth.java` | `accounts`, `auths` | Activity/Sequence |
+| **U-03** | Forgot Password (Quên mật khẩu) | 1. Người dùng nhập email đã đăng ký tài khoản.<br>2. Hệ thống gửi mã OTP hoặc Link đặt lại mật khẩu qua Email.<br>3. Người dùng nhập mã xác thực và mật khẩu mới.<br>4. Cập nhật mật khẩu mã hóa mới vào CSDL. | Customer / Host / Broker / Admin | `Account.java` | `accounts` | Activity |
+| **U-04** | Search Rooms (Tìm phòng trọ) | 1. Người dùng nhập từ khóa tìm kiếm hoặc lọc theo Tỉnh/Huyện, khoảng giá thuê, diện tích, tiện ích phòng.<br>2. Hệ thống truy vấn CSDL (hoặc Elasticsearch Inverted Index) theo bộ lọc.<br>3. Trả về danh sách phòng kèm ảnh và giá tương ứng. | Customer / Guest | `Search.java`, `BulletinBoard.java`, `Room.java` | `bulletin_boards`, `rooms` | Activity |
+| **U-05** | View Room Detail (Xem chi tiết bài đăng) | 1. Khách thuê click xem tin phòng trọ bất kỳ.<br>2. Hệ thống hiển thị chi tiết: hình ảnh phòng, mô tả tiện ích, nội quy, dịch vụ kèm giá, thông tin liên hệ và vị trí bản đồ. | Customer / Guest | `BulletinBoard.java`, `BulletinBoardImage.java`, `Room.java` | `bulletin_boards`, `bulletin_board_images`, `rooms` | Activity |
+| **U-06** | Add to Wishlist (Lưu phòng trọ yêu thích) | 1. Khách thuê click nút "Lưu" hoặc biểu tượng Trái Tim tại tin đăng.<br>2. Hệ thống lưu/xóa liên kết giữa tài khoản khách thuê và bài đăng tin vào danh sách yêu thích cá nhân. | Customer | `BulletinBoard.java`, `Account.java` | `user_favorites` | Activity |
+| **U-07** | Manage Profile (Quản lý thông tin cá nhân) | 1. Người dùng truy cập trang cá nhân.<br>2. Chỉnh sửa: Họ tên, email, ngày sinh, giới tính, số điện thoại, tải lên ảnh đại diện.<br>3. Lưu thông tin cập nhật vào tài khoản. | Customer / Host / Broker / Admin | `Account.java` | `accounts` | Activity |
+| **H-01** | Manage Motel (Quản lý khu trọ - CRUD) | 1. Chủ trọ tạo mới, xem danh sách, chỉnh sửa thông tin (tên khu trọ, địa chỉ, ngày chốt hóa đơn, hạn nộp tiền) hoặc xóa khu trọ.<br>2. Lưu thay đổi hoặc áp dụng Soft Delete nếu khu trọ bị xóa. | Host | `Motel.java` | `motels` | Activity/Sequence |
+| **H-02** | Manage Room (Quản lý phòng trọ - CRUD) | 1. Chủ trọ chọn khu trọ, thêm mới phòng, thiết lập diện tích, giá thuê, tiền cọc, trạng thái phòng (Available/Maintenance).<br>2. Chỉnh sửa thông tin phòng hoặc xóa phòng trọ (chỉ cho phép xóa khi không có hợp đồng active). | Host | `Room.java`, `Motel.java` | `rooms` | Activity/Sequence |
+| **H-03** | Manage Services (Quản lý dịch vụ khu trọ) | 1. Chủ trọ thiết lập danh sách dịch vụ cho từng khu trọ (Điện, Nước, Wifi, Rác, Xe...) và đơn giá tương ứng.<br>2. Chọn cách thức tính phí dịch vụ (Theo chỉ số tiêu thụ/Theo người/Theo phòng). | Host | `MotelService.java`, `NameMotelService.java` | `motel_services`, `name_motel_services` | Activity |
+| **H-04** | Manage Assets (Quản lý tài sản thiết bị) | 1. Chủ trọ quản lý danh mục thiết bị của nhà trọ (Điều hòa, nóng lạnh, giường, tủ).<br>2. Phân bổ trang thiết bị vào từng phòng kèm số lượng và theo dõi trạng thái hao mòn (Tốt/Hỏng). | Host | `Device.java`, `MotelDevice.java`, `RoomDevice.java` | `motel_devices`, `room_devices` | Activity |
+| **H-05** | Manage Tenants (Quản lý khách thuê) | 1. Chủ trọ quản lý danh sách khách hàng đang thuê tại các phòng.<br>2. Lưu thông tin: Họ tên, SĐT, CCCD, ngày bắt đầu thuê và danh sách thành viên cùng phòng trọ. | Host | `Tenant.java` | `tenants` | Activity |
+| **H-06** | Vehicle Management (Quản lý phương tiện) | 1. Chủ trọ thêm mới và quản lý thông tin xe của khách thuê tại tòa nhà.<br>2. Ghi nhận biển số xe, loại xe, chủ xe và gán với phòng trọ tương ứng để kiểm soát bãi đỗ xe. | Host | `Car.java`, `Tenant.java` | `cars` | Activity |
+| **H-07** | Broker Management (Quản lý người môi giới) | 1. Chủ trọ quản lý danh sách và hoa hồng của các Broker liên kết.<br>2. Ghi nhận thông tin người môi giới và các tin đăng phòng trọ được ủy quyền tìm khách. | Host | `Broker.java` | `brokers` | Activity |
+| **A-01** | User Accounts & Permissions (Quản lý tài khoản & phân quyền) | 1. Admin truy cập danh sách người dùng phân trang.<br>2. Tìm kiếm, đổi vai trò (Role), tạo tài khoản nội bộ cho nhân viên.<br>3. Kích hoạt hoặc khóa (Vô hiệu hóa) tài khoản người dùng vi phạm. | Admin | `Account.java`, `Auth.java`, `Role.java`, `Permission.java` | `accounts`, `auths`, `roles`, `permissions` | Activity/Sequence |
+| **A-02** | Moderate Bulletin Boards (Kiểm duyệt tin đăng phòng) | 1. Admin xem danh sách bài đăng cho thuê phòng trọ đang chờ duyệt.<br>2. Đánh giá tính chính xác, click Phê duyệt (hiển thị công khai lên website) hoặc Từ chối kèm lý do gửi cho chủ trọ. | Admin | `BulletinBoard.java` | `bulletin_boards` | Activity |
+| **A-03** | Moderate Reviews (Kiểm duyệt đánh giá tin đăng) | 1. Admin kiểm duyệt các bình luận, số sao đánh giá của khách thuê đối với các bài đăng tin cho thuê phòng.<br>2. Cho phép ẩn, xóa các bình luận chứa nội dung thô tục, không lành mạnh hoặc phê duyệt hiển thị công khai. | Admin | `BulletinBoardReviews.java` | `bulletin_board_reviews` | Activity |
+| **U-08** | Submit Support Request (Gửi yêu cầu hỗ trợ) | 1. Khách thuê hoặc chủ trọ gửi phản ánh sự cố hoặc yêu cầu hỗ trợ kỹ thuật lên hệ thống.<br>2. Hệ thống ghi nhận yêu cầu và gửi thông báo cho Admin xử lý. | Customer / Host / Broker | `Support.java` | `supports` | Activity |
+
+---
+
+## ⚡ II. Danh sách các chức năng nâng cao & Ứng dụng AI (Advanced & AI Functions)
+
+Các chức năng nâng cao nâng cao hiệu năng vận hành, tự động hóa tài chính và ứng dụng công nghệ trí tuệ nhân tạo (AI):
+
+| -- | Functions | Description | Entity | Models | Database | Diagram |
+|:---:|:---|:---|:---:|:---|:---|:---:|
+| **CU-01** | Google OAuth2 Login (Đăng nhập bằng tài khoản Google) | 1. Khách thuê chọn đăng nhập nhanh qua Google.<br>2. Hệ thống chuyển hướng nhận JWT token callback từ Google.<br>3. Tự động đồng bộ email, họ tên, avatar và đăng nhập vào hệ thống RRMS. | Customer | `Account.java`, `Auth.java` | `accounts`, `auths` | Activity/Sequence |
+| **CU-02** | Electronic Contract & E-Signing (Hợp đồng điện tử & Ký số trực tuyến) | 1. Chủ trọ nhập thông tin thuê (ngày vào, giá thuê, tiền cọc, dịch vụ đăng ký, thành viên cùng phòng).<br>2. Áp dụng mẫu hợp đồng (`contract_templates`).<br>3. Khách thuê nhận hợp đồng, ký số xác nhận qua mã OTP gửi về Email.<br>4. Hệ thống kích hoạt hợp đồng và tự động đổi trạng thái phòng thành `OCCUPIED`. | Host / Customer | `Contract.java`, `ContractTemplate.java`, `ContractOccupant.java`, `ContractService.java`, `ContractDevice.java` | `contracts`, `contract_templates`, `contract_occupants`, `contract_services`, `contract_devices` | Activity/Sequence |
+| **CU-03** | Monthly Meter Reading (Chốt chỉ số điện nước hàng tháng) | 1. Chủ trọ nhập chỉ số điện, nước mới cho từng phòng hàng tháng.<br>2. Tải lên hình ảnh chụp công tơ thực tế làm minh chứng đối soát.<br>3. Hệ thống tự động tính toán sản lượng tiêu dùng dựa trên chỉ số chốt kỳ trước. | Host | `MeterReading.java` | `meter_readings` | Activity |
+| **CU-04** | Automated Invoicing & Dynamic VietQR (Tự động hóa đơn & VietQR động) | 1. Hệ thống tổng hợp: tiền phòng + tiền điện nước tiêu thụ + tiền dịch vụ đã dùng trong tháng.<br>2. Tự động xuất hóa đơn trạng thái `UNPAID` và tạo file PDF.<br>3. Tự động sinh mã VietQR động chứa sẵn số tài khoản nhận tiền, số tiền chính xác và nội dung chuyển khoản gạch nợ tự động. | Host | `Invoice.java`, `InvoiceDetail.java`, `InvoiceServiceDetail.java` | `invoices`, `invoice_service_details`, `invoice_additional_charges` | Activity/Sequence |
+| **CU-05** | Online Payment Integration (Thanh toán đa cổng: Stripe/VNPay/MoMo/PayPal) | 1. Khách thuê xem hóa đơn, chọn thanh toán trực tuyến qua Stripe, VNPay, MoMo hoặc PayPal.<br>2. Hệ thống xử lý redirect, chữ ký số bảo mật SHA512/HMAC-SHA256.<br>3. Nhận IPN/Webhook từ cổng thanh toán, tự động xác nhận hóa đơn đã trả (`PAID`) và cập nhật lịch sử dòng tiền giao dịch. | Customer | `Payment.java`, `Transaction.java`, `Invoice.java` | `payments`, `transactions`, `invoices` | Sequence |
+| **CU-06** | Financial Reports & Analytics Dashboard (Báo cáo tài chính & Biểu đồ thống kê) | 1. Hệ thống tự động tổng hợp doanh thu từ các hóa đơn đã thanh toán và chi phí vận hành.<br>2. Hiển thị báo cáo trực quan dưới dạng biểu đồ cột, biểu đồ đường (doanh thu theo tháng/năm) và biểu đồ tròn biểu diễn tỷ lệ lấp đầy phòng. | Host / Admin | `Invoice.java`, `Transaction.java`, `Room.java` | `invoices`, `transactions`, `rooms` | Activity |
+| **CU-07** | Excel Data Import (Nhập liệu nhanh qua file Excel) | 1. Chủ trọ tải lên file Excel chứa danh sách phòng trọ hoặc chỉ số điện nước hàng loạt.<br>2. Hệ thống phân tích (parse), kiểm tra định dạng và dữ liệu hợp lệ.<br>3. Thực hiện Bulk Insert lưu hàng loạt dữ liệu vào CSDL, tiết kiệm thời gian nhập tay. | Host | `Room.java`, `Tenant.java`, `MeterReading.java` | `rooms`, `tenants`, `meter_readings` | Activity |
+| **CU-08** | Residence Declaration Form (Tạo biểu mẫu tờ khai tạm trú tạm vắng) | 1. Chủ trọ chọn phòng cần khai báo tạm trú.<br>2. Hệ thống tự động trích xuất thông tin khách thuê và điền vào form khai báo tạm trú theo mẫu quy chuẩn.<br>3. Chủ trọ xuất file PDF để ký và nộp cho cơ quan chức năng địa phương. | Host | `Tenant.java`, `Contract.java` | `tenants`, `contracts` | Activity |
+| **CU-09** | Automated Zalo OA & ZNS Notifications (Gửi tin nhắn tự động qua Zalo) | 1. Hóa đơn mới được tạo hoặc hợp đồng sắp hết hạn.<br>2. Hệ thống tự động gọi API Zalo OA hoặc Zalo ZNS để gửi thông báo chi tiết hóa đơn/nhắc nợ trực tiếp tới số điện thoại khách thuê.<br>3. Ghi nhận lịch sử và trạng thái gửi tin. | Host | `Notification.java`, `Account.java` | `notifications`, `zalo_histories` (logs) | Activity/Sequence |
+| **AI-01** | ID Card & Passport OCR (AI nhận diện Căn cước công dân / Hộ chiếu) | 1. Người dùng tải lên ảnh chụp mặt trước và mặt sau của CCCD/Hộ chiếu.<br>2. Mô hình AI OCR tự động phân tích cấu trúc chữ viết và trích xuất dữ liệu: Họ tên, số CCCD, ngày sinh, giới tính, quê quán.<br>3. Tự động điền thông tin trích xuất vào form tạo hợp đồng hoặc hồ sơ cá nhân. | Host / Customer | `Account.java`, `Contract.java` | `accounts`, `contracts` | Activity/Sequence |
+| **AI-02** | Voice Search & Commands (AI Tìm kiếm & Điều khiển bằng giọng nói) | 1. Người dùng bấm biểu tượng Micro trên giao diện và nói yêu cầu (ví dụ: "Tìm phòng trọ Quận 1 giá dưới 3 triệu").<br>2. Hệ thống chuyển đổi giọng nói thành văn bản (Speech-to-Text).<br>3. Phân tích ngữ nghĩa ý định (Intent Parsing) và tự động thực thi bộ lọc tìm kiếm hoặc chuyển hướng trang. | Customer / Host | `Search.java` | `bulletin_boards` | Activity |
+| **AI-03** | Face Match & Identity Verification (AI Đối khớp khuôn mặt xác thực danh tính) | 1. Khách thuê thực hiện xác minh danh tính bằng cách chụp ảnh selfie trực tiếp.<br>2. Hệ thống so sánh ảnh chụp khuôn mặt thực tế với ảnh chân dung trên thẻ CCCD đã tải lên.<br>3. Trả về tỷ lệ phần trăm trùng khớp (Confidence Score). Xác thực ký hợp đồng nếu tỷ lệ trùng khớp đạt yêu cầu (ví dụ >= 85%). | Customer | `Account.java` | `accounts` | Activity/Sequence |
+| **AI-04** | AI Room Image Comparison (AI Đối khớp và xác thực hình ảnh phòng trọ) | 1. Chủ trọ đăng tải hình ảnh phòng trọ lên tin đăng cho thuê.<br>2. Hệ thống sử dụng AI so sánh vector đặc trưng ảnh với cơ sở dữ liệu ảnh hiện có.<br>3. Phát hiện và cảnh báo nếu có sự trùng lặp, giả mạo hình ảnh phòng trọ của khu vực khác để đảm bảo chất lượng bài đăng tin. | Admin | `BulletinBoardImage.java` | `bulletin_board_images` | Activity |
+| **AI-05** | Object Detection for Asset Inventory (AI Nhận diện thiết bị kiểm kê phòng) | 1. Chủ trọ hoặc nhân viên chụp ảnh không gian phòng khi bàn giao.<br>2. Mô hình AI Object Detection tự động phát hiện, nhận dạng các loại tài sản trong phòng (Điều hòa, tivi, tủ lạnh, quạt treo tường...).<br>3. Hệ thống tự động đếm số lượng, so sánh với danh mục thiết bị bàn giao trong hợp đồng và lập danh sách kiểm kê nhanh. | Host | `Device.java`, `RoomDevice.java` | `room_devices` | Activity |
+
+---
+
+> [!TIP]
+> **Hướng phát triển công nghệ áp dụng trên hệ thống:**
+> - Toàn bộ các API hỗ trợ cho nhóm chức năng AI sử dụng các mô hình học sâu (Deep Learning) được triển khai qua các dịch vụ đám mây hoặc máy chủ AI chuyên biệt, giao tiếp qua HTTP REST/gRPC với backend Spring Boot.
+> - Client React sử dụng các thư viện như `React Hook Form` kết hợp với `Zod` để đảm bảo validate chặt chẽ dữ liệu đầu vào trước khi submit lên server.

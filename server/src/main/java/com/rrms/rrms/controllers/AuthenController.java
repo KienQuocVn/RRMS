@@ -24,6 +24,7 @@ import com.rrms.rrms.models.Account;
 import com.rrms.rrms.repositories.AccountRepository;
 import com.rrms.rrms.services.IAccountService;
 import com.rrms.rrms.services.IAuthorityService;
+import com.rrms.rrms.services.ILoginHistoryService;
 import com.rrms.rrms.services.IMailService;
 
 import lombok.AccessLevel;
@@ -46,6 +47,8 @@ public class AuthenController {
     private final AccountRepository accountRepository;
 
     private final org.springframework.data.redis.core.StringRedisTemplate redisTemplate;
+
+    private final ILoginHistoryService loginHistoryService;
 
     @GetMapping("/error")
     public ResponseEntity<String> loginFailure() {
@@ -88,12 +91,15 @@ public class AuthenController {
 
     @PostMapping("/login")
     @RateLimited(key = "login", maxAttempts = 5, windowSeconds = 300)
-    public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
-        accountService
+    public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest, HttpServletRequest request) {
+        Account account = accountService
                 .findByPhone(loginRequest.getPhone())
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
         LoginResponse loginResponse = authorityService.loginResponse(loginRequest);
+
+        // Ghi lịch sử đăng nhập thiết bị (non-blocking, không ảnh hưởng login)
+        loginHistoryService.recordLoginSuccess(account, request);
 
         return ApiResponse.<LoginResponse>builder()
                 .message("Đăng nhập thành công")
@@ -130,9 +136,13 @@ public class AuthenController {
     }
 
     @PostMapping("/social-login")
-    public ApiResponse<LoginResponse> socialLogin(@RequestBody @Valid SocialLoginRequest socialLoginRequest) {
+    public ApiResponse<LoginResponse> socialLogin(
+            @RequestBody @Valid SocialLoginRequest socialLoginRequest, HttpServletRequest request) {
         Account account = accountService.findOrCreateSocialAccount(socialLoginRequest);
         LoginResponse loginResponse = authorityService.buildLoginResponse(account);
+
+        // Ghi lịch sử đăng nhập thiết bị
+        loginHistoryService.recordLoginSuccess(account, request);
 
         return ApiResponse.<LoginResponse>builder()
                 .message("Social login successful")

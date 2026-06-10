@@ -49,6 +49,16 @@ public class TemporaryContractController {
                 .build();
     }
 
+    @GetMapping("/motel/{motelId}")
+    public ApiResponse<TemporaryContractResponse> getTemRCByMotel(@PathVariable UUID motelId) {
+        TemporaryContractResponse temRCResponse = trcService.findByMotelId(motelId);
+        return ApiResponse.<TemporaryContractResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Lấy thông tin đại diện theo nhà trọ thành công")
+                .result(temRCResponse)
+                .build();
+    }
+
     @PostMapping
     public ApiResponse<TemporaryContractResponse> insertTemRC(@RequestBody TemporaryContractRequest contract) {
         TemporaryContractResponse createdContract = trcService.insert(contract);

@@ -2,6 +2,7 @@ package com.rrms.rrms.dto.response;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.rrms.rrms.enums.Gender;
@@ -30,4 +31,6 @@ public class AccountResponse implements Serializable {
     String avatar;
     List<String> role;
     List<String> permissions;
+    /** Ngày tạo tài khoản - kế thừa từ BaseEntity */
+    LocalDateTime createdAt;
 }

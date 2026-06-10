@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom'
 import ModelDeposit from './ModelDeposit'
 
 import Swal from 'sweetalert2'
-import { CreateTRC, getTRCByusername, updateTRCById } from '~/apis/TRCAPI'
+import { CreateTRC, getTRCByMotelId, updateTRCById } from '~/apis/TRCAPI'
 import { deleteContractTemplate, getContractTemplatesByMotelId } from '~/apis/contractTemplateAPI'
 import { getMotelById } from '~/apis/motelAPI'
 
@@ -49,27 +49,31 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
   }, [])
 
   const fetchDataTrc = async () => {
-    if (username) {
+    if (motelId) {
       try {
-        const response = await getTRCByusername(username)
-        if (response && response.data.result.length > 0) {
+        const response = await getTRCByMotelId(motelId)
+        const temporaryContract = response?.data?.result
+        if (temporaryContract) {
           setFormData((prevData) => ({
             ...prevData,
-            householdhead: response.data.result[0].householdhead || prevData.householdhead,
-            representativename: response.data.result[0].representativename || prevData.representativename,
-            phone: response.data.result[0].phone || prevData.phone,
-            birth: response.data.result[0].birth || prevData.birth,
-            permanentaddress: response.data.result[0].permanentaddress || prevData.permanentaddress,
-            job: response.data.result[0].job || prevData.job,
-            identifier: response.data.result[0].identifier || prevData.identifier,
-            placeofissue: response.data.result[0].placeofissue || prevData.placeofissue,
-            dateofissue: response.data.result[0].dateofissue || prevData.dateofissue
+            householdhead: temporaryContract.householdhead || prevData.householdhead,
+            representativename: temporaryContract.representativename || '',
+            phone: temporaryContract.phone || '',
+            birth: temporaryContract.birth || '',
+            permanentaddress: temporaryContract.permanentaddress || '',
+            job: temporaryContract.job || '',
+            identifier: temporaryContract.identifier || '',
+            placeofissue: temporaryContract.placeofissue || '',
+            dateofissue: temporaryContract.dateofissue || ''
           }))
-          setTRCID(response.data.result[0].temporaryrcontractId)
+          setTRCID(temporaryContract.temporaryrcontractId)
           setIsExistingData(true)
+        } else {
+          setIsExistingData(false)
+          setTRCID('')
         }
       } catch (error) {
-        console.error('Lỗi khi gọi API getTRCByusername:', error)
+        console.error('Error fetching temporary contract by motel:', error)
       }
     }
   }
@@ -96,7 +100,7 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
     }
   }
 
-  const handleSave = async (event) => {
+  const handleSave = async () => {
     // Form validation check is simple now since we use uncontrolled native or we can use custom checks
     if (!formData.representativename || !formData.phone || !formData.birth || !formData.permanentaddress || !formData.job || !formData.identifier || !formData.placeofissue || !formData.dateofissue) {
       Swal.fire({
@@ -115,7 +119,7 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
         response = await CreateTRC(formData)
       }
 
-      if (response.status === 200) {
+      if ([200, 201].includes(response.status)) {
         Swal.fire({
           icon: 'success',
           title: 'Thông báo',

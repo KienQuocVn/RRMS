@@ -1,70 +1,82 @@
+import { useEffect, useMemo, useState } from 'react'
 import {
+  Alert,
   Box,
   Button,
-  Checkbox,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   IconButton,
   TextField,
   Typography
 } from '@mui/material'
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard'
 import CloseIcon from '@mui/icons-material/Close'
-import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { createBroker } from '~/apis/brokerAPI'
+import { createBroker, updateBroker } from '~/apis/brokerAPI'
 
-const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
+const getInitialData = (motelId, broker) => ({
+  motelId,
+  name: broker?.name || '',
+  phone: broker?.phone || '',
+  source: broker?.source || '',
+  commissionRate: broker?.commissionRate ?? 0
+})
+
+const BrokerModal = ({ handleClose, open, refreshBrokers, broker }) => {
   const { motelId } = useParams()
-  const [data, setData] = useState({
-    motelId: motelId,
-    name: '',
-    phone: '',
-    source: '',
-    commissionRate: 0,
-    createAccount: false
-  })
+  const isEditing = Boolean(broker?.brokerId)
+  const [data, setData] = useState(() => getInitialData(motelId, broker))
+  const [submitting, setSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
-  const handleSubmit = () => {
-    createBroker(data)
-      .then(() => {
-        refreshBrokers()
-        setData({
-          motelId: motelId,
-          name: '',
-          phone: '',
-          source: '',
-          commissionRate: 0,
-          createAccount: false
-        })
-      })
-      .catch((error) => {
-        console.error('Error creating broker:', error)
-      })
-      .finally(() => {
-        handleClose()
-      })
+  const title = useMemo(() => (isEditing ? 'Chỉnh sửa môi giới' : 'Thêm môi giới'), [isEditing])
+
+  useEffect(() => {
+    if (open) {
+      setData(getInitialData(motelId, broker))
+      setErrorMessage('')
+    }
+  }, [broker, motelId, open])
+
+  const handleSubmit = async () => {
+    if (!data.name.trim() || !data.phone.trim()) {
+      setErrorMessage('Vui lòng nhập tên và số điện thoại môi giới.')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      setErrorMessage('')
+
+      if (isEditing) {
+        await updateBroker(broker.brokerId, data)
+      } else {
+        await createBroker(data)
+      }
+
+      await refreshBrokers()
+      handleCloseReset()
+    } catch (error) {
+      setErrorMessage(error?.response?.data?.message || 'Không thể lưu thông tin môi giới. Vui lòng thử lại.')
+      console.error('Error saving broker:', error)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleCloseReset = () => {
-    setData({
-      motelId: motelId,
-      name: '',
-      phone: '',
-      source: '',
-      commissionRate: 0,
-      createAccount: false
-    })
+    setData(getInitialData(motelId, null))
+    setErrorMessage('')
     handleClose()
   }
 
   return (
     <Dialog
       open={open}
-      onClose={handleCloseReset}
+      onClose={submitting ? undefined : handleCloseReset}
       sx={{
         '& .MuiDialog-paper': {
           width: '560px',
@@ -73,7 +85,6 @@ const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
         }
       }}
     >
-      {/* Header */}
       <DialogTitle
         sx={{
           display: 'flex',
@@ -89,7 +100,7 @@ const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
             width: 42,
             height: 42,
             borderRadius: '50%',
-            bgcolor: 'rgba(76, 175, 80, 0.12)',
+            bgcolor: 'rgba(32, 169, 231, 0.12)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -98,10 +109,11 @@ const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
           <CardGiftcardIcon sx={{ color: '#20a9e7', fontSize: 22 }} />
         </Box>
         <Typography sx={{ fontWeight: 700, fontSize: '18px', color: '#1a1a1a' }}>
-          Thêm môi giới
+          {title}
         </Typography>
         <IconButton
           onClick={handleCloseReset}
+          disabled={submitting}
           size="small"
           sx={{
             ml: 'auto',
@@ -116,7 +128,6 @@ const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
       </DialogTitle>
 
       <DialogContent sx={{ px: 3, pt: 1, pb: 0 }}>
-        {/* Section label */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, mt: 0.5 }}>
           <Box sx={{ width: 4, height: 18, bgcolor: '#20a9e7', borderRadius: '2px' }} />
           <Typography sx={{ fontWeight: 700, fontSize: '14px', color: '#222' }}>
@@ -124,7 +135,12 @@ const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
           </Typography>
         </Box>
 
-        {/* Tên */}
+        {errorMessage ? (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {errorMessage}
+          </Alert>
+        ) : null}
+
         <TextField
           autoFocus
           fullWidth
@@ -140,7 +156,6 @@ const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
           sx={{ mb: 2 }}
         />
 
-        {/* Số điện thoại */}
         <TextField
           fullWidth
           label={
@@ -155,14 +170,9 @@ const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
           sx={{ mb: 2 }}
         />
 
-        {/* Nguồn */}
         <TextField
           fullWidth
-          label={
-            <span>
-              Nguồn <span style={{ color: 'red' }}>*</span>
-            </span>
-          }
+          label="Nguồn"
           variant="outlined"
           size="small"
           value={data.source}
@@ -170,7 +180,6 @@ const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
           sx={{ mb: 2 }}
         />
 
-        {/* Mức hoa hồng */}
         <TextField
           fullWidth
           label={
@@ -183,46 +192,11 @@ const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
           type="number"
           value={data.commissionRate}
           onChange={(e) => setData({ ...data, commissionRate: Number(e.target.value) })}
-          sx={{ mb: 2 }}
+          inputProps={{ min: 0, max: 100 }}
+          sx={{ mb: 2.5 }}
         />
-
-        {/* Tạo tài khoản môi giới */}
-        <Box
-          sx={{
-            bgcolor: '#fff8e6',
-            borderRadius: '8px',
-            px: 2,
-            py: 1.5,
-            mb: 2.5
-          }}
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={data.createAccount}
-                onChange={(e) => setData({ ...data, createAccount: e.target.checked })}
-                sx={{
-                  color: '#bbb',
-                  '&.Mui-checked': { color: '#1565c0' }
-                }}
-              />
-            }
-            label={
-              <Box>
-                <Typography sx={{ fontWeight: 700, fontSize: '14px', color: '#1565c0' }}>
-                  Tạo tài khoản môi giới
-                </Typography>
-                <Typography sx={{ fontSize: '13px', color: '#555', mt: 0.25 }}>
-                  - Mật khẩu tài khoản trùng với số điện thoại
-                </Typography>
-              </Box>
-            }
-            sx={{ alignItems: 'flex-start', m: 0 }}
-          />
-        </Box>
       </DialogContent>
 
-      {/* Actions */}
       <DialogActions
         sx={{
           px: 3,
@@ -234,6 +208,7 @@ const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
       >
         <Button
           onClick={handleCloseReset}
+          disabled={submitting}
           variant="contained"
           sx={{
             bgcolor: '#555',
@@ -249,6 +224,7 @@ const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
         </Button>
         <Button
           onClick={handleSubmit}
+          disabled={submitting}
           variant="contained"
           sx={{
             bgcolor: '#20a9e7',
@@ -256,11 +232,12 @@ const BrokerModal = ({ handleClose, open, refreshBrokers }) => {
             fontWeight: 600,
             borderRadius: '6px',
             px: 3,
+            minWidth: 86,
             textTransform: 'none',
             '&:hover': { bgcolor: '#2b7ed7' }
           }}
         >
-          Lưu
+          {submitting ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'Lưu'}
         </Button>
       </DialogActions>
     </Dialog>

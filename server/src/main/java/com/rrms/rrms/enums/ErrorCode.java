@@ -65,7 +65,9 @@ public enum ErrorCode {
     QRCODE_GENERATION_FAILED(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "Could not generate invoice QR code",
-            HttpStatus.INTERNAL_SERVER_ERROR);
+            HttpStatus.INTERNAL_SERVER_ERROR),
+    NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Resource not found", HttpStatus.NOT_FOUND),
+    LOGIN_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Login history not found", HttpStatus.NOT_FOUND);
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

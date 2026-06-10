@@ -60,6 +60,7 @@ public class AccountMapperFallback implements AccountMapper {
         response.setPlaceOfIssue(account.getPlaceOfIssue());
         response.setDateOfIssue(account.getDateOfIssue());
         response.setAvatar(account.getAvatar());
+        response.setCreatedAt(account.getCreatedAt());
         response.setRole(mapRole(account));
         response.setPermissions(mapAccountPermissions(account));
         return response;

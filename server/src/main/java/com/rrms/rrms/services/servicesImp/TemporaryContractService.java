@@ -72,6 +72,14 @@ public class TemporaryContractService implements ITemporaryContractService {
     }
 
     @Override
+    public TemporaryContractResponse findByMotelId(UUID motelId) {
+        return temporaryR_contractRepository
+                .findFirstByMotel_MotelId(motelId)
+                .map(TemporaryContractResponse::new)
+                .orElse(null);
+    }
+
+    @Override
     public List<TemporaryContractResponse> findAll() {
         List<TemporaryR_contract> contracts = temporaryR_contractRepository.findAll();
         return contracts.stream().map(TemporaryContractResponse::new).collect(Collectors.toList());

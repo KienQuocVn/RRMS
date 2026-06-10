@@ -11,4 +11,8 @@ public interface IBroker {
     BrokerResponse createBroker(BrokerCreateRequest brokerRequest);
 
     List<BrokerResponse> getAllBroker(UUID motelId);
+
+    BrokerResponse updateBroker(UUID brokerId, BrokerCreateRequest brokerRequest);
+
+    void deleteBroker(UUID brokerId);
 }

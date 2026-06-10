@@ -14,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 public class BrokerCreateRequest implements Serializable {
     String name;
     String phone;
+    String source;
     UUID motelId;
     int commissionRate;
 }
