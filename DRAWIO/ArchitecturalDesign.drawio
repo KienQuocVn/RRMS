@@ -49,7 +49,7 @@
         <mxCell id="ext_ai" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;align=center;" value="OCR &amp; FaceMatch AI&#xa;(ID Card Scanner,&#xa;Identity Verification)" vertex="1">
           <mxGeometry height="70" width="140" x="800" y="510" as="geometry" />
         </mxCell>
-        <mxCell id="edge_web_to_gw" edge="1" parent="1" source="node_web_client" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#4a86e8;endArrow=classic;" target="node_gateway">
+        <mxCell id="edge_web_to_gw" edge="1" parent="1" source="node_web_client" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#4a86e8;startArrow=classic;endArrow=classic;" target="node_gateway">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="260" y="160" />
@@ -57,10 +57,10 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="edge_mob_to_gw" edge="1" parent="1" source="node_mobile_client" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#4a86e8;endArrow=classic;" target="node_gateway">
+        <mxCell id="edge_mob_to_gw" edge="1" parent="1" source="node_mobile_client" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#4a86e8;startArrow=classic;endArrow=classic;" target="node_gateway">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_adm_to_gw" edge="1" parent="1" source="node_admin_client" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#4a86e8;endArrow=classic;" target="node_gateway">
+        <mxCell id="edge_adm_to_gw" edge="1" parent="1" source="node_admin_client" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#4a86e8;startArrow=classic;endArrow=classic;" target="node_gateway">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="860" y="160" />
@@ -68,42 +68,42 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="edge_gw_to_sec" edge="1" parent="1" source="node_gateway" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#5b5b5b;endArrow=classic;" target="comp_security">
+        <mxCell id="edge_gw_to_sec" edge="1" parent="1" source="node_gateway" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#5b5b5b;startArrow=classic;endArrow=classic;" target="comp_security">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_gw_to_ctrl" edge="1" parent="1" source="node_gateway" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#5b5b5b;endArrow=classic;" target="comp_controllers">
+        <mxCell id="edge_gw_to_ctrl" edge="1" parent="1" source="node_gateway" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#5b5b5b;startArrow=classic;endArrow=classic;" target="comp_controllers">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_sec_to_ctrl" edge="1" parent="1" source="comp_security" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#385723;endArrow=classic;" target="comp_controllers">
+        <mxCell id="edge_sec_to_ctrl" edge="1" parent="1" source="comp_security" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#385723;startArrow=classic;endArrow=classic;" target="comp_controllers">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_ctrl_to_svc" edge="1" parent="1" source="comp_controllers" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#385723;endArrow=classic;" target="comp_services">
+        <mxCell id="edge_ctrl_to_svc" edge="1" parent="1" source="comp_controllers" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#385723;startArrow=classic;endArrow=classic;" target="comp_services">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_svc_to_repo" edge="1" parent="1" source="comp_services" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#385723;endArrow=classic;" target="comp_repositories">
+        <mxCell id="edge_svc_to_repo" edge="1" parent="1" source="comp_services" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#385723;startArrow=classic;endArrow=classic;" target="comp_repositories">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_repo_to_mysql" edge="1" parent="1" source="comp_repositories" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#b45f06;endArrow=classic;" target="db_mysql">
+        <mxCell id="edge_repo_to_mysql" edge="1" parent="1" source="comp_repositories" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#b45f06;startArrow=classic;endArrow=classic;" target="db_mysql">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_repo_to_redis" edge="1" parent="1" source="comp_repositories" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#b45f06;endArrow=classic;" target="db_redis">
+        <mxCell id="edge_repo_to_redis" edge="1" parent="1" source="comp_repositories" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#b45f06;startArrow=classic;endArrow=classic;" target="db_redis">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_repo_to_elastic" edge="1" parent="1" source="comp_repositories" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#b45f06;endArrow=classic;" target="db_elasticsearch">
+        <mxCell id="edge_repo_to_elastic" edge="1" parent="1" source="comp_repositories" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#b45f06;startArrow=classic;endArrow=classic;" target="db_elasticsearch">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_svc_to_pay" edge="1" parent="1" source="comp_services" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#7f6000;endArrow=classic;" target="ext_payments">
+        <mxCell id="edge_svc_to_pay" edge="1" parent="1" source="comp_services" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#7f6000;startArrow=classic;endArrow=classic;" target="ext_payments">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_svc_to_fire" edge="1" parent="1" source="comp_services" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#76498a;endArrow=classic;" target="ext_firebase">
+        <mxCell id="edge_svc_to_fire" edge="1" parent="1" source="comp_services" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#76498a;startArrow=classic;endArrow=classic;" target="ext_firebase">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_svc_to_mail" edge="1" parent="1" source="comp_services" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#76498a;endArrow=classic;" target="ext_mail">
+        <mxCell id="edge_svc_to_mail" edge="1" parent="1" source="comp_services" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#76498a;startArrow=classic;endArrow=classic;" target="ext_mail">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1000" y="365" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="edge_svc_to_ai" edge="1" parent="1" source="comp_services" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#76498a;endArrow=classic;" target="ext_ai">
+        <mxCell id="edge_svc_to_ai" edge="1" parent="1" source="comp_services" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#76498a;startArrow=classic;endArrow=classic;" target="ext_ai">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="edge_pay_to_gw" edge="1" parent="1" source="ext_payments" style="rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#7f6000;endArrow=classic;dashed=1;" target="node_gateway">
