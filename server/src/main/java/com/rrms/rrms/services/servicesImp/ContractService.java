@@ -52,6 +52,16 @@ public class ContractService implements IContractService {
 
     private final ContractMapper contractMapper;
 
+    private final RoomServiceRepository roomServiceRepository;
+
+    private final RoomDeviceRepository roomDeviceRepository;
+
+    private final MotelDeviceRepository motelDeviceRepository;
+
+    private final CarRepository carRepository;
+
+    private final RoomReservationRepository roomReservationRepository;
+
     @Override
     public Integer getTotalActiveContractsByLandlord(Account usernameLandlord) {
         return contractRepository.countActiveContractsByLandlord(usernameLandlord);
@@ -308,22 +318,105 @@ public class ContractService implements IContractService {
     }
 
     @Override
+    @Transactional
     public void updateContractDetailsByContractId(
             UUID contractId, UUID roomId, Double deposit, Double price, Double debt) {
-        // TÃ¬m Room má»›i
-        Room newRoom = roomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room not found"));
-
-        // TÃ¬m Contract vÃ  cáº­p nháº­t
         Contract contract = contractRepository
                 .findById(contractId)
                 .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
-        contract.setRoom(newRoom); // Cáº­p nháº­t Room
-        contract.setDeposit(deposit);
-        contract.setPrice(price);
-        contract.setDebt(debt);
 
-        // LÆ°u láº¡i
+        Room oldRoom = contract.getRoom();
+        if (oldRoom == null) {
+            throw new AppException(ErrorCode.ROOM_NOT_FOUND, "Không tìm thấy phòng nguồn của hợp đồng");
+        }
+
+        if (oldRoom.getRoomId().equals(roomId)) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Không thể chuyển sang cùng một phòng");
+        }
+
+        Room newRoom = roomRepository.findById(roomId).orElseThrow(() -> new EntityNotFoundException("Room not found"));
+
+        validateTargetRoomForTransfer(newRoom);
+
+        transferRoomServices(oldRoom, newRoom);
+        transferRoomDevices(oldRoom, newRoom);
+        transferCars(oldRoom, newRoom);
+
+        contract.setRoom(newRoom);
+        if (deposit != null) {
+            contract.setDeposit(deposit);
+        }
+        if (price != null) {
+            contract.setPrice(price);
+        }
+        if (debt != null) {
+            contract.setDebt(debt);
+        }
         contractRepository.save(contract);
+
+        oldRoom.setStatus(RoomStatus.AVAILABLE);
+        newRoom.setStatus(RoomStatus.OCCUPIED);
+        roomRepository.save(oldRoom);
+        roomRepository.save(newRoom);
+    }
+
+    private void validateTargetRoomForTransfer(Room newRoom) {
+        boolean hasActiveContract = contractRepository.findActiveContractsByRoomId(newRoom.getRoomId()).stream()
+                .anyMatch(contract -> contract.getStatus() == ContractStatus.ACTIVE
+                        || contract.getStatus() == ContractStatus.EXPIRING
+                        || contract.getStatus() == ContractStatus.DEPOSITED);
+
+        if (hasActiveContract) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Phòng đích đang có hợp đồng hoạt động");
+        }
+
+        if (!roomReservationRepository.findByRoom_RoomId(newRoom.getRoomId()).isEmpty()) {
+            throw new AppException(ErrorCode.INVALID_INPUT, "Phòng đích đang được cọc giữ chỗ");
+        }
+    }
+
+    private void transferRoomServices(Room oldRoom, Room newRoom) {
+        List<com.rrms.rrms.models.RoomService> targetServices = roomServiceRepository.findByRoom(newRoom);
+        if (!targetServices.isEmpty()) {
+            roomServiceRepository.deleteAll(targetServices);
+        }
+
+        List<com.rrms.rrms.models.RoomService> sourceServices = roomServiceRepository.findByRoom(oldRoom);
+        for (com.rrms.rrms.models.RoomService roomService : sourceServices) {
+            roomService.setRoom(newRoom);
+            roomServiceRepository.save(roomService);
+        }
+    }
+
+    private void transferRoomDevices(Room oldRoom, Room newRoom) {
+        List<RoomDevice> targetDevices = roomDeviceRepository.getAllByRoom(newRoom);
+        for (RoomDevice roomDevice : targetDevices) {
+            releaseMotelDeviceUsage(roomDevice.getMotelDevice());
+            roomDeviceRepository.delete(roomDevice);
+        }
+
+        List<RoomDevice> sourceDevices = roomDeviceRepository.getAllByRoom(oldRoom);
+        for (RoomDevice roomDevice : sourceDevices) {
+            roomDevice.setRoom(newRoom);
+            roomDeviceRepository.save(roomDevice);
+        }
+    }
+
+    private void releaseMotelDeviceUsage(MotelDevice motelDevice) {
+        if (motelDevice == null) {
+            return;
+        }
+        motelDevice.setTotalUsing(Math.max(0, motelDevice.getTotalUsing() - 1));
+        motelDevice.setTotalNull(motelDevice.getTotalNull() + 1);
+        motelDeviceRepository.save(motelDevice);
+    }
+
+    private void transferCars(Room oldRoom, Room newRoom) {
+        List<Car> cars = carRepository.findByRoom_RoomId(oldRoom.getRoomId());
+        for (Car car : cars) {
+            car.setRoom(newRoom);
+            carRepository.save(car);
+        }
     }
 
     @Override

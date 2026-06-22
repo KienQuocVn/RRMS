@@ -487,6 +487,8 @@ const MotelDashboard = ({ Motel }) => {
         modalOpen={modals.changeRoom}
         toggleModal={() => toggleModal('changeRoom', false)}
         roomId={selectedRoom?.roomId}
+        motelId={activeMotelId}
+        onSuccess={fetchData}
       />
       <ModalEndContract
         modalOpen={modals.endContract}
