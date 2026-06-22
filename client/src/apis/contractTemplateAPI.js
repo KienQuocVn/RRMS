@@ -125,6 +125,13 @@ export const deleteContractByRoomId = async (id) => {
   await httpClient.delete(`/contracts/room/${roomId}`)
 }
 
+export const endContractByRoomId = async (id, endDate) => {
+  const roomId = extractEntityId(id, ['roomId', 'id'])
+  await httpClient.put(`/contracts/room/${roomId}/end`, null, {
+    params: { endDate }
+  })
+}
+
 // Tạo hợp đồng
 export const createContract = async (contractData) => {
   const response = await httpClient.post('/contracts', normalizeContractPayload(contractData))

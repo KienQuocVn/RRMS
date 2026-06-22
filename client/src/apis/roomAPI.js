@@ -4,6 +4,7 @@ import {
   normalizeRoomCollection,
   normalizeRoomPayload,
   normalizeRoomResponse,
+  normalizeRoomServiceCollection,
   toBackendContractStatus,
   unwrapApiResult
 } from '~/utils/apiAdapters'
@@ -72,7 +73,7 @@ export const getServiceRoombyRoomId = async (id) => {
   if (!roomId) return []
 
   const response = await httpClient.get(`/api/v1/room-services/room/${roomId}`)
-  return unwrapApiResult(response, [])
+  return normalizeRoomServiceCollection(unwrapApiResult(response, []))
 }
 
 export const DeleteRoomServiceByid = async (id) => {

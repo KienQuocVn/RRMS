@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.rrms.rrms.dto.request.BulletinBoardRoomRequest;
 import com.rrms.rrms.dto.request.RoomRequest;
 import com.rrms.rrms.dto.response.*;
+import com.rrms.rrms.enums.ContractStatus;
 import com.rrms.rrms.enums.ErrorCode;
 import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.RoomMapper;
@@ -171,6 +172,9 @@ public class RoomService implements IRoomService {
         response.setServices(serviceResponses);
 
         ContractResponse latestContract = Optional.ofNullable(room.getContracts()).orElse(List.of()).stream()
+                .filter(contract -> contract.getStatus() == ContractStatus.ACTIVE
+                        || contract.getStatus() == ContractStatus.EXPIRING
+                        || contract.getStatus() == ContractStatus.TERMINATED)
                 .map(contract -> ContractResponse.builder()
                         .contractId(contract.getContractId())
                         .moveInDate(contract.getMoveinDate())
@@ -187,7 +191,8 @@ public class RoomService implements IRoomService {
                         .countTenant(contract.getCountTenant())
                         .status(contract.getStatus())
                         .build())
-                .max(Comparator.comparing(ContractResponse::getCreateDate))
+                .max(Comparator.comparing(
+                        ContractResponse::getCreateDate, Comparator.nullsLast(Comparator.naturalOrder())))
                 .orElse(null);
 
         response.setLatestContract(latestContract);

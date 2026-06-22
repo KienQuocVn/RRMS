@@ -1,6 +1,7 @@
 package com.rrms.rrms.services.servicesImp;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +36,20 @@ public class MotelServiceService implements IMotelServiceService {
 
     private final RoomServiceRepository roomServiceRepository;
 
+    private void saveRoomServiceIfMissing(Room room, MotelService motelService) {
+        boolean exists = roomServiceRepository
+                .findFirstByRoom_RoomIdAndService_MotelServiceId(room.getRoomId(), motelService.getMotelServiceId())
+                .isPresent();
+
+        if (!exists) {
+            com.rrms.rrms.models.RoomService roomService = new com.rrms.rrms.models.RoomService();
+            roomService.setRoom(room);
+            roomService.setService(motelService);
+            roomService.setQuantity(1);
+            roomServiceRepository.save(roomService);
+        }
+    }
+
     @Override
     public MotelServiceResponse createMotelService(MotelServiceRequest request) {
         Motel motel = motelRepository
@@ -50,17 +65,12 @@ public class MotelServiceService implements IMotelServiceService {
 
         List<UUID> selectedRooms = request.getSelectedRooms();
         if (selectedRooms != null && !selectedRooms.isEmpty()) {
-            for (UUID roomId : selectedRooms) {
+            for (UUID roomId : new LinkedHashSet<>(selectedRooms)) {
                 Room room = roomRepository
                         .findById(roomId)
                         .orElseThrow(() -> new IllegalArgumentException("Room not found with ID: " + roomId));
 
-                com.rrms.rrms.models.RoomService roomService = new com.rrms.rrms.models.RoomService();
-                roomService.setRoom(room);
-                roomService.setService(savedMotelService);
-                roomService.setQuantity(1);
-
-                roomServiceRepository.save(roomService);
+                saveRoomServiceIfMissing(room, savedMotelService);
             }
         }
 
@@ -94,11 +104,12 @@ public class MotelServiceService implements IMotelServiceService {
                 .collect(Collectors.toSet());
 
         // Lá»c ra cÃ¡c phÃ²ng má»›i Ä‘á»ƒ thÃªm vÃ  cÃ¡c phÃ²ng khÃ´ng cÃ²n trong selectedRooms Ä‘á»ƒ xÃ³a
-        Set<UUID> newRoomIds = new HashSet<>(selectedRooms);
+        Set<UUID> selectedRoomIds = new HashSet<>(selectedRooms != null ? selectedRooms : List.of());
+        Set<UUID> newRoomIds = new HashSet<>(selectedRoomIds);
         newRoomIds.removeAll(currentRoomIds); // Chá»‰ giá»¯ cÃ¡c phÃ²ng má»›i cáº§n thÃªm
 
         Set<UUID> removedRoomIds = new HashSet<>(currentRoomIds);
-        removedRoomIds.removeAll(selectedRooms); // Chá»‰ giá»¯ cÃ¡c phÃ²ng cáº§n xÃ³a
+        removedRoomIds.removeAll(selectedRoomIds); // Chá»‰ giá»¯ cÃ¡c phÃ²ng cáº§n xÃ³a
 
         // ThÃªm dá»‹ch vá»¥ cho cÃ¡c phÃ²ng má»›i
         for (UUID roomId : newRoomIds) {
@@ -106,12 +117,7 @@ public class MotelServiceService implements IMotelServiceService {
                     .findById(roomId)
                     .orElseThrow(() -> new IllegalArgumentException("Room not found with ID: " + roomId));
 
-            com.rrms.rrms.models.RoomService roomService = new com.rrms.rrms.models.RoomService();
-            roomService.setRoom(room);
-            roomService.setService(updatedMotelService);
-            roomService.setQuantity(1);
-
-            roomServiceRepository.save(roomService);
+            saveRoomServiceIfMissing(room, updatedMotelService);
         }
 
         // XÃ³a dá»‹ch vá»¥ khá»i cÃ¡c phÃ²ng khÃ´ng cÃ²n trong danh sÃ¡ch selectedRooms

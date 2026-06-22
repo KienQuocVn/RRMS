@@ -18,7 +18,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "room_services")
+@Table(
+        name = "room_services",
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "uq_room_services_room_service",
+                        columnNames = {"room_id", "service_id"}))
 public class RoomService {
 
     @Id

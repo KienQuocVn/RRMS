@@ -26,6 +26,15 @@ import ReceiptIcon from '@mui/icons-material/Receipt'
 import MenuIcon from '@mui/icons-material/Menu'
 import HouseIcon from '@mui/icons-material/House'
 import CloseIcon from '@mui/icons-material/Close'
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
+import PersonIcon from '@mui/icons-material/Person'
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone'
+import LogoutIcon from '@mui/icons-material/Logout'
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
+import PrintIcon from '@mui/icons-material/Print'
+import ShareIcon from '@mui/icons-material/Share'
+import EditIcon from '@mui/icons-material/Edit'
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
 import { Colors } from '~/theme'
 
 // Formatters
@@ -138,18 +147,88 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
 
   const getMenuItems = () => {
     if (!selectedRoom) return []
+    const contractStatus = selectedRoom.latestContract?.status
+    const reserveStatus = selectedRoom.reserveAPlace?.status
+
+    const activeContractItems = [
+      { icon: <ReceiptIcon />, label: 'Lập hóa đơn', action: 'invoice' },
+      { icon: <InfoIcon />, label: 'Chi tiết phòng', action: 'detail' },
+      { icon: <PersonIcon />, label: 'Danh sách khách thuê', action: 'list_tenant' },
+      { icon: <AttachMoneyIcon />, label: 'Thu tiền', action: 'collect' },
+      { icon: <NotificationsNoneIcon />, label: 'Báo kết thúc hợp đồng phòng', action: 'report_end' },
+      { icon: <SwapHorizIcon />, label: 'Chuyển đổi phòng', action: 'change_room' },
+      { icon: <LogoutIcon />, label: 'Kết thúc hợp đồng phòng', action: 'end_contract' },
+      { icon: <ReceiptIcon />, label: 'Cài đặt dịch vụ', action: 'services' },
+      { icon: <InfoIcon />, label: 'Xem văn bản hợp đồng', action: 'view_contract' },
+      { icon: <BuildIcon />, label: 'Thiết lập tài sản', action: 'devices' },
+      { icon: <PrintIcon />, label: 'In văn bản hợp đồng', action: 'print_contract' },
+      { icon: <ShareIcon />, label: 'Chia sẻ văn bản hợp đồng', action: 'share_contract' },
+      { icon: <EditIcon />, label: 'Ghi chú', action: 'edit', color: '#2e7d32' },
+      { icon: <ShareIcon />, label: 'Chia sẻ mã kết nối', action: 'share_code' },
+      { icon: <DirectionsCarIcon />, label: 'Quản lý xe', action: 'list_car' },
+      { icon: <CloseIcon />, label: 'Đóng menu', action: 'close' }
+    ]
+
+    if (contractStatus === 'ACTIVE') return activeContractItems
+
+    if (contractStatus === 'IATExpire') {
+      return [
+        ...activeContractItems.slice(0, 7),
+        { icon: <ArticleIcon />, label: 'Gia hạn hợp đồng', action: 'extend_contract', color: '#2e7d32' },
+        ...activeContractItems.slice(7)
+      ]
+    }
+
+    if (contractStatus === 'ReportEnd') {
+      return activeContractItems.map((item) =>
+        item.action === 'report_end'
+          ? {
+              icon: <DeleteIcon />,
+              label: 'Hủy báo kết thúc hợp đồng phòng',
+              action: 'cancel_report',
+              color: '#d32f2f'
+            }
+          : item
+      )
+    }
+
+    if (!contractStatus && reserveStatus === 'ACTIVE') {
+      return [
+        { icon: <ArticleIcon />, label: 'Hợp đồng mới', action: 'rent', color: '#2e7d32' },
+        { icon: <InfoIcon />, label: 'Chi tiết phòng', action: 'detail', color: '#1565c0' },
+        { icon: <InfoIcon />, label: 'Xem cọc giữ chỗ', action: 'view_reserve' },
+        { icon: <CloseIcon />, label: 'Hủy cọc giữ chỗ', action: 'cancel_reserve', color: '#d32f2f' },
+        { icon: <ReceiptIcon />, label: 'Cài đặt dịch vụ', action: 'services' },
+        { icon: <DeleteIcon />, label: 'Xóa phòng', action: 'delete', color: '#d32f2f' },
+        { icon: <BuildIcon />, label: 'Thiết lập tài sản', action: 'devices' },
+        { icon: <CloseIcon />, label: 'Đóng menu', action: 'close' }
+      ]
+    }
+
+    return [
+      { icon: <ArticleIcon />, label: 'Hợp đồng mới', action: 'rent', color: '#2e7d32' },
+      { icon: <InfoIcon />, label: 'Chi tiết phòng', action: 'detail', color: '#1565c0' },
+      { icon: <MoneyOffIcon />, label: 'Cọc giữ chỗ', action: 'deposit' },
+      { icon: <DeleteIcon />, label: 'Xóa phòng', action: 'delete', color: '#d32f2f' },
+      { icon: <ReceiptIcon />, label: 'Cài đặt dịch vụ', action: 'services' },
+      { icon: <CloseIcon />, label: 'Đóng menu', action: 'close' },
+      { icon: <BuildIcon />, label: 'Thiết lập tài sản', action: 'devices' }
+    ]
+
+    /*
     const items = []
 
     // Common items for all states - matching the design mockup layout
     items.push({ icon: <ArticleIcon />, label: 'Hợp đồng mới', action: 'rent', color: '#2e7d32' })
-    items.push({ icon: <InfoIcon />, label: 'Chi tiết giường', action: 'detail', color: '#1565c0' })
+    items.push({ icon: <InfoIcon />, label: 'Chi tiết phòng', action: 'detail', color: '#1565c0' })
     items.push({ icon: <MoneyOffIcon />, label: 'Cọc giữ chỗ', action: 'deposit' })
-    items.push({ icon: <DeleteIcon />, label: 'Xóa giường', action: 'delete', color: '#d32f2f' })
+    items.push({ icon: <DeleteIcon />, label: 'Xóa phòng', action: 'delete', color: '#d32f2f' })
     items.push({ icon: <ReceiptIcon />, label: 'Cài đặt dịch vụ', action: 'services' })
     items.push({ icon: <CloseIcon />, label: 'Đóng menu', action: 'close' })
     items.push({ icon: <BuildIcon />, label: 'Thiết lập tài sản', action: 'devices' })
 
     return items
+    */
   }
 
   return (
@@ -160,7 +239,7 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
             <TableRow>
               <TableCell sx={{ bgcolor: '#fff' }}></TableCell>
               {isVisible('name') && (
-                <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Tên giường</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Tên phòng</TableCell>
               )}
               {isVisible('group') && (
                 <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Nhóm</TableCell>
@@ -231,7 +310,7 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
                       </Avatar>
                     </Box>
                   </TableCell>
-                  {/* Tên giường */}
+                  {/* Tên phòng */}
                   {isVisible('name') && (
                     <TableCell sx={{ borderRight: '1px solid #eeeeee' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

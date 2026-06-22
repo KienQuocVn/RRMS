@@ -69,10 +69,10 @@ const RoomFilterBar = ({
           </Box>
           <Box sx={{ borderLeft: '3px solid #20a9e7', pl: 2 }}>
             <Typography variant="h6" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
-              Quản lý danh sách giường
+              Quản lý danh sách phòng
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Tất cả danh sách giường trong Ký túc xá/sleepbox WEBSITE MỸ PHẨM HÀN QUỐC
+              Tất cả danh sách phòng 
             </Typography>
           </Box>
         </Box>

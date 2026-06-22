@@ -13,11 +13,13 @@ import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rrms.rrms.dto.request.ContractRequest;
 import com.rrms.rrms.dto.response.ContractResponse;
 import com.rrms.rrms.enums.ContractStatus;
 import com.rrms.rrms.enums.ErrorCode;
+import com.rrms.rrms.enums.RoomStatus;
 import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.ContractMapper;
 import com.rrms.rrms.models.*;
@@ -115,6 +117,9 @@ public class ContractService implements IContractService {
         contract.setTenant(tenant); // Set the fetched Tenant entity
         contract.setContractTemplate(contractTemplate); // Set the fetched ContractTemplate entity
         contract.setBroker(broker);
+
+        room.setStatus(RoomStatus.OCCUPIED);
+        roomRepository.save(room);
 
         // Save the contract
         contract = contractRepository.save(contract);
@@ -218,10 +223,36 @@ public class ContractService implements IContractService {
 
     @Override
     public void deleteContractByRoomId(UUID RoomId) {
-        if (!roomRepository.existsById(RoomId)) {
-            throw new EntityNotFoundException("Contract not found with id " + RoomId);
-        }
-        contractRepository.deleteByRoomId(RoomId);
+        endContractByRoomId(RoomId, new Date());
+    }
+
+    @Override
+    @Transactional
+    public void endContractByRoomId(UUID roomId, Date endDate) {
+        Room room = roomRepository
+                .findById(roomId)
+                .orElseThrow(() -> new EntityNotFoundException("Room not found with id " + roomId));
+
+        Contract contract = contractRepository.findEndableContractsByRoomId(roomId).stream()
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Active contract not found with room id " + roomId));
+
+        Date normalizedEndDate = endDate != null ? endDate : new Date();
+        contract.setStatus(ContractStatus.ENDED);
+        contract.setCloseContract(normalizedEndDate);
+        contract.setReportcloseContract(normalizedEndDate);
+        contractRepository.save(contract);
+
+        contractOccupantRepository.findByContract_Room_RoomId(roomId).forEach(occupant -> {
+            occupant.setIsActive(false);
+            if (occupant.getMoveOutDate() == null) {
+                occupant.setMoveOutDate(new java.sql.Date(normalizedEndDate.getTime()).toLocalDate());
+            }
+            contractOccupantRepository.save(occupant);
+        });
+
+        room.setStatus(RoomStatus.AVAILABLE);
+        roomRepository.save(room);
     }
 
     @Override
@@ -296,6 +327,7 @@ public class ContractService implements IContractService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ContractResponse getAllContractsByRoomId(UUID roomId) {
         // Ưu tiên lấy hợp đồng đang hoạt động (ACTIVE/EXPIRING/DEPOSITED) mới nhất
         List<Contract> activeContracts = contractRepository.findActiveContractsByRoomId(roomId);
@@ -303,10 +335,6 @@ public class ContractService implements IContractService {
             return contractMapper.toResponse(activeContracts.get(0));
         }
         // Nếu không có hợp đồng đang hoạt động, lấy hợp đồng bất kỳ (mới nhất)
-        List<Contract> allContracts = contractRepository.findContractsByRoomId(roomId);
-        if (!allContracts.isEmpty()) {
-            return contractMapper.toResponse(allContracts.get(0));
-        }
         throw new EntityNotFoundException("Không tìm thấy hợp đồng cho phòng với id: " + roomId);
     }
 }

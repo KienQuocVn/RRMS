@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -7,7 +6,7 @@ import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined
 const ResidenceTemplateTab = ({ motel }) => {
   // Mock data for UI showcase, as per design
   const templates = [
-    { id: 1, name: 'Bánh mì', motelName: motel?.motelName || 'WEBSITE MỸ PHẨM HÀN QUỐC', sortOrder: 1 },
+    { id: 1, name: 'Bánh mì', motelName: motel?.motelName || 'RRMS', sortOrder: 1 },
     { id: 2, name: 'Bánh mì', motelName: 'Bánh Mì', sortOrder: 1 },
   ];
 

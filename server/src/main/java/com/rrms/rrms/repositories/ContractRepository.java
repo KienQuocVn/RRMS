@@ -25,8 +25,12 @@ public interface ContractRepository extends JpaRepository<Contract, UUID> {
 
     // Tìm hợp đồng đang hoạt động (ACTIVE hoặc EXPIRING) theo roomId, lấy mới nhất
     @Query(
-            "SELECT c FROM Contract c WHERE c.room.roomId = :roomId AND c.status IN (com.rrms.rrms.enums.ContractStatus.ACTIVE, com.rrms.rrms.enums.ContractStatus.EXPIRING) ORDER BY c.createdAt DESC")
+            "SELECT c FROM Contract c WHERE c.room.roomId = :roomId AND c.status IN (com.rrms.rrms.enums.ContractStatus.ACTIVE, com.rrms.rrms.enums.ContractStatus.EXPIRING, com.rrms.rrms.enums.ContractStatus.TERMINATED) ORDER BY c.createdAt DESC")
     List<Contract> findActiveContractsByRoomId(@Param("roomId") UUID roomId);
+
+    @Query(
+            "SELECT c FROM Contract c WHERE c.room.roomId = :roomId AND c.status IN (com.rrms.rrms.enums.ContractStatus.ACTIVE, com.rrms.rrms.enums.ContractStatus.EXPIRING, com.rrms.rrms.enums.ContractStatus.TERMINATED) ORDER BY c.createdAt DESC")
+    List<Contract> findEndableContractsByRoomId(@Param("roomId") UUID roomId);
 
     @Transactional
     @Modifying

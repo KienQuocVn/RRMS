@@ -61,7 +61,12 @@ const fireModalAlert = (options) => {
   })
 }
 
-function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
+const formatCurrencyValue = (value) => {
+  const numericValue = Number(value ?? 0)
+  return Number.isFinite(numericValue) ? numericValue.toLocaleString('vi-VN') : '0'
+}
+
+function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSuccess }) {
   const username = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).username : null
   const [room, setRoom] = useState({})
   const [provinces, setProvinces] = useState([])
@@ -385,9 +390,12 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
         contractTemplateId: contracttemplateId,
         language: contract.language || 'Tieng Viet'
       }
-      await createContract(updatedContract)
-      fireModalAlert({ icon: 'success', title: 'Thành công', text: 'Tạo hợp đồng thành công!' })
-      setTimeout(() => window.location.reload(), 1000)
+      const createdContract = await createContract(updatedContract)
+      if (typeof onSuccess === 'function') {
+        await onSuccess({ contract: createdContract, roomId: room.roomId })
+      }
+      await fireModalAlert({ icon: 'success', title: 'Thành công', text: 'Tạo hợp đồng thành công!' })
+      toggleModal()
     } catch (error) {
       const apiMessage = getErrorMessage(error, 'Có lỗi xảy ra trong quá trình xử lý!')
       const normalizedMessage = String(apiMessage).toLowerCase()
@@ -683,7 +691,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
                             {service.nameService}
                           </Typography>
                           <Typography variant="caption">
-                            {service.price.toLocaleString('vi-VN')}đ / {service.chargetype}
+                            {formatCurrencyValue(service.price)}đ / {service.chargetype}
                           </Typography>
                         </Box>
                       }
@@ -815,7 +823,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId }) {
                             {device.deviceName}
                           </Typography>
                           <Typography variant="caption">
-                            {device.value.toLocaleString('vi-VN')}đ / {device.unit}
+                            {formatCurrencyValue(device.value)}đ / {device.unit}
                           </Typography>
                         </Box>
                       }

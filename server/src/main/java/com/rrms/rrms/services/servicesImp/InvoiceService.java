@@ -116,16 +116,21 @@ public class InvoiceService implements IInvoiceService {
                 .findById(request.getContractId())
                 .orElseThrow(() -> new AppException(ErrorCode.CONTRACT_NOT_FOUND));
 
-        LocalDate moveInDate = toLocalDate(contract.getMoveinDate());
-        LocalDate dueDateOfMoveInDate = moveInDate.plusDays(30);
+        LocalDate invoiceCreateDate =
+                request.getInvoiceCreateDate() != null ? request.getInvoiceCreateDate() : LocalDate.now();
+        LocalDate moveInDate = toLocalDate(contract.getMoveinDate(), invoiceCreateDate);
+        LocalDate dueDateOfMoveInDate =
+                request.getDueDateofmoveinDate() != null ? request.getDueDateofmoveinDate() : moveInDate.plusDays(30);
 
         Invoice invoice = new Invoice();
         invoice.setInvoiceReason(request.getInvoiceReason());
         invoice.setInvoiceCreateMonth(
                 request.getInvoiceCreateMonth() != null ? request.getInvoiceCreateMonth() : YearMonth.now());
-        invoice.setInvoiceCreateDate(
-                request.getInvoiceCreateDate() != null ? request.getInvoiceCreateDate() : LocalDate.now());
-        invoice.setDueDate(invoice.getInvoiceCreateDate().plusDays(7));
+        invoice.setInvoiceCreateDate(invoiceCreateDate);
+        invoice.setDueDate(
+                request.getDueDate() != null
+                        ? request.getDueDate()
+                        : invoice.getInvoiceCreateDate().plusDays(7));
         invoice.setDeposit(contract.getDeposit());
         invoice.setContract(contract);
         invoice.setDueDateofmoveinDate(dueDateOfMoveInDate);
@@ -156,25 +161,24 @@ public class InvoiceService implements IInvoiceService {
         response.setMoveInDueDate(dueDateOfMoveInDate);
         response.setPaymentStatus(invoice.getPaymentStatus());
 
-        Room room = invoice.getContract().getRoom();
+        Contract contract = invoice.getContract();
+        Room room = contract == null ? null : contract.getRoom();
         if (room != null) {
             response.setRoomId(room.getRoomId());
             response.setRoomName(room.getName());
-            response.setRoomPrice(
-                    invoice.getContract().getActualPrice() != null
-                            ? invoice.getContract().getActualPrice()
-                            : room.getPrice());
+            response.setRoomPrice(contract.getActualPrice() != null ? contract.getActualPrice() : room.getPrice());
         }
 
         double totalAddition = invoice.getAdditionItems() == null
                 ? 0
                 : invoice.getAdditionItems().stream()
-                        .mapToDouble(charge -> charge.getIsAddition() ? charge.getAmount() : -charge.getAmount())
+                        .mapToDouble(charge -> {
+                            double amount = charge.getAmount() == null ? 0 : charge.getAmount();
+                            return Boolean.TRUE.equals(charge.getIsAddition()) ? amount : -amount;
+                        })
                         .sum();
 
-        double basePrice = invoice.getContract().getActualPrice() != null
-                ? invoice.getContract().getActualPrice()
-                : invoice.getContract().getPrice();
+        double basePrice = resolveBasePrice(contract, room);
         response.setTotalAmount(basePrice + totalServiceAmount + totalAddition);
 
         List<InvoiceServiceDetailResponse> serviceDetailResponses = details.stream()
@@ -185,11 +189,13 @@ public class InvoiceService implements IInvoiceService {
                     MotelService service = roomService.getService();
 
                     serviceResponse.setRoomServiceId(roomService.getRoomServiceId());
-                    serviceResponse.setServiceName(service.getNameService());
-                    serviceResponse.setServicePrice(service.getPrice());
+                    serviceResponse.setServiceName(service == null ? "Dịch vụ" : service.getNameService());
+                    serviceResponse.setServicePrice(
+                            service == null || service.getPrice() == null ? 0L : service.getPrice());
                     serviceResponse.setQuantity(detail.getRoomServiceQuantity());
-                    serviceResponse.setChargetype(service.getChargetype());
-                    serviceResponse.setTotalPrice(service.getPrice() * detail.getRoomServiceQuantity());
+                    serviceResponse.setChargetype(service == null ? "" : service.getChargetype());
+                    serviceResponse.setTotalPrice(
+                            serviceResponse.getServicePrice() * defaultQuantity(detail.getRoomServiceQuantity()));
                     return serviceResponse;
                 })
                 .collect(Collectors.toList());
@@ -201,9 +207,13 @@ public class InvoiceService implements IInvoiceService {
                     InvoiceDeviceDetailResponse deviceResponse = new InvoiceDeviceDetailResponse();
                     deviceResponse.setRoomDeviceId(detail.getRoomDevice().getRoomDeviceId());
                     deviceResponse.setDeviceName(
-                            detail.getRoomDevice().getMotelDevice().getDeviceName());
+                            detail.getRoomDevice().getMotelDevice() == null
+                                    ? "Tài sản"
+                                    : detail.getRoomDevice().getMotelDevice().getDeviceName());
                     deviceResponse.setDevicePrice(
-                            detail.getRoomDevice().getMotelDevice().getValue());
+                            detail.getRoomDevice().getMotelDevice() == null
+                                    ? 0.0
+                                    : detail.getRoomDevice().getMotelDevice().getValue());
                     deviceResponse.setQuantity(
                             Double.valueOf(detail.getRoomDevice().getQuantity()));
                     deviceResponse.setTotalPrice(deviceResponse.getDevicePrice() * deviceResponse.getQuantity());
@@ -306,14 +316,18 @@ public class InvoiceService implements IInvoiceService {
     public InvoiceResponse mapToResponse(Invoice invoice) {
         List<InvoiceDetail> details =
                 invoice.getDetailInvoices() == null ? Collections.emptyList() : invoice.getDetailInvoices();
-        LocalDate moveInDate = toLocalDate(invoice.getContract().getMoveinDate());
-        LocalDate dueDateOfMoveInDate = moveInDate.plusDays(30);
+        LocalDate moveInDate = toLocalDate(
+                invoice.getContract() == null ? null : invoice.getContract().getMoveinDate(),
+                invoice.getInvoiceCreateDate() == null ? LocalDate.now() : invoice.getInvoiceCreateDate());
+        LocalDate dueDateOfMoveInDate =
+                invoice.getDueDateofmoveinDate() != null ? invoice.getDueDateofmoveinDate() : moveInDate.plusDays(30);
         double totalServiceAmount = calculateTotalServiceAmount(details);
         return mapToResponse(invoice, details, moveInDate, dueDateOfMoveInDate, totalServiceAmount);
     }
 
     @Override
-    public void collectPayment(UUID invoiceId, CollectPaymentRequest request) {
+    @Transactional
+    public InvoiceResponse collectPayment(UUID invoiceId, CollectPaymentRequest request) {
         Invoice invoice = getDetailedInvoice(invoiceId);
 
         if (invoice.getPaymentStatus() == PaymentStatus.PAID) {
@@ -333,7 +347,9 @@ public class InvoiceService implements IInvoiceService {
 
         transactionRepository.save(transaction);
         invoice.setPaymentStatus(PaymentStatus.PAID);
-        invoiceRepository.save(invoice);
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+
+        return mapToResponse(savedInvoice);
     }
 
     private Invoice getDetailedInvoice(UUID invoiceId) {
@@ -342,8 +358,24 @@ public class InvoiceService implements IInvoiceService {
                 .orElseThrow(() -> new AppException(ErrorCode.INVOICE_NOT_FOUND));
     }
 
-    private LocalDate toLocalDate(java.util.Date date) {
+    private LocalDate toLocalDate(java.util.Date date, LocalDate fallback) {
+        if (date == null) {
+            return fallback == null ? LocalDate.now() : fallback;
+        }
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    private double resolveBasePrice(Contract contract, Room room) {
+        if (contract == null) {
+            return room == null || room.getPrice() == null ? 0 : room.getPrice();
+        }
+        if (contract.getActualPrice() != null) {
+            return contract.getActualPrice();
+        }
+        if (contract.getPrice() != null) {
+            return contract.getPrice();
+        }
+        return room == null || room.getPrice() == null ? 0 : room.getPrice();
     }
 
     private List<InvoiceAdditionItem> buildAdditionItems(Invoice invoice, List<InvoiceAdditionItemRequest> requests) {
@@ -430,9 +462,16 @@ public class InvoiceService implements IInvoiceService {
     private double calculateTotalServiceAmount(List<InvoiceDetail> details) {
         return details.stream()
                 .filter(detail -> detail.getRoomService() != null)
-                .mapToDouble(
-                        detail -> detail.getRoomService().getService().getPrice() * detail.getRoomServiceQuantity())
+                .mapToDouble(detail -> {
+                    MotelService service = detail.getRoomService().getService();
+                    double price = service == null || service.getPrice() == null ? 0 : service.getPrice();
+                    return price * defaultQuantity(detail.getRoomServiceQuantity());
+                })
                 .sum();
+    }
+
+    private int defaultQuantity(Integer quantity) {
+        return quantity == null ? 1 : quantity;
     }
 
     private TransactionResponse mapTransactionResponse(Transaction transaction) {

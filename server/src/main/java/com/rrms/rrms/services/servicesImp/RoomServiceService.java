@@ -1,6 +1,8 @@
 package com.rrms.rrms.services.servicesImp;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,16 @@ public class RoomServiceService implements IRoomServiceService {
     MotelServiceRepository serviceRepository;
     RoomServiceMapper roomServiceMapper;
 
+    private RoomService saveOrUpdateRoomService(Room room, MotelService service, Integer quantity) {
+        RoomService roomService = roomServiceRepository
+                .findFirstByRoom_RoomIdAndService_MotelServiceId(room.getRoomId(), service.getMotelServiceId())
+                .orElseGet(
+                        () -> RoomService.builder().room(room).service(service).build());
+
+        roomService.setQuantity(quantity);
+        return roomServiceRepository.save(roomService);
+    }
+
     @Override
     public RoomServiceResponse createRoomService(RoomServiceRequest roomServiceRequest) {
         Room room = roomRepository
@@ -46,13 +58,7 @@ public class RoomServiceService implements IRoomServiceService {
                 .findById(roomServiceRequest.getServiceId())
                 .orElseThrow(() -> new AppException(ErrorCode.SERVICE_NOT_FOUND));
 
-        RoomService roomService = RoomService.builder()
-                .room(room)
-                .service(Motelservice)
-                .quantity(roomServiceRequest.getQuantity())
-                .build();
-
-        roomService = roomServiceRepository.save(roomService);
+        RoomService roomService = saveOrUpdateRoomService(room, Motelservice, roomServiceRequest.getQuantity());
 
         return roomServiceMapper.toRoomServiceResponse(roomService);
     }
@@ -108,13 +114,7 @@ public class RoomServiceService implements IRoomServiceService {
                 "Create room service detail - roomId: {}, serviceId: {}",
                 room.getRoomId(),
                 service.getMotelServiceId());
-        RoomService roomService = RoomService.builder()
-                .room(room)
-                .service(service)
-                .quantity(roomServiceRequest.getQuantity())
-                .build();
-
-        roomService = roomServiceRepository.save(roomService);
+        RoomService roomService = saveOrUpdateRoomService(room, service, roomServiceRequest.getQuantity());
 
         return toRoomServiceResponse(roomService);
     }
@@ -128,7 +128,16 @@ public class RoomServiceService implements IRoomServiceService {
 
     @Override
     public List<RoomServiceDetailResponse> findByRoomId(UUID roomId) {
-        return roomServiceRepository.findByRoom_RoomId(roomId).stream()
+        Map<UUID, RoomService> uniqueServices = new LinkedHashMap<>();
+        for (RoomService roomService : roomServiceRepository.findByRoom_RoomId(roomId)) {
+            UUID serviceId =
+                    roomService.getService() != null ? roomService.getService().getMotelServiceId() : null;
+            if (serviceId != null) {
+                uniqueServices.putIfAbsent(serviceId, roomService);
+            }
+        }
+
+        return uniqueServices.values().stream()
                 .map(this::toRoomServiceResponse2)
                 .collect(Collectors.toList());
     }

@@ -120,6 +120,37 @@ export const normalizeRoomCollection = (rooms = []) => {
   return rooms.map(normalizeRoomResponse)
 }
 
+const getRoomServiceKey = (roomService = {}) => {
+  return (
+    roomService.service?.motelServiceId ??
+    roomService.serviceId ??
+    roomService.motelServiceId ??
+    roomService.roomServiceId ??
+    null
+  )
+}
+
+export const normalizeRoomServiceCollection = (roomServices = []) => {
+  if (!Array.isArray(roomServices)) return []
+
+  const uniqueServices = new Map()
+  roomServices.forEach((roomService) => {
+    const serviceKey = getRoomServiceKey(roomService)
+    if (!serviceKey || uniqueServices.has(serviceKey)) return
+
+    const quantity = Number(roomService.quantity ?? 1) || 1
+    const price = Number(roomService.service?.price ?? roomService.servicePrice ?? 0) || 0
+
+    uniqueServices.set(serviceKey, {
+      ...roomService,
+      quantity,
+      totalPrice: quantity * price
+    })
+  })
+
+  return Array.from(uniqueServices.values())
+}
+
 const toNumberOrUndefined = (value) => {
   if (value === '' || value === null || value === undefined) return undefined
 

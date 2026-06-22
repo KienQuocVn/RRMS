@@ -28,6 +28,8 @@ public interface IContractService {
 
     void deleteContractByRoomId(UUID contractId);
 
+    void endContractByRoomId(UUID roomId, Date endDate);
+
     List<ContractResponse> getAllContractsByMotelId(UUID motelId);
 
     void updateContractsBasedOnDaysDifference(ContractStatus newStatus, int thresholdDays);

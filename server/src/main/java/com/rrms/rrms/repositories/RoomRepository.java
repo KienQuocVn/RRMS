@@ -39,7 +39,7 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
             + "WHERE c IS NULL AND ra IS NULL AND r.motel = :motel")
     List<Room> findRoomsWithoutContractsByMotel(Motel motel);
 
-    @Query("SELECT r FROM Room r JOIN r.contracts c WHERE r.motel.motelId = :motelId AND c IS NOT NULL")
+    @Query("SELECT DISTINCT r FROM Room r JOIN r.contracts c WHERE r.motel.motelId = :motelId AND c IS NOT NULL")
     List<Room> findRoomsWithContractsByMotelId(@Param("motelId") UUID motelId);
 
     List<Room> findByMotelMotelId(UUID motelId);

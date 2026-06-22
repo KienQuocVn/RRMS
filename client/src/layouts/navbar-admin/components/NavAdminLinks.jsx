@@ -49,28 +49,28 @@ const NavLink = ({ to, icon, label, isActive, onClick }) => (
 const mockNotifications = [
   {
     id: 1,
-    title: "📌 Ktx WEBSITE MỸ PHẨM HÀN QUỐC vừa thêm giường mới",
+    title: "📌 Ktx RRMS vừa thêm giường mới",
     body: "Bánh mì: thêm giường mới",
     time: "2026-05-17T14:40:51.000000Z",
     read: false
   },
   {
     id: 2,
-    title: "📌 quoc, Ktx WEBSITE MỸ PHẨM HÀN QUỐC đã bị xóa",
+    title: "📌 quoc, Ktx RRMS đã bị xóa",
     body: "Bánh mì: đã xóa giường",
     time: "2026-05-17T14:40:22.000000Z",
     read: false
   },
   {
     id: 3,
-    title: "💵 quoc, Ktx WEBSITE MỸ PHẨM HÀN QUỐC thanh toán 🎉 xong hóa đơn T.5/2026",
+    title: "💵 quoc, Ktx RRMS thanh toán 🎉 xong hóa đơn T.5/2026",
     body: "Bánh mì: thanh toán xong hóa đơn T.5/2026, với số tiền: 5.300.000đ, phương thức: Tiền mặt",
     time: "2026-05-09T17:03:55.000000Z",
     read: false
   },
   {
     id: 4,
-    title: "💰 quoc, Ktx WEBSITE MỸ PHẨM HÀN QUỐC lập hóa đơn",
+    title: "💰 quoc, Ktx RRMS lập hóa đơn",
     body: "Bánh mì: lập hóa đơn cho quoc, cho T.5/2026, với số tiền: 5.300.000đ",
     time: "2026-05-09T17:01:00.000000Z",
     read: false

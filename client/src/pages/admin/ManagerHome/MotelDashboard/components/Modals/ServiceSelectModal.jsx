@@ -17,6 +17,7 @@ import InboxIcon from '@mui/icons-material/Inbox'
 import Swal from 'sweetalert2'
 
 import { updateSerivceRoom, DeleteRoomServiceByid } from '~/apis/roomAPI'
+import { normalizeRoomServiceCollection } from '~/utils/apiAdapters'
 
 const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onUpdateSuccess }) => {
   const [roomServices, setRoomServices] = useState([])
@@ -25,7 +26,7 @@ const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onU
   // Initialize state when modal opens or initial data changes
   useEffect(() => {
     if (open) {
-      setRoomServices([...initialRoomServices])
+      setRoomServices(normalizeRoomServiceCollection(initialRoomServices))
     }
   }, [open, initialRoomServices])
 

@@ -11,7 +11,7 @@ export default defineConfig({
   plugins: [
     react(),
     visualizer({
-      open: true,
+      open: process.env.OPEN_BUNDLE_ANALYZER === 'true',
     }),
     VitePWA({
       registerType: 'autoUpdate',

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { Box, CircularProgress } from '@mui/material'
 import Swal from 'sweetalert2'
@@ -13,12 +13,15 @@ import ServiceSelectModal from './components/Modals/ServiceSelectModal'
 import AssetSelectModal from './components/Modals/AssetSelectModal'
 import NoteModal from './components/Modals/NoteModal'
 import InvoiceModal from './components/Modals/InvoiceModal'
+import InvoiceSuccessModal from './components/Modals/InvoiceSuccessModal'
+import CollectPaymentModal from './components/Modals/CollectPaymentModal'
 
 // API
 import { getRoomByMotelId, getServiceRoombyRoomId, DeleteRoomByid } from '~/apis/roomAPI'
 import { getAllMotelDevices, getAllDeviceByRomId } from '~/apis/deviceAPT'
 import { getMotelById } from '~/apis/motelAPI'
 import { getContractByIdRoom2 } from '~/apis/contractTemplateAPI'
+import { fetchInvoices } from '~/apis/invoiceAPI'
 import { deleteReserveAPlace } from '~/apis/ReserveAPlaceAPI'
 import { isValidRouteParam } from '~/utils/apiAdapters'
 
@@ -48,6 +51,10 @@ const MotelDashboard = ({ Motel }) => {
   const [roomServices, setRoomServices] = useState([])
   const [deviceDetails, setDeviceDetails] = useState([])
   const [contract, setContract] = useState({})
+  const [createdInvoice, setCreatedInvoice] = useState(null)
+  const [collectInvoice, setCollectInvoice] = useState(null)
+  const [roomUnpaidInvoices, setRoomUnpaidInvoices] = useState([])
+  const [collectInvoices, setCollectInvoices] = useState([])
 
   // Modal States
   const [modals, setModals] = useState({
@@ -56,6 +63,8 @@ const MotelDashboard = ({ Motel }) => {
     assetSelect: false,
     note: false,
     invoice: false,
+    invoiceSuccess: false,
+    collectPayment: false,
     rentRoom: false,
     createContract: false,
     reserveAPlace: false,
@@ -100,19 +109,11 @@ const MotelDashboard = ({ Motel }) => {
     setColumns((prev) => prev.map((col) => (col.id === colId ? { ...col, visible: !col.visible } : col)))
   }
 
-  useEffect(() => {
-    if (activeMotelId) {
-      fetchData()
-      fetchMotelServices()
-      fetchDevices()
-    }
-  }, [activeMotelId])
-
   const toggleModal = (modalName, isOpen = true) => {
     setModals((prev) => ({ ...prev, [modalName]: isOpen }))
   }
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
     try {
       const dataRoom = await getRoomByMotelId(activeMotelId)
@@ -122,25 +123,33 @@ const MotelDashboard = ({ Motel }) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeMotelId])
 
-  const fetchMotelServices = async () => {
+  const fetchMotelServices = useCallback(async () => {
     try {
       const response = await getMotelById(activeMotelId)
       setMotelServices(response.data?.result?.motelServices || [])
     } catch (error) {
       console.error('Error fetching motel services:', error)
     }
-  }
+  }, [activeMotelId])
 
-  const fetchDevices = async () => {
+  const fetchDevices = useCallback(async () => {
     try {
       const response = await getAllMotelDevices(activeMotelId)
       setAllDevices(response.result || [])
     } catch (error) {
       console.error('Error fetching devices:', error)
     }
-  }
+  }, [activeMotelId])
+
+  useEffect(() => {
+    if (activeMotelId) {
+      fetchData()
+      fetchMotelServices()
+      fetchDevices()
+    }
+  }, [activeMotelId, fetchData, fetchDevices, fetchMotelServices])
 
   // Pre-fetch room specific data
   const prefetchRoomData = async (room) => {
@@ -167,8 +176,67 @@ const MotelDashboard = ({ Motel }) => {
       // Fetch Devices
       const devicesRes = await getAllDeviceByRomId(room.roomId)
       setDeviceDetails(devicesRes?.result || [])
+
+      const unpaidInvoices = await getUnpaidInvoicesByRoom(room.roomId)
+      setRoomUnpaidInvoices(unpaidInvoices)
+
+      return contractRes || room.latestContract || {}
     } catch (error) {
       console.error('Error prefetching room data', error)
+      return room.latestContract || {}
+    }
+  }
+
+  const extractInvoiceItems = (response) => {
+    const result = response?.result || response
+    if (Array.isArray(result)) return result
+    if (Array.isArray(result?.items)) return result.items
+    if (Array.isArray(result?.content)) return result.content
+    return []
+  }
+
+  const getUnpaidInvoicesByRoom = async (roomId) => {
+    if (!activeMotelId || !roomId) return []
+
+    const response = await fetchInvoices(activeMotelId)
+    return extractInvoiceItems(response)
+      .filter((invoice) => invoice.roomId === roomId && invoice.paymentStatus !== 'PAID' && invoice.paymentStatus !== 'CANCELED')
+      .sort((first, second) => new Date(second.invoiceCreateDate || 0) - new Date(first.invoiceCreateDate || 0))
+  }
+
+  const sumInvoiceTransactions = (invoice) =>
+    (invoice?.transactions || []).reduce(
+      (total, transaction) => total + Number(transaction.amount || transaction.totalAmount || 0),
+      0
+    )
+
+  const getInvoiceRemainingAmount = (invoice) => Math.max(0, Number(invoice?.totalAmount || 0) - sumInvoiceTransactions(invoice))
+
+  const roomDebtAmount = roomUnpaidInvoices.reduce((total, invoice) => total + getInvoiceRemainingAmount(invoice), 0)
+
+  const mergeInvoicesById = (invoices) =>
+    invoices.filter(Boolean).filter((invoice, index, list) => list.findIndex((item) => item.invoiceId === invoice.invoiceId) === index)
+
+  const handleInvoiceCreated = (invoice) => {
+    const nextUnpaidInvoices = mergeInvoicesById([invoice, ...roomUnpaidInvoices])
+    setCreatedInvoice(invoice)
+    setCollectInvoice(invoice)
+    setRoomUnpaidInvoices(nextUnpaidInvoices)
+    setCollectInvoices(nextUnpaidInvoices)
+    toggleModal('invoice', false)
+    toggleModal('invoiceSuccess', true)
+    fetchData()
+  }
+
+  const openCollectPayment = async (room, invoice = null) => {
+    try {
+      const invoices = invoice ? mergeInvoicesById([invoice, ...roomUnpaidInvoices]) : await getUnpaidInvoicesByRoom(room.roomId)
+      setCollectInvoices(invoices)
+      setCollectInvoice(invoice || invoices[0] || null)
+      toggleModal('collectPayment')
+    } catch (error) {
+      console.error('Failed to fetch unpaid invoice:', error)
+      Swal.fire('Lỗi', 'Không thể tải hóa đơn cần thu của phòng này.', 'error')
     }
   }
 
@@ -186,6 +254,7 @@ const MotelDashboard = ({ Motel }) => {
         Swal.fire('Đã xóa!', 'Xóa phòng thành công', 'success')
         fetchData()
       } catch (error) {
+        console.error('Failed to delete room:', error)
         Swal.fire('Lỗi', 'Không thể xóa phòng', 'error')
       }
     }
@@ -205,20 +274,25 @@ const MotelDashboard = ({ Motel }) => {
         Swal.fire('Thành công', 'Hủy cọc thành công', 'success')
         fetchData()
       } catch (error) {
+        console.error('Failed to cancel reserve:', error)
         Swal.fire('Lỗi', 'Không thể hủy cọc', 'error')
       }
     }
   }
 
   const handleActionClick = async (action, room) => {
-    await prefetchRoomData(room)
+    const activeContract = await prefetchRoomData(room)
+    const contractId = activeContract?.contractId || room.latestContract?.contractId
 
     switch (action) {
       case 'detail':
         window.open(`/quanlytro/${activeMotelId}/Chi-tiet-phong/${room.roomId}`, '_blank')
         break
-      case 'collect':
+      case 'invoice':
         toggleModal('invoice')
+        break
+      case 'collect':
+        await openCollectPayment(room)
         break
       case 'rent':
         toggleModal('createContract')
@@ -265,6 +339,27 @@ const MotelDashboard = ({ Motel }) => {
       case 'list_tenant':
         toggleModal('rentRoom')
         break
+      case 'view_contract':
+        if (contractId) window.open(`/quanlytro/${activeMotelId}/Contract-Preview/${contractId}`, '_blank')
+        break
+      case 'print_contract':
+        if (contractId) {
+          const printWindow = window.open(`/quanlytro/${activeMotelId}/Contract-Preview/${contractId}`, '_blank')
+          if (printWindow) {
+            printWindow.onload = () => printWindow.print()
+          }
+        }
+        break
+      case 'share_contract':
+        if (contractId) {
+          const shareLink = `${window.location.origin}/quanlytro/${activeMotelId}/Contract-Preview/${contractId}`
+          await navigator.clipboard.writeText(shareLink)
+          Swal.fire('Thành công', 'Đã sao chép liên kết hợp đồng', 'success')
+        }
+        break
+      case 'share_code':
+        Swal.fire('Thông báo', 'Chức năng chia sẻ mã kết nối chưa được cấu hình.', 'info')
+        break
       default:
         break
     }
@@ -280,7 +375,7 @@ const MotelDashboard = ({ Motel }) => {
     }).length,
     reportEnd: rooms.filter((r) => r.latestContract?.status === 'ReportEnd').length,
     expire: rooms.filter((r) => r.latestContract?.status === 'IATExpire').length,
-    overdue: rooms.filter((r) => false).length, // Placeholder if no overdue logic available
+    overdue: 0, // Placeholder if no overdue logic available
     stake: rooms.filter((r) => r.reserveAPlace?.status === 'ACTIVE').length,
     debt: rooms.filter((r) => (r.debt || 0) > 0).length
   }
@@ -358,10 +453,51 @@ const MotelDashboard = ({ Motel }) => {
       <InvoiceModal
         open={modals.invoice}
         onClose={() => toggleModal('invoice', false)}
+        onCreated={handleInvoiceCreated}
         room={selectedRoom}
         contract={contract}
         roomServices={roomServices}
         deviceDetails={deviceDetails}
+        outstandingDebt={roomDebtAmount}
+      />
+      <InvoiceSuccessModal
+        open={modals.invoiceSuccess}
+        onClose={() => toggleModal('invoiceSuccess', false)}
+        invoice={createdInvoice}
+        room={selectedRoom}
+        onCollect={(invoice) => {
+          toggleModal('invoiceSuccess', false)
+          openCollectPayment(selectedRoom, invoice)
+        }}
+        onDetail={(invoice) => {
+          Swal.fire({
+            icon: 'info',
+            title: 'Chi tiết hóa đơn',
+            text: `Hóa đơn ${invoice?.invoiceId || ''} - Tổng tiền ${Number(invoice?.totalAmount || 0).toLocaleString('vi-VN')} đ`
+          })
+        }}
+      />
+      <CollectPaymentModal
+        open={modals.collectPayment}
+        onClose={() => toggleModal('collectPayment', false)}
+        invoice={collectInvoice}
+        invoices={collectInvoices}
+        room={selectedRoom}
+        contract={contract}
+        onCollected={(paidInvoice) => {
+          const nextInvoices = collectInvoices.filter((invoice) => invoice.invoiceId !== paidInvoice?.invoiceId)
+          setCollectInvoices(nextInvoices)
+          setRoomUnpaidInvoices((previous) => previous.filter((invoice) => invoice.invoiceId !== paidInvoice?.invoiceId))
+          setCollectInvoice(nextInvoices[0] || null)
+          fetchData()
+        }}
+        onDetail={(invoice) => {
+          Swal.fire({
+            icon: 'info',
+            title: 'Chi tiết hóa đơn',
+            text: `Hóa đơn ${invoice?.invoiceId || ''} - Tổng tiền ${Number(invoice?.totalAmount || 0).toLocaleString('vi-VN')} đ`
+          })
+        }}
       />
 
       {/* --- OLD External Modals --- */}
@@ -380,6 +516,7 @@ const MotelDashboard = ({ Motel }) => {
         modalOpen={modals.endContract}
         toggleModal={() => toggleModal('endContract', false)}
         roomId={selectedRoom?.roomId}
+        onSuccess={fetchData}
       />
       <ModalExtendContract
         modalOpen={modals.extendContract}
@@ -401,6 +538,7 @@ const MotelDashboard = ({ Motel }) => {
         toggleModal={() => toggleModal('createContract', false)}
         motelId={activeMotelId}
         roomId={selectedRoom?.roomId}
+        onSuccess={fetchData}
       />
       <ModalReportContract
         modalOpen={modals.reportContract}

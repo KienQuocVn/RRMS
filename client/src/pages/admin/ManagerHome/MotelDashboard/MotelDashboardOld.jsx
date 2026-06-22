@@ -610,6 +610,38 @@ const HomeWData = ({ Motel }) => {
     }
   }
 
+  const refreshRoomAfterContractCreated = async ({ roomId: updatedRoomId } = {}) => {
+    const targetRoomId = updatedRoomId || room?.roomId
+
+    if (!targetRoomId) {
+      await fetchRooms()
+      return
+    }
+
+    try {
+      const updatedRoom = await getRoomById(targetRoomId)
+
+      if (!updatedRoom) {
+        await fetchRooms()
+        return
+      }
+
+      setRoom((prevRoom) => ({
+        ...prevRoom,
+        ...updatedRoom
+      }))
+      setContract(updatedRoom.latestContract || {})
+      setRooms((prevRooms) =>
+        prevRooms.map((currentRoom) =>
+          currentRoom.roomId === updatedRoom.roomId ? { ...currentRoom, ...updatedRoom } : currentRoom
+        )
+      )
+    } catch (error) {
+      console.error('Failed to refresh room after contract creation:', error)
+      await fetchRooms()
+    }
+  }
+
   const fetchMotelServices = async (id) => {
     try {
       if (!isValidRouteParam(id)) {
@@ -780,7 +812,6 @@ const HomeWData = ({ Motel }) => {
         }).format(value) +
         '<br/> <div style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;"><i style="font-size: 11px;color:#ff0000;">(Chưa thu tiền cọc)</i></div>'
     } else {
-      // Nếu giá trị là 0 hoặc null/undefined, hiển thị "Chưa thu tiền cọc"
       displayValue = new Intl.NumberFormat('vi-VN', {
         style: 'currency',
         currency: 'VND'
@@ -791,6 +822,11 @@ const HomeWData = ({ Motel }) => {
   }
 
   const handleActionClick = (e, roomId) => {
+    const selectedRoom = rooms.find((currentRoom) => currentRoom.roomId === roomId)
+    if (selectedRoom) {
+      setRoom(selectedRoom)
+      setContract(selectedRoom.latestContract || {})
+    }
     e.stopPropagation() // Ngừng sự kiện click để không bị bắt bởi sự kiện ngoài
     // In ra tọa độ
     // Sử dụng getBoundingClientRect để lấy vị trí chính xác của phần tử được nhấn
@@ -3518,6 +3554,7 @@ const HomeWData = ({ Motel }) => {
         toggleModal={toggleModalContract}
         motelId={activeMotelId ?? null}
         roomId={room?.roomId ?? null}
+        onSuccess={refreshRoomAfterContractCreated}
       />
       <ModalReportContract
         modalOpen={modalOpenReportContract}

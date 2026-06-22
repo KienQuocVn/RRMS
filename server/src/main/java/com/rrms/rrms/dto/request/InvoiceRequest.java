@@ -25,6 +25,8 @@ public class InvoiceRequest {
     private String invoiceReason;
     private YearMonth invoiceCreateMonth;
     private LocalDate invoiceCreateDate;
+    private LocalDate dueDate;
+    private LocalDate dueDateofmoveinDate;
     private List<InvoiceDetailServiceRequest> serviceDetails;
     private List<InvoiceDetailDeviceRequest> deviceDetails;
     private List<InvoiceAdditionItemRequest> additionItems;

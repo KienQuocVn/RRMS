@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -13,17 +13,16 @@ import {
 } from '@mui/material';
 import Swal from 'sweetalert2';
 import { getRoomById } from '~/apis/roomAPI';
-import { getContractByIdRoom2, deleteContractByRoomId } from '~/apis/contractTemplateAPI';
-import { deleteTenant } from '~/apis/tenantAPI';
+import { getContractByIdRoom2, endContractByRoomId } from '~/apis/contractTemplateAPI';
 import { Colors } from '~/theme';
 
-function ModalEndContract({ toggleModal, modalOpen, roomId }) {
+function ModalEndContract({ toggleModal, modalOpen, roomId, onSuccess }) {
   const [room, setRoom] = useState({});
   const [contract, setContract] = useState({});
   const [dateTerminate, setDateTerminate] = useState('');
 
   // Danh sách công việc mặc định
-  const defaultTasks = [
+  const defaultTasks = useMemo(() => [
     {
       id: 1,
       title: 'Lập hóa đơn tháng cuối',
@@ -36,7 +35,7 @@ function ModalEndContract({ toggleModal, modalOpen, roomId }) {
       description: 'Kiểm tra lại tài sản, thiết bị trong trước khi kết thúc hợp đồng',
       completed: false
     }
-  ];
+  ], []);
 
   const [tasks, setTasks] = useState([...defaultTasks]);
 
@@ -50,7 +49,7 @@ function ModalEndContract({ toggleModal, modalOpen, roomId }) {
     if (modalOpen) {
       setTasks([...defaultTasks]);
     }
-  }, [modalOpen]);
+  }, [modalOpen, defaultTasks]);
 
   const fetchDataRoom = async (roomId) => {
     if (roomId) {
@@ -120,8 +119,7 @@ function ModalEndContract({ toggleModal, modalOpen, roomId }) {
 
     if (roomId) {
       try {
-        await deleteContractByRoomId(roomId);
-        await deleteTenant(roomId);
+        await endContractByRoomId(roomId, dateTerminate);
 
         Swal.fire({
           icon: 'success',
@@ -131,9 +129,8 @@ function ModalEndContract({ toggleModal, modalOpen, roomId }) {
           confirmButtonColor: '#20a9e7'
         });
 
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        if (typeof onSuccess === 'function') await onSuccess();
+        toggleModal();
       } catch (error) {
         Swal.fire({
           icon: 'error',

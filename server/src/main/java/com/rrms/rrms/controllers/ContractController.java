@@ -68,6 +68,15 @@ public class ContractController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @PutMapping("/room/{roomId}/end")
+    public ResponseEntity<Void> endContractByRoomId(
+            @PathVariable UUID roomId,
+            @RequestParam(name = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                    Date endDate) {
+        contractService.endContractByRoomId(roomId, endDate);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @GetMapping("/motel/{motelId}")
     public ResponseEntity<List<ContractResponse>> getAllContractsByMotelId(@PathVariable UUID motelId) {
         List<ContractResponse> responses = contractService.getAllContractsByMotelId(motelId);
@@ -82,7 +91,7 @@ public class ContractController {
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (jakarta.persistence.EntityNotFoundException e) {
             // Khi phòng trống không có hợp đồng, trả về 200 OK với body rỗng để UI không bị văng lỗi Axios 404
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         }
     }
 

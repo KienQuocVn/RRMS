@@ -34,5 +34,5 @@ public interface IInvoiceService {
 
     InvoiceResponse mapToResponse(Invoice invoice);
 
-    void collectPayment(UUID invoiceId, CollectPaymentRequest request);
+    InvoiceResponse collectPayment(UUID invoiceId, CollectPaymentRequest request);
 }
