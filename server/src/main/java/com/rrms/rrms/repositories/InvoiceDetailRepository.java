@@ -15,4 +15,6 @@ import com.rrms.rrms.models.InvoiceDetail;
 @Repository
 public interface InvoiceDetailRepository extends JpaRepository<InvoiceDetail, UUID> {
     List<InvoiceDetail> findByInvoiceInvoiceId(UUID invoiceId);
+
+    List<InvoiceDetail> findByRoomDeviceRoomDeviceId(UUID roomDeviceId);
 }

@@ -21,9 +21,15 @@ import { getRoomByMotelId, getServiceRoombyRoomId, DeleteRoomByid } from '~/apis
 import { getAllMotelDevices, getAllDeviceByRomId } from '~/apis/deviceAPT'
 import { getMotelById } from '~/apis/motelAPI'
 import { getContractByIdRoom2 } from '~/apis/contractTemplateAPI'
-import { fetchInvoices } from '~/apis/invoiceAPI'
+import { fetchAllInvoicesByMotelId } from '~/apis/invoiceAPI'
 import { deleteReserveAPlace } from '~/apis/ReserveAPlaceAPI'
-import { isValidRouteParam } from '~/utils/apiAdapters'
+import { isValidRouteParam, isReserveAPlaceStatus } from '~/utils/apiAdapters'
+import {
+  enrichRoomsWithDebt,
+  getInvoiceRemainingAmount,
+  getUnpaidInvoicesByRoom,
+  mergeInvoicesById
+} from '~/utils/invoiceDebt'
 
 // Old Modals
 import RentRoomModal from '../../NavContentAdmin/RentRoomModal'
@@ -42,6 +48,7 @@ const MotelDashboard = ({ Motel }) => {
   const activeMotelId = isValidRouteParam(motelId) ? motelId : Motel?.[0]?.motelId
 
   const [rooms, setRooms] = useState([])
+  const [motelInvoices, setMotelInvoices] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Data for Modals
@@ -117,7 +124,18 @@ const MotelDashboard = ({ Motel }) => {
     setLoading(true)
     try {
       const dataRoom = await getRoomByMotelId(activeMotelId)
-      if (dataRoom) setRooms(dataRoom)
+
+      let invoices = []
+      try {
+        invoices = await fetchAllInvoicesByMotelId(activeMotelId)
+      } catch (invoiceError) {
+        console.error('Failed to fetch invoices for debt calculation:', invoiceError)
+      }
+
+      setMotelInvoices(invoices)
+      if (dataRoom) {
+        setRooms(invoices.length > 0 ? enrichRoomsWithDebt(dataRoom, invoices) : dataRoom)
+      }
     } catch (error) {
       console.error('Failed to fetch rooms:', error)
     } finally {
@@ -177,7 +195,7 @@ const MotelDashboard = ({ Motel }) => {
       const devicesRes = await getAllDeviceByRomId(room.roomId)
       setDeviceDetails(devicesRes?.result || [])
 
-      const unpaidInvoices = await getUnpaidInvoicesByRoom(room.roomId)
+      const unpaidInvoices = getUnpaidInvoicesByRoom(motelInvoices, room.roomId)
       setRoomUnpaidInvoices(unpaidInvoices)
 
       return contractRes || room.latestContract || {}
@@ -187,35 +205,24 @@ const MotelDashboard = ({ Motel }) => {
     }
   }
 
-  const extractInvoiceItems = (response) => {
-    const result = response?.result || response
-    if (Array.isArray(result)) return result
-    if (Array.isArray(result?.items)) return result.items
-    if (Array.isArray(result?.content)) return result.content
-    return []
+  const roomDebtAmount = roomUnpaidInvoices.reduce(
+    (total, invoice) => total + getInvoiceRemainingAmount(invoice),
+    0
+  )
+
+  const openCollectPayment = async (room, invoice = null) => {
+    try {
+      const invoices = invoice
+        ? mergeInvoicesById([invoice, ...getUnpaidInvoicesByRoom(motelInvoices, room.roomId)])
+        : getUnpaidInvoicesByRoom(motelInvoices, room.roomId)
+      setCollectInvoices(invoices)
+      setCollectInvoice(invoice || invoices[0] || null)
+      toggleModal('collectPayment')
+    } catch (error) {
+      console.error('Failed to fetch unpaid invoice:', error)
+      Swal.fire('Lỗi', 'Không thể tải hóa đơn cần thu của phòng này.', 'error')
+    }
   }
-
-  const getUnpaidInvoicesByRoom = async (roomId) => {
-    if (!activeMotelId || !roomId) return []
-
-    const response = await fetchInvoices(activeMotelId)
-    return extractInvoiceItems(response)
-      .filter((invoice) => invoice.roomId === roomId && invoice.paymentStatus !== 'PAID' && invoice.paymentStatus !== 'CANCELED')
-      .sort((first, second) => new Date(second.invoiceCreateDate || 0) - new Date(first.invoiceCreateDate || 0))
-  }
-
-  const sumInvoiceTransactions = (invoice) =>
-    (invoice?.transactions || []).reduce(
-      (total, transaction) => total + Number(transaction.amount || transaction.totalAmount || 0),
-      0
-    )
-
-  const getInvoiceRemainingAmount = (invoice) => Math.max(0, Number(invoice?.totalAmount || 0) - sumInvoiceTransactions(invoice))
-
-  const roomDebtAmount = roomUnpaidInvoices.reduce((total, invoice) => total + getInvoiceRemainingAmount(invoice), 0)
-
-  const mergeInvoicesById = (invoices) =>
-    invoices.filter(Boolean).filter((invoice, index, list) => list.findIndex((item) => item.invoiceId === invoice.invoiceId) === index)
 
   const handleInvoiceCreated = (invoice) => {
     const nextUnpaidInvoices = mergeInvoicesById([invoice, ...roomUnpaidInvoices])
@@ -226,18 +233,6 @@ const MotelDashboard = ({ Motel }) => {
     toggleModal('invoice', false)
     toggleModal('invoiceSuccess', true)
     fetchData()
-  }
-
-  const openCollectPayment = async (room, invoice = null) => {
-    try {
-      const invoices = invoice ? mergeInvoicesById([invoice, ...roomUnpaidInvoices]) : await getUnpaidInvoicesByRoom(room.roomId)
-      setCollectInvoices(invoices)
-      setCollectInvoice(invoice || invoices[0] || null)
-      toggleModal('collectPayment')
-    } catch (error) {
-      console.error('Failed to fetch unpaid invoice:', error)
-      Swal.fire('Lỗi', 'Không thể tải hóa đơn cần thu của phòng này.', 'error')
-    }
   }
 
   const handleDeleteRoom = async (roomId) => {
@@ -371,12 +366,12 @@ const MotelDashboard = ({ Motel }) => {
     empty: rooms.filter((r) => {
       const s = r.latestContract?.status
       const rs = r.reserveAPlace?.status
-      return !s && !rs
+      return !s && !isReserveAPlaceStatus(rs)
     }).length,
     reportEnd: rooms.filter((r) => r.latestContract?.status === 'ReportEnd').length,
     expire: rooms.filter((r) => r.latestContract?.status === 'IATExpire').length,
     overdue: 0, // Placeholder if no overdue logic available
-    stake: rooms.filter((r) => r.reserveAPlace?.status === 'ACTIVE').length,
+    stake: rooms.filter((r) => isReserveAPlaceStatus(r.reserveAPlace?.status)).length,
     debt: rooms.filter((r) => (r.debt || 0) > 0).length
   }
 
@@ -385,14 +380,14 @@ const MotelDashboard = ({ Motel }) => {
 
     const status = room.latestContract?.status
     const reserveStatus = room.reserveAPlace?.status
-    const isRoomEmpty = !status && !reserveStatus
+    const isRoomEmpty = !status && !isReserveAPlaceStatus(reserveStatus)
 
     // If no filters selected, show all
     if (!Object.values(filters).some(Boolean)) return true
 
     if (filters.isEmpty && isRoomEmpty) return true
     if (filters.isActive && status === 'ACTIVE') return true
-    if (filters.isStake && reserveStatus === 'ACTIVE') return true
+    if (filters.isStake && isReserveAPlaceStatus(reserveStatus)) return true
     if (filters.isIATExpire && status === 'IATExpire') return true
     if (filters.isReportEnd && status === 'ReportEnd') return true
     if (filters.isDebt && (room.debt || 0) > 0) return true

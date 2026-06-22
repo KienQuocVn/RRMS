@@ -22,6 +22,7 @@ public class RoomResponse {
     private String prioritize;
     private Integer area;
     private Double deposit;
+    private Double debt;
     private RoomStatus status;
     private String finance;
     private String description;

@@ -3,13 +3,23 @@ import AddIcon from '@mui/icons-material/Add'
 import { useState, useEffect } from 'react'
 import { getRoomById } from '~/apis/roomAPI'
 import Flatpickr from 'react-flatpickr'
+import { Vietnamese } from 'flatpickr/dist/l10n/vn'
+import 'flatpickr/dist/themes/material_blue.css'
 import Swal from 'sweetalert2'
 import { createReserveAPlace } from '~/apis/ReserveAPlaceAPI'
+
+const datePickerOptions = {
+  allowInput: false,
+  clickOpens: true,
+  locale: Vietnamese,
+  dateFormat: 'd/m/Y'
+}
+
 function ReserveAPlaceModal({ toggleModal, modalOpen, roomId }) {
   const [room, setRoom] = useState({})
   const [reserveAPlace, setReserveAPlaceData] = useState({
     createDate: new Date(), // Ngày cọc giữ chỗ
-    moveInDate: '', // Ngày dự kiến vào ở
+    moveInDate: null, // Ngày dự kiến vào ở
     nameTenant: '', // Tên người ở
     phoneTenant: '', // Số điện thoại người ở
     deposit: null, // Số tiền cọc giữ chỗ (đ)
@@ -47,31 +57,63 @@ function ReserveAPlaceModal({ toggleModal, modalOpen, roomId }) {
   }
 
   const formatDate = (date) => {
-    const d = new Date(date)
+    if (!date) return null
+
+    const d = date instanceof Date ? date : new Date(date)
+    if (Number.isNaN(d.getTime())) return null
+
     const year = d.getFullYear()
-    const month = (d.getMonth() + 1).toString().padStart(2, '0') // Tháng bắt đầu từ 0 nên cộng 1
-    const day = d.getDate().toString().padStart(2, '0') // Thêm 0 nếu ngày < 10
+    const month = (d.getMonth() + 1).toString().padStart(2, '0')
+    const day = d.getDate().toString().padStart(2, '0')
 
     return `${year}-${month}-${day}`
   }
 
+  const handleDateChange = (field, selectedDates) => {
+    if (selectedDates.length > 0) {
+      setReserveAPlaceData((prev) => ({
+        ...prev,
+        [field]: selectedDates[0]
+      }))
+    }
+  }
+
   const handleSubmit = async () => {
     const form = document.getElementById('add-deposit-temp-form')
+    const formattedCreateDate = formatDate(reserveAPlace.createDate)
+    const formattedMoveInDate = formatDate(reserveAPlace.moveInDate)
+
+    if (!formattedCreateDate) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Thiếu thông tin',
+        text: 'Vui lòng chọn ngày cọc giữ chỗ.',
+        confirmButtonText: 'Đóng'
+      })
+      return
+    }
+
+    if (!formattedMoveInDate) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Thiếu thông tin',
+        text: 'Vui lòng chọn ngày dự kiến vào ở.',
+        confirmButtonText: 'Đóng'
+      })
+      return
+    }
 
     if (!form.checkValidity()) {
       form.classList.add('was-validated')
     } else {
       try {
         if (roomId) {
-          // Tạo đối tượng reserveAPlace với roomId đã được cập nhật
           const newReserveAPlace = {
             ...reserveAPlace,
             roomId: room.roomId ? room.roomId : '',
-            createDate: formatDate(reserveAPlace.createDate), // Chỉ lấy ngày tháng năm
-            moveInDate: formatDate(reserveAPlace.moveInDate) // Chỉ lấy ngày tháng năm
+            createDate: formattedCreateDate,
+            moveInDate: formattedMoveInDate
           }
-
-          console.log(newReserveAPlace) // Kiểm tra dữ liệu sẽ gửi
 
           await createReserveAPlace(newReserveAPlace)
 
@@ -112,14 +154,13 @@ function ReserveAPlaceModal({ toggleModal, modalOpen, roomId }) {
   }, [roomId]) // Chỉ chạy lại khi roomId hoặc motelId thay đổi0
 
   useEffect(() => {
-    // Chỉ cập nhật state khi roomId có giá trị
-    if (roomId) {
+    if (room?.roomId) {
       setReserveAPlaceData((prev) => ({
         ...prev,
-        roomId: room.roomId ? room.roomId : ''
+        roomId: room.roomId
       }))
     }
-  }, [roomId]) // Thực thi khi roomId thay đổi
+  }, [room])
 
   return (
     <div>
@@ -171,25 +212,20 @@ function ReserveAPlaceModal({ toggleModal, modalOpen, roomId }) {
                         className="form-control date-flat-picker flatpickr-input"
                         name="createDate"
                         id="date_deposit_temp"
-                        placeholder="Nhập ngày cọc giữ chỗ"
-                        data-format="date"
+                        placeholder="Chọn ngày cọc giữ chỗ"
+                        readOnly
                         required
                         value={reserveAPlace.createDate}
-                        onChange={(date) => {
-                          if (date.length > 0) {
-                            setReserveAPlaceData((prev) => ({
-                              ...prev,
-                              createDate: date
-                            }))
-                          }
-                        }}
-                        options={{
-                          allowInput: true,
-                          dateFormat: 'd-m-Y'
-                        }}
+                        onChange={(selectedDates) => handleDateChange('createDate', selectedDates)}
+                        options={datePickerOptions}
                       />
-                      <label htmlFor="date_deposit_temp">Ngày cọc giữ chỗ</label>
+                      <label htmlFor="date_deposit_temp">
+                        Ngày cọc giữ chỗ <span style={{ color: 'red' }}>*</span>
+                      </label>
                     </div>
+                    <label className="input-group-text" htmlFor="date_deposit_temp">
+                      <i className="bi bi-calendar" style={{ fontSize: '25px' }}></i>
+                    </label>
                   </div>
                 </div>
 
@@ -200,24 +236,20 @@ function ReserveAPlaceModal({ toggleModal, modalOpen, roomId }) {
                         className="form-control date-flat-picker flatpickr-input"
                         name="moveInDate"
                         id="date_will_join"
-                        placeholder="Nhập ngày dự kiến vào ở"
+                        placeholder="Chọn ngày dự kiến vào ở"
+                        readOnly
                         required
-                        value={reserveAPlace.moveInDate}
-                        onChange={(date) => {
-                          if (date.length > 0) {
-                            setReserveAPlaceData((prev) => ({
-                              ...prev,
-                              moveInDate: date[0]
-                            }))
-                          }
-                        }}
-                        options={{
-                          allowInput: true,
-                          dateFormat: 'd-m-Y'
-                        }}
+                        value={reserveAPlace.moveInDate || ''}
+                        onChange={(selectedDates) => handleDateChange('moveInDate', selectedDates)}
+                        options={datePickerOptions}
                       />
-                      <label htmlFor="date_will_join">Ngày dự kiến vào ở</label>
+                      <label htmlFor="date_will_join">
+                        Ngày dự kiến vào ở <span style={{ color: 'red' }}>*</span>
+                      </label>
                     </div>
+                    <label className="input-group-text" htmlFor="date_will_join">
+                      <i className="bi bi-calendar" style={{ fontSize: '25px' }}></i>
+                    </label>
                   </div>
                 </div>
 
@@ -271,7 +303,7 @@ function ReserveAPlaceModal({ toggleModal, modalOpen, roomId }) {
                       name="deposit"
                       id="deposit_temp_amount"
                       placeholder="Nhập số tiền cọc"
-                      value={formatCurrency(reserveAPlace.deposit)}
+                      value={reserveAPlace.deposit != null ? formatCurrency(reserveAPlace.deposit) : ''}
                       onChange={handleDepositChange}
                       required
                     />

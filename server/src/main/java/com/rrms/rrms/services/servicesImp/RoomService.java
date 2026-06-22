@@ -198,8 +198,12 @@ public class RoomService implements IRoomService {
         response.setLatestContract(latestContract);
 
         if (room.getReserveAPlaces() != null && !room.getReserveAPlaces().isEmpty()) {
-            RoomReservationResponse roomReservationResponse =
-                    convertToRoomReservationResponse(room.getReserveAPlaces().get(0));
+            RoomReservationResponse roomReservationResponse = room.getReserveAPlaces().stream()
+                    .filter(reserve -> reserve.getStatus() == ContractStatus.DEPOSITED)
+                    .findFirst()
+                    .map(this::convertToRoomReservationResponse)
+                    .orElseGet(() -> convertToRoomReservationResponse(
+                            room.getReserveAPlaces().get(0)));
             response.setRoomReservation(roomReservationResponse);
         }
 

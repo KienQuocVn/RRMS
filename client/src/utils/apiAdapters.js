@@ -66,6 +66,11 @@ export const toLegacyContractStatus = (status) => {
   return BACKEND_TO_LEGACY_CONTRACT_STATUS[status] ?? status
 }
 
+export const isReserveAPlaceStatus = (status) => {
+  if (!status) return false
+  return status === 'Stake' || status === 'DEPOSITED'
+}
+
 export const normalizeContractResponse = (contract = null) => {
   if (!contract) return null
 
@@ -109,6 +114,7 @@ export const normalizeRoomResponse = (room = null) => {
 
   return {
     ...room,
+    debt: Number(room.debt ?? 0) || 0,
     latestContract: normalizeContractResponse(room.latestContract),
     roomReservation: normalizedReservation,
     reserveAPlace: normalizedReservation

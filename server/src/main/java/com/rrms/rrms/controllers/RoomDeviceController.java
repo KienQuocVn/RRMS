@@ -52,20 +52,22 @@ public class RoomDeviceController {
 
     @Operation(summary = "Delete a room device")
     @DeleteMapping("/{roomId}/devices/{motelDeviceId}")
-    public ApiResponse<Void> deleteRoomDevice(
+    public ApiResponse<Boolean> deleteRoomDevice(
             @PathVariable("roomId") UUID roomId, @PathVariable("motelDeviceId") UUID motelDeviceId) {
         Boolean result = roomDeviceService.deleteByRoomAndAndMotelDevice(roomId, motelDeviceId);
-        if (result) {
+        if (Boolean.TRUE.equals(result)) {
             log.info("Xóa thiết bị khỏi phòng thành công");
-            return ApiResponse.<Void>builder()
+            return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.OK.value())
                     .message("Xóa thiết bị khỏi phòng thành công")
+                    .result(true)
                     .build();
         } else {
             log.error("Xóa thiết bị khỏi phòng thất bại");
-            return ApiResponse.<Void>builder()
+            return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.NOT_FOUND.value())
                     .message("Không tìm thấy thiết bị trong phòng")
+                    .result(false)
                     .build();
         }
     }
@@ -83,22 +85,24 @@ public class RoomDeviceController {
 
     @Operation(summary = "Update quantity of a room device")
     @PutMapping("/{roomId}/devices/{motelDeviceId}")
-    public ApiResponse<Void> updateQuantityRoomDevice(
+    public ApiResponse<Boolean> updateQuantityRoomDevice(
             @PathVariable("roomId") UUID roomId,
             @PathVariable("motelDeviceId") UUID motelDeviceId,
             @RequestParam("quantity") Integer quantity) {
         Boolean result = roomDeviceService.updateQuantity(roomId, motelDeviceId, quantity);
-        if (result) {
+        if (Boolean.TRUE.equals(result)) {
             log.info("Cập nhật số lượng thiết bị trong phòng thành công");
-            return ApiResponse.<Void>builder()
+            return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.OK.value())
                     .message("Cập nhật số lượng thiết bị thành công")
+                    .result(true)
                     .build();
         } else {
             log.error("Cập nhật số lượng thiết bị thất bại");
-            return ApiResponse.<Void>builder()
+            return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.NOT_FOUND.value())
                     .message("Không tìm thấy thiết bị để cập nhật")
+                    .result(false)
                     .build();
         }
     }

@@ -35,16 +35,19 @@ const StatCard = ({ title, value, icon, color, loading }) => (
   </Card>
 )
 
-const MotelStatsCards = ({ rooms = [], loading = false }) => {
-  // Calculate stats based on rooms array
-  // Assuming room.status or room.latestContract.status determines these
-  const totalDebt = rooms.reduce((sum, r) => sum + (Number(r.debt) || 0), 0)
+import { computeTotalDebtFromRooms } from '~/utils/invoiceDebt'
+import { isReserveAPlaceStatus } from '~/utils/apiAdapters'
 
-  const emptyRooms = rooms.filter((r) => !r.latestContract?.status && !r.reserveAPlace?.status).length
+const MotelStatsCards = ({ rooms = [], loading = false }) => {
+  const totalDebt = computeTotalDebtFromRooms(rooms)
+
+  const emptyRooms = rooms.filter(
+    (r) => !r.latestContract?.status && !isReserveAPlaceStatus(r.reserveAPlace?.status)
+  ).length
   const occupiedRooms = rooms.filter(
     (r) => r.latestContract?.status === 'ACTIVE' || r.latestContract?.status === 'IATExpire'
   ).length
-  const depositedRooms = rooms.filter((r) => r.reserveAPlace?.status).length
+  const depositedRooms = rooms.filter((r) => isReserveAPlaceStatus(r.reserveAPlace?.status)).length
 
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>

@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.MotelDeviceRequest;
+import com.rrms.rrms.dto.request.MotelDeviceUpdateRequest;
 import com.rrms.rrms.dto.response.MotelDeviceResponse;
 import com.rrms.rrms.enums.Unit;
 import com.rrms.rrms.mapper.MotelDeviceMapper;
@@ -93,6 +94,37 @@ public class MotelDeviceService implements IMotelDeviceService {
             return mapper.motelDeviceToMotelDeviceResponse(savedMotelDevice);
         }
         return null;
+    }
+
+    @Override
+    public MotelDeviceResponse updateMotelDevice(UUID motelDeviceId, MotelDeviceUpdateRequest request) {
+        MotelDevice motelDevice = motelDeviceRepository.findById(motelDeviceId).orElse(null);
+        if (motelDevice == null || request == null) {
+            return null;
+        }
+
+        if (request.getTotalQuantity() < motelDevice.getTotalUsing()) {
+            log.warn("Cannot reduce totalQuantity below totalUsing for motelDeviceId={}", motelDeviceId);
+            return null;
+        }
+
+        motelDevice.setDeviceName(request.getDeviceName());
+        motelDevice.setIcon(request.getIcon());
+        motelDevice.setValue(request.getValue());
+        motelDevice.setValueInput(request.getValueInput());
+        motelDevice.setTotalQuantity(request.getTotalQuantity());
+        motelDevice.setTotalNull(request.getTotalQuantity() - motelDevice.getTotalUsing());
+        motelDevice.setSupplier(request.getSupplier());
+
+        switch (request.getUnit() == null ? "" : request.getUnit()) {
+            case "chiec" -> motelDevice.setUnit(Unit.CHIEC);
+            case "bo" -> motelDevice.setUnit(Unit.BO);
+            case "cap" -> motelDevice.setUnit(Unit.CAP);
+            default -> motelDevice.setUnit(Unit.CAI);
+        }
+
+        MotelDevice savedMotelDevice = motelDeviceRepository.save(motelDevice);
+        return mapper.motelDeviceToMotelDeviceResponse(savedMotelDevice);
     }
 
     @Override

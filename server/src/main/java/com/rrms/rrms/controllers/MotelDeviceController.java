@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.request.MotelDeviceRequest;
+import com.rrms.rrms.dto.request.MotelDeviceUpdateRequest;
 import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.MotelDeviceResponse;
 import com.rrms.rrms.services.IMotelDeviceService;
@@ -59,19 +60,39 @@ public class MotelDeviceController {
         }
     }
 
+    @Operation(summary = "Update motel device by ID")
+    @PutMapping("/{motelDeviceId}")
+    public ApiResponse<MotelDeviceResponse> updateMotelDevice(
+            @PathVariable("motelDeviceId") UUID motelDeviceId, @RequestBody MotelDeviceUpdateRequest request) {
+        MotelDeviceResponse motelDeviceResponse = motelDeviceService.updateMotelDevice(motelDeviceId, request);
+        if (motelDeviceResponse != null) {
+            return ApiResponse.<MotelDeviceResponse>builder()
+                    .code(HttpStatus.OK.value())
+                    .message("Cập nhật thiết bị nhà trọ thành công")
+                    .result(motelDeviceResponse)
+                    .build();
+        }
+        return ApiResponse.<MotelDeviceResponse>builder()
+                .code(HttpStatus.BAD_REQUEST.value())
+                .message("Cập nhật thiết bị nhà trọ thất bại")
+                .build();
+    }
+
     @Operation(summary = "Delete motel device by ID")
     @DeleteMapping("/{motelDeviceId}")
-    public ApiResponse<Void> deleteMotelDevice(@PathVariable("motelDeviceId") UUID motelDeviceId) {
+    public ApiResponse<Boolean> deleteMotelDevice(@PathVariable("motelDeviceId") UUID motelDeviceId) {
         boolean result = motelDeviceService.deleteMotelDevice(motelDeviceId);
         if (result) {
-            return ApiResponse.<Void>builder()
+            return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.OK.value())
                     .message("Xóa thiết bị khỏi nhà trọ thành công")
+                    .result(true)
                     .build();
         } else {
-            return ApiResponse.<Void>builder()
+            return ApiResponse.<Boolean>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
                     .message("Xóa thiết bị khỏi nhà trọ thất bại")
+                    .result(false)
                     .build();
         }
     }

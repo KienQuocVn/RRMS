@@ -1,5 +1,4 @@
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
-import AddIcon from '@mui/icons-material/Add'
 import { useState, useEffect } from 'react'
 import { getRoomById } from '~/apis/roomAPI'
 function ReserveAPlaceDetail({ toggleModal, modalOpen, roomId }) {
@@ -41,7 +40,7 @@ function ReserveAPlaceDetail({ toggleModal, modalOpen, roomId }) {
   return (
     <div>
       {room ? (
-        <Modal isOpen={modalOpen} toggle={toggleModal}>
+        <Modal isOpen={modalOpen} toggle={toggleModal} centered>
           <ModalHeader toggle={toggleModal}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <div
@@ -74,7 +73,7 @@ function ReserveAPlaceDetail({ toggleModal, modalOpen, roomId }) {
                   <path d="M5 12H2a10 10 0 0 0 20 0h-3"></path>
                 </svg>
               </div>
-              <h5 style={{ marginLeft: '10px' }}>Thông tin cọc giữ chỗ - {room ? room.name : <>ko co </>}</h5>
+              <h5 style={{ marginLeft: '10px' }}>Thông tin cọc giữ chỗ - {room ? room.name : <>Không có thông tin </>}</h5>
             </div>
           </ModalHeader>
 
@@ -84,39 +83,39 @@ function ReserveAPlaceDetail({ toggleModal, modalOpen, roomId }) {
                 <div className="item d-flex justify-content-between">
                   <span>Tên người đặt cọc</span>
                   <span>
-                    <b>{room.reserveAPlace?.nameTenant ? room.reserveAPlace.nameTenant : <>ko co</>}</b>
+                    <b>{room.reserveAPlace?.nameTenant ? room.reserveAPlace.nameTenant : <>Không có thông tin</>}</b>
                   </span>
                 </div>
                 <div className="item d-flex justify-content-between">
                   <span>Số điện thoại</span>
                   <span>
-                    <b>{room.reserveAPlace?.phoneTenant ? room.reserveAPlace.phoneTenant : <>ko co</>}</b>
+                    <b>{room.reserveAPlace?.phoneTenant ? room.reserveAPlace.phoneTenant : <>Không có thông tin</>}</b>
                   </span>
                 </div>
                 <div className="item d-flex justify-content-between">
                   <span>Số tiền cọc giữ chỗ</span>
                   <span>
                     <b>
-                      {room.reserveAPlace?.deposit ? room.reserveAPlace.deposit.toLocaleString('vi-VN') : <>ko co</>}₫
+                      {room.reserveAPlace?.deposit ? room.reserveAPlace.deposit.toLocaleString('vi-VN') : <>Không có thông tin</>}₫
                     </b>
                   </span>
                 </div>
                 <div className="item d-flex justify-content-between">
                   <span>Ngày thu tiền cọc</span>
                   <span>
-                    <b>{room.reserveAPlace?.createDate ? formatDate(room.reserveAPlace.createDate) : <>ko co</>}</b>
+                    <b>{room.reserveAPlace?.createDate ? formatDate(room.reserveAPlace.createDate) : <>Không có thông tin</>}</b>
                   </span>
                 </div>
                 <div className="item d-flex justify-content-between">
                   <span>Ngày dự định vào ở</span>
                   <span>
-                    <b>{room.reserveAPlace?.moveInDate ? formatDate(room.reserveAPlace.moveInDate) : <>ko co</>}</b>
+                    <b>{room.reserveAPlace?.moveInDate ? formatDate(room.reserveAPlace.moveInDate) : <>Không có thông tin</>}</b>
                   </span>
                 </div>
                 <div className="item d-flex justify-content-between">
                   <span>Ghi chú</span>
                   <span>
-                    <b>{room.reserveAPlace?.note ? room.reserveAPlace.note : <>ko co</>}</b>
+                    <b>{room.reserveAPlace?.note ? room.reserveAPlace.note : <>Không có thông tin</>}</b>
                   </span>
                 </div>
               </div>

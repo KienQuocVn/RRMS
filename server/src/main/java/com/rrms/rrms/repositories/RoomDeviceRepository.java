@@ -1,6 +1,7 @@
 package com.rrms.rrms.repositories;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +16,8 @@ public interface RoomDeviceRepository extends JpaRepository<RoomDevice, UUID> {
     RoomDevice findByMotelDevice(MotelDevice motelDevice);
 
     RoomDevice getRoomDeviceByRoomAndMotelDevice(Room room, MotelDevice motelDevice);
+
+    Optional<RoomDevice> findFirstByRoomAndMotelDevice(Room room, MotelDevice motelDevice);
+
+    List<RoomDevice> findAllByRoomAndMotelDevice(Room room, MotelDevice motelDevice);
 }

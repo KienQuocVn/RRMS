@@ -35,7 +35,10 @@ import PrintIcon from '@mui/icons-material/Print'
 import ShareIcon from '@mui/icons-material/Share'
 import EditIcon from '@mui/icons-material/Edit'
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import { Colors } from '~/theme'
+import { isReserveAPlaceStatus } from '~/utils/apiAdapters'
 
 // Formatters
 const formatCurrency = (value) => {
@@ -76,11 +79,11 @@ const getStatusChip = (room) => {
         sx={{ bgcolor: '#ff9800', color: 'white', height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
       />
     )
-  if (reserveStatus === 'ACTIVE')
+  if (isReserveAPlaceStatus(reserveStatus))
     return (
       <Chip
-        label="Đang cọc"
-        sx={{ bgcolor: '#2196f3', color: 'white', height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
+        label="Đang cọc giữ chỗ"
+        sx={{ bgcolor: '#ff9800', color: 'white', height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
       />
     )
   return (
@@ -192,11 +195,11 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
       )
     }
 
-    if (!contractStatus && reserveStatus === 'ACTIVE') {
+    if (!contractStatus && isReserveAPlaceStatus(reserveStatus)) {
       return [
         { icon: <ArticleIcon />, label: 'Hợp đồng mới', action: 'rent', color: '#2e7d32' },
-        { icon: <InfoIcon />, label: 'Chi tiết phòng', action: 'detail', color: '#1565c0' },
-        { icon: <InfoIcon />, label: 'Xem cọc giữ chỗ', action: 'view_reserve' },
+        { icon: <ArrowForwardIcon />, label: 'Chi tiết phòng', action: 'detail', color: '#1565c0' },
+        { icon: <VisibilityIcon />, label: 'Xem cọc giữ chỗ', action: 'view_reserve' },
         { icon: <CloseIcon />, label: 'Hủy cọc giữ chỗ', action: 'cancel_reserve', color: '#d32f2f' },
         { icon: <ReceiptIcon />, label: 'Cài đặt dịch vụ', action: 'services' },
         { icon: <DeleteIcon />, label: 'Xóa phòng', action: 'delete', color: '#d32f2f' },
@@ -214,21 +217,6 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
       { icon: <CloseIcon />, label: 'Đóng menu', action: 'close' },
       { icon: <BuildIcon />, label: 'Thiết lập tài sản', action: 'devices' }
     ]
-
-    /*
-    const items = []
-
-    // Common items for all states - matching the design mockup layout
-    items.push({ icon: <ArticleIcon />, label: 'Hợp đồng mới', action: 'rent', color: '#2e7d32' })
-    items.push({ icon: <InfoIcon />, label: 'Chi tiết phòng', action: 'detail', color: '#1565c0' })
-    items.push({ icon: <MoneyOffIcon />, label: 'Cọc giữ chỗ', action: 'deposit' })
-    items.push({ icon: <DeleteIcon />, label: 'Xóa phòng', action: 'delete', color: '#d32f2f' })
-    items.push({ icon: <ReceiptIcon />, label: 'Cài đặt dịch vụ', action: 'services' })
-    items.push({ icon: <CloseIcon />, label: 'Đóng menu', action: 'close' })
-    items.push({ icon: <BuildIcon />, label: 'Thiết lập tài sản', action: 'devices' })
-
-    return items
-    */
   }
 
   return (
@@ -304,7 +292,11 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
                         sx={{
                           width: 24,
                           height: 24,
-                          bgcolor: room.latestContract?.status === 'ACTIVE' ? Colors.success : '#ff9800'
+                          bgcolor: room.latestContract?.status === 'ACTIVE'
+                            ? Colors.success
+                            : isReserveAPlaceStatus(room.reserveAPlace?.status)
+                              ? '#ff9800'
+                              : '#bdbdbd'
                         }}>
                         <HouseIcon sx={{ fontSize: 16 }} />
                       </Avatar>

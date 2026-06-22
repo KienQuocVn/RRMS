@@ -11,6 +11,10 @@ export const deleteMotelDevice = async (data) => {
   const response = await httpClient.delete(`/api/v1/motel-devices/${data}`)
   return response.data
 }
+export const updateMotelDevice = async (motelDeviceId, data) => {
+  const response = await httpClient.put(`/api/v1/motel-devices/${motelDeviceId}`, data)
+  return response.data
+}
 export const insertRoomDevice = async (data) => {
   const response = await httpClient.post('/api/v1/room-devices', data)
   return response.data

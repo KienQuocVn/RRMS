@@ -10,6 +10,7 @@ import AddIcon from '@mui/icons-material/Add'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import CardGiftcardOutlined from '@mui/icons-material/CardGiftcardOutlined'
 import CloseIcon from '@mui/icons-material/Close'
 // MUI Icons for asset icon picker
@@ -29,7 +30,7 @@ import ChairOutlined from '@mui/icons-material/ChairOutlined'
 import ShowerOutlined from '@mui/icons-material/ShowerOutlined'
 import MicrowaveOutlined from '@mui/icons-material/MicrowaveOutlined'
 
-import { deleteMotelDevice, getAllMotelDevices, insertMotelDevice } from '~/apis/deviceAPT'
+import { deleteMotelDevice, getAllMotelDevices, insertMotelDevice, updateMotelDevice } from '~/apis/deviceAPT'
 import { useParams } from 'react-router-dom'
 import Swal from 'sweetalert2'
 
@@ -83,8 +84,9 @@ const getUnitLabel = (unit) => {
   return map[unit] || unit || 'Cái'
 }
 
-// ==================== ADD ASSET MODAL ====================
-const AddAssetModal = ({ open, onClose, onSubmit }) => {
+// ==================== ASSET FORM MODAL ====================
+const AssetFormModal = ({ open, onClose, onSubmit, initialData = null, mode = 'add' }) => {
+  const isEditMode = mode === 'edit'
   const [deviceName, setDeviceName] = useState('')
   const [selectedIcon, setSelectedIcon] = useState('')
   const [value, setValue] = useState('')
@@ -93,7 +95,20 @@ const AddAssetModal = ({ open, onClose, onSubmit }) => {
   const [unit, setUnit] = useState('cai')
   const [supplier, setSupplier] = useState('')
 
-  const resetForm = () => {
+  useEffect(() => {
+    if (!open) return
+
+    if (isEditMode && initialData) {
+      setDeviceName(initialData.deviceName || '')
+      setSelectedIcon(initialData.icon || '')
+      setValue(initialData.value ?? '')
+      setValueInput(initialData.valueInput ?? '')
+      setQuantity(initialData.totalQuantity ?? '')
+      setUnit((initialData.unit || 'cai').toLowerCase())
+      setSupplier(initialData.supplier || '')
+      return
+    }
+
     setDeviceName('')
     setSelectedIcon('')
     setValue('')
@@ -101,10 +116,9 @@ const AddAssetModal = ({ open, onClose, onSubmit }) => {
     setQuantity('')
     setUnit('cai')
     setSupplier('')
-  }
+  }, [open, isEditMode, initialData])
 
   const handleClose = () => {
-    resetForm()
     onClose()
   }
 
@@ -114,8 +128,25 @@ const AddAssetModal = ({ open, onClose, onSubmit }) => {
       Swal.fire('Vui lòng điền đủ thông tin bắt buộc (*)', '', 'error')
       return
     }
-    onSubmit({ deviceName, icon: selectedIcon, value, valueInput, totalQuantity: quantity, unit, supplier })
-    handleClose()
+
+    if (isEditMode && Number(quantity) < Number(initialData?.totalUsing || 0)) {
+      Swal.fire(
+        'Không thể cập nhật',
+        `Tổng số lượng không được nhỏ hơn số lượng đang sử dụng (${initialData?.totalUsing || 0}).`,
+        'error'
+      )
+      return
+    }
+
+    onSubmit({
+      deviceName,
+      icon: selectedIcon,
+      value,
+      valueInput,
+      totalQuantity: quantity,
+      unit,
+      supplier
+    })
   }
 
   return (
@@ -138,7 +169,7 @@ const AddAssetModal = ({ open, onClose, onSubmit }) => {
             <CardGiftcardOutlined sx={{ color: PRIMARY_COLOR, fontSize: '1.4rem' }} />
           </Box>
           <Typography variant="h6" sx={{ fontWeight: 700, color: '#333', fontSize: '1.1rem' }}>
-            Thêm mới tài sản
+            {isEditMode ? 'Chỉnh sửa tài sản' : 'Thêm mới tài sản'}
           </Typography>
         </Box>
         <IconButton onClick={handleClose} size="small" sx={{ color: '#999' }}>
@@ -283,7 +314,7 @@ const AddAssetModal = ({ open, onClose, onSubmit }) => {
             '&:hover': { backgroundColor: '#2b7ed7' }
           }}
         >
-          Thêm tài sản
+          {isEditMode ? 'Lưu thay đổi' : 'Thêm tài sản'}
         </Button>
       </DialogActions>
     </Dialog>
@@ -295,9 +326,11 @@ const AssetManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const { motelId } = useParams()
   const [device, setDevice] = useState([])
   const [showModal, setShowModal] = useState(false)
+  const [editingDevice, setEditingDevice] = useState(null)
   // Action menu state
   const [menuAnchor, setMenuAnchor] = useState(null)
   const [menuRowId, setMenuRowId] = useState(null)
+  const [menuRowData, setMenuRowData] = useState(null)
 
   const getAllMotelDevice = async () => {
     try {
@@ -322,11 +355,35 @@ const AssetManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         ...formData
       })
       Swal.fire('Thêm thành công', 'Đã thêm tài sản mới!', 'success')
+      setShowModal(false)
       getAllMotelDevice()
     } catch (error) {
       console.error('Error adding device:', error)
       Swal.fire('Thêm thất bại', 'Thử lại sau!', 'error')
     }
+  }
+
+  const handleUpdateAsset = async (formData) => {
+    if (!editingDevice?.motel_device_id) return
+
+    try {
+      const response = await updateMotelDevice(editingDevice.motel_device_id, formData)
+      if (response?.result) {
+        Swal.fire('Cập nhật thành công', 'Đã cập nhật tài sản!', 'success')
+        setEditingDevice(null)
+        getAllMotelDevice()
+      } else {
+        Swal.fire('Cập nhật thất bại', response?.message || 'Thử lại sau!', 'error')
+      }
+    } catch (error) {
+      console.error('Error updating device:', error)
+      Swal.fire('Cập nhật thất bại', 'Thử lại sau!', 'error')
+    }
+  }
+
+  const handleOpenEdit = () => {
+    setMenuAnchor(null)
+    setEditingDevice(menuRowData)
   }
 
   const handleDelete = async (id) => {
@@ -347,7 +404,7 @@ const AssetManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         Swal.fire('Xóa thành công', 'Đã xóa tài sản!', 'success')
         getAllMotelDevice()
       } else {
-        Swal.fire('Xóa thất bại', 'Có phòng đang sử dụng thiết bị, không thể xóa!', 'error')
+        Swal.fire('Xóa thất bại', response?.message || 'Có phòng đang sử dụng thiết bị, không thể xóa!', 'error')
       }
     } catch (error) {
       Swal.fire('Xóa thất bại', 'Có lỗi xảy ra!', 'error')
@@ -496,7 +553,11 @@ const AssetManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                       <TableCell align="center" sx={{ py: 1 }}>
                         <IconButton
                           size="small"
-                          onClick={(e) => { setMenuAnchor(e.currentTarget); setMenuRowId(row.motel_device_id) }}
+                          onClick={(e) => {
+                            setMenuAnchor(e.currentTarget)
+                            setMenuRowId(row.motel_device_id)
+                            setMenuRowData(row)
+                          }}
                           sx={{ color: '#999', '&:hover': { color: '#555' } }}
                         >
                           <MoreVertIcon fontSize="small" />
@@ -528,6 +589,13 @@ const AssetManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
           }}
         >
           <MenuItem
+            onClick={handleOpenEdit}
+            sx={{ fontSize: '0.85rem', gap: 1 }}
+          >
+            <EditOutlinedIcon fontSize="small" />
+            Chỉnh sửa tài sản
+          </MenuItem>
+          <MenuItem
             onClick={() => handleDelete(menuRowId)}
             sx={{ color: '#e53935', fontSize: '0.85rem', gap: 1 }}
           >
@@ -538,10 +606,20 @@ const AssetManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       </Paper>
 
       {/* Add Asset Modal */}
-      <AddAssetModal
+      <AssetFormModal
         open={showModal}
         onClose={() => setShowModal(false)}
         onSubmit={handleAddAsset}
+        mode="add"
+      />
+
+      {/* Edit Asset Modal */}
+      <AssetFormModal
+        open={Boolean(editingDevice)}
+        onClose={() => setEditingDevice(null)}
+        onSubmit={handleUpdateAsset}
+        initialData={editingDevice}
+        mode="edit"
       />
     </Box>
   )
