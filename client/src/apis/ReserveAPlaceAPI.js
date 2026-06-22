@@ -69,6 +69,46 @@ export const deleteReserveAPlace = async (id) => {
   }
 }
 
+export const cancelReserveAPlace = async ({
+  reservationId,
+  refundAmount = 0,
+  note = '',
+  paymentMethod = '',
+  roomName = '',
+  tenantName = ''
+}) => {
+  const normalizedId = extractEntityId(reservationId, ['reserveAPlaceId', 'roomReservationId', 'id'])
+  const refund = Number(refundAmount) || 0
+
+  if (refund > 0) {
+    const storedUser = sessionStorage.getItem('user')
+    const user = storedUser ? JSON.parse(storedUser) : null
+    const username = user?.username
+
+    if (!username) {
+      throw new Error('Không tìm thấy thông tin đăng nhập để ghi nhận hoàn cọc.')
+    }
+
+    const descriptionParts = [`Hoàn cọc giữ chỗ phòng ${roomName || ''}`.trim()]
+    if (paymentMethod) descriptionParts.push(`PTTT: ${paymentMethod}`)
+    if (note) descriptionParts.push(`Ghi chú: ${note}`)
+
+    await httpClient.post(
+      '/api/v1/transactions/expenses',
+      {
+        amount: refund,
+        payerName: tenantName || 'Khách thuê',
+        paymentDescription: descriptionParts.join(' - '),
+        category: 'Chi hoàn cọc giữ chỗ',
+        transactionDate: new Date().toISOString().split('T')[0]
+      },
+      { params: { username } }
+    )
+  }
+
+  await deleteReserveAPlace(normalizedId)
+}
+
 export const getReserveAPlacesByRoomId = async (roomId) => {
   try {
     const normalizedRoomId = extractEntityId(roomId, ['roomId', 'id'])

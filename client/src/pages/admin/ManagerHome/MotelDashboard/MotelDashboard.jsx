@@ -22,7 +22,7 @@ import { getAllMotelDevices, getAllDeviceByRomId } from '~/apis/deviceAPT'
 import { getMotelById } from '~/apis/motelAPI'
 import { getContractByIdRoom2 } from '~/apis/contractTemplateAPI'
 import { fetchAllInvoicesByMotelId } from '~/apis/invoiceAPI'
-import { deleteReserveAPlace } from '~/apis/ReserveAPlaceAPI'
+import CancelReserveAPlaceModal from '../ReserveAPlace/CancelReserveAPlaceModal'
 import { isValidRouteParam, isReserveAPlaceStatus } from '~/utils/apiAdapters'
 import {
   enrichRoomsWithDebt,
@@ -76,6 +76,7 @@ const MotelDashboard = ({ Motel }) => {
     createContract: false,
     reserveAPlace: false,
     reserveAPlaceDetail: false,
+    cancelReserveAPlace: false,
     reportContract: false,
     cancelReportContract: false,
     endContract: false,
@@ -255,26 +256,6 @@ const MotelDashboard = ({ Motel }) => {
     }
   }
 
-  const handleDeleteReserve = async (reserveId) => {
-    const result = await Swal.fire({
-      title: 'Hủy cọc?',
-      text: 'Không thể hoàn tác!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Hủy cọc'
-    })
-    if (result.isConfirmed) {
-      try {
-        await deleteReserveAPlace(reserveId)
-        Swal.fire('Thành công', 'Hủy cọc thành công', 'success')
-        fetchData()
-      } catch (error) {
-        console.error('Failed to cancel reserve:', error)
-        Swal.fire('Lỗi', 'Không thể hủy cọc', 'error')
-      }
-    }
-  }
-
   const handleActionClick = async (action, room) => {
     const activeContract = await prefetchRoomData(room)
     const contractId = activeContract?.contractId || room.latestContract?.contractId
@@ -311,7 +292,7 @@ const MotelDashboard = ({ Motel }) => {
         toggleModal('reserveAPlaceDetail')
         break
       case 'cancel_reserve':
-        if (room.reserveAPlace?.reserveAPlaceId) handleDeleteReserve(room.reserveAPlace.reserveAPlaceId)
+        toggleModal('cancelReserveAPlace')
         break
       case 'report_end':
         toggleModal('reportContract')
@@ -527,6 +508,12 @@ const MotelDashboard = ({ Motel }) => {
         modalOpen={modals.reserveAPlaceDetail}
         toggleModal={() => toggleModal('reserveAPlaceDetail', false)}
         roomId={selectedRoom?.roomId}
+      />
+      <CancelReserveAPlaceModal
+        open={modals.cancelReserveAPlace}
+        onClose={() => toggleModal('cancelReserveAPlace', false)}
+        roomId={selectedRoom?.roomId}
+        onSuccess={fetchData}
       />
       <ModalCreateContract
         modalOpen={modals.createContract}

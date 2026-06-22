@@ -22,6 +22,20 @@ import { collectInvoicePayment } from '~/apis/invoiceAPI'
 
 const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')} đ`
 
+const showAlertAboveDialog = (options) =>
+  Swal.fire({
+    ...options,
+    didOpen: (popup) => {
+      const container = popup?.parentElement
+      if (container) {
+        container.style.zIndex = '1500'
+      }
+      if (typeof options.didOpen === 'function') {
+        options.didOpen(popup)
+      }
+    }
+  })
+
 const formatDate = (dateText) => {
   if (!dateText) return new Date().toLocaleDateString('vi-VN')
   const date = new Date(dateText)
@@ -178,14 +192,14 @@ const CollectPaymentModal = ({ open, onClose, invoice, invoices = [], room, cont
         paymentDate: new Date().toISOString().slice(0, 10)
       })
       const paidInvoice = response?.result || { ...selectedInvoice, paymentStatus: 'PAID' }
-      await Swal.fire({
+      await showAlertAboveDialog({
         icon: 'success',
         title: 'Đã thu tiền',
         text: 'Hóa đơn đã được cập nhật trạng thái thanh toán.'
       })
       onCollected?.(paidInvoice)
     } catch (error) {
-      Swal.fire({
+      showAlertAboveDialog({
         icon: 'error',
         title: 'Thu tiền thất bại',
         text: error?.response?.data?.message || error.message || 'Không thể thu tiền hóa đơn.'
@@ -217,7 +231,7 @@ const CollectPaymentModal = ({ open, onClose, invoice, invoices = [], room, cont
               }}>
               <GroupsOutlinedIcon />
             </Box>
-            <Typography sx={{ fontSize: 22, fontWeight: 800, color: '#242424' }}>Hóa đơn cần thu {payerName}</Typography>
+            <Typography sx={{ fontSize: 22, fontWeight: 800, color: '#242424' }}>Hóa đơn cần thu - {payerName}</Typography>
           </Stack>
           <IconButton onClick={onClose} sx={{ border: '3px solid #FBE6DE', width: 42, height: 42 }}>
             <CloseIcon />
