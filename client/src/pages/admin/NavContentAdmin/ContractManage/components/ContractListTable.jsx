@@ -28,23 +28,23 @@ import { Colors } from '~/theme'
 
 const COLLECTION_CYCLE_LABELS = {
   0: 'Tuy chinh',
-  1: '1 thang',
-  2: '2 thang',
-  3: '3 thang',
-  4: '4 thang',
-  5: '5 thang',
-  6: '6 thang',
-  7: '7 thang',
-  8: '8 thang',
-  9: '9 thang',
-  10: '10 thang',
-  11: '11 thang',
-  12: '1 nam',
-  18: '1 nam 6 thang',
-  24: '2 nam',
-  32: '3 nam',
-  48: '4 nam',
-  60: '5 nam'
+  1: '1 tháng',
+  2: '2 tháng',
+  3: '3 tháng',
+  4: '4 tháng',
+  5: '5 tháng',
+  6: '6 tháng',
+  7: '7 tháng',
+  8: '8 tháng',
+  9: '9 tháng',
+  10: '10 tháng',
+  11: '11 tháng',
+  12: '1 năm',
+  18: '1 năm 6 tháng',
+  24: '2 năm',
+  32: '3 năm',
+  48: '4 năm',
+  60: '5 năm'
 }
 
 const formatCurrency = (value, fallback = '0 d') => {

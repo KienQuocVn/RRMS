@@ -101,7 +101,7 @@ const YearMonthFilter = ({ onMonthChange }) => {
         {months.map((month) => (
           <Tooltip
             key={month.month}
-            title={`Xem lich su hoa don thang ${month.label}/${currentYear}`}
+            title={`Xem lịch sử hóa đơn tháng ${month.label}/${currentYear}`}
             placement="bottom">
             <MonthButton
               onClick={() => handleMonthClick(month.month)}

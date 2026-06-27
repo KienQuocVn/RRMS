@@ -67,7 +67,18 @@ public enum ErrorCode {
             "Could not generate invoice QR code",
             HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Resource not found", HttpStatus.NOT_FOUND),
-    LOGIN_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Login history not found", HttpStatus.NOT_FOUND);
+    ROOM_GROUP_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Room group not found", HttpStatus.NOT_FOUND),
+    ROOM_GROUP_ALREADY_EXISTS(HttpStatus.BAD_REQUEST.value(), "Room group already exists", HttpStatus.BAD_REQUEST),
+    ROOM_GROUP_HAS_ROOMS(
+            HttpStatus.CONFLICT.value(), "Cannot delete room group with assigned rooms", HttpStatus.CONFLICT),
+    LOGIN_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Login history not found", HttpStatus.NOT_FOUND),
+
+    MOTEL_AREA_REQUIRED(HttpStatus.BAD_REQUEST.value(), "Motel total area is required", HttpStatus.BAD_REQUEST),
+    ROOM_AREA_REQUIRED(HttpStatus.BAD_REQUEST.value(), "Room area is required", HttpStatus.BAD_REQUEST),
+    ROOM_AREA_EXCEEDS_MOTEL(
+            HttpStatus.BAD_REQUEST.value(), "Total room area exceeds motel area", HttpStatus.BAD_REQUEST),
+    MOTEL_AREA_LESS_THAN_USED_ROOMS(
+            HttpStatus.BAD_REQUEST.value(), "Motel total area is less than used room area", HttpStatus.BAD_REQUEST);
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

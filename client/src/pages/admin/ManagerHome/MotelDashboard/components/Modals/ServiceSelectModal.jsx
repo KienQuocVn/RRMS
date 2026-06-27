@@ -18,6 +18,7 @@ import Swal from 'sweetalert2'
 
 import { updateSerivceRoom, DeleteRoomServiceByid } from '~/apis/roomAPI'
 import { normalizeRoomServiceCollection } from '~/utils/apiAdapters'
+import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/numberInputUtils'
 
 const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onUpdateSuccess }) => {
   const [roomServices, setRoomServices] = useState([])
@@ -42,6 +43,7 @@ const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onU
   }
 
   const handleQuantityChange = (serviceId, value) => {
+    if (isNegativeNumberValue(value)) return
     const quantity = parseFloat(value) || 0
     setRoomServices((prev) =>
       prev.map((s) => {
@@ -135,6 +137,7 @@ const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onU
                   disabled={!rs.isSelected}
                   value={rs.quantity || 0}
                   onChange={(e) => handleQuantityChange(rs.service.motelServiceId, e.target.value)}
+                  {...getNonNegativeNumberFieldProps()}
                   InputProps={{
                     endAdornment: <InputAdornment position="end">{rs.service?.chargetype}</InputAdornment>
                   }}

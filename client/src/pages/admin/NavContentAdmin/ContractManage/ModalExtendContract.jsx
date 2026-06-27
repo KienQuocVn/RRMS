@@ -3,6 +3,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, TextFi
 import Swal from 'sweetalert2'
 import { getRoomById } from '~/apis/roomAPI'
 import { getContractByIdRoom2, updateExtendContractStatusClose } from '~/apis/contractTemplateAPI'
+import { formatVndInput } from '~/utils/currencyInputUtils'
 
 function ModalExtendContract({ toggleModal, modalOpen, roomId }) {
   const [room, setRoom] = useState({})
@@ -208,7 +209,7 @@ function ModalExtendContract({ toggleModal, modalOpen, roomId }) {
             <TextField
               fullWidth
               label="Giá thuê (đ)"
-              value={contract.price ? contract.price.toLocaleString('vi-VN') : ''}
+              value={formatVndInput(contract.price)}
               InputProps={{ readOnly: true }}
               InputLabelProps={{ shrink: true }}
               sx={{ '& .MuiOutlinedInput-root': { bgcolor: '#f5f5f5' }, '& label.Mui-focused': { color: '#20a9e7' } }}

@@ -43,7 +43,7 @@ const ZaloHistoryHeader = ({ motelName, roomOptions, selectedRoom, onSelectedRoo
               return (
                 <Box>
                   <Typography variant="caption" sx={{ color: '#98a2b3', display: 'block' }}>
-                    Lọc theo giường
+                    Lọc theo phòng
                   </Typography>
                   <Typography variant="body1" sx={{ color: '#101828', fontWeight: 500 }}>
                     {displayLabel}

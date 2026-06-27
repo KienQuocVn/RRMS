@@ -39,8 +39,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import { Colors } from '~/theme'
 import { isReserveAPlaceStatus } from '~/utils/apiAdapters'
+import { formatRoomGroupLabel } from '~/utils/roomGroupUtils'
 
-// Formatters
 const formatCurrency = (value) => {
   if (!value) return '0 đ'
   return new Intl.NumberFormat('vi-VN').format(value) + ' đ'
@@ -317,7 +317,7 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
                   {isVisible('group') && (
                     <TableCell sx={{ borderRight: '1px solid #eeeeee' }}>
                       <Typography variant="caption" color="text.secondary">
-                        {room.group === 'a' ? 'Tầng trệt' : room.group === 'b' ? 'Lầu 1' : 'Tầng trệt'}
+                        {formatRoomGroupLabel(room.group) || 'Chưa phân nhóm'}
                       </Typography>
                     </TableCell>
                   )}

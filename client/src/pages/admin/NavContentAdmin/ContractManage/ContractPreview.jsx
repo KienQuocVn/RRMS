@@ -114,7 +114,7 @@ const ContractPreview = ({ setIsAdmin }) => {
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }}>
         Vui lòng liên hệ{' '}
-        <Link href="https://zalo.me/0907274629" sx={{ color: '#20a9e7', textDecoration: 'underline' }}>
+        <Link href="https://zalo.me/0919925302" sx={{ color: '#20a9e7', textDecoration: 'underline' }}>
           chuyên viên hỗ trợ
         </Link>{' '}
         nếu mẫu không phù hợp hoặc vào phần cấu hình trên máy tính để sửa mẫu.

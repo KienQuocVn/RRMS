@@ -10,6 +10,7 @@ import {
   Stack,
   TextField
 } from '@mui/material'
+import { getNonNegativeNumberFieldProps } from '~/utils/numberInputUtils'
 
 const getTodayValue = () => new Date().toISOString().split('T')[0]
 
@@ -31,7 +32,7 @@ const TransactionFormModal = ({ open, onClose, onSubmit, payments, title, submit
                 type="number"
                 name="amount"
                 label="Nhập số tiền"
-                inputProps={{ min: 0 }}
+                {...getNonNegativeNumberFieldProps()}
               />
             </Grid>
 

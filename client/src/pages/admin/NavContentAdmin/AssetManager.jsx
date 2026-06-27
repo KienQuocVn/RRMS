@@ -13,6 +13,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import CardGiftcardOutlined from '@mui/icons-material/CardGiftcardOutlined'
 import CloseIcon from '@mui/icons-material/Close'
+import { getNonNegativeNumberFieldProps, wrapNonNegativeNumberChange } from '~/utils/numberInputUtils'
 // MUI Icons for asset icon picker
 import SingleBedOutlined from '@mui/icons-material/SingleBedOutlined'
 import LocalLaundryServiceOutlined from '@mui/icons-material/LocalLaundryServiceOutlined'
@@ -233,20 +234,20 @@ const AssetFormModal = ({ open, onClose, onSubmit, initialData = null, mode = 'a
             required
             type="number"
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={wrapNonNegativeNumberChange((e) => setValue(e.target.value))}
             variant="outlined"
             size="small"
-
+            {...getNonNegativeNumberFieldProps()}
           />
           <TextField
             fullWidth
             label="Giá trị nhập vào (đ)"
             type="number"
             value={valueInput}
-            onChange={(e) => setValueInput(e.target.value)}
+            onChange={wrapNonNegativeNumberChange((e) => setValueInput(e.target.value))}
             variant="outlined"
             size="small"
-
+            {...getNonNegativeNumberFieldProps()}
           />
         </Box>
 
@@ -258,10 +259,10 @@ const AssetFormModal = ({ open, onClose, onSubmit, initialData = null, mode = 'a
             required
             type="number"
             value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
+            onChange={wrapNonNegativeNumberChange((e) => setQuantity(e.target.value))}
             variant="outlined"
             size="small"
-
+            {...getNonNegativeNumberFieldProps()}
           />
           <FormControl fullWidth size="small">
             <InputLabel>Đơn vị (chiếc/cái)</InputLabel>

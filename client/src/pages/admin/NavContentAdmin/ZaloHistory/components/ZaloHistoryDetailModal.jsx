@@ -59,7 +59,7 @@ const ZaloHistoryDetailModal = ({ open, historyItem, onClose, onOpenReceipt, onO
 
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <DetailField label="Phòng/Giường" value={historyItem.roomName} />
+                <DetailField label="Phòng" value={historyItem.roomName} />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <DetailField label="Số điện thoại" value={historyItem.phone} />

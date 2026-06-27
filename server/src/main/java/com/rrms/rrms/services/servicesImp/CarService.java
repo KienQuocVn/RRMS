@@ -26,8 +26,25 @@ public class CarService implements ICarService {
 
     private final com.rrms.rrms.repositories.TenantRepository tenantRepository;
 
+    private void validateCarRequest(CarRequest carRequest) {
+        if (carRequest.getRoomId() == null) {
+            throw new IllegalArgumentException("Phòng không được để trống");
+        }
+        if (carRequest.getName() == null || carRequest.getName().isBlank()) {
+            throw new IllegalArgumentException("Tên loại xe không được để trống");
+        }
+        if (carRequest.getNumber() == null || carRequest.getNumber().isBlank()) {
+            throw new IllegalArgumentException("Biển số xe không được để trống");
+        }
+        if (carRequest.getTenantId() == null) {
+            throw new IllegalArgumentException("Khách thuê không được để trống");
+        }
+    }
+
     @Override
     public CarResponse createCar(CarRequest carRequest) {
+        validateCarRequest(carRequest);
+
         Room room = roomRepository
                 .findById(carRequest.getRoomId())
                 .orElseThrow(() -> new IllegalArgumentException("Room khÃ´ng tá»“n táº¡i"));
@@ -66,6 +83,8 @@ public class CarService implements ICarService {
 
     @Override
     public CarResponse updateCar(UUID carId, CarRequest carRequest) {
+        validateCarRequest(carRequest);
+
         Car car =
                 carRepository.findById(carId).orElseThrow(() -> new IllegalArgumentException("Car khÃ´ng tá»“n táº¡i"));
 

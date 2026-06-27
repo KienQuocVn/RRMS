@@ -514,7 +514,7 @@ function BulkInvoiceWizardDialog({ open, onClose, rooms = [], selectedMonth, sel
                     <InfoOutlinedIcon sx={{ fontSize: 16 }} />
                   </Box>
                   <Typography sx={{ color: '#1f2937' }}>
-                    <b>Thông tin:</b> Các phòng/giường lập hóa đơn mặc định tính <b>tròn 1 tháng</b>
+                    <b>Thông tin:</b> Các phòng lập hóa đơn mặc định tính <b>tròn 1 tháng</b>
                   </Typography>
                 </Paper>
 
@@ -607,7 +607,7 @@ function BulkInvoiceWizardDialog({ open, onClose, rooms = [], selectedMonth, sel
           }}
         >
           <Typography sx={{ fontSize: 20, fontWeight: 800, color: '#256b35' }}>
-            Tổng giường đã chốt: {selectedRoomIds.length} giường
+            Tổng phòng đã chốt: {selectedRoomIds.length} phòng
           </Typography>
           <Paper
             variant="outlined"

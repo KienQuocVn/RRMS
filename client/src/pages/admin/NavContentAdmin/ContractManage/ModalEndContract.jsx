@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -16,40 +16,161 @@ import { getRoomById } from '~/apis/roomAPI';
 import { getContractByIdRoom2, endContractByRoomId } from '~/apis/contractTemplateAPI';
 import { Colors } from '~/theme';
 
+const BASE_TASKS = [
+  {
+    id: 1,
+    title: 'Lập hóa đơn tháng cuối',
+    description:
+      'Hệ thống phát hiện bạn chưa tạo hóa đơn tháng cuối. Vui lòng tạo và thu hóa đơn tháng cuối trước khi kết thúc hợp đồng',
+  },
+  {
+    id: 2,
+    title: 'Kiểm tra tài sản',
+    description: 'Kiểm tra lại tài sản, thiết bị trong trước khi kết thúc hợp đồng',
+  },
+];
+
+const startOfDay = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+
+const formatDisplayDate = (value) => {
+  const date = startOfDay(value);
+  if (!date) return '';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+const getMonthsBetween = (fromDate, toDate) => {
+  const start = startOfDay(fromDate);
+  const end = startOfDay(toDate);
+  if (!start || !end) return 0;
+  let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+  if (end.getDate() < start.getDate()) months -= 1;
+  return Math.max(0, months);
+};
+
+const getContractMoveInDate = (contract) => contract?.moveinDate || contract?.moveInDate || null;
+
+const getContractEndDate = (contract) => {
+  if (!contract) return null;
+
+  if (contract.closeContract) {
+    return startOfDay(contract.closeContract);
+  }
+
+  const moveInDate = getContractMoveInDate(contract);
+  const leaseTermMonths = Number(contract.leaseTerm);
+  if (!moveInDate || !leaseTermMonths || Number.isNaN(leaseTermMonths)) {
+    return null;
+  }
+
+  const endDate = new Date(moveInDate);
+  endDate.setMonth(endDate.getMonth() + leaseTermMonths);
+  return startOfDay(endDate);
+};
+
+const getContractTermMonths = (contract) => {
+  const leaseTermMonths = Number(contract?.leaseTerm);
+  if (leaseTermMonths && !Number.isNaN(leaseTermMonths)) {
+    return leaseTermMonths;
+  }
+
+  const moveInDate = getContractMoveInDate(contract);
+  const endDate = getContractEndDate(contract);
+  if (moveInDate && endDate) {
+    return getMonthsBetween(moveInDate, endDate);
+  }
+
+  return 0;
+};
+
+/** Kết thúc trước ngày hết hạn hợp đồng → cần xác nhận đền hợp đồng */
+const isEarlyContractTermination = (contract, terminateDateStr) => {
+  const endDate = getContractEndDate(contract);
+  const terminateDate = startOfDay(terminateDateStr);
+  if (!endDate || !terminateDate) return false;
+  return terminateDate < endDate;
+};
+
+const buildEarlyTerminationTask = (contract, terminateDateStr) => {
+  const moveInDate = getContractMoveInDate(contract);
+  const endDate = getContractEndDate(contract);
+  const totalMonths = getContractTermMonths(contract);
+  const stayedMonths = moveInDate ? getMonthsBetween(moveInDate, terminateDateStr) : 0;
+  const remainingMonths = Math.max(0, totalMonths - stayedMonths);
+
+  const termLabel = totalMonths > 0 ? `${totalMonths} tháng` : 'theo thỏa thuận';
+  const stayedLabel = stayedMonths > 0 ? `${stayedMonths} tháng` : 'chưa đủ 1 tháng';
+  const remainingLabel =
+    remainingMonths > 0 ? `${remainingMonths} tháng` : 'dưới 1 tháng';
+
+  return {
+    id: 3,
+    title: 'Xác nhận thời hạn còn lại của hợp đồng',
+    description: [
+      `Hợp đồng có thời hạn ${termLabel}${endDate ? ` (đến ${formatDisplayDate(endDate)})` : ''}.`,
+      `Khách đã ở khoảng ${stayedLabel}, còn khoảng ${remainingLabel} chưa hết hạn.`,
+      'Việc kết thúc trước hạn có thể phát sinh nghĩa vụ đền hợp đồng hoặc bồi thường theo thỏa thuận giữa khách thuê và chủ trọ.',
+      'Vui lòng thông báo, thống nhất và xác nhận đã lưu ý nội dung này trước khi kết thúc hợp đồng.',
+    ].join(' '),
+    isEarlyTermination: true,
+  };
+};
+
 function ModalEndContract({ toggleModal, modalOpen, roomId, onSuccess }) {
   const [room, setRoom] = useState({});
   const [contract, setContract] = useState({});
   const [dateTerminate, setDateTerminate] = useState('');
+  const [completedTaskIds, setCompletedTaskIds] = useState(() => new Set());
 
-  // Danh sách công việc mặc định
-  const defaultTasks = useMemo(() => [
-    {
-      id: 1,
-      title: 'Lập hóa đơn tháng cuối',
-      description: 'Hệ thống phát hiện bạn chưa tạo hóa đơn tháng cuối. Vui lòng tạo và thu hóa đơn tháng cuối trước khi kết thúc hợp đồng',
-      completed: false
-    },
-    {
-      id: 2,
-      title: 'Kiểm tra tài sản',
-      description: 'Kiểm tra lại tài sản, thiết bị trong trước khi kết thúc hợp đồng',
-      completed: false
+  const showEarlyTerminationTask = useMemo(
+    () => isEarlyContractTermination(contract, dateTerminate),
+    [contract, dateTerminate]
+  );
+
+  const earlyTerminationInfo = useMemo(() => {
+    if (!showEarlyTerminationTask) return null;
+    const moveInDate = getContractMoveInDate(contract);
+    const endDate = getContractEndDate(contract);
+    const totalMonths = getContractTermMonths(contract);
+    const stayedMonths = moveInDate ? getMonthsBetween(moveInDate, dateTerminate) : 0;
+    const remainingMonths = Math.max(0, totalMonths - stayedMonths);
+    return { totalMonths, stayedMonths, remainingMonths, endDate, moveInDate };
+  }, [contract, dateTerminate, showEarlyTerminationTask]);
+
+  const tasks = useMemo(() => {
+    const taskList = BASE_TASKS.map((task) => ({
+      ...task,
+      completed: completedTaskIds.has(task.id),
+    }));
+
+    if (showEarlyTerminationTask) {
+      taskList.push({
+        ...buildEarlyTerminationTask(contract, dateTerminate),
+        completed: completedTaskIds.has(3),
+      });
     }
-  ], []);
 
-  const [tasks, setTasks] = useState([...defaultTasks]);
-
-  const handleTaskComplete = (id) => {
-    setTasks((prevTasks) => prevTasks.map((task) => (task.id === id ? { ...task, completed: true } : task)));
-  };
+    return taskList;
+  }, [contract, dateTerminate, completedTaskIds, showEarlyTerminationTask]);
 
   const completedTasks = tasks.filter((task) => task.completed).length;
 
+  const handleTaskComplete = useCallback((id) => {
+    setCompletedTaskIds((prev) => new Set(prev).add(id));
+  }, []);
+
   useEffect(() => {
     if (modalOpen) {
-      setTasks([...defaultTasks]);
+      setCompletedTaskIds(new Set());
     }
-  }, [modalOpen, defaultTasks]);
+  }, [modalOpen]);
 
   const fetchDataRoom = async (roomId) => {
     if (roomId) {
@@ -178,12 +299,40 @@ function ModalEndContract({ toggleModal, modalOpen, roomId, onSuccess }) {
           </Box>
         </Alert>
 
+        {showEarlyTerminationTask && earlyTerminationInfo && (
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            <AlertTitle sx={{ fontWeight: 'bold' }}>Lưu ý đền hợp đồng</AlertTitle>
+            Hợp đồng còn khoảng{' '}
+            <b>
+              {earlyTerminationInfo.remainingMonths > 0
+                ? `${earlyTerminationInfo.remainingMonths} tháng`
+                : 'dưới 1 tháng'}
+            </b>{' '}
+            chưa hết hạn
+            {earlyTerminationInfo.endDate
+              ? ` (ngày kết thúc dự kiến: ${formatDisplayDate(earlyTerminationInfo.endDate)})`
+              : ''}
+            . Kết thúc trước hạn có thể phát sinh nghĩa vụ đền hợp đồng — vui lòng thông báo và thống nhất với khách thuê/chủ trọ
+            trước khi tiếp tục.
+          </Alert>
+        )}
+
         <Box>
           <Typography variant="h6" sx={{ textAlign: 'center', mb: 2, fontWeight: 'bold', color: '#444', fontSize: '1.1rem' }}>
             Công việc cần làm trước khi kết thúc hợp đồng ({completedTasks}/{tasks.length})
           </Typography>
           {tasks.map((task) => (
-            <Box key={task.id} sx={{ display: 'flex', mb: 2, p: 2, border: '1px solid #eee', borderRadius: '8px', bgcolor: task.completed ? '#f9f9f9' : '#fff' }}>
+            <Box
+              key={task.id}
+              sx={{
+                display: 'flex',
+                mb: 2,
+                p: 2,
+                border: `1px solid ${task.isEarlyTermination ? '#ffcc80' : '#eee'}`,
+                borderRadius: '8px',
+                bgcolor: task.completed ? '#f9f9f9' : task.isEarlyTermination ? '#fff8e1' : '#fff',
+              }}
+            >
               <Box sx={{ mr: 2, display: 'flex', alignItems: 'center' }}>
                 <Box
                   sx={{
@@ -193,8 +342,8 @@ function ModalEndContract({ toggleModal, modalOpen, roomId, onSuccess }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    bgcolor: task.completed ? '#e8f5e9' : '#fff3e0',
-                    color: task.completed ? Colors.success : '#ff9800'
+                    bgcolor: task.completed ? '#e8f5e9' : task.isEarlyTermination ? '#ffe0b2' : '#fff3e0',
+                    color: task.completed ? Colors.success : task.isEarlyTermination ? '#e65100' : '#ff9800',
                   }}
                 >
                   {task.completed ? (
@@ -222,7 +371,7 @@ function ModalEndContract({ toggleModal, modalOpen, roomId, onSuccess }) {
                     textTransform: 'none'
                   }}
                 >
-                  {task.completed ? 'Đã hoàn thành' : 'Hoàn thành công việc'}
+                  {task.completed ? 'Đã hoàn thành' : task.isEarlyTermination ? 'Đã xác nhận và lưu ý' : 'Hoàn thành công việc'}
                 </Button>
               </Box>
             </Box>

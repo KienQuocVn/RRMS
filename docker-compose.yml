@@ -1,0 +1,176 @@
+# RRMS - Docker Compose
+# Chạy toàn bộ stack:  docker compose up -d --build
+# Chỉ hạ tầng (dev local): docker compose up -d mysql redis
+# Xem log: docker compose logs -f backend
+
+name: rrms
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: rrms-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-rrms}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - rrms-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: rrms-redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - rrms-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.24
+    container_name: rrms-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "${ELASTICSEARCH_PORT:-9200}:9200"
+    networks:
+      - rrms-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.24
+    container_name: rrms-kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "${KIBANA_PORT:-5601}:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - rrms-network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.24
+    container_name: rrms-logstash
+    restart: unless-stopped
+    environment:
+      - xpack.monitoring.enabled=false
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200
+      - DB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./server/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./server/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./server/logstash/lib/mysql-connector-j-8.3.0.jar:/usr/share/logstash/lib/mysql-connector-j-8.3.0.jar:ro
+    ports:
+      - "${LOGSTASH_PORT:-5000}:5000"
+      - "5044:5044"
+      - "9600:9600"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - rrms-network
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: rrms-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PORT: ${PORT:-7000}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NAME:-rrms}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-root}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      ELASTIC_SEARCH_URL: http://elasticsearch:9200
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000,http://localhost}
+    ports:
+      - "${PORT:-7000}:${PORT:-7000}"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - rrms-network
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_APP_API_URL: ${VITE_APP_API_URL:-http://localhost:7000}
+        VITE_PORT: ${VITE_PORT:-5173}
+        VITE_REDIRECT_URI: ${VITE_REDIRECT_URI:-http://localhost:5173/oauth2/redirect}
+        VITE_SITE_KEY_CAPTCHA: ${VITE_SITE_KEY_CAPTCHA}
+        VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY}
+        VITE_FIREBASE_AUTH_DOMAIN: ${VITE_FIREBASE_AUTH_DOMAIN}
+        VITE_FIREBASE_PROJECT_ID: ${VITE_FIREBASE_PROJECT_ID}
+        VITE_FIREBASE_STORAGE_BUCKET: ${VITE_FIREBASE_STORAGE_BUCKET}
+        VITE_FIREBASE_MESSAGING_SENDER_ID: ${VITE_FIREBASE_MESSAGING_SENDER_ID}
+        VITE_FIREBASE_APP_ID: ${VITE_FIREBASE_APP_ID}
+        VITE_FPT_AI_KEY: ${VITE_FPT_AI_KEY}
+        VITE_FPT_APP_CODE: ${VITE_FPT_APP_CODE}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
+        VITE_FACEBOOK_APP_ID: ${VITE_FACEBOOK_APP_ID}
+        TINY_API_KEY: ${TINY_API_KEY}
+    container_name: rrms-frontend
+    restart: unless-stopped
+    ports:
+      - "${CLIENT_PORT:-5173}:80"
+    depends_on:
+      - backend
+    networks:
+      - rrms-network
+
+volumes:
+  mysql_data:
+  redis_data:
+  elasticsearch_data:
+
+networks:
+  rrms-network:
+    driver: bridge

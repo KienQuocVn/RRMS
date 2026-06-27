@@ -27,7 +27,7 @@ import { deleteCar } from '~/apis/carAPI'
 import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
 
-const VehicleRow = ({ vehicle, onRefresh }) => {
+const VehicleRow = ({ vehicle, onRefresh, onEdit }) => {
   const [anchorEl, setAnchorEl] = useState(null)
 
   const handleMenuClick = (event) => {
@@ -36,6 +36,11 @@ const VehicleRow = ({ vehicle, onRefresh }) => {
 
   const handleMenuClose = () => {
     setAnchorEl(null)
+  }
+
+  const handleEdit = () => {
+    handleMenuClose()
+    onEdit?.(vehicle)
   }
 
   const handleDelete = async () => {
@@ -92,7 +97,7 @@ const VehicleRow = ({ vehicle, onRefresh }) => {
           <MoreVertIcon fontSize="small" />
         </IconButton>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-          <MenuItem onClick={handleMenuClose}>
+          <MenuItem onClick={handleEdit}>
             <ListItemIcon>
               <EditIcon fontSize="small" color="info" />
             </ListItemIcon>
@@ -110,7 +115,7 @@ const VehicleRow = ({ vehicle, onRefresh }) => {
   )
 }
 
-const RoomGroup = ({ room, vehicles, onRefresh }) => {
+const RoomGroup = ({ room, vehicles, onRefresh, onEdit }) => {
   const [open, setOpen] = useState(true)
 
   if (!vehicles || vehicles.length === 0) return null
@@ -133,7 +138,7 @@ const RoomGroup = ({ room, vehicles, onRefresh }) => {
             <Table size="small">
               <TableBody>
                 {vehicles.map((vehicle) => (
-                  <VehicleRow key={vehicle.carId} vehicle={vehicle} onRefresh={onRefresh} />
+                  <VehicleRow key={vehicle.carId} vehicle={vehicle} onRefresh={onRefresh} onEdit={onEdit} />
                 ))}
               </TableBody>
             </Table>
@@ -144,7 +149,7 @@ const RoomGroup = ({ room, vehicles, onRefresh }) => {
   )
 }
 
-const VehicleListTable = ({ vehicles, rooms, onRefresh }) => {
+const VehicleListTable = ({ vehicles, rooms, onRefresh, onEdit }) => {
   // Nhóm xe theo roomId
   const groupedVehicles = rooms
     .map((room) => ({
@@ -181,11 +186,22 @@ const VehicleListTable = ({ vehicles, rooms, onRefresh }) => {
           ) : (
             <>
               {groupedVehicles.map((group) => (
-                <RoomGroup key={group.roomId} room={group} vehicles={group.vehicles} onRefresh={onRefresh} />
+                <RoomGroup
+                  key={group.roomId}
+                  room={group}
+                  vehicles={group.vehicles}
+                  onRefresh={onRefresh}
+                  onEdit={onEdit}
+                />
               ))}
 
               {orphanedVehicles.length > 0 && (
-                <RoomGroup room={{ roomId: 'other', name: 'Khác' }} vehicles={orphanedVehicles} onRefresh={onRefresh} />
+                <RoomGroup
+                  room={{ roomId: 'other', name: 'Khác' }}
+                  vehicles={orphanedVehicles}
+                  onRefresh={onRefresh}
+                  onEdit={onEdit}
+                />
               )}
             </>
           )}

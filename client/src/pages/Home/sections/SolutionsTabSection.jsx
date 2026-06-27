@@ -33,7 +33,7 @@ const featureCards = [
     icon: HomeWorkRoundedIcon
   },
   {
-    title: 'Quản lý phòng trọ, căn hộ, giường - sleepbox',
+    title: 'Quản lý phòng trọ, căn hộ, phòng - sleepbox',
     description:
       'Theo dõi trạng thái phòng, số điện thoại khách thuê, lịch sử sử dụng và tình trạng lấp đầy chỉ trên một giao diện.',
     icon: ApartmentRoundedIcon

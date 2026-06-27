@@ -174,7 +174,7 @@ const InvoiceSettingTab = () => {
             <Box sx={{ pr: 2 }}>
               <Typography variant="body1" fontWeight="bold" sx={{ color: '#2c3e50' }}>Phân loại thu/chi từ hóa đơn</Typography>
               <Typography variant="body2" color="textSecondary">
-                Khi thu tiền hóa đơn bạn muốn phân tách các phiếu thu chi rõ ràng như: Tiền phòng/giường, tiền dịch vụ, giảm trừ, cộng thêm
+                Khi thu tiền hóa đơn bạn muốn phân tách các phiếu thu chi rõ ràng như: Tiền phòng, tiền dịch vụ, giảm trừ, cộng thêm
               </Typography>
             </Box>
             <Switch 

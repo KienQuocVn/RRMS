@@ -35,6 +35,8 @@ import { getPhuongXa, getQuanHuyen, getTinhThanh } from '~/apis/addressAPI'
 import { getMotelById } from '~/apis/motelAPI'
 import { getAllMotelDevices, getAllDeviceByRomId, deleteRoomDevice, insertRoomDevice } from '~/apis/deviceAPT'
 import { getContractTemplatesByMotelId, createTenant, createContract } from '~/apis/contractTemplateAPI'
+import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/numberInputUtils'
+import { formatVndInput, getVndInputFieldProps, parseVndInput } from '~/utils/currencyInputUtils'
 import { deleteTenantById } from '~/apis/tenantAPI'
 
 const getErrorMessage = (error, fallback) => {
@@ -61,10 +63,7 @@ const fireModalAlert = (options) => {
   })
 }
 
-const formatCurrencyValue = (value) => {
-  const numericValue = Number(value ?? 0)
-  return Number.isFinite(numericValue) ? numericValue.toLocaleString('vi-VN') : '0'
-}
+const formatCurrencyValue = (value) => formatVndInput(value) || '0'
 
 function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSuccess }) {
   const username = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).username : null
@@ -184,11 +183,12 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
   }
 
   const handleContractChange = (e) => {
-    const { name, value } = e.target
+    const { name, value, type } = e.target
+    if (type === 'number' && isNegativeNumberValue(value)) return
     setContract((prev) => {
       const newContract = { ...prev }
       if (name === 'price' || name === 'deposit') {
-        const numericValue = value.replace(/[^0-9]/g, '')
+        const numericValue = parseVndInput(value)
         newContract[name] = numericValue
       } else if (name === 'leaseTerm' && prev.moveinDate) {
         const monthsToAdd = parseInt(value, 10)
@@ -537,6 +537,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                   value={contract.countTenant}
                   onChange={handleContractChange}
                   size="small"
+                  {...getNonNegativeNumberFieldProps()}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -703,11 +704,13 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                       value={roomServices.find((s) => s.motelServiceId === service.motelServiceId)?.quantity || 0}
                       disabled={!isSelected}
                       onChange={(e) => {
+                        if (isNegativeNumberValue(e.target.value)) return
                         const qty = parseInt(e.target.value) || 0
                         setRoomServices((prev) =>
                           prev.map((s) => (s.motelServiceId === service.motelServiceId ? { ...s, quantity: qty } : s))
                         )
                       }}
+                      {...getNonNegativeNumberFieldProps()}
                     />
                   </Box>
                 )
@@ -733,10 +736,11 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                   fullWidth
                   label="Giá thuê"
                   name="price"
-                  value={contract.price ? Number(contract.price).toLocaleString('vi-VN') : ''}
+                  value={formatVndInput(contract.price)}
                   onChange={handleContractChange}
                   size="small"
                   InputProps={{ endAdornment: <InputAdornment position="end">đ</InputAdornment> }}
+                  {...getVndInputFieldProps()}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -744,10 +748,11 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                   fullWidth
                   label="Tiền cọc"
                   name="deposit"
-                  value={contract.deposit ? Number(contract.deposit).toLocaleString('vi-VN') : ''}
+                  value={formatVndInput(contract.deposit)}
                   onChange={handleContractChange}
                   size="small"
                   InputProps={{ endAdornment: <InputAdornment position="end">đ</InputAdornment> }}
+                  {...getVndInputFieldProps()}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -835,11 +840,13 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                       value={roomDevices.find((d) => d.motel_device_id === device.motel_device_id)?.quantity || 0}
                       disabled={!isSelected}
                       onChange={(e) => {
+                        if (isNegativeNumberValue(e.target.value)) return
                         const qty = parseInt(e.target.value) || 0
                         setRoomDevices((prev) =>
                           prev.map((d) => (d.motel_device_id === device.motel_device_id ? { ...d, quantity: qty } : d))
                         )
                       }}
+                      {...getNonNegativeNumberFieldProps()}
                     />
                   </Box>
                 )

@@ -1,0 +1,4 @@
+# Docker data
+.env
+server/logstash/lib/*.jar
+!server/logstash/lib/.gitkeep

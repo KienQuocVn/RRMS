@@ -1,88 +1,79 @@
-const vietnamProvinces = [
-  'An Giang',
-  'Bà Rịa - Vũng Tàu',
-  'Bạc Liêu',
-  'Bắc Giang',
-  'Bắc Kạn',
-  'Bắc Ninh',
-  'Bến Tre',
-  'Bình Dương',
-  'Bình Định',
-  'Bình Phước',
-  'Bình Thuận',
-  'Cà Mau',
-  'Cao Bằng',
-  'Cần Thơ',
-  'Đà Nẵng',
-  'Đắk Lắk',
-  'Đắk Nông',
-  'Điện Biên',
-  'Đồng Nai',
-  'Đồng Tháp',
-  'Gia Lai',
-  'Hà Giang',
-  'Hà Nam',
-  'Hà Nội',
-  'Hà Tĩnh',
-  'Hải Dương',
-  'Hải Phòng',
-  'Hậu Giang',
-  'Hòa Bình',
-  'Hưng Yên',
-  'Khánh Hòa',
-  'Kiên Giang',
-  'Kon Tum',
-  'Lai Châu',
-  'Lạng Sơn',
-  'Lào Cai',
-  'Lâm Đồng',
-  'Long An',
-  'Nam Định',
-  'Nghệ An',
-  'Ninh Bình',
-  'Ninh Thuận',
-  'Phú Thọ',
-  'Phú Yên',
-  'Quảng Bình',
-  'Quảng Nam',
-  'Quảng Ngãi',
-  'Quảng Ninh',
-  'Quảng Trị',
-  'Sóc Trăng',
-  'Sơn La',
-  'Tây Ninh',
-  'Thái Bình',
-  'Thái Nguyên',
-  'Thanh Hóa',
-  'Thừa Thiên Huế',
-  'Tiền Giang',
-  'TP. Hồ Chí Minh',
-  'Trà Vinh',
-  'Tuyên Quang',
-  'Vĩnh Long',
-  'Vĩnh Phúc',
-  'Yên Bái'
-]
+import { getLocationById, getTinhThanh } from '~/apis/addressAPI'
 
-//Hàm lấy tên tỉnh từ địa chỉ
-export function findProvinceRegex(address) {
-  if (!address) return null
+let provinceCache = null
 
-  const regex = new RegExp(vietnamProvinces.join('|'), 'i')
-  const match = address.match(regex)
+export async function loadProvinces() {
+  if (provinceCache) return provinceCache
 
-  if (match) {
-    return match[0]
+  try {
+    const res = await getTinhThanh()
+    if (res.data?.error === 0) {
+      provinceCache = res.data.data
+    }
+  } catch (error) {
+    console.error('Không thể tải danh sách tỉnh thành:', error)
   }
 
-  const addressParts = address
+  return provinceCache
+}
+
+export async function findProvinceFromAddress(address) {
+  if (!address) return null
+
+  await loadProvinces()
+
+  const parts = address
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean)
 
-  if (addressParts.length === 0) {
-    return null
+  if (parts.length === 0) return null
+
+  const lastPart = parts[parts.length - 1]
+
+  if (/^\d+$/.test(lastPart)) {
+    const fromCache = provinceCache?.find((p) => String(p.id) === lastPart)
+    if (fromCache) return fromCache.name
+
+    try {
+      const res = await getLocationById(lastPart)
+      if (res.data?.error === 0 && res.data?.data) {
+        return res.data.data.name || res.data.data.full_name
+      }
+    } catch (error) {
+      console.error('Không thể tra cứu tỉnh thành:', error)
+    }
   }
 
-  return addressParts[addressParts.length - 1]
+  return findProvinceRegex(address)
+}
+
+export function findProvinceRegex(address) {
+  if (!address) return null
+
+  const parts = address
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+  if (parts.length === 0) return null
+
+  const lastPart = parts[parts.length - 1]
+
+  if (provinceCache && /^\d+$/.test(lastPart)) {
+    const found = provinceCache.find((p) => String(p.id) === lastPart)
+    if (found) return found.name
+  }
+
+  if (provinceCache?.length) {
+    const names = provinceCache.map((p) => p.name)
+    const regex = new RegExp(
+      names.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
+      'i'
+    )
+    const match = address.match(regex)
+    if (match) return match[0]
+  }
+
+  return lastPart
 }

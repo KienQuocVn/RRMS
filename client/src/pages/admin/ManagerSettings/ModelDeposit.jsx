@@ -9,6 +9,7 @@ import Swal from 'sweetalert2'
 import { createContractTemplate, getContractTemplateById, updateContractTemplate } from '~/apis/contractTemplateAPI'
 
 import { env } from '~/configs/environment'
+import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/numberInputUtils'
 
 const ModelDeposit = ({ motel, username, templatecontractRouteId, fetchDataTemlateContract, onClose }) => {
   const editorRef = useRef()
@@ -51,7 +52,8 @@ const ModelDeposit = ({ motel, username, templatecontractRouteId, fetchDataTemla
   }
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
+    const { name, value, type } = e.target
+    if (type === 'number' && isNegativeNumberValue(value)) return
     setTemplatecontracts((prev) => ({
       ...prev,
       [name]: value
@@ -191,6 +193,7 @@ const ModelDeposit = ({ motel, username, templatecontractRouteId, fetchDataTemla
               required
               error={formErrors.sortOrder}
               helperText={formErrors.sortOrder ? "Vui lòng nhập số thứ tự" : ""}
+              {...getNonNegativeNumberFieldProps()}
             />
           </Grid>
           <Grid item xs={12} md={4}>

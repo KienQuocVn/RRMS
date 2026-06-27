@@ -13,16 +13,22 @@ import { BrowserRouter } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { env } from './configs/environment.js'
 
-createRoot(document.getElementById('root')).render(
+const appContent = (
   <>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <GoogleOAuthProvider clientId={env.GOOGLE_CLIENT_ID}>
-          <App />
-        </GoogleOAuthProvider>
+        <App />
       </BrowserRouter>
       <ToastContainer />
     </ThemeProvider>
   </>
+)
+
+createRoot(document.getElementById('root')).render(
+  env.GOOGLE_CLIENT_ID ? (
+    <GoogleOAuthProvider clientId={env.GOOGLE_CLIENT_ID}>{appContent}</GoogleOAuthProvider>
+  ) : (
+    appContent
+  )
 )

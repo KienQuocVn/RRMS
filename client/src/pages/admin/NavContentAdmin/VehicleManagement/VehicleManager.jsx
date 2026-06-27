@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Typography, Button, IconButton, TextField, InputAdornment, Badge, CircularProgress } from '@mui/material'
+import { Box, Typography, IconButton, TextField, InputAdornment, Badge, CircularProgress } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined'
 import SearchIcon from '@mui/icons-material/Search'
 import VehicleListTable from './components/VehicleListTable'
 import AddVehicleModal from './components/AddVehicleModal'
+import EditVehicleModal from './components/EditVehicleModal'
 import { getCarsByMotelId } from '~/apis/carAPI'
 import { getRoomByMotelId } from '~/apis/roomAPI'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import { Colors } from '~/theme'
 const PRIMARY_COLOR = '#20a9e7'
-const VehicleManager = ({ motels, setmotels, setIsAdmin, isNavAdmin, setIsNavAdmin }) => {
+const VehicleManager = ({ motels, setmotels, setIsAdmin, setIsNavAdmin }) => {
   const { motelId } = useParams()
   const [vehicles, setVehicles] = useState([])
   const [rooms, setRooms] = useState([])
@@ -19,6 +20,8 @@ const VehicleManager = ({ motels, setmotels, setIsAdmin, isNavAdmin, setIsNavAdm
   const [searchTerm, setSearchTerm] = useState('')
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editingVehicle, setEditingVehicle] = useState(null)
 
   const fetchData = async () => {
     setLoading(true)
@@ -42,6 +45,16 @@ const VehicleManager = ({ motels, setmotels, setIsAdmin, isNavAdmin, setIsNavAdm
 
   const handleOpenAddModal = () => setIsAddModalOpen(true)
   const handleCloseAddModal = () => setIsAddModalOpen(false)
+
+  const handleOpenEditModal = (vehicle) => {
+    setEditingVehicle(vehicle)
+    setIsEditModalOpen(true)
+  }
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false)
+    setEditingVehicle(null)
+  }
 
   const handleRefresh = () => {
     fetchData()
@@ -131,7 +144,12 @@ const VehicleManager = ({ motels, setmotels, setIsAdmin, isNavAdmin, setIsNavAdm
             <CircularProgress sx={{ color: Colors.primary }} />
           </Box>
         ) : (
-          <VehicleListTable vehicles={filteredVehicles} rooms={rooms} onRefresh={handleRefresh} />
+          <VehicleListTable
+            vehicles={filteredVehicles}
+            rooms={rooms}
+            onRefresh={handleRefresh}
+            onEdit={handleOpenEditModal}
+          />
         )}
 
         {/* Add Modal */}
@@ -140,6 +158,14 @@ const VehicleManager = ({ motels, setmotels, setIsAdmin, isNavAdmin, setIsNavAdm
           onClose={handleCloseAddModal}
           rooms={rooms}
           motelId={motelId}
+          onSuccess={handleRefresh}
+        />
+
+        <EditVehicleModal
+          open={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          vehicle={editingVehicle}
+          rooms={rooms}
           onSuccess={handleRefresh}
         />
       </Box>

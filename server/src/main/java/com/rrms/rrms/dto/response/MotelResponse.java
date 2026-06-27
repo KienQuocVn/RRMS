@@ -25,6 +25,8 @@ public class MotelResponse implements Serializable {
     Double area;
     Long averagePrice;
     String address;
+    Double latitude;
+    Double longitude;
     String methodofcreation;
     int maxperson;
     int invoicedate;

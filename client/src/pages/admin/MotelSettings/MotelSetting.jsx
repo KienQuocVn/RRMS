@@ -783,7 +783,7 @@ const MotelSetting = ({ setIsAdmin, motels, setmotels }) => {
                               <b>Phân loại thu/chi từ hóa đơn</b>
                             </label>
                             <p className="text-setting-invoice">
-                              Khi thu tiền hóa đơn bạn muốn phân tách các phiếu thu chi rõ ràng như: Tiền phòng/giường,
+                              Khi thu tiền hóa đơn bạn muốn phân tách các phiếu thu chi rõ ràng như: Tiền phòng/phòng,
                               tiền dịch vụ, giảm trừ, cộng thêm
                             </p>
                           </div>

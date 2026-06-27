@@ -152,7 +152,7 @@ function ModalReportContract({ toggleModal, modalOpen, roomId }) {
               mới.
             </li>
             <li>
-              Khi phòng/căn hộ/giường ở trạng thái Đang báo kết thúc hợp đồng sau hành động này. Khách mới có thể cọc
+              Khi phòng/căn hộ/phòng ở trạng thái Đang báo kết thúc hợp đồng sau hành động này. Khách mới có thể cọc
               giữ chỗ.
             </li>
           </Box>

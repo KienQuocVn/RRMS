@@ -36,28 +36,30 @@ import { createContract, createTenant, getContractTemplatesByMotelId } from '~/a
 import { changeQuantityRoomDevice, deleteRoomDevice, getAllDeviceByRomId, getAllMotelDevices, insertRoomDevice } from '~/apis/deviceAPT'
 import { getMotelById } from '~/apis/motelAPI'
 import { createRoomService, DeleteRoomServiceByid, getServiceRoombyRoomId, getRoomById, updateSerivceRoom } from '~/apis/roomAPI'
+import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/numberInputUtils'
+import { formatVndInput, parseVndInput } from '~/utils/currencyInputUtils'
 
 const LEASE_TERM_OPTIONS = [
   { value: '0', label: 'Tuy chinh' },
-  { value: '1', label: '1 thang' },
-  { value: '2', label: '2 thang' },
-  { value: '3', label: '3 thang' },
-  { value: '4', label: '4 thang' },
-  { value: '5', label: '5 thang' },
-  { value: '6', label: '6 thang' },
-  { value: '12', label: '1 nam' },
-  { value: '18', label: '1 nam 6 thang' },
-  { value: '24', label: '2 nam' },
-  { value: '36', label: '3 nam' },
-  { value: '48', label: '4 nam' },
-  { value: '60', label: '5 nam' }
+  { value: '1', label: '1 tháng' },
+  { value: '2', label: '2 tháng' },
+  { value: '3', label: '3 tháng' },
+  { value: '4', label: '4 tháng' },
+  { value: '5', label: '5 tháng' },
+  { value: '6', label: '6 tháng' },
+  { value: '12', label: '1 năm' },
+  { value: '18', label: '1 năm 6 tháng' },
+  { value: '24', label: '2 năm' },
+  { value: '36', label: '3 năm' },
+  { value: '48', label: '4 năm' },
+  { value: '60', label: '5 năm' }
 ]
 
 const COLLECTION_CYCLE_OPTIONS = [
-  { value: '1', label: '1 thang' },
-  { value: '2', label: '2 thang' },
-  { value: '3', label: '3 thang' },
-  { value: '6', label: '6 thang' },
+  { value: '1', label: '1 tháng' },
+  { value: '2', label: '2 tháng' },
+  { value: '3', label: '3 tháng' },
+  { value: '6', label: '6 tháng' },
   { value: '12', label: '1 nam' }
 ]
 
@@ -101,19 +103,6 @@ const getInitialContract = (username) => ({
   countTenant: 1,
   status: 'ACTIVE'
 })
-
-const formatCurrency = (value) => {
-  if (value === null || value === undefined || value === '') {
-    return ''
-  }
-
-  const numericValue = Number(value)
-  if (Number.isNaN(numericValue)) {
-    return ''
-  }
-
-  return numericValue.toLocaleString('vi-VN')
-}
 
 const formatChargeType = (chargeType) => {
   if (!chargeType) return ''
@@ -436,8 +425,7 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
   }
 
   const handleMoneyFieldChange = (field, value) => {
-    const normalizedValue = String(value ?? '').replace(/[^0-9]/g, '')
-    handleContractChange(field, normalizedValue)
+    handleContractChange(field, parseVndInput(value))
   }
 
   const handleServiceToggle = (serviceId, checked) => {
@@ -451,6 +439,7 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
   }
 
   const handleServiceQuantityChange = (serviceId, value) => {
+    if (isNegativeNumberValue(value)) return
     const normalizedQuantity = Math.max(1, Number(value) || 1)
     setRoomServices((previousServices) =>
       previousServices.map((service) =>
@@ -470,6 +459,7 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
   }
 
   const handleDeviceQuantityChange = (deviceId, value) => {
+    if (isNegativeNumberValue(value)) return
     const normalizedQuantity = Math.max(1, Number(value) || 1)
     setRoomDevices((previousDevices) =>
       previousDevices.map((device) =>
@@ -743,7 +733,7 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                           </Typography>
                           <Stack direction="row" justifyContent="space-between" sx={{ mt: 1.25 }} spacing={1}>
                             <Typography variant="body1" sx={{ color: '#1F2937', fontWeight: 700 }}>
-                              {formatCurrency(roomItem.price)} d
+                              {formatVndInput(roomItem.price)} d
                             </Typography>
                             <Typography variant="body2" sx={{ color: '#4B5563' }}>
                               0/1 nguoi
@@ -1016,7 +1006,7 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                                 {service.nameService}
                               </Typography>
                               <Typography variant="body2" sx={{ color: '#4B5563' }}>
-                                Gia: <b>{formatCurrency(service.price)}d</b> / {formatChargeType(service.chargetype)}
+                                Gia: <b>{formatVndInput(service.price)}d</b> / {formatChargeType(service.chargetype)}
                               </Typography>
                             </Box>
                           </Stack>
@@ -1027,6 +1017,7 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                             disabled={!isSelected}
                             onChange={(event) => handleServiceQuantityChange(service.motelServiceId, event.target.value)}
                             sx={{ width: 170 }}
+                            {...getNonNegativeNumberFieldProps(1)}
                             InputProps={{
                               endAdornment: (
                                 <InputAdornment position="end">{formatChargeType(service.chargetype)}</InputAdornment>
@@ -1047,7 +1038,7 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                     <TextField
                       fullWidth
                       label="Giá thuê"
-                      value={formatCurrency(contract.price)}
+                      value={formatVndInput(contract.price)}
                       onChange={(event) => handleMoneyFieldChange('price', event.target.value)}
                       InputProps={{ endAdornment: <InputAdornment position="end">d</InputAdornment> }}
                     />
@@ -1056,7 +1047,7 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                     <TextField
                       fullWidth
                       label="Mức tiền cọc"
-                      value={formatCurrency(contract.deposit)}
+                      value={formatVndInput(contract.deposit)}
                       onChange={(event) => handleMoneyFieldChange('deposit', event.target.value)}
                       InputProps={{ endAdornment: <InputAdornment position="end">d</InputAdornment> }}
                     />
@@ -1146,7 +1137,7 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                                 {device.deviceName}
                               </Typography>
                               <Typography variant="body2" sx={{ color: '#4B5563' }}>
-                                Gia tri: <b>{formatCurrency(device.value)}d</b> / {device.unit}
+                                Gia tri: <b>{formatVndInput(device.value)}d</b> / {device.unit}
                               </Typography>
                             </Box>
                           </Stack>
@@ -1157,6 +1148,7 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                             disabled={!isSelected}
                             onChange={(event) => handleDeviceQuantityChange(device.motel_device_id, event.target.value)}
                             sx={{ width: 140 }}
+                            {...getNonNegativeNumberFieldProps(1)}
                           />
                         </Box>
                       </Card>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -19,7 +19,10 @@ import {
   Divider,
   IconButton,
   Paper,
-  Chip
+  Chip,
+  Alert,
+  CircularProgress,
+  InputAdornment,
 } from '@mui/material'
 import HomeIcon from '@mui/icons-material/Home'
 import CloseIcon from '@mui/icons-material/Close'
@@ -27,7 +30,7 @@ import InfoIcon from '@mui/icons-material/Info'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import DownloadIcon from '@mui/icons-material/Download'
 
-import { getPhuongXa, getQuanHuyen, getTinhThanh } from '~/apis/addressAPI'
+import { getPhuongXaByTinh, getTinhThanh } from '~/apis/addressAPI'
 import { getAllTypeRoom } from '~/apis/typeRoomAPI'
 import { createMotel, getMotelById, updateMotel } from '~/apis/motelAPI'
 import { createSerivceMotel } from '~/apis/motelServiceAPI'
@@ -37,18 +40,35 @@ import { toast } from 'react-toastify'
 import Swal from 'sweetalert2'
 import * as XLSX from 'xlsx'
 import { isValidRouteParam } from '~/utils/apiAdapters'
+import {
+  getNonNegativeNumberFieldProps,
+  isNegativeNumberValue,
+  wrapNonNegativeNumberChange,
+} from '~/utils/numberInputUtils'
+import {
+  formatVndInput,
+  getVndInputFieldProps,
+  parseVndInput,
+  parseVndNumber,
+} from '~/utils/currencyInputUtils'
+import AddressMapPicker from './components/AddressMapPicker'
 
 const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
   const navigate = useNavigate()
 
   // Location State
   const [provinces, setProvinces] = useState([])
-  const [districts, setDistricts] = useState([])
   const [wards, setWards] = useState([])
   const [selectedProvince, setSelectedProvince] = useState('')
-  const [selectedDistrict, setSelectedDistrict] = useState('')
   const [selectedWard, setSelectedWard] = useState('')
   const [addressDetail, setAddressDetail] = useState('')
+  const [fullAddress, setFullAddress] = useState('')
+  const [lat, setLat] = useState(null)
+  const [lng, setLng] = useState(null)
+  const [geocodeLoading, setGeocodeLoading] = useState(false)
+  const [geocodeError, setGeocodeError] = useState('')
+  const [manualPickMode, setManualPickMode] = useState(false)
+  const [autoGeocode, setAutoGeocode] = useState(true)
 
   // Data State
   const [typeRooms, setTypeRooms] = useState([])
@@ -88,18 +108,7 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
       .catch(console.error)
   }, [])
 
-  // Handle Edit Mode or Create Mode
-  useEffect(() => {
-    if (open) {
-      if (isValidRouteParam(MotelId) && MotelId !== 'Create') {
-        fetchDataWhenEdit(MotelId)
-      } else {
-        resetForm()
-      }
-    }
-  }, [MotelId, open])
-
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setMotel({
       typeRoom: '',
       motelName: '',
@@ -111,12 +120,93 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
       paymentdeadline: 5
     })
     setSelectedProvince('')
-    setSelectedDistrict('')
     setSelectedWard('')
+    setWards([])
     setAddressDetail('')
+    setFullAddress('')
+    setLat(null)
+    setLng(null)
+    setGeocodeLoading(false)
+    setGeocodeError('')
+    setManualPickMode(false)
+    setAutoGeocode(true)
     setJsonData([])
     setFileName('')
-  }
+  }, [])
+
+  const getProvinceName = useCallback(
+    (id) => provinces.find((p) => String(p.id) === String(id))?.full_name || '',
+    [provinces]
+  )
+
+  const getWardName = useCallback(
+    (id) => wards.find((w) => String(w.id) === String(id))?.full_name || '',
+    [wards]
+  )
+
+  const geocodeQuery = useMemo(() => {
+    const detail = addressDetail.trim()
+    const wardName = getWardName(selectedWard)
+    const provinceName = getProvinceName(selectedProvince)
+    if (!detail || !wardName || !provinceName) return ''
+    return `${detail}, ${wardName}, ${provinceName}, Việt Nam`
+  }, [addressDetail, selectedWard, selectedProvince, getWardName, getProvinceName])
+
+  useEffect(() => {
+    if (!geocodeQuery) {
+      setFullAddress('')
+      setGeocodeError('')
+      setManualPickMode(false)
+      return undefined
+    }
+
+    setFullAddress(geocodeQuery.replace(/, Việt Nam$/, ''))
+
+    if (!autoGeocode) return undefined
+
+    const timer = setTimeout(async () => {
+      setGeocodeLoading(true)
+      setGeocodeError('')
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geocodeQuery)}&format=json&limit=1&countrycodes=vn`,
+          {
+            headers: {
+              Accept: 'application/json',
+              'Accept-Language': 'vi',
+              'User-Agent': 'RRMS/1.0 (motel-address-picker)'
+            }
+          }
+        )
+
+        if (!res.ok) throw new Error('Geocoding failed')
+
+        const data = await res.json()
+        if (data?.length > 0) {
+          setLat(parseFloat(data[0].lat))
+          setLng(parseFloat(data[0].lon))
+          setManualPickMode(false)
+          setGeocodeError('')
+        } else {
+          setGeocodeError('Không tìm thấy địa chỉ trên bản đồ. Vui lòng click trên bản đồ để chọn vị trí thủ công.')
+          setManualPickMode(true)
+        }
+      } catch {
+        setGeocodeError('Lỗi khi tra cứu địa chỉ. Vui lòng click trên bản đồ để chọn vị trí thủ công.')
+        setManualPickMode(true)
+      } finally {
+        setGeocodeLoading(false)
+      }
+    }, 800)
+
+    return () => clearTimeout(timer)
+  }, [geocodeQuery, autoGeocode])
+
+  const handleMapPositionChange = useCallback(({ lat: newLat, lng: newLng }) => {
+    setLat(newLat)
+    setLng(newLng)
+  }, [])
 
   const fetchDataTypeRoom = async () => {
     try {
@@ -127,7 +217,7 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
     }
   }
 
-  const fetchDataWhenEdit = async (id) => {
+  const fetchDataWhenEdit = useCallback(async (id) => {
     if (!username || !isValidRouteParam(id)) return
     try {
       const res = await getMotelById(id)
@@ -144,51 +234,86 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
       })
       
       if (data.address) {
-        const [detail, ward, dist, prov] = data.address.split(', ')
-        setAddressDetail(detail || '')
-        
-        // Wait for provinces to load if needed, then districts, then wards
-        const pId = Number(prov)
-        const dId = Number(dist)
-        setSelectedProvince(pId)
-        
-        getQuanHuyen(pId).then(r => {
-          if (r.data.error === 0) {
-            setDistricts(r.data.data)
-            setSelectedDistrict(dId)
-            getPhuongXa(dId).then(rw => {
-              if (rw.data.error === 0) {
-                setWards(rw.data.data)
-                setSelectedWard(Number(ward))
-              }
-            })
+        const parts = data.address.split(', ').map((p) => p.trim())
+        setAddressDetail(parts[0] || '')
+
+        // Định dạng mới: chi tiết, phường/xã, tỉnh — hoặc cũ: chi tiết, phường/xã, quận/huyện, tỉnh
+        const isLegacyFormat = parts.length >= 4
+        const wardId = parts[1]
+        const provinceId = isLegacyFormat ? parts[3] : parts[2]
+
+        setSelectedProvince(provinceId)
+
+        getPhuongXaByTinh(provinceId).then((res) => {
+          if (res.data.error === 0) {
+            setWards(res.data.data)
+            setSelectedWard(wardId)
           }
         })
+      }
+
+      if (data.latitude != null && data.longitude != null) {
+        setLat(data.latitude)
+        setLng(data.longitude)
+        setAutoGeocode(false)
       }
     } catch (error) {
       console.error(error)
     }
-  }
+  }, [username])
+
+  // Handle Edit Mode or Create Mode
+  useEffect(() => {
+    if (open) {
+      if (isValidRouteParam(MotelId) && MotelId !== 'Create') {
+        fetchDataWhenEdit(MotelId)
+      } else {
+        resetForm()
+      }
+    }
+  }, [MotelId, open, fetchDataWhenEdit, resetForm])
 
   // Handle Inputs
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setMotel((prev) => ({ ...prev, [name]: value }))
+    const { name, value, type } = e.target
+    if (type === 'number' && isNegativeNumberValue(value)) return
+    setMotel((prev) => ({
+      ...prev,
+      [name]: name === 'averagePrice' ? parseVndInput(value) : value,
+    }))
   }
 
   const handleProvinceChange = (e) => {
-    const id = Number(e.target.value)
+    const id = e.target.value
     setSelectedProvince(id)
-    setSelectedDistrict('')
     setSelectedWard('')
-    getQuanHuyen(id).then((res) => setDistricts(res.data.data))
+    setWards([])
+    setLat(null)
+    setLng(null)
+    setGeocodeError('')
+    setManualPickMode(false)
+    setAutoGeocode(true)
+    getPhuongXaByTinh(id).then((res) => {
+      if (res.data.error === 0) setWards(res.data.data)
+    })
   }
 
-  const handleDistrictChange = (e) => {
-    const id = Number(e.target.value)
-    setSelectedDistrict(id)
-    setSelectedWard('')
-    getPhuongXa(id).then((res) => setWards(res.data.data))
+  const handleWardChange = (e) => {
+    setSelectedWard(e.target.value)
+    setLat(null)
+    setLng(null)
+    setGeocodeError('')
+    setManualPickMode(false)
+    setAutoGeocode(true)
+  }
+
+  const handleAddressDetailChange = (e) => {
+    setAddressDetail(e.target.value)
+    setLat(null)
+    setLng(null)
+    setGeocodeError('')
+    setManualPickMode(false)
+    setAutoGeocode(true)
   }
 
   const handleCreateServices = async (motelId) => {
@@ -240,13 +365,45 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
     account: { username },
     motelName: motel.motelName,
     methodofcreation: motel.methodofcreation,
-    address: `${addressDetail}, ${selectedWard}, ${selectedDistrict}, ${selectedProvince}`,
+    address: `${addressDetail}, ${selectedWard}, ${selectedProvince}`,
+    latitude: lat,
+    longitude: lng,
     area: Number(motel.area),
-    averagePrice: parseFloat(motel.averagePrice),
+    averagePrice: parseVndNumber(motel.averagePrice),
     maxperson: Number(motel.maxperson),
     invoicedate: Number(motel.invoicedate),
     paymentdeadline: Number(motel.paymentdeadline)
   })
+
+  const validateMotelArea = () => {
+    const totalArea = Number(motel.area)
+    if (!motel.area || Number.isNaN(totalArea) || totalArea <= 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Thiếu thông tin',
+        text: 'Vui lòng nhập tổng diện tích nhà trọ (m²) theo sổ đỏ.'
+      })
+      return false
+    }
+    return true
+  }
+
+  const validateExcelRoomAreas = () => {
+    const totalMotelArea = Number(motel.area)
+    const excelTotalArea = jsonData.reduce((sum, item) => sum + (Number(item.area) || 0), 0)
+    if (excelTotalArea > totalMotelArea) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Vượt quá diện tích',
+        text: `Tổng diện tích các phòng trong Excel (${excelTotalArea} m²) lớn hơn diện tích căn nhà (${totalMotelArea} m²).`
+      })
+      return false
+    }
+    return true
+  }
+
+  const getApiErrorMessage = (error, fallback) =>
+    error?.response?.data?.message || fallback
 
   const saveDisableMethod = async () => {
     const payload = buildMotelPayload()
@@ -256,11 +413,13 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
       Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đã tạo nhà trọ thành công!' })
       setTimeout(() => window.location.reload(), 1400)
     } catch (error) {
-      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra khi tạo nhà trọ' })
+      Swal.fire({ icon: 'error', title: 'Lỗi', text: getApiErrorMessage(error, 'Có lỗi xảy ra khi tạo nhà trọ') })
     }
   }
 
   const saveExcelMethod = async () => {
+    if (!validateExcelRoomAreas()) return
+
     try {
       const res = await createMotel(buildMotelPayload())
       const mId = res.data.result.motelId
@@ -280,7 +439,7 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
       navigate(`/quanlytro/${mId}`)
       onClose()
     } catch (error) {
-      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra' })
+      Swal.fire({ icon: 'error', title: 'Lỗi', text: getApiErrorMessage(error, 'Có lỗi xảy ra') })
     }
   }
 
@@ -311,15 +470,26 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
       navigate(`/quanlytro/${mId}`)
       onClose()
     } catch (error) {
-      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra' })
+      Swal.fire({ icon: 'error', title: 'Lỗi', text: getApiErrorMessage(error, 'Có lỗi xảy ra') })
     }
   }
 
   const handleSave = () => {
-    if (!motel.motelName || !motel.typeRoom || !selectedProvince || !selectedDistrict || !selectedWard) {
+    if (!motel.motelName || !motel.typeRoom || !selectedProvince || !selectedWard || !addressDetail.trim()) {
       Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đủ các trường bắt buộc (*)' })
       return
     }
+
+    if (lat == null || lng == null) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Thiếu vị trí bản đồ',
+        text: 'Vui lòng xác định vị trí trên bản đồ (kéo marker hoặc click trên bản đồ nếu không tìm thấy địa chỉ).'
+      })
+      return
+    }
+
+    if (!validateMotelArea()) return
 
     if (MotelId === 'Create') {
       if (motel.methodofcreation === 'disable') saveDisableMethod()
@@ -331,7 +501,9 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
           Swal.fire({ icon: 'success', title: 'Thành công', text: 'Cập nhật thành công!' })
           setTimeout(() => window.location.reload(), 1400)
         })
-        .catch(() => Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra' }))
+        .catch((error) =>
+          Swal.fire({ icon: 'error', title: 'Lỗi', text: getApiErrorMessage(error, 'Có lỗi xảy ra') })
+        )
     }
   }
 
@@ -376,32 +548,80 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
         <Box>
           <Typography variant="subtitle1" fontWeight="bold" gutterBottom>2. Địa chỉ</Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={6}>
               <FormControl fullWidth required size="small">
                 <InputLabel>Tỉnh/Thành</InputLabel>
                 <Select value={selectedProvince} onChange={handleProvinceChange} label="Tỉnh/Thành">
-                  {provinces.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
+                  {provinces.map((p) => (
+                    <MenuItem key={p.id} value={p.id}>{p.full_name}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={6}>
               <FormControl fullWidth required size="small" disabled={!selectedProvince}>
-                <InputLabel>Quận/Huyện</InputLabel>
-                <Select value={selectedDistrict} onChange={handleDistrictChange} label="Quận/Huyện">
-                  {districts.map(d => <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <FormControl fullWidth required size="small" disabled={!selectedDistrict}>
                 <InputLabel>Phường/Xã</InputLabel>
-                <Select value={selectedWard} onChange={(e) => setSelectedWard(Number(e.target.value))} label="Phường/Xã">
-                  {wards.map(w => <MenuItem key={w.id} value={w.id}>{w.name}</MenuItem>)}
+                <Select value={selectedWard} onChange={handleWardChange} label="Phường/Xã">
+                  {wards.map((w) => (
+                    <MenuItem key={w.id} value={w.id}>{w.full_name}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
             <Grid item xs={12}>
-              <TextField fullWidth required size="small" label="Số nhà, tên đường" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} />
+              <TextField
+                fullWidth
+                required
+                size="small"
+                label="Số nhà, tên đường"
+                value={addressDetail}
+                onChange={handleAddressDetailChange}
+                placeholder="VD: 123 Nguyễn Văn Linh"
+              />
+            </Grid>
+
+            {fullAddress && (
+              <Grid item xs={12}>
+                <Typography variant="body2" color="text.secondary">
+                  Địa chỉ đầy đủ: <strong>{fullAddress}</strong>
+                </Typography>
+              </Grid>
+            )}
+
+            {geocodeLoading && (
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={18} />
+                  <Typography variant="body2" color="text.secondary">Đang tra cứu vị trí trên bản đồ...</Typography>
+                </Box>
+              </Grid>
+            )}
+
+            {geocodeError && (
+              <Grid item xs={12}>
+                <Alert severity="warning">{geocodeError}</Alert>
+              </Grid>
+            )}
+
+            <Grid item xs={12}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                {manualPickMode
+                  ? 'Click trên bản đồ để chọn vị trí, hoặc kéo marker để điều chỉnh.'
+                  : 'Kéo marker trên bản đồ để điều chỉnh vị trí chính xác hơn.'}
+              </Typography>
+              <AddressMapPicker
+                active={open}
+                lat={lat}
+                lng={lng}
+                onPositionChange={handleMapPositionChange}
+                allowMapClick={manualPickMode || lat == null}
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Tọa độ:{' '}
+                {lat != null && lng != null
+                  ? `Lat ${lat.toFixed(6)}, Lng ${lng.toFixed(6)}`
+                  : 'Chưa xác định'}
+              </Typography>
             </Grid>
           </Grid>
         </Box>
@@ -433,10 +653,10 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
                     <Typography variant="body2">Hệ thống sẽ tự động tạo danh sách phòng theo tầng. Vui lòng nhập thông tin bên dưới.</Typography>
                     <Grid container spacing={2} sx={{ mt: 1 }}>
                       <Grid item xs={6}>
-                        <TextField fullWidth size="small" label="Số tầng" value={dataCreateAuto.typeMotelCreate} onChange={e => setDataCreateAuto({...dataCreateAuto, typeMotelCreate: e.target.value})} type="number" />
+                        <TextField fullWidth size="small" label="Số tầng" value={dataCreateAuto.typeMotelCreate} onChange={wrapNonNegativeNumberChange((e) => setDataCreateAuto({ ...dataCreateAuto, typeMotelCreate: e.target.value }))} type="number" {...getNonNegativeNumberFieldProps()} />
                       </Grid>
                       <Grid item xs={6}>
-                        <TextField fullWidth size="small" label="Tổng số phòng" value={dataCreateAuto.totalRoomCreate} onChange={e => setDataCreateAuto({...dataCreateAuto, totalRoomCreate: e.target.value})} type="number" />
+                        <TextField fullWidth size="small" label="Tổng số phòng" value={dataCreateAuto.totalRoomCreate} onChange={wrapNonNegativeNumberChange((e) => setDataCreateAuto({ ...dataCreateAuto, totalRoomCreate: e.target.value }))} type="number" {...getNonNegativeNumberFieldProps()} />
                       </Grid>
                     </Grid>
                   </Box>
@@ -479,16 +699,36 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
           <Typography variant="subtitle1" fontWeight="bold" gutterBottom>{isEdit ? '3' : '4'}. Thông tin vận hành</Typography>
           <Grid container spacing={2}>
             <Grid item xs={6} md={3}>
-              <TextField fullWidth size="small" label="Ngày chốt điện nước" name="invoicedate" type="number" value={motel.invoicedate} onChange={handleInputChange} />
+              <TextField fullWidth size="small" label="Ngày chốt điện nước" name="invoicedate" type="number" value={motel.invoicedate} onChange={handleInputChange} {...getNonNegativeNumberFieldProps()} />
             </Grid>
             <Grid item xs={6} md={3}>
-              <TextField fullWidth size="small" label="Hạn đóng tiền (ngày)" name="paymentdeadline" type="number" value={motel.paymentdeadline} onChange={handleInputChange} />
+              <TextField fullWidth size="small" label="Hạn đóng tiền (ngày)" name="paymentdeadline" type="number" value={motel.paymentdeadline} onChange={handleInputChange} {...getNonNegativeNumberFieldProps()} />
             </Grid>
             <Grid item xs={6} md={3}>
-              <TextField fullWidth size="small" label="Diện tích trung bình" name="area" type="number" value={motel.area} onChange={handleInputChange} />
+              <TextField
+                fullWidth
+                required
+                size="small"
+                label="Tổng diện tích (m²)"
+                name="area"
+                type="number"
+                value={motel.area}
+                onChange={handleInputChange}
+                helperText="Theo sổ đỏ - tổng diện tích sử dụng của căn nhà"
+                {...getNonNegativeNumberFieldProps(0, { step: 0.01 })}
+              />
             </Grid>
             <Grid item xs={6} md={3}>
-              <TextField fullWidth size="small" label="Giá thuê trung bình" name="averagePrice" type="number" value={motel.averagePrice} onChange={handleInputChange} />
+              <TextField
+                fullWidth
+                size="small"
+                label="Giá thuê trung bình"
+                name="averagePrice"
+                value={formatVndInput(motel.averagePrice)}
+                onChange={handleInputChange}
+                InputProps={{ endAdornment: <InputAdornment position="end">đ</InputAdornment> }}
+                {...getVndInputFieldProps()}
+              />
             </Grid>
           </Grid>
         </Box>

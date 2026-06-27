@@ -18,7 +18,8 @@ import {
   Switch,
   TextareaAutosize,
   TextField,
-  Typography
+  Typography,
+  InputAdornment,
 } from '@mui/material'
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
 import CloseIcon from '@mui/icons-material/Close'
@@ -34,8 +35,10 @@ import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import TitleAttribute from './TitleAttribute'
 import { processImage } from '~/utils/processImage'
+import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/numberInputUtils'
+import { formatVndInput, getVndInputFieldProps, parseVndInput } from '~/utils/currencyInputUtils'
 import MapComponent from './Map'
-import { getAccountByUsername, introspect } from '~/apis/accountAPI'
+import { getProfileByUsername, introspect } from '~/apis/accountAPI'
 import { getBulletinBoard, postBulletinBoard, updateBulletinBoard } from '~/apis/bulletinBoardAPI'
 import { deleteImageFromApi } from '~/apis/bulletinBoardImageAPI'
 
@@ -92,38 +95,54 @@ const validationSchema = Yup.object({
   address: Yup.string().required('Địa chỉ là bắt buộc.').max(200, 'Địa chỉ không được vượt quá 200 ký tự.')
 })
 
+const createDefaultBulletinBoard = () => ({
+  username: '',
+  title: '',
+  rentalCategory: '',
+  description: '',
+  rentPrice: '',
+  promotionalRentalPrice: '',
+  deposit: '',
+  area: '',
+  electricityPrice: '',
+  waterPrice: '',
+  maxPerson: '',
+  moveInDate: null,
+  openingHours: '',
+  closeHours: '',
+  address: '',
+  longitude: '',
+  latitude: '',
+  status: false,
+  isActive: false,
+  bulletinBoardImages: [],
+  bulletinBoardRules: [],
+  bulletinBoards_RentalAm: [],
+})
+
+const normalizeBulletinBoard = (data = {}) => {
+  const defaults = createDefaultBulletinBoard()
+  return {
+    ...defaults,
+    ...data,
+    bulletinBoardImages: data.bulletinBoardImages ?? defaults.bulletinBoardImages,
+    bulletinBoardRules: data.bulletinBoardRules ?? defaults.bulletinBoardRules,
+    bulletinBoards_RentalAm: data.bulletinBoards_RentalAm ?? defaults.bulletinBoards_RentalAm,
+  }
+}
+
 const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }) => {
   const label = { inputProps: { 'aria-label': 'Switch demo' } }
   const [selectedImages, setSelectedImages] = useState([])
   const [address, setAddress] = useState('')
   const [position, setPosition] = useState(null)
   const [account, setAccount] = useState()
-  const defaultBulletinBoard = {
-    username: '',
-    title: '',
-    rentalCategory: '',
-    description: '',
-    rentPrice: '',
-    promotionalRentalPrice: '',
-    deposit: '',
-    area: '',
-    electricityPrice: '',
-    waterPrice: '',
-    maxPerson: '',
-    moveInDate: null,
-    openingHours: '',
-    closeHours: '',
-    address: '',
-    longitude: '',
-    latitude: '',
-    status: false,
-    isActive: false,
-    bulletinBoardImages: [],
-    bulletinBoardRules: [],
-    bulletinBoards_RentalAm: []
-  }
+  const defaultBulletinBoard = createDefaultBulletinBoard()
 
   const [bulletinBoard, setBulletinBoard] = useState(defaultBulletinBoard)
+  const rentalAmenities = bulletinBoard.bulletinBoards_RentalAm ?? []
+  const boardRules = bulletinBoard.bulletinBoardRules ?? []
+  const boardImages = bulletinBoard.bulletinBoardImages ?? []
 
   useEffect(() => {
     if (position) {
@@ -137,32 +156,42 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
   }, [position])
 
   useEffect(() => {
-    if (bulletinBoardId) {
-      // Khi có bulletinBoardId, lấy dữ liệu từ API và cập nhật bulletinBoard
-      setSelectedImages([]) // Đặt lại selectedImages
-      getBulletinBoard(bulletinBoardId).then((res) => {
-        setBulletinBoard(res.result) // Cập nhật bulletinBoard với dữ liệu từ API
-      })
-    } else {
-      // Khi không có bulletinBoardId, đặt bulletinBoard với giá trị mặc định
-      setBulletinBoard(defaultBulletinBoard)
+    if (!open) return
 
-      // Lấy thông tin tài khoản khi không có bulletinBoardId
-      introspect().then((res) => {
+    if (bulletinBoardId) {
+      setSelectedImages([])
+      getBulletinBoard(bulletinBoardId)
+        .then((res) => {
+          setBulletinBoard(normalizeBulletinBoard(res?.result))
+        })
+        .catch(() => {
+          toast.error('Không thể tải thông tin tin đăng.')
+        })
+      return
+    }
+
+    setBulletinBoard(createDefaultBulletinBoard())
+    introspect()
+      .then((res) => {
         if (!res?.issuer) return
 
-        getAccountByUsername(res.issuer).then((accountRes) => {
-          setAccount(accountRes) // Set account từ API
-
-          // Cập nhật username sau khi có tài khoản
-          setBulletinBoard((prevBulletinBoard) => ({
-            ...prevBulletinBoard, // Giữ nguyên các giá trị cũ
-            username: accountRes?.username || '' // Chỉ thay đổi trường username
-          }))
-        })
+        return getProfileByUsername(res.issuer)
+          .then((accountRes) => {
+            setAccount(accountRes)
+            setBulletinBoard((prev) => ({
+              ...prev,
+              username: accountRes?.username || res.issuer || '',
+            }))
+          })
+          .catch(() => {
+            setBulletinBoard((prev) => ({
+              ...prev,
+              username: res.issuer || '',
+            }))
+          })
       })
-    }
-  }, [bulletinBoardId]) // Hook chỉ chạy khi bulletinBoardId thay đổi
+      .catch(() => {})
+  }, [bulletinBoardId, open])
 
   const formik = useFormik({
     initialValues: {
@@ -277,7 +306,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
 
   const handlePost = () => {
     if (selectedImages && selectedImages.length > 0) {
-      if (selectedImages.length + bulletinBoard.bulletinBoardImages.length < 2) {
+      if (selectedImages.length + boardImages.length < 2) {
         toast.info('Chọn tối thiểu 2 ảnh')
         return
       }
@@ -349,7 +378,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
         })
     } else {
       console.log('Room without images:', bulletinBoard)
-      if (selectedImages.length + bulletinBoard.bulletinBoardImages.length < 2) {
+      if (selectedImages.length + boardImages.length < 2) {
         toast.info('Chọn tối thiểu 2 ảnh')
         return
       }
@@ -375,12 +404,12 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
   const handleImageRemove = (index, isFromApi) => {
     if (isFromApi) {
       // Nếu ảnh đến từ API, gọi API để xóa ảnh
-      const imageToRemove = bulletinBoard.bulletinBoardImages[index]
+      const imageToRemove = boardImages[index]
       // Gọi API để xóa ảnh (giả sử có hàm xóa ảnh API là `deleteImageFromApi`)
       deleteImageFromApi(imageToRemove.bulletinBoardImageId)
         .then(() => {
           // Sau khi xóa thành công, cập nhật lại danh sách ảnh
-          const updatedImages = bulletinBoard.bulletinBoardImages.filter((image, i) => i !== index)
+          const updatedImages = boardImages.filter((image, i) => i !== index)
           setBulletinBoard((prevBoard) => ({
             ...prevBoard,
             bulletinBoardImages: updatedImages
@@ -406,7 +435,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <ViewInArIcon />
               <Typography id="modal-modal-title" variant="h6" component={'h2'}>
-                Thêm tin đăng
+                Thêm tin đăng1
               </Typography>
             </Box>
             <IconButton onClick={handleClose} sx={{ border: '1px solid #e0e0e0', p: 0.5 }}>
@@ -548,17 +577,20 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
             <Grid item xs={4}>
               <TextField
                 onChange={(event) => {
-                  setBulletinBoard({ ...bulletinBoard, rentPrice: event.target.value })
-                  formik.handleChange
+                  const raw = parseVndInput(event.target.value)
+                  const numericValue = raw === '' ? '' : Number(raw)
+                  setBulletinBoard({ ...bulletinBoard, rentPrice: numericValue })
+                  formik.setFieldValue('rentPrice', numericValue)
                 }}
-                value={formik.values.rentPrice}
+                value={formatVndInput(formik.values.rentPrice)}
                 name="rentPrice"
                 required
                 id="outlined-basic"
                 label="Giá thuê"
                 variant="filled"
-                type="number"
                 sx={{ width: '100%' }}
+                InputProps={{ endAdornment: <InputAdornment position="end">đ</InputAdornment> }}
+                {...getVndInputFieldProps()}
                 InputLabelProps={{
                   shrink: !!bulletinBoard.rentPrice
                 }}
@@ -570,16 +602,19 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
               <TextField
                 required
                 onChange={(event) => {
-                  setBulletinBoard({ ...bulletinBoard, promotionalRentalPrice: event.target.value })
-                  formik.handleChange
+                  const raw = parseVndInput(event.target.value)
+                  const numericValue = raw === '' ? '' : Number(raw)
+                  setBulletinBoard({ ...bulletinBoard, promotionalRentalPrice: numericValue })
+                  formik.setFieldValue('promotionalRentalPrice', numericValue)
                 }}
                 name="promotionalRentalPrice"
                 id="outlined-basic"
                 label="Giá thuê khuyến mãi"
                 variant="filled"
-                type="number"
                 sx={{ width: '100%' }}
-                value={formik.values.promotionalRentalPrice}
+                value={formatVndInput(formik.values.promotionalRentalPrice)}
+                InputProps={{ endAdornment: <InputAdornment position="end">đ</InputAdornment> }}
+                {...getVndInputFieldProps()}
                 InputLabelProps={{
                   shrink: !!bulletinBoard.promotionalRentalPrice
                 }}
@@ -590,6 +625,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
             <Grid item xs={4}>
               <TextField
                 onChange={(event) => {
+                  if (isNegativeNumberValue(event.target.value)) return
                   setBulletinBoard({ ...bulletinBoard, deposit: event.target.value })
                   formik.handleChange
                 }}
@@ -600,6 +636,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
                 variant="filled"
                 type="number"
                 sx={{ width: '100%' }}
+                {...getNonNegativeNumberFieldProps()}
                 value={formik.values.deposit}
                 InputLabelProps={{
                   shrink: !!bulletinBoard.deposit
@@ -611,6 +648,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
             <Grid item xs={4}>
               <TextField
                 onChange={(event) => {
+                  if (isNegativeNumberValue(event.target.value)) return
                   setBulletinBoard({ ...bulletinBoard, area: event.target.value })
                   formik.handleChange
                 }}
@@ -621,6 +659,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
                 variant="filled"
                 type="number"
                 sx={{ width: '100%' }}
+                {...getNonNegativeNumberFieldProps()}
                 value={formik.values.area}
                 InputLabelProps={{
                   shrink: !!bulletinBoard.area
@@ -632,6 +671,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
             <Grid item xs={4}>
               <TextField
                 onChange={(event) => {
+                  if (isNegativeNumberValue(event.target.value)) return
                   setBulletinBoard({ ...bulletinBoard, electricityPrice: event.target.value })
                   formik.handleChange
                 }}
@@ -642,6 +682,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
                 variant="filled"
                 type="number"
                 sx={{ width: '100%' }}
+                {...getNonNegativeNumberFieldProps()}
                 value={formik.values.electricityPrice}
                 InputLabelProps={{
                   shrink: !!bulletinBoard.electricityPrice
@@ -653,6 +694,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
             <Grid item xs={4}>
               <TextField
                 onChange={(event) => {
+                  if (isNegativeNumberValue(event.target.value)) return
                   setBulletinBoard({ ...bulletinBoard, waterPrice: event.target.value })
                   formik.handleChange
                 }}
@@ -663,6 +705,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
                 variant="filled"
                 type="number"
                 sx={{ width: '100%' }}
+                {...getNonNegativeNumberFieldProps()}
                 value={formik.values.waterPrice}
                 InputLabelProps={{
                   shrink: !!bulletinBoard.waterPrice
@@ -735,21 +778,17 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
             ].map((service) => (
               <Grid item xs={4} key={service}>
                 <FormControlLabel
-                  checked={bulletinBoard.bulletinBoards_RentalAm.some((s) => s.rentalAmenities.name === service)}
+                  checked={rentalAmenities.some((s) => s.rentalAmenities?.name === service)}
                   onChange={() => {
                     const serviceObject = { rentalAmenities: { name: service } }
 
-                    const newServices = bulletinBoard.bulletinBoards_RentalAm.some(
-                      (s) => s.rentalAmenities.name === service
-                    )
-                      ? bulletinBoard.bulletinBoards_RentalAm.filter((s) => s.rentalAmenities.name !== service)
-                      : [...bulletinBoard.bulletinBoards_RentalAm, serviceObject]
+                    const newServices = rentalAmenities.some((s) => s.rentalAmenities?.name === service)
+                      ? rentalAmenities.filter((s) => s.rentalAmenities?.name !== service)
+                      : [...rentalAmenities, serviceObject]
                     setBulletinBoard({ ...bulletinBoard, bulletinBoards_RentalAm: newServices })
                   }}
                   control={
-                    <Checkbox
-                      checked={bulletinBoard.bulletinBoards_RentalAm.some((s) => s.rentalAmenities.name === service)}
-                    />
+                    <Checkbox checked={rentalAmenities.some((s) => s.rentalAmenities?.name === service)} />
                   }
                   label={service}
                 />
@@ -836,23 +875,21 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
             ].map((rule) => (
               <Grid item xs={6} key={rule.title}>
                 <FormControlLabel
-                  checked={bulletinBoard.bulletinBoardRules.some((s) => s.rule.ruleName === rule.title)}
+                  checked={boardRules.some((s) => s.rule?.ruleName === rule.title)}
                   onChange={() => {
                     const serviceObject = { rule: { ruleName: rule.title } }
-                    // Loại bỏ các mục trùng lặp dựa trên ruleName
-                    const newServices = bulletinBoard.bulletinBoardRules.some((s) => s.rule.ruleName === rule.title)
-                      ? bulletinBoard.bulletinBoardRules.filter((s) => s.rule.ruleName !== rule.title)
-                      : [...bulletinBoard.bulletinBoardRules, serviceObject]
+                    const newServices = boardRules.some((s) => s.rule?.ruleName === rule.title)
+                      ? boardRules.filter((s) => s.rule?.ruleName !== rule.title)
+                      : [...boardRules, serviceObject]
 
-                    // Loại bỏ các mục trùng lặp nếu có
                     const uniqueServices = newServices.filter(
-                      (value, index, self) => index === self.findIndex((t) => t.rule.ruleName === value.rule.ruleName)
+                      (value, index, self) => index === self.findIndex((t) => t.rule?.ruleName === value.rule?.ruleName)
                     )
 
                     setBulletinBoard({ ...bulletinBoard, bulletinBoardRules: uniqueServices })
                   }}
                   control={
-                    <Checkbox checked={bulletinBoard.bulletinBoardRules.some((s) => s.rule.ruleName === rule.title)} />
+                    <Checkbox checked={boardRules.some((s) => s.rule?.ruleName === rule.title)} />
                   }
                   label={
                     <Box>
@@ -957,7 +994,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
               </IconButton>
               <Box
                 sx={{
-                  display: selectedImages.length > 0 || bulletinBoard.bulletinBoardImages == [] ? 'none' : 'block',
+                  display: selectedImages.length > 0 || boardImages.length === 0 ? 'none' : 'block',
                   textAlign: 'center'
                 }}>
                 <Typography>Chọn tối đa 5 ảnh</Typography>
@@ -992,8 +1029,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
                     />
                   ))}
 
-                {bulletinBoard.bulletinBoardImages &&
-                  Array.from(bulletinBoard.bulletinBoardImages).map((image, i) => (
+                {boardImages.map((image, i) => (
                     <Box
                       key={image.bulletinBoardImageId || i} // Sử dụng bulletinBoardImageId làm key
                       component="img"

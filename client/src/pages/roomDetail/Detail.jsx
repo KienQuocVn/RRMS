@@ -8,7 +8,7 @@ import LoadingPage from '~/components/LoadingPage/LoadingPage';
 import { getAccountByUsername, introspect } from '~/apis/accountAPI';
 import { getBulletinBoard } from '~/apis/bulletinBoardAPI';
 import { searchByName } from '~/apis/searchAPI';
-import { findProvinceRegex } from '~/utils/findProvince';
+import { findProvinceFromAddress, loadProvinces } from '~/utils/findProvince';
 import DetailBreadcrumbs from './sections/DetailBreadcrumbs';
 import DetailContactSection from './sections/DetailContactSection';
 import DetailDescriptionSection from './sections/DetailDescriptionSection';
@@ -22,6 +22,7 @@ const Detail = ({ setIsAdmin }) => {
   const { bulletinBoardId } = useParams();
 
   const [detail, setDetail] = useState(null);
+  const [province, setProvince] = useState('');
   const [account, setAccount] = useState();
   const [roomOrder, setRoomOrder] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,13 +43,18 @@ const Detail = ({ setIsAdmin }) => {
 
       if (nextDetail?.address) {
         try {
-          const relatedRoomsResponse = await searchByName(findProvinceRegex(nextDetail.address));
+          await loadProvinces();
+          const provinceName = await findProvinceFromAddress(nextDetail.address);
+          setProvince(provinceName || '');
+          const relatedRoomsResponse = await searchByName(provinceName);
           setRoomOrder(relatedRoomsResponse?.data?.result || []);
         } catch (error) {
           console.error('Khong the tai danh sach phong lien quan:', error);
+          setProvince('');
           setRoomOrder([]);
         }
       } else {
+        setProvince('');
         setRoomOrder([]);
       }
     } catch (error) {
@@ -98,7 +104,6 @@ const Detail = ({ setIsAdmin }) => {
     reviews.length > 0
       ? Number((reviews.reduce((total, item) => total + item.rating, 0) / reviews.length).toFixed(2))
       : 0;
-  const province = findProvinceRegex(detail.address);
   const totalReviewPages = Math.ceil(reviews.length / commentsPerPage);
   const indexOfLastComment = currentPage * commentsPerPage;
   const indexOfFirstComment = indexOfLastComment - commentsPerPage;

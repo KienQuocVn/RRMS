@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.rrms.rrms.dto.request.MotelRequest;
+import com.rrms.rrms.dto.response.MotelAreaSummaryResponse;
 import com.rrms.rrms.dto.response.MotelResponse;
 import com.rrms.rrms.dto.response.MotelRoomCountResponse;
 
@@ -36,4 +37,6 @@ public interface IMotelService {
     BigDecimal getTotalPaidInvoices(UUID motelId);
 
     BigDecimal getTotalPaidRoomPrice(UUID motelId);
+
+    MotelAreaSummaryResponse getAreaSummary(UUID motelId);
 }

@@ -112,7 +112,7 @@ const InvoiceHeader = ({ selectedMonth, selectedYear, onCreateInvoice }) => {
             '&:hover': { backgroundColor: '#1791c8' },
           }}
         >
-          In h.đơn
+          In hóa đơn
         </Button>
 
         {/* Xuất Excel (dropdown) */}

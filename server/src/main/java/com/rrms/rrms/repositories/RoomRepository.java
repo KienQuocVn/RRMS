@@ -43,4 +43,16 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
     List<Room> findRoomsWithContractsByMotelId(@Param("motelId") UUID motelId);
 
     List<Room> findByMotelMotelId(UUID motelId);
+
+    @Query("SELECT COALESCE(SUM(r.area), 0) FROM Room r WHERE r.motel.motelId = :motelId AND r.area IS NOT NULL")
+    Long sumAreaByMotelId(@Param("motelId") UUID motelId);
+
+    @Query(
+            "SELECT COALESCE(SUM(r.area), 0) FROM Room r WHERE r.motel.motelId = :motelId AND r.area IS NOT NULL AND r.roomId <> :excludeRoomId")
+    Long sumAreaByMotelIdExcludingRoom(@Param("motelId") UUID motelId, @Param("excludeRoomId") UUID excludeRoomId);
+
+    long countByMotelMotelId(UUID motelId);
+
+    @Query("SELECT COUNT(r) FROM Room r WHERE r.motel.motelId = :motelId AND r.area IS NOT NULL AND r.area > 0")
+    int countRoomsWithAreaByMotelId(@Param("motelId") UUID motelId);
 }

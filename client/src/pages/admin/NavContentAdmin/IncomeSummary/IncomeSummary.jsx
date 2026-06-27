@@ -31,7 +31,7 @@ const DEFAULT_CATEGORY_OPTIONS = [
   'Thu tiền dịch vụ',
   'Thu nợ',
   'Thu cộng thêm hóa đơn',
-  'Thu tiền giường',
+  'Thu tiền phòng',
   'Thu tiền hàng tháng',
   'Thu tiền tháng đầu tiên',
   'Thu tiền kết thúc hợp đồng',

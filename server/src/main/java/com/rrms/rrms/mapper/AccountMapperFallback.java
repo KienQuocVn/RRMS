@@ -14,7 +14,7 @@ import com.rrms.rrms.models.Account;
 import com.rrms.rrms.models.Permission;
 
 @Component
-@ConditionalOnMissingBean(AccountMapper.class)
+@ConditionalOnMissingBean(name = "accountMapperImpl")
 public class AccountMapperFallback implements AccountMapper {
 
     @Override

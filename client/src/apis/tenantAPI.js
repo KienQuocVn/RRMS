@@ -1,5 +1,11 @@
 import httpClient from './httpClient'
-import { normalizeTenantPayload } from '~/utils/apiAdapters'
+import { normalizeTenantPayload, unwrapApiResult } from '~/utils/apiAdapters'
+
+export const getTenantsByRoomId = async (roomId) => {
+  const response = await httpClient.get(`/tenant/roomId/${roomId}`)
+  const tenants = unwrapApiResult(response, [])
+  return Array.isArray(tenants) ? tenants : []
+}
 
 export const getByIdTenant = async (editId) => {
   const response = await httpClient.get(`/tenant/tenant-id?id=${editId}`)

@@ -16,6 +16,7 @@ import CardGiftcardIcon from '@mui/icons-material/CardGiftcard'
 import CloseIcon from '@mui/icons-material/Close'
 import { useParams } from 'react-router-dom'
 import { createBroker, updateBroker } from '~/apis/brokerAPI'
+import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/numberInputUtils'
 
 const getInitialData = (motelId, broker) => ({
   motelId,
@@ -191,8 +192,11 @@ const BrokerModal = ({ handleClose, open, refreshBrokers, broker }) => {
           size="small"
           type="number"
           value={data.commissionRate}
-          onChange={(e) => setData({ ...data, commissionRate: Number(e.target.value) })}
-          inputProps={{ min: 0, max: 100 }}
+          onChange={(e) => {
+            if (isNegativeNumberValue(e.target.value)) return
+            setData({ ...data, commissionRate: Number(e.target.value) })
+          }}
+          {...getNonNegativeNumberFieldProps(0, { max: 100 })}
           sx={{ mb: 2.5 }}
         />
       </DialogContent>

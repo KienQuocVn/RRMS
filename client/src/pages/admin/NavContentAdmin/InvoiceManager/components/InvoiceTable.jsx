@@ -1,124 +1,188 @@
-import { Box } from '@mui/material'
-import { ReactTabulator } from 'react-tabulator'
-import 'react-tabulator/lib/styles.css'
-import 'react-tabulator/lib/css/tabulator.min.css'
+import {
+  Avatar,
+  Box,
+  Chip,
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography
+} from '@mui/material'
+import MenuIcon from '@mui/icons-material/Menu'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import ReceiptIcon from '@mui/icons-material/Receipt'
+import { Colors } from '~/theme'
 import EmptyInvoiceState from './EmptyInvoiceState'
 
-const PRIMARY = '#20a9e7'
+const cellBorder = { borderRight: '1px solid #eeeeee' }
 
-const InvoiceTable = ({ columns, data, options }) => {
+const formatCurrency = (value) => {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '0 đ'
+  return Number(value).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
+}
+
+const getStatusChip = (status) => {
+  if (status === 'Đã thu xong') {
+    return (
+      <Chip
+        label={status}
+        sx={{ bgcolor: '#7dc242', color: '#fff', height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
+      />
+    )
+  }
+  if (status === 'Đã bị hủy') {
+    return (
+      <Chip
+        label={status}
+        sx={{ bgcolor: '#B0B0B0', color: '#fff', height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
+      />
+    )
+  }
   return (
-    <Box
-      sx={{
-        mt: 2,
-        position: 'relative',
-        '& .tabulator': {
-          border: '1px solid #e8f4fd',
-          borderRadius: '10px',
-          overflow: 'hidden',
-          fontSize: '0.82rem',
-        },
-        '& .tabulator .tabulator-header': {
-          backgroundColor: '#f0f8ff',
-          borderBottom: `2px solid ${PRIMARY}`,
-        },
-        '& .tabulator .tabulator-header .tabulator-col': {
-          backgroundColor: '#f0f8ff',
-          color: '#1a1a2e',
-          fontWeight: 700,
-          fontSize: '0.8rem',
-          borderRight: '1px solid #e0eefc',
-        },
-        '& .tabulator .tabulator-header .tabulator-col-title': {
-          whiteSpace: 'normal',
-          lineHeight: 1.3,
-        },
-        '& .tabulator-row': {
-          borderBottom: '1px solid #f0f4f8',
-          transition: 'background-color 0.15s',
-        },
-        '& .tabulator-row:hover': {
-          backgroundColor: '#f7fbff',
-        },
-        '& .tabulator-row.tabulator-row-even': {
-          backgroundColor: '#fafcff',
-        },
-        '& .tabulator-cell': {
-          borderRight: '1px solid #eef3f8',
-          padding: '8px 6px',
-          color: '#333',
-        },
-        '& .tabulator-placeholder': {
-          display: 'none',
-        },
-        '& .icon-menu-action': {
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 32,
-          height: 32,
-          borderRadius: '50%',
-          margin: '0 auto',
-          transition: 'background 0.2s',
-        },
-        '& .icon-menu-action:hover': {
-          backgroundColor: '#e3f2fd',
-          color: PRIMARY,
-        },
-        '& .icon-first': {
-          width: 32,
-          height: 32,
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto',
-        },
-        '& .badge': {
-          padding: '4px 10px',
-          borderRadius: '20px',
-          color: '#fff',
-          fontWeight: 600,
-          fontSize: '0.75rem',
-          display: 'inline-block',
-          whiteSpace: 'nowrap',
-        },
-        '& .tabulator-footer': {
-          backgroundColor: '#f0f8ff',
-          borderTop: `2px solid ${PRIMARY}`,
-        },
-      }}
-    >
-      {data.length === 0 ? (
-        <Box
-          sx={{
-            border: '1px solid #e8f4fd',
-            borderRadius: '10px',
-            overflow: 'hidden',
-            backgroundColor: '#fff',
-          }}
-        >
-          {/* Render header even when empty */}
-          <Box
-            sx={{
-              backgroundColor: '#f0f8ff',
-              borderBottom: `2px solid ${PRIMARY}`,
-              display: 'none',
-            }}
-          />
-          <EmptyInvoiceState />
-        </Box>
-      ) : (
-        <ReactTabulator
-          className="my-custom-table rounded"
-          columns={columns}
-          options={options}
-          data={data}
-          placeholder="Không tìm thấy dữ liệu!"
-        />
-      )}
-    </Box>
+    <Chip
+      label={status || 'Chưa thu'}
+      sx={{ bgcolor: '#ED6004', color: '#fff', height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
+    />
+  )
+}
+
+const getAvatarColor = (status) => {
+  if (status === 'Đã thu xong') return Colors.success
+  if (status === 'Đã bị hủy') return '#bdbdbd'
+  return '#ED6004'
+}
+
+const InvoiceTable = ({ data, services = [], onActionClick }) => {
+  if (data.length === 0) {
+    return (
+      <Paper sx={{ width: '100%', overflow: 'hidden', borderRadius: 0, boxShadow: 'none', border: '1px solid #e0e0e0' }}>
+        <EmptyInvoiceState />
+      </Paper>
+    )
+  }
+
+  return (
+    <Paper sx={{ width: '100%', overflow: 'hidden', borderRadius: 0, boxShadow: 'none', border: '1px solid #e0e0e0' }}>
+      <TableContainer sx={{ maxHeight: 'calc(100vh - 380px)' }}>
+        <Table stickyHeader size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ bgcolor: '#fff', width: 72 }} />
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', ...cellBorder }}>
+                Tên phòng
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', ...cellBorder }}>
+                Tiền phòng
+              </TableCell>
+              {services.map((serviceName) => (
+                <TableCell
+                  key={serviceName}
+                  align="center"
+                  sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', ...cellBorder }}>
+                  {serviceName}
+                </TableCell>
+              ))}
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', ...cellBorder }}>
+                Thu/Trả cọc
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', ...cellBorder }}>
+                Cộng thêm/Giảm trừ
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', ...cellBorder }}>
+                Tổng cộng
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', ...cellBorder }}>
+                Cần thu
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', ...cellBorder }}>
+                Trạng thái
+              </TableCell>
+              <TableCell sx={{ bgcolor: '#fff', width: 56 }} />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((row, index) => (
+              <TableRow hover key={row.invoiceId} sx={{ bgcolor: index % 2 === 0 ? '#fff5f2' : '#ffffff' }}>
+                <TableCell sx={cellBorder}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <MenuIcon sx={{ color: 'action.active', fontSize: 20 }} />
+                    <Avatar sx={{ width: 24, height: 24, bgcolor: getAvatarColor(row.status) }}>
+                      <ReceiptIcon sx={{ fontSize: 14 }} />
+                    </Avatar>
+                  </Box>
+                </TableCell>
+
+                <TableCell sx={cellBorder}>
+                  <Typography variant="body2" fontWeight="bold">
+                    {row.roomName}
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={cellBorder}>
+                  <Typography variant="caption" fontWeight="bold" display="block">
+                    {formatCurrency(row.roomPrice)}
+                  </Typography>
+                </TableCell>
+
+                {services.map((serviceName) => (
+                  <TableCell key={`${row.invoiceId}-${serviceName}`} align="center" sx={cellBorder}>
+                    <Typography variant="caption" fontWeight="bold">
+                      {formatCurrency(row[serviceName])}
+                    </Typography>
+                  </TableCell>
+                ))}
+
+                <TableCell sx={cellBorder}>
+                  <Typography variant="caption" fontWeight="bold">
+                    {formatCurrency(row.deposit)}
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={cellBorder}>
+                  <Typography
+                    variant="caption"
+                    fontWeight="bold"
+                    color={Number(row.adjustments) < 0 ? 'error.main' : 'text.primary'}>
+                    {formatCurrency(row.adjustments)}
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={cellBorder}>
+                  <Typography variant="caption" fontWeight="bold">
+                    {formatCurrency(row.total)}
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={cellBorder}>
+                  <Typography variant="caption" fontWeight="bold" color="primary">
+                    {formatCurrency(row.total)}
+                  </Typography>
+                </TableCell>
+
+                <TableCell align="center" sx={cellBorder}>
+                  {getStatusChip(row.status)}
+                </TableCell>
+
+                <TableCell align="center">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => onActionClick(e, row.invoiceId)}
+                    sx={{ border: '1px solid #e0e0e0', p: 0.5 }}>
+                    <MoreVertIcon fontSize="small" />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
   )
 }
 

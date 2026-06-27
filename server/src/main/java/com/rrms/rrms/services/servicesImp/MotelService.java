@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.rrms.rrms.dto.request.MotelRequest;
+import com.rrms.rrms.dto.response.MotelAreaSummaryResponse;
 import com.rrms.rrms.dto.response.MotelResponse;
 import com.rrms.rrms.dto.response.MotelRoomCountResponse;
 import com.rrms.rrms.enums.ContractStatus;
@@ -21,6 +22,7 @@ import com.rrms.rrms.mapper.MotelMapper;
 import com.rrms.rrms.models.*;
 import com.rrms.rrms.repositories.*;
 import com.rrms.rrms.services.IMotelService;
+import com.rrms.rrms.services.support.MotelAreaValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -39,6 +41,8 @@ public class MotelService implements IMotelService {
 
     private final RoomRepository roomRepository;
 
+    private final MotelAreaValidator motelAreaValidator;
+
     private final RoomReservationRepository roomReservationRepository;
 
     @Override
@@ -49,6 +53,7 @@ public class MotelService implements IMotelService {
 
     @Override
     public MotelResponse insert(MotelRequest motel) {
+        motelAreaValidator.validateMotelTotalArea(motel.getArea());
         // Lưu motel và lấy entity đã lưu cùng với ID được tạo
         Motel savedMotel = motelRepository.save(motelMapper.motelRequestToMotel(motel));
 
@@ -104,10 +109,13 @@ public class MotelService implements IMotelService {
     public MotelResponse update(UUID id, MotelRequest motel) {
         Motel existingMotel =
                 motelRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.MOTEL_NOT_FOUND));
+        motelAreaValidator.validateMotelUpdateArea(id, motel.getArea());
         existingMotel.setMotelName(motel.getMotelName());
         existingMotel.setArea(motel.getArea());
         existingMotel.setAveragePrice(motel.getAveragePrice());
         existingMotel.setAddress(motel.getAddress());
+        existingMotel.setLatitude(motel.getLatitude());
+        existingMotel.setLongitude(motel.getLongitude());
         existingMotel.setMethodofcreation(motel.getMethodofcreation());
         existingMotel.setMaxperson(motel.getMaxperson());
         existingMotel.setInvoicedate(motel.getInvoicedate());
@@ -235,5 +243,11 @@ public class MotelService implements IMotelService {
             }
         }
         return BigDecimal.ZERO; // Trả về 0 nếu không có kết quả
+    }
+
+    @Override
+    public MotelAreaSummaryResponse getAreaSummary(UUID motelId) {
+        Motel motel = motelRepository.findById(motelId).orElseThrow(() -> new AppException(ErrorCode.MOTEL_NOT_FOUND));
+        return motelAreaValidator.buildSummary(motel);
     }
 }

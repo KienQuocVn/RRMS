@@ -41,6 +41,12 @@ public class Motel extends BaseEntity {
     @Column(columnDefinition = "NVARCHAR(255)")
     private String address;
 
+    @Column(columnDefinition = "DECIMAL(10, 7)")
+    private Double latitude;
+
+    @Column(columnDefinition = "DECIMAL(10, 7)")
+    private Double longitude;
+
     @Column(columnDefinition = "NVARCHAR(255)")
     private String methodofcreation;
 

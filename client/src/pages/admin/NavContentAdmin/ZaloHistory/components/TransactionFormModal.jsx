@@ -12,6 +12,8 @@ import {
   Typography
 } from '@mui/material'
 
+import { getNonNegativeNumberFieldProps } from '~/utils/numberInputUtils'
+
 const paymentOptions = ['Tiền mặt', 'Chuyển khoản', 'ZALO Pay']
 
 const getTodayValue = () => new Date().toISOString().split('T')[0]
@@ -45,7 +47,7 @@ const TransactionFormModal = ({ open, onClose, onSubmit, historyItem, title, sub
 
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField fullWidth required name="roomName" label="Phòng/Giường" defaultValue={historyItem?.roomName || ''} />
+                <TextField fullWidth required name="roomName" label="Phòng" defaultValue={historyItem?.roomName || ''} />
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -60,7 +62,7 @@ const TransactionFormModal = ({ open, onClose, onSubmit, historyItem, title, sub
                   type="number"
                   name="amount"
                   label="Nhập số tiền"
-                  inputProps={{ min: 0 }}
+                  {...getNonNegativeNumberFieldProps()}
                 />
               </Grid>
 

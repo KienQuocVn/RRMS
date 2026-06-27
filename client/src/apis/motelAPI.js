@@ -20,3 +20,7 @@ export const getMotelByUsername = async (username) => {
 export const getMotelById = async (Id) => {
   return await httpClient.get(`/api/v1/motels/${Id}`)
 }
+
+export const getMotelAreaSummary = async (motelId) => {
+  return await httpClient.get(`/api/v1/motels/${motelId}/area-summary`)
+}

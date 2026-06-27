@@ -23,7 +23,9 @@ import com.rrms.rrms.repositories.AccountRepository;
 import com.rrms.rrms.repositories.MotelRepository;
 import com.rrms.rrms.repositories.RoomRepository;
 import com.rrms.rrms.repositories.RoomServiceRepository;
+import com.rrms.rrms.services.IMotelRoomGroupService;
 import com.rrms.rrms.services.IRoomService;
+import com.rrms.rrms.services.support.MotelAreaValidator;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,8 @@ public class RoomService implements IRoomService {
     AccountRepository accountRepository;
     RoomServiceRepository roomServiceRepository;
     RoomMapper roomMapper;
+    IMotelRoomGroupService motelRoomGroupService;
+    MotelAreaValidator motelAreaValidator;
 
     @Override
     public RoomDetailResponse getRoomById(UUID id) {
@@ -79,8 +83,12 @@ public class RoomService implements IRoomService {
         Motel motel = motelRepository
                 .findById(roomRequest.getMotelId())
                 .orElseThrow(() -> new IllegalArgumentException("Motel not found"));
+        motelAreaValidator.validateRoomArea(motel, roomRequest.getArea(), null);
         Room room = convertToEntity(roomRequest);
         room.setMotel(motel);
+        if (roomRequest.getGroup() != null && !roomRequest.getGroup().isBlank()) {
+            motelRoomGroupService.ensureGroupExists(motel.getMotelId(), roomRequest.getGroup());
+        }
         Room savedRoom = roomRepository.save(room);
         return convertToResponse(savedRoom);
     }
@@ -100,6 +108,16 @@ public class RoomService implements IRoomService {
     @Override
     public RoomResponse updateRoom(UUID roomId, RoomRequest roomRequest) {
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+        if (roomRequest.getArea() != null) {
+            Motel motel = room.getMotel();
+            if (roomRequest.getMotelId() != null) {
+                motel = motelRepository
+                        .findById(roomRequest.getMotelId())
+                        .orElseThrow(() -> new IllegalArgumentException("Motel not found"));
+            }
+            motelAreaValidator.validateRoomArea(motel, roomRequest.getArea(), roomId);
+        }
 
         updateEntityFromRequest(room, roomRequest);
 

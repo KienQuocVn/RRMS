@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.request.MotelRequest;
 import com.rrms.rrms.dto.response.ApiResponse;
+import com.rrms.rrms.dto.response.MotelAreaSummaryResponse;
 import com.rrms.rrms.dto.response.MotelResponse;
 import com.rrms.rrms.services.IMotelService;
 
@@ -70,6 +71,17 @@ public class MotelController {
                 .code(HttpStatus.CREATED.value())
                 .message("Tạo mới nhà trọ thành công")
                 .result(motelResponse)
+                .build();
+    }
+
+    @Operation(summary = "Get motel area summary")
+    @GetMapping("/{id}/area-summary")
+    public ApiResponse<MotelAreaSummaryResponse> getMotelAreaSummary(@PathVariable UUID id) {
+        MotelAreaSummaryResponse summary = motelService.getAreaSummary(id);
+        return ApiResponse.<MotelAreaSummaryResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Lấy thông tin diện tích nhà trọ thành công")
+                .result(summary)
                 .build();
     }
 

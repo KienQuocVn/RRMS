@@ -14,7 +14,7 @@ import { MotelProvider } from './contexts/MotelContext'
 import { useAuth } from './hooks/useAuth'
 import { useMotel } from './hooks/useMotel'
 import { normalizeProfileResponse } from './apis/profileAPI'
-import ChatAI from './pages/ai/ChatAI.jsx'
+import ChatAI from './pages/AI/ChatAI.jsx'
 import NotFoundPage from './pages/notFoundPage/NotFoundPage.jsx'
 
 function AppShell() {

@@ -29,6 +29,7 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import Swal from 'sweetalert2'
 import { createInvoice } from '~/apis/invoiceAPI'
 import { normalizeRoomServiceCollection } from '~/utils/apiAdapters'
+import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/numberInputUtils'
 
 const invoiceReasons = [
   'Thu tiền hằng tháng',
@@ -225,6 +226,7 @@ const InvoiceModal = ({
   }
 
   const updateService = (roomServiceId, updates) => {
+    if (updates.quantity !== undefined && isNegativeNumberValue(updates.quantity)) return
     setInvoiceData((previous) => ({
       ...previous,
       serviceDetails: previous.serviceDetails.map((service) => {
@@ -510,6 +512,7 @@ const InvoiceModal = ({
                     disabled={!service.isSelected}
                     onChange={(event) => updateService(service.roomServiceId, { quantity: event.target.value })}
                     sx={{ width: 180 }}
+                    {...getNonNegativeNumberFieldProps()}
                     InputProps={{
                       endAdornment: <InputAdornment position="end">{service.chargetype}</InputAdornment>
                     }}

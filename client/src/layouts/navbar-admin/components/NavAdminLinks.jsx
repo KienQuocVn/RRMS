@@ -49,15 +49,15 @@ const NavLink = ({ to, icon, label, isActive, onClick }) => (
 const mockNotifications = [
   {
     id: 1,
-    title: "📌 Ktx RRMS vừa thêm giường mới",
-    body: "Bánh mì: thêm giường mới",
+    title: "📌 Ktx RRMS vừa thêm phòng mới",
+    body: "Bánh mì: thêm phòng mới",
     time: "2026-05-17T14:40:51.000000Z",
     read: false
   },
   {
     id: 2,
     title: "📌 quoc, Ktx RRMS đã bị xóa",
-    body: "Bánh mì: đã xóa giường",
+    body: "Bánh mì: đã xóa phòng",
     time: "2026-05-17T14:40:22.000000Z",
     read: false
   },

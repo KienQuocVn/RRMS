@@ -117,7 +117,10 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
             }}>
             {(rowsPerPage > 0 ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : rows).map(
               (row, i) => (
-                <TableRow hover key={row.name}>
+                <TableRow
+                  hover
+                  key={row.bulletinBoardId ?? `bulletin-row-${page * rowsPerPage + i}`}
+                >
                   <TableCell>{i + 1}</TableCell>
                   <TableCell
                     sx={{
@@ -198,8 +201,8 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
               )
             )}
             {emptyRows > 0 && (
-              <TableRow style={{ height: 53 * emptyRows }}>
-                <TableCell colSpan={6} />
+              <TableRow key="empty-rows" style={{ height: 53 * emptyRows }}>
+                <TableCell colSpan={9} />
               </TableRow>
             )}
           </TableBody>

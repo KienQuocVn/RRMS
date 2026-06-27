@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { Box, CircularProgress } from '@mui/material'
 import Swal from 'sweetalert2'
@@ -24,6 +24,7 @@ import { getContractByIdRoom2 } from '~/apis/contractTemplateAPI'
 import { fetchAllInvoicesByMotelId } from '~/apis/invoiceAPI'
 import CancelReserveAPlaceModal from '../ReserveAPlace/CancelReserveAPlaceModal'
 import { isValidRouteParam, isReserveAPlaceStatus } from '~/utils/apiAdapters'
+import { getRoomGroupsByMotelId } from '~/apis/roomGroupAPI'
 import {
   enrichRoomsWithDebt,
   getInvoiceRemainingAmount,
@@ -48,6 +49,7 @@ const MotelDashboard = ({ Motel }) => {
   const activeMotelId = isValidRouteParam(motelId) ? motelId : Motel?.[0]?.motelId
 
   const [rooms, setRooms] = useState([])
+  const [motelRoomGroups, setMotelRoomGroups] = useState([])
   const [motelInvoices, setMotelInvoices] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -99,7 +101,7 @@ const MotelDashboard = ({ Motel }) => {
 
   // Columns State
   const [columns, setColumns] = useState([
-    { id: 'name', label: 'Tên giường', visible: true },
+    { id: 'name', label: 'Tên phòng', visible: true },
     { id: 'group', label: 'Nhóm', visible: true },
     { id: 'price', label: 'Giá thuê', visible: true },
     { id: 'deposit', label: 'Tiền cọc', visible: true },
@@ -116,6 +118,21 @@ const MotelDashboard = ({ Motel }) => {
   const handleToggleColumn = (colId) => {
     setColumns((prev) => prev.map((col) => (col.id === colId ? { ...col, visible: !col.visible } : col)))
   }
+
+  const roomGroups = useMemo(
+    () => motelRoomGroups,
+    [motelRoomGroups]
+  )
+
+  const fetchRoomGroups = useCallback(async () => {
+    if (!isValidRouteParam(activeMotelId)) return
+    try {
+      const groups = await getRoomGroupsByMotelId(activeMotelId)
+      setMotelRoomGroups(groups || [])
+    } catch (error) {
+      console.error('Failed to fetch room groups:', error)
+    }
+  }, [activeMotelId])
 
   const toggleModal = (modalName, isOpen = true) => {
     setModals((prev) => ({ ...prev, [modalName]: isOpen }))
@@ -167,8 +184,9 @@ const MotelDashboard = ({ Motel }) => {
       fetchData()
       fetchMotelServices()
       fetchDevices()
+      fetchRoomGroups()
     }
-  }, [activeMotelId, fetchData, fetchDevices, fetchMotelServices])
+  }, [activeMotelId, fetchData, fetchDevices, fetchMotelServices, fetchRoomGroups])
 
   // Pre-fetch room specific data
   const prefetchRoomData = async (room) => {
@@ -405,7 +423,13 @@ const MotelDashboard = ({ Motel }) => {
         onClose={() => toggleModal('addRoom', false)}
         activeMotelId={activeMotelId}
         motelServices={motelServices}
-        onAddSuccess={fetchData}
+        roomGroups={roomGroups}
+        rooms={rooms}
+        onGroupsChange={fetchRoomGroups}
+        onAddSuccess={() => {
+          fetchData()
+          fetchRoomGroups()
+        }}
       />
       <ServiceSelectModal
         open={modals.serviceSelect}

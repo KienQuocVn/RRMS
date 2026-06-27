@@ -77,7 +77,7 @@ const ZaloHistoryTable = ({ rows, onOpenDetails, onOpenReceipt, onOpenExpense })
           <TableHead>
             <TableRow>
               <TableCell sx={{ ...headerCellStyles, width: 74 }} />
-              <TableCell sx={{ ...headerCellStyles, minWidth: 170 }}>Phòng/Giường</TableCell>
+              <TableCell sx={{ ...headerCellStyles, minWidth: 170 }}>Phòng</TableCell>
               <TableCell sx={{ ...headerCellStyles, minWidth: 150 }}>Số điện thoại</TableCell>
               <TableCell sx={{ ...headerCellStyles, minWidth: 420 }}>Mô tả</TableCell>
               <TableCell sx={{ ...headerCellStyles, minWidth: 100 }}>Tháng</TableCell>
