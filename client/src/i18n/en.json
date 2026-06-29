@@ -173,7 +173,6 @@
       "vaBanner": "Top up flexible wallet value",
       "sections": {
         "orders": "Order management",
-        "utilities": "Utilities",
         "paidServices": "Paid services",
         "offers": "Offers & promotions",
         "others": "Others"
@@ -207,7 +206,9 @@
       "emptyActivity": "No activity found.",
       "emptyNews": "We have no updates right now. Please check again later."
     },
-    "postNow": "POST LISTING"
+    "postNow": "POST LISTING",
+    "manageAndApprovePosts": "MANAGE & APPROVE POSTS",
+    "myRooms": "MY ROOMS"
   },
   "footer": {
     "linksTitle": "Links",

@@ -30,6 +30,6 @@ public class BulletinBoardImage {
     @JoinColumn(name = "bulletin_board_id")
     private BulletinBoard bulletinBoard;
 
-    @Column(columnDefinition = "VARCHAR(255)")
+    @Column(columnDefinition = "LONGTEXT")
     private String imageLink;
 }

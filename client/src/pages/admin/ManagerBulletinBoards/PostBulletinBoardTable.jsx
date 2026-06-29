@@ -172,8 +172,8 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
                       <EditIcon
                         sx={{ cursor: 'pointer', color: '#1e90ff' }}
                         onClick={() => {
-                          handleOpen()
                           setBulletinBoardId(row.bulletinBoardId)
+                          handleOpen()
                         }}
                       />
                       <DeleteIcon

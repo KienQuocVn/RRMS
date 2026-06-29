@@ -1,9 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
+  CircularProgress,
   Divider,
   FormControl,
   FormControlLabel,
@@ -23,24 +25,27 @@ import {
 } from '@mui/material'
 import ViewInArIcon from '@mui/icons-material/ViewInAr'
 import CloseIcon from '@mui/icons-material/Close'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import LocationSelect from '~/components/ProvinceSelect'
+import { getPhuongXaByTinh, getTinhThanh } from '~/apis/addressAPI'
+import AddressMapPicker from '~/pages/admin/ManagerHome/components/AddressMapPicker'
 
 import { toast } from 'react-toastify'
-import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
-import { storage } from '~/configs/firebaseConfig'
-import { v4 } from 'uuid'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import TitleAttribute from './TitleAttribute'
 import { processImage } from '~/utils/processImage'
 import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/numberInputUtils'
 import { formatVndInput, getVndInputFieldProps, parseVndInput } from '~/utils/currencyInputUtils'
-import MapComponent from './Map'
 import { getProfileByUsername, introspect } from '~/apis/accountAPI'
 import { getBulletinBoard, postBulletinBoard, updateBulletinBoard } from '~/apis/bulletinBoardAPI'
 import { deleteImageFromApi } from '~/apis/bulletinBoardImageAPI'
+import { getMotelById } from '~/apis/motelAPI'
+import { getAllTypeRoom } from '~/apis/typeRoomAPI'
+import { normalizeProfileResponse } from '~/apis/profileAPI'
+import { useMotel } from '~/hooks/useMotel'
+import { isValidRouteParam } from '~/utils/apiAdapters'
 
 const style = {
   position: 'absolute',
@@ -95,6 +100,48 @@ const validationSchema = Yup.object({
   address: Yup.string().required('Địa chỉ là bắt buộc.').max(200, 'Địa chỉ không được vượt quá 200 ký tự.')
 })
 
+const DEFAULT_FREE_HOURS = 'Giờ giấc tự do'
+
+const fileToDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+
+const mapMaxPersonLabel = (maxperson) => {
+  const n = Number(maxperson)
+  if (!Number.isFinite(n) || n <= 0) return ''
+  if (n === 1) return '1 người ở'
+  if (n === 2) return '2 người ở'
+  if (n === 3) return '3 người ở'
+  if (n === 4) return '4 người ở'
+  if (n >= 5 && n <= 6) return '5-6 người ở'
+  if (n >= 7) return '7-10 người ở'
+  return 'Không giới hạn'
+}
+
+const findMotelServicePrice = (services, keyword) => {
+  if (!Array.isArray(services)) return ''
+  const service = services.find((s) => s.nameService?.toLowerCase().includes(keyword.toLowerCase()))
+  return service?.price ?? ''
+}
+
+const buildDefaultsFromMotel = (motelData = {}) => ({
+  rentalCategory: motelData?.typeRoom?.name || '',
+  area: motelData?.area ?? '',
+  rentPrice: motelData?.averagePrice ?? '',
+  electricityPrice: findMotelServicePrice(motelData?.motelServices, 'điện'),
+  waterPrice: findMotelServicePrice(motelData?.motelServices, 'nước'),
+  maxPerson: mapMaxPersonLabel(motelData?.maxperson),
+  address: motelData?.address || '',
+  latitude: motelData?.latitude ?? '',
+  longitude: motelData?.longitude ?? '',
+  openingHours: DEFAULT_FREE_HOURS,
+  closeHours: DEFAULT_FREE_HOURS,
+})
+
 const createDefaultBulletinBoard = () => ({
   username: '',
   title: '',
@@ -108,8 +155,8 @@ const createDefaultBulletinBoard = () => ({
   waterPrice: '',
   maxPerson: '',
   moveInDate: null,
-  openingHours: '',
-  closeHours: '',
+  openingHours: DEFAULT_FREE_HOURS,
+  closeHours: DEFAULT_FREE_HOURS,
   address: '',
   longitude: '',
   latitude: '',
@@ -122,38 +169,212 @@ const createDefaultBulletinBoard = () => ({
 
 const normalizeBulletinBoard = (data = {}) => {
   const defaults = createDefaultBulletinBoard()
+  const {
+    account,
+    motel: _motel,
+    room: _room,
+    bulletinBoardReviews: _reviews,
+    bulletinBoardRentalAmenities,
+    ...boardFields
+  } = data
+
   return {
     ...defaults,
-    ...data,
+    ...boardFields,
+    username: boardFields.username ?? account?.username ?? '',
     bulletinBoardImages: data.bulletinBoardImages ?? defaults.bulletinBoardImages,
     bulletinBoardRules: data.bulletinBoardRules ?? defaults.bulletinBoardRules,
-    bulletinBoards_RentalAm: data.bulletinBoards_RentalAm ?? defaults.bulletinBoards_RentalAm,
+    bulletinBoards_RentalAm:
+      data.bulletinBoards_RentalAm ??
+      bulletinBoardRentalAmenities ??
+      defaults.bulletinBoards_RentalAm
   }
 }
 
 const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }) => {
+  const isEditMode = Boolean(bulletinBoardId)
+  const { motelId: routeMotelId } = useParams()
+  const { motels } = useMotel()
   const label = { inputProps: { 'aria-label': 'Switch demo' } }
   const [selectedImages, setSelectedImages] = useState([])
-  const [address, setAddress] = useState('')
-  const [position, setPosition] = useState(null)
   const [account, setAccount] = useState()
+  const [typeRooms, setTypeRooms] = useState([])
   const defaultBulletinBoard = createDefaultBulletinBoard()
+
+  const [provinces, setProvinces] = useState([])
+  const [wards, setWards] = useState([])
+  const [selectedProvince, setSelectedProvince] = useState('')
+  const [selectedWard, setSelectedWard] = useState('')
+  const [addressDetail, setAddressDetail] = useState('')
+  const [fullAddress, setFullAddress] = useState('')
+  const [lat, setLat] = useState(null)
+  const [lng, setLng] = useState(null)
+  const [geocodeLoading, setGeocodeLoading] = useState(false)
+  const [geocodeError, setGeocodeError] = useState('')
+  const [manualPickMode, setManualPickMode] = useState(false)
+  const [autoGeocode, setAutoGeocode] = useState(true)
 
   const [bulletinBoard, setBulletinBoard] = useState(defaultBulletinBoard)
   const rentalAmenities = bulletinBoard.bulletinBoards_RentalAm ?? []
   const boardRules = bulletinBoard.bulletinBoardRules ?? []
   const boardImages = bulletinBoard.bulletinBoardImages ?? []
 
+  const selectedImagePreviews = useMemo(
+    () => selectedImages.map((image) => URL.createObjectURL(image)),
+    [selectedImages]
+  )
+
   useEffect(() => {
-    if (position) {
-      // Cập nhật cả latitude và longitude cùng một lúc
-      setBulletinBoard((prevState) => ({
-        ...prevState,
-        latitude: position.lat,
-        longitude: position.lng
+    return () => {
+      selectedImagePreviews.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [selectedImagePreviews])
+
+  const resetAddressState = useCallback(() => {
+    setSelectedProvince('')
+    setSelectedWard('')
+    setWards([])
+    setAddressDetail('')
+    setFullAddress('')
+    setLat(null)
+    setLng(null)
+    setGeocodeLoading(false)
+    setGeocodeError('')
+    setManualPickMode(false)
+    setAutoGeocode(true)
+  }, [])
+
+  const getProvinceName = useCallback(
+    (id) => provinces.find((p) => String(p.id) === String(id))?.full_name || '',
+    [provinces]
+  )
+
+  const getWardName = useCallback(
+    (id) => wards.find((w) => String(w.id) === String(id))?.full_name || '',
+    [wards]
+  )
+
+  const geocodeQuery = useMemo(() => {
+    const detail = addressDetail.trim()
+    const wardName = getWardName(selectedWard)
+    const provinceName = getProvinceName(selectedProvince)
+    if (!detail || !wardName || !provinceName) return ''
+    return `${detail}, ${wardName}, ${provinceName}, Việt Nam`
+  }, [addressDetail, selectedWard, selectedProvince, getWardName, getProvinceName])
+
+  const applyAddressFromBoard = useCallback((data) => {
+    if (!data?.address) return
+
+    const parts = data.address.split(', ').map((p) => p.trim())
+    setAddressDetail(parts[0] || '')
+
+    const isLegacyFormat = parts.length >= 4
+    const wardId = parts[1]
+    const provinceId = isLegacyFormat ? parts[3] : parts[2]
+
+    if (provinceId) {
+      setSelectedProvince(provinceId)
+      getPhuongXaByTinh(provinceId).then((res) => {
+        if (res.data.error === 0) {
+          setWards(res.data.data)
+          if (wardId) setSelectedWard(wardId)
+        }
+      })
+    }
+
+    if (data.latitude != null && data.longitude != null) {
+      setLat(data.latitude)
+      setLng(data.longitude)
+      setAutoGeocode(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    getTinhThanh()
+      .then((res) => {
+        if (res.data.error === 0) setProvinces(res.data.data)
+      })
+      .catch(console.error)
+
+    getAllTypeRoom()
+      .then((res) => setTypeRooms(res?.result || []))
+      .catch(console.error)
+  }, [])
+
+  useEffect(() => {
+    if (!geocodeQuery) {
+      setFullAddress('')
+      setGeocodeError('')
+      setManualPickMode(false)
+      return undefined
+    }
+
+    setFullAddress(geocodeQuery.replace(/, Việt Nam$/, ''))
+
+    if (!autoGeocode) return undefined
+
+    const timer = setTimeout(async () => {
+      setGeocodeLoading(true)
+      setGeocodeError('')
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geocodeQuery)}&format=json&limit=1&countrycodes=vn`,
+          {
+            headers: {
+              Accept: 'application/json',
+              'Accept-Language': 'vi',
+              'User-Agent': 'RRMS/1.0 (bulletin-board-address-picker)'
+            }
+          }
+        )
+
+        if (!res.ok) throw new Error('Geocoding failed')
+
+        const data = await res.json()
+        if (data?.length > 0) {
+          setLat(parseFloat(data[0].lat))
+          setLng(parseFloat(data[0].lon))
+          setManualPickMode(false)
+          setGeocodeError('')
+        } else {
+          setGeocodeError('Không tìm thấy địa chỉ trên bản đồ. Vui lòng click trên bản đồ để chọn vị trí thủ công.')
+          setManualPickMode(true)
+        }
+      } catch {
+        setGeocodeError('Lỗi khi tra cứu địa chỉ. Vui lòng click trên bản đồ để chọn vị trí thủ công.')
+        setManualPickMode(true)
+      } finally {
+        setGeocodeLoading(false)
+      }
+    }, 800)
+
+    return () => clearTimeout(timer)
+  }, [geocodeQuery, autoGeocode])
+
+  useEffect(() => {
+    if (lat == null || lng == null) return
+    setBulletinBoard((prev) => ({ ...prev, latitude: lat, longitude: lng }))
+  }, [lat, lng])
+
+  const loadAccountProfile = useCallback(async (username) => {
+    if (!username) return
+
+    try {
+      const accountRes = await getProfileByUsername(username)
+      const normalizedAccount = normalizeProfileResponse(accountRes ?? {})
+      setAccount(normalizedAccount)
+      setBulletinBoard((prev) => ({
+        ...prev,
+        username: normalizedAccount?.username || username,
+      }))
+    } catch {
+      setBulletinBoard((prev) => ({
+        ...prev,
+        username: username || '',
       }))
     }
-  }, [position])
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -161,8 +382,20 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
     if (bulletinBoardId) {
       setSelectedImages([])
       getBulletinBoard(bulletinBoardId)
-        .then((res) => {
-          setBulletinBoard(normalizeBulletinBoard(res?.result))
+        .then(async (res) => {
+          const raw = res?.result ?? {}
+          const boardAccount = raw.account
+          const data = normalizeBulletinBoard(raw)
+          setBulletinBoard(data)
+          applyAddressFromBoard(data)
+
+          if (boardAccount) {
+            setAccount(normalizeProfileResponse(boardAccount))
+          } else if (data.username) {
+            await loadAccountProfile(data.username)
+          } else {
+            setAccount(undefined)
+          }
         })
         .catch(() => {
           toast.error('Không thể tải thông tin tin đăng.')
@@ -170,28 +403,83 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
       return
     }
 
+    resetAddressState()
     setBulletinBoard(createDefaultBulletinBoard())
-    introspect()
-      .then((res) => {
-        if (!res?.issuer) return
+    setAccount(undefined)
 
-        return getProfileByUsername(res.issuer)
-          .then((accountRes) => {
-            setAccount(accountRes)
-            setBulletinBoard((prev) => ({
-              ...prev,
-              username: accountRes?.username || res.issuer || '',
-            }))
-          })
-          .catch(() => {
-            setBulletinBoard((prev) => ({
-              ...prev,
-              username: res.issuer || '',
-            }))
-          })
-      })
-      .catch(() => {})
-  }, [bulletinBoardId, open])
+    const loadNewPostDefaults = async () => {
+      try {
+        const introspectRes = await introspect()
+        if (!introspectRes?.issuer) return
+
+        await loadAccountProfile(introspectRes.issuer)
+
+        const activeMotelId = isValidRouteParam(routeMotelId)
+          ? routeMotelId
+          : motels?.[0]?.motelId
+
+        if (!activeMotelId) return
+
+        const motelRes = await getMotelById(activeMotelId)
+        const motelData = motelRes?.data?.result
+        if (!motelData) return
+
+        const motelDefaults = buildDefaultsFromMotel(motelData)
+        setBulletinBoard((prev) => ({
+          ...prev,
+          ...motelDefaults,
+          username: introspectRes.issuer,
+        }))
+        applyAddressFromBoard({
+          address: motelData.address,
+          latitude: motelData.latitude,
+          longitude: motelData.longitude,
+        })
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    loadNewPostDefaults()
+  }, [bulletinBoardId, open, resetAddressState, applyAddressFromBoard, loadAccountProfile, routeMotelId, motels])
+
+  const handleMapPositionChange = useCallback(({ lat: newLat, lng: newLng }) => {
+    setLat(newLat)
+    setLng(newLng)
+  }, [])
+
+  const handleProvinceChange = (e) => {
+    const id = e.target.value
+    setSelectedProvince(id)
+    setSelectedWard('')
+    setWards([])
+    setLat(null)
+    setLng(null)
+    setGeocodeError('')
+    setManualPickMode(false)
+    setAutoGeocode(true)
+    getPhuongXaByTinh(id).then((res) => {
+      if (res.data.error === 0) setWards(res.data.data)
+    })
+  }
+
+  const handleWardChange = (e) => {
+    setSelectedWard(e.target.value)
+    setLat(null)
+    setLng(null)
+    setGeocodeError('')
+    setManualPickMode(false)
+    setAutoGeocode(true)
+  }
+
+  const handleAddressDetailChange = (e) => {
+    setAddressDetail(e.target.value)
+    setLat(null)
+    setLng(null)
+    setGeocodeError('')
+    setManualPickMode(false)
+    setAutoGeocode(true)
+  }
 
   const formik = useFormik({
     initialValues: {
@@ -206,8 +494,8 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
       waterPrice: '',
       maxPerson: '',
       moveInDate: null,
-      openingHours: '',
-      closeHours: '',
+      openingHours: DEFAULT_FREE_HOURS,
+      closeHours: DEFAULT_FREE_HOURS,
       address: ''
     },
     validationSchema: validationSchema,
@@ -215,6 +503,23 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
       console.log(values)
     }
   })
+
+  const rentalCategorySelectValue = useMemo(() => {
+    const category = formik.values.rentalCategory
+    if (!category || !typeRooms.length) return ''
+    const byName = typeRooms.find((t) => t.name === category)
+    if (byName) return byName.typeRoomId
+    const byId = typeRooms.find((t) => String(t.typeRoomId) === String(category))
+    return byId?.typeRoomId || ''
+  }, [formik.values.rentalCategory, typeRooms])
+
+  useEffect(() => {
+    if (!selectedProvince || !selectedWard || !addressDetail.trim()) return
+
+    const address = `${addressDetail}, ${selectedWard}, ${selectedProvince}`
+    setBulletinBoard((prev) => ({ ...prev, address }))
+    formik.setFieldValue('address', address)
+  }, [addressDetail, selectedWard, selectedProvince])
 
   useEffect(() => {
     if (bulletinBoard) {
@@ -237,59 +542,18 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
     }
   }, [bulletinBoard])
 
-  const handleLocationChange = (province, district, ward) => {
-    const newAddress = [ward, district, province].filter(Boolean).join(', ')
-    setBulletinBoard((prevRoom) => ({ ...prevRoom, province, district, ward, address: newAddress }))
-  }
-
-  const handleDetailAddressChange = (event) => {
-    const detailAddress = event.target.value
-
-    // Cập nhật room với địa chỉ chi tiết
-    setBulletinBoard((prevRoom) => ({
-      ...prevRoom,
-      detailAddress,
-      address: createAddress({ ...prevRoom, address })
-    }))
-  }
-  const createAddress = ({ province, district, ward, detailAddress }) => {
-    return [detailAddress, ward, district, province].filter(Boolean).join(', ')
-  }
-
-  const handleProvinceChange = (newProvince) => {
-    setBulletinBoard((prevRoom) => {
-      const updatedRoom = { ...prevRoom, province: newProvince }
-      return { ...updatedRoom, address: createAddress(updatedRoom) }
-    })
-  }
-
-  const handleDistrictChange = (newDistrict) => {
-    setBulletinBoard((prevRoom) => {
-      const updatedRoom = { ...prevRoom, district: newDistrict }
-      return { ...updatedRoom, address: createAddress(updatedRoom) }
-    })
-  }
-
-  const handleWardChange = (newWard) => {
-    setBulletinBoard((prevRoom) => {
-      const updatedRoom = { ...prevRoom, ward: newWard }
-      return { ...updatedRoom, address: createAddress(updatedRoom) }
-    })
-  }
-
   const handleImageChange = async (event) => {
     const images = Array.from(event.target.files)
-    console.log('Selected files:', images)
 
-    if (selectedImages.length + images.length < 2 || selectedImages.length + images.length > 5) {
-      toast.info('Chỉ được chọn từ 2 đến 5 ảnh')
+    if (selectedImages.length + boardImages.length + images.length > 5) {
+      toast.info('Chỉ được chọn tối đa 5 ảnh')
       return
     }
 
     const processedImagesPromises = images.map(async (image) => {
       if (image) {
         try {
-          return await processImage(image, 16 / 9, 1)
+          return await processImage(image, 16 / 9, 0.4)
         } catch (error) {
           console.log('Error processing image:', error)
           return null
@@ -302,100 +566,50 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
     setSelectedImages((prevImages) => [...prevImages, ...processedImages.filter((img) => img !== null)])
   }
 
-  const createdURLs = []
+  const handlePost = async () => {
+    if (!selectedProvince || !selectedWard || !addressDetail.trim()) {
+      toast.warning('Vui lòng điền đủ thông tin địa chỉ (Tỉnh/Thành, Phường/Xã, Số nhà/tên đường).')
+      return
+    }
 
-  const handlePost = () => {
-    if (selectedImages && selectedImages.length > 0) {
-      if (selectedImages.length + boardImages.length < 2) {
-        toast.info('Chọn tối thiểu 2 ảnh')
-        return
+    if (lat == null || lng == null) {
+      toast.warning('Vui lòng xác định vị trí trên bản đồ (kéo marker hoặc click trên bản đồ nếu không tìm thấy địa chỉ).')
+      return
+    }
+
+    if (selectedImages.length + boardImages.length < 2) {
+      toast.info('Chọn tối thiểu 2 ảnh')
+      return
+    }
+
+    try {
+      const newImageLinks = await Promise.all(selectedImages.map((image) => fileToDataUrl(image)))
+      const formattedNewImages = newImageLinks.map((imageLink) => ({ imageLink }))
+      const existingImages = boardImages.map(({ bulletinBoardImageId, imageLink }) => ({
+        ...(bulletinBoardImageId ? { bulletinBoardImageId } : {}),
+        imageLink,
+      }))
+      const updatedRoom = {
+        ...bulletinBoard,
+        bulletinBoardImages: [...existingImages, ...formattedNewImages],
       }
 
-      const uploadPromises = selectedImages.map((image) => {
-        const imageName = v4()
-        const storageRef = ref(storage, `images/bulletin-board-images/${imageName}`)
+      const res = bulletinBoardId
+        ? await updateBulletinBoard(bulletinBoardId, updatedRoom)
+        : await postBulletinBoard(updatedRoom)
 
-        const metadata = {
-          contentType: image.type
-        }
-
-        const uploadTask = uploadBytesResumable(storageRef, image, metadata)
-
-        return new Promise((resolve, reject) => {
-          uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-              console.log(`Upload is ${progress}% done`)
-            },
-            (error) => {
-              console.log(error)
-              toast.error('Có lỗi xảy ra khi tải lên hình ảnh.')
-              reject(error)
-            },
-            () => {
-              getDownloadURL(uploadTask.snapshot.ref)
-                .then((url) => {
-                  console.log('Download URL:', url)
-                  resolve(url)
-                })
-                .catch((error) => {
-                  console.error('Error getting download URL:', error)
-                  reject(error)
-                })
-            }
-          )
-        })
-      })
-
-      Promise.all(uploadPromises)
-        .then((downloadURLs) => {
-          const formattedImages = downloadURLs.map((url) => ({ imageLink: url }))
-          const updatedRoom = { ...bulletinBoard, bulletinBoardImages: formattedImages }
-
-          const apiCall = bulletinBoardId
-            ? updateBulletinBoard(bulletinBoardId, updatedRoom)
-            : postBulletinBoard(updatedRoom)
-
-          apiCall.then((res) => {
-            refreshBulletinBoards()
-            if (res.code === 400) {
-              toast.error(res.message)
-            } else {
-              toast.success('Đăng tin thành công!')
-              handleClose(true)
-              setBulletinBoard(defaultBulletinBoard)
-
-              // Giải phóng URL đã tạo
-              createdURLs.forEach((url) => URL.revokeObjectURL(url))
-              createdURLs.length = 0 // Reset danh sách URL
-            }
-          })
-        })
-        .catch((error) => {
-          console.error('Error uploading images:', error)
-          toast.error('Có lỗi xảy ra khi tải lên hình ảnh.')
-        })
-    } else {
-      console.log('Room without images:', bulletinBoard)
-      if (selectedImages.length + boardImages.length < 2) {
-        toast.info('Chọn tối thiểu 2 ảnh')
-        return
+      refreshBulletinBoards()
+      if (res.code === 400) {
+        toast.error(res.message)
+      } else {
+        toast.success(isEditMode ? 'Cập nhật tin đăng thành công!' : 'Đăng tin thành công!')
+        handleClose(true)
+        setSelectedImages([])
+        setBulletinBoard(defaultBulletinBoard)
       }
-
-      const apiCall = bulletinBoardId
-        ? updateBulletinBoard(bulletinBoardId, bulletinBoard)
-        : postBulletinBoard(bulletinBoard)
-
-      apiCall.then((res) => {
-        refreshBulletinBoards()
-        if (res.code === 400) {
-          toast.error(res.message)
-        } else {
-          toast.success('Đăng tin thành công!')
-          handleClose(true)
-        }
-      })
+    } catch (error) {
+      console.error('Error saving bulletin board images:', error)
+      toast.error('Có lỗi xảy ra khi lưu hình ảnh.')
     }
   }
 
@@ -435,7 +649,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <ViewInArIcon />
               <Typography id="modal-modal-title" variant="h6" component={'h2'}>
-                Thêm tin đăng1
+                {isEditMode ? 'Chỉnh sửa tin đăng' : 'Thêm tin đăng'}
               </Typography>
             </Box>
             <IconButton onClick={handleClose} sx={{ border: '1px solid #e0e0e0', p: 0.5 }}>
@@ -453,7 +667,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
               <Typography variant="inherit" component="h2">
                 Cho thuê
               </Typography>
-              <Typography>Khi bật cho thuê, khách thuê có thể tiếp cận tin của bạn 1</Typography>
+              <Typography>Khi bật cho thuê, khách thuê có thể tiếp cận tin của bạn</Typography>
             </Box>
           </Box>
           <Box sx={{ fontStyle: 'italic' }}>
@@ -492,29 +706,29 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
                 variant="filled"
                 sx={{ minWidth: 350 }}
                 error={Boolean(formik.errors.rentalCategory)}>
-                <InputLabel id="demo-simple-select-filled-label">Danh mục thuê</InputLabel>
+                <InputLabel id="demo-simple-select-filled-label">Danh mục nhà trọ</InputLabel>
                 <Select
                   labelId="demo-simple-select-filled-label"
                   id="demo-simple-select-filled"
                   name="rentalCategory"
-                  value={formik.values.rentalCategory}
+                  value={rentalCategorySelectValue}
                   onChange={(event) => {
-                    setBulletinBoard({ ...bulletinBoard, rentalCategory: event.target.value })
-                    formik.handleChange(event)
+                    const typeRoomId = event.target.value
+                    const selectedTypeRoom = typeRooms.find(
+                      (t) => String(t.typeRoomId) === String(typeRoomId)
+                    )
+                    const rentalCategory = selectedTypeRoom?.name || typeRoomId
+                    setBulletinBoard({ ...bulletinBoard, rentalCategory })
+                    formik.setFieldValue('rentalCategory', rentalCategory)
                   }}>
                   <MenuItem value="">
-                    <em>None</em>
+                    <em>Chọn danh mục</em>
                   </MenuItem>
-                  <MenuItem value={'Nhà trọ'}>Nhà trọ</MenuItem>
-                  <MenuItem value={'Chung cư mini'}>Chung cư mini</MenuItem>
-                  <MenuItem value={'Ký túc xá'}>Ký túc xá</MenuItem>
-                  <MenuItem value={'Căn hộ dịch vụ'}>Căn hộ dịch vụ</MenuItem>
-                  <MenuItem value={'Phòng trọ có gác lửng'}>Phòng trọ có gác lửng</MenuItem>
-                  <MenuItem value={'Nhà nguyên căn'}>Nhà nguyên căn</MenuItem>
-                  <MenuItem value={'Biệt thự'}>Biệt thự</MenuItem>
-                  <MenuItem value={'Homestay'}>Homestay</MenuItem>
-                  <MenuItem value={'Căn hộ studio'}>Căn hộ studio</MenuItem>
-                  <MenuItem value={'Officetel'}>Officetel</MenuItem>
+                  {typeRooms.map((t) => (
+                    <MenuItem key={t.typeRoomId} value={t.typeRoomId}>
+                      {t.name}
+                    </MenuItem>
+                  ))}
                 </Select>
                 <FormHelperText>{formik.errors.rentalCategory}</FormHelperText>
               </FormControl>
@@ -525,7 +739,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
                 id="outlined-basic"
                 label="Tên người liên hệ"
                 variant="filled"
-                value={account?.fullname}
+                value={account?.fullname || account?.fullName || ''}
                 sx={{ minWidth: 350 }}
                 slotProps={{
                   input: {
@@ -539,7 +753,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
                 label="SĐT"
                 variant="filled"
                 name="phone"
-                value={account?.phone}
+                value={account?.phone || ''}
                 sx={{ minWidth: 350 }}
                 slotProps={{
                   input: {
@@ -589,7 +803,6 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
                 label="Giá thuê"
                 variant="filled"
                 sx={{ width: '100%' }}
-                InputProps={{ endAdornment: <InputAdornment position="end">đ</InputAdornment> }}
                 {...getVndInputFieldProps()}
                 InputLabelProps={{
                   shrink: !!bulletinBoard.rentPrice
@@ -613,7 +826,6 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
                 variant="filled"
                 sx={{ width: '100%' }}
                 value={formatVndInput(formik.values.promotionalRentalPrice)}
-                InputProps={{ endAdornment: <InputAdornment position="end">đ</InputAdornment> }}
                 {...getVndInputFieldProps()}
                 InputLabelProps={{
                   shrink: !!bulletinBoard.promotionalRentalPrice
@@ -810,14 +1022,12 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
                 value={formik.values.openingHours}
                 onChange={(event) => {
                   setBulletinBoard({ ...bulletinBoard, openingHours: event.target.value })
-                  formik.handleChange
+                  formik.setFieldValue('openingHours', event.target.value)
                 }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={'4 SA'}>4 SA</MenuItem>
-                <MenuItem value={'5 SA'}>5 SA</MenuItem>
-                <MenuItem value={'6 SA'}>6 SA</MenuItem>
+                <MenuItem value={DEFAULT_FREE_HOURS}>{DEFAULT_FREE_HOURS}</MenuItem>
+                <MenuItem value={'4 SA'}>4 AM</MenuItem>
+                <MenuItem value={'5 SA'}>5 AM</MenuItem>
+                <MenuItem value={'6 SA'}>6 AM</MenuItem>
               </Select>
               <FormHelperText>{formik.errors.openingHours}</FormHelperText>
             </FormControl>
@@ -826,18 +1036,16 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
               <Select
                 labelId="demo-simple-select-filled-label"
                 id="demo-simple-select-filled"
-                name="closeHour"
-                value={bulletinBoard.closeHours}
+                name="closeHours"
+                value={formik.values.closeHours}
                 onChange={(event) => {
                   setBulletinBoard({ ...bulletinBoard, closeHours: event.target.value })
-                  formik.handleChange
+                  formik.setFieldValue('closeHours', event.target.value)
                 }}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={'22 CH'}>22 CH</MenuItem>
-                <MenuItem value={'23 CH'}>23 CH</MenuItem>
-                <MenuItem value={'00 SA'}>00 SA</MenuItem>
+                <MenuItem value={DEFAULT_FREE_HOURS}>{DEFAULT_FREE_HOURS}</MenuItem>
+                <MenuItem value={'22 CH'}>10 PM</MenuItem>
+                <MenuItem value={'23 CH'}>11 PM</MenuItem>
+                <MenuItem value={'00 SA'}>12 AM</MenuItem>
               </Select>
               <FormHelperText>{formik.errors.closeHours}</FormHelperText>
             </FormControl>
@@ -901,62 +1109,91 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
               </Grid>
             ))}
           </Grid>
-          <Box>
+          <Box sx={{ mt: 2 }}>
             <TitleAttribute
               title="Địa chỉ"
               description="Vui lòng nhập địa chỉ chính xác để có thể tìm đến nhà cho thuê của bạn"
             />
-          </Box>
-          <Box>
-            <LocationSelect
-              onChangeProvince={handleProvinceChange}
-              onChangeDistrict={handleDistrictChange}
-              onChangeWard={handleWardChange}
-              onChange={(province, district, ward) => handleLocationChange(province, district, ward)}
-            />
-            <TextField
-              onChange={(event) => {
-                handleDetailAddressChange(event)
-              }}
-              value={bulletinBoard.address}
-              InputLabelProps={{
-                shrink: !!bulletinBoard.address
-              }}
-              name="address"
-              required
-              id="outlined-basic"
-              label="Địa chỉ chi tiết"
-              variant="filled"
-              sx={{ width: '100%', mt: -2 }}
-            />
-          </Box>
-          <TitleAttribute title="Tọa độ" description="Chọn vị trí trên bản đồ để lấy tọa độ của bạn" />
-          <Box sx={{ my: 2 }}>
-            <Box sx={{ my: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <TextField
-                value={position?.lng ?? bulletinBoard.longitude}
-                id="outlined-basic"
-                label="Kinh độ"
-                variant="filled"
-                type="text"
-                sx={{ width: '49%' }}
-                InputLabelProps={{
-                  shrink: true
-                }}
-              />
-              <TextField
-                value={position?.lat ?? bulletinBoard.latitude}
-                id="outlined-basic"
-                label="Vĩ độ"
-                variant="filled"
-                type="text"
-                sx={{ width: '49%' }}
-                InputLabelProps={{
-                  shrink: true
-                }}
-              />
-            </Box>
-            <MapComponent setPosition={setPosition} position={position} />
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth required variant="filled">
+                  <InputLabel>Tỉnh/Thành</InputLabel>
+                  <Select value={selectedProvince} onChange={handleProvinceChange} label="Tỉnh/Thành">
+                    {provinces.map((p) => (
+                      <MenuItem key={p.id} value={p.id}>{p.full_name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth required variant="filled" disabled={!selectedProvince}>
+                  <InputLabel>Phường/Xã</InputLabel>
+                  <Select value={selectedWard} onChange={handleWardChange} label="Phường/Xã">
+                    {wards.map((w) => (
+                      <MenuItem key={w.id} value={w.id}>{w.full_name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  required
+                  variant="filled"
+                  label="Số nhà, tên đường"
+                  value={addressDetail}
+                  onChange={handleAddressDetailChange}
+                  placeholder="VD: 123 Nguyễn Văn Linh"
+                  name="address"
+                  error={Boolean(formik.errors.address)}
+                  helperText={formik.errors.address}
+                />
+              </Grid>
+
+              {fullAddress && (
+                <Grid item xs={12}>
+                  <Typography variant="body2" color="text.secondary">
+                    Địa chỉ đầy đủ: <strong>{fullAddress}</strong>
+                  </Typography>
+                </Grid>
+              )}
+
+              {geocodeLoading && (
+                <Grid item xs={12}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CircularProgress size={18} />
+                    <Typography variant="body2" color="text.secondary">Đang tra cứu vị trí trên bản đồ...</Typography>
+                  </Box>
+                </Grid>
+              )}
+
+              {geocodeError && (
+                <Grid item xs={12}>
+                  <Alert severity="warning">{geocodeError}</Alert>
+                </Grid>
+              )}
+
+              <Grid item xs={12}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  {manualPickMode
+                    ? 'Click trên bản đồ để chọn vị trí, hoặc kéo marker để điều chỉnh.'
+                    : 'Kéo marker trên bản đồ để điều chỉnh vị trí chính xác hơn.'}
+                </Typography>
+                <AddressMapPicker
+                  active={open}
+                  lat={lat}
+                  lng={lng}
+                  onPositionChange={handleMapPositionChange}
+                  allowMapClick={manualPickMode || lat == null}
+                />
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Tọa độ:{' '}
+                  {lat != null && lng != null
+                    ? `Lat ${lat.toFixed(6)}, Lng ${lng.toFixed(6)}`
+                    : 'Chưa xác định'}
+                </Typography>
+              </Grid>
+            </Grid>
           </Box>
           <Box>
             <TitleAttribute title="Hình ảnh" description="Hình ảnh về phòng cho thuê" />
@@ -1013,19 +1250,16 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                {selectedImages &&
-                  Array.from(selectedImages).map((image, i) => (
+                {selectedImagePreviews.map((previewUrl, i) => (
                     <Box
-                      key={image.name || i}
+                      key={`selected-${i}`}
                       component="img"
-                      src={URL.createObjectURL(image)}
+                      src={previewUrl}
                       alt={`Hình ảnh ${i + 1}`}
                       width={200}
                       height="auto"
-                      onLoad={() => URL.revokeObjectURL(image)} // Giải phóng URL sau khi tải xong
-                      onError={() => console.log('Lỗi tải hình ảnh')}
-                      sx={{ borderRadius: 1, boxShadow: 2 }}
-                      onClick={() => handleImageRemove(i)} // Hàm này để xóa hình ảnh nếu cần
+                      sx={{ borderRadius: 1, boxShadow: 2, cursor: 'pointer' }}
+                      onClick={() => handleImageRemove(i)}
                     />
                   ))}
 
@@ -1063,10 +1297,10 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
           </Button>
           <Button
             variant="contained"
-            disabled={!formik.isValid || !formik.dirty}
-            sx={{ bgcolor: '#20a9e7', color: 'white', '&:hover': { bgcolor: '#219653' } }}
+            disabled={!formik.isValid || (!isEditMode && !formik.dirty)}
+            sx={{ bgcolor: '#20a9e7', color: 'white', '&:hover': { bgcolor: '2b7ed7' } }}
             onClick={handlePost}>
-            Thêm tin đăng
+            {isEditMode ? 'Cập nhật tin đăng' : 'Thêm tin đăng'}
           </Button>
         </Box>
       </Box>

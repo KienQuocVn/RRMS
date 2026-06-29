@@ -1,297 +1,392 @@
-import { useState, useEffect  } from 'react'
-import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  TableContainer,
-  TablePagination,
-  FormControl,  
-  InputLabel,  
-  Select,  
-  MenuItem,  
-  Grid,  
-  Typography,
-  Button,
-  TextField,
-} from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
-import EditNoteIcon from '@mui/icons-material/EditNote';
-import InputAdornment from '@mui/material/InputAdornment';  
-import { format } from 'date-fns'; 
-import axios from 'axios';
-import { env } from '~/configs/environment';
-import { unwrapPageItems } from '~/utils/apiAdapters';
+import { useEffect, useMemo, useState } from 'react'
+import { Box, Stack } from '@mui/material'
+import Grid from '@mui/material/Grid2'
+import axios from 'axios'
+import Swal from 'sweetalert2'
+import { env } from '~/configs/environment'
+import { unwrapPageItems } from '~/utils/apiAdapters'
+import UserDetailsPanel from './components/userManagement/UserDetailsPanel'
+import UserEmptyState from './components/userManagement/UserEmptyState'
+import UserFormModal from './components/userManagement/UserFormModal'
+import UserLockModal from './components/userManagement/UserLockModal'
+import UserManagementHeader from './components/userManagement/UserManagementHeader'
+import UserStatsBar from './components/userManagement/UserStatsBar'
+import UsersFilterBar from './components/userManagement/UsersFilterBar'
+import UsersTablePanel from './components/userManagement/UsersTablePanel'
+import { PAGE_BG, buildUserRecord, filterUsers, getStats } from './components/userManagement/userManagementUtils'
 
-const ListUsers = () => {  
+const DEFAULT_FILTERS = {
+  role: 'Tất cả',
+  status: 'Tất cả',
+  verification: 'Tất cả',
+  joinedAt: 'Tất cả',
+  sort: 'Mới nhất'
+}
+
+const DEFAULT_FORM = {
+  username: '',
+  fullName: '',
+  email: '',
+  phone: '',
+  address: '',
+  role: 'Người thuê',
+  avatar: '',
+  password: '',
+  confirmPassword: '',
+  sendWelcomeEmail: true,
+  requireEmailVerification: true
+}
+
+const DEFAULT_LOCK_FORM = {
+  duration: '7d',
+  reason: 'Vi phạm quy định',
+  otherReason: '',
+  sendNotification: true,
+  hidePosts: false
+}
+
+const apiHeaders = (token) => ({
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+})
+
+const ListUsers = () => {
+  const storedUser = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')) : null
+  const token = storedUser?.token || null
+  const [loading, setLoading] = useState(true)
+  const [accounts, setAccounts] = useState([])
+  const [filters, setFilters] = useState(DEFAULT_FILTERS)
+  const [searchValue, setSearchValue] = useState('')
   const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(5)
-  const [role, setRole] = useState('');  
-  const [plan, setPlan] = useState('');  
-  const [status, setStatus] = useState('');  
-  const [accounts, setAccounts] = useState([]); 
-  const [loading, setLoading] = useState(true);
-  const roles = ['Admin', 'Host', 'Employee', 'Customer', 'Broker'];  
-  const plans = ['Basic', 'Premium', 'Enterprise'];  
-  const statuses = ['Active', 'Inactive', 'Pending']; 
-  const [search, setSearch] = useState('');  
-  const [noResults, setNoResults] = useState(false);  
-  const navigate = useNavigate();
-  const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
+  const [rowsPerPage, setRowsPerPage] = useState(8)
+  const [selectedRowId, setSelectedRowId] = useState(null)
+  const [selectedIds, setSelectedIds] = useState([])
+  const [isDetailOpen, setIsDetailOpen] = useState(true)
+  const [userNotes, setUserNotes] = useState({})
+  const [formMode, setFormMode] = useState('create')
+  const [userForm, setUserForm] = useState(DEFAULT_FORM)
+  const [showPassword, setShowPassword] = useState(false)
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false)
+  const [lockTarget, setLockTarget] = useState(null)
+  const [lockForm, setLockForm] = useState(DEFAULT_LOCK_FORM)
 
-  const fetchAccounts = async (query) => {  
-    setLoading(true);  
-    setNoResults(false);  
-    try {  
-      let url;
-      if (query) {
-        const params = new URLSearchParams();
-        params.append("search", query);
-        url = `${env.API_URL}/api/v1/accounts/search?${params.toString()}`;
-      } else {
-        url = `${env.API_URL}/api/v1/accounts/get-all-account`;
-      }
-
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      if (response.data?.result) {  
-        setAccounts(unwrapPageItems(response));  
-      } else {  
-        setNoResults(true);  
-      }  
-    } catch (error) {  
-      console.error('Error fetching accounts', error);  
-      setNoResults(true);  
-    } finally {  
-      setLoading(false);  
-    }  
-  };  
-  
-  useEffect(() => {  
-    fetchAccounts(search);  
-  }, [search]);
-
-  const handleEdit = (accountId) => {  
-  navigate('/adminManage/manage-users/add', { state: { accountId } });  
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage)
+  const fetchAccounts = async () => {
+    setLoading(true)
+    try {
+      const response = await axios.get(`${env.API_URL}/api/v1/accounts/get-all-account?page=0&size=500`, apiHeaders(token))
+      const items = unwrapPageItems(response) || []
+      setAccounts(items.map((account, index) => buildUserRecord(account, index)))
+    } catch (error) {
+      console.error('Error fetching accounts', error)
+      setAccounts([])
+      Swal.fire({
+        icon: 'error',
+        title: 'Không thể tải danh sách',
+        text: 'Đã xảy ra lỗi khi lấy danh sách người dùng.'
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10))
-    setPage(0) 
+  useEffect(() => {
+    fetchAccounts()
+  }, [])
+
+  const filteredUsers = useMemo(() => filterUsers(accounts, filters, searchValue), [accounts, filters, searchValue])
+  const stats = useMemo(() => getStats(accounts), [accounts])
+
+  useEffect(() => {
+    setPage(0)
+  }, [filters, searchValue])
+
+  useEffect(() => {
+    if (!filteredUsers.length) {
+      setSelectedRowId(null)
+      setSelectedIds([])
+      return
+    }
+
+    const selectedExists = filteredUsers.some((item) => item.id === selectedRowId)
+    if (!selectedExists) {
+      setSelectedRowId(filteredUsers[0].id)
+      setSelectedIds((prev) => (prev.length ? prev.filter((id) => filteredUsers.some((item) => item.id === id)) : [filteredUsers[0].id]))
+      setIsDetailOpen(true)
+    } else {
+      setSelectedIds((prev) => prev.filter((id) => filteredUsers.some((item) => item.id === id)))
+    }
+  }, [filteredUsers, selectedRowId])
+
+  const paginatedUsers = useMemo(() => {
+    const start = page * rowsPerPage
+    return filteredUsers.slice(start, start + rowsPerPage)
+  }, [filteredUsers, page, rowsPerPage])
+
+  const selectedUser = filteredUsers.find((item) => item.id === selectedRowId) || null
+
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleOpenCreateModal = () => {
+    setFormMode('create')
+    setUserForm(DEFAULT_FORM)
+    setShowPassword(false)
+    setIsUserModalOpen(true)
+  }
+
+  const handleOpenEditModal = (user) => {
+    setFormMode('edit')
+    setUserForm({
+      username: user.username,
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone === '--' ? '' : user.phone,
+      address: user.address === '--' ? '' : user.address,
+      role: user.role,
+      avatar: user.avatar,
+      password: '',
+      confirmPassword: '',
+      sendWelcomeEmail: true,
+      requireEmailVerification: true
+    })
+    setShowPassword(false)
+    setIsUserModalOpen(true)
+  }
+
+  const handleSubmitUser = async (payloadRole) => {
+    const isCreate = formMode === 'create'
+    if (!userForm.fullName || !userForm.email || !userForm.role || (isCreate && !userForm.username)) {
+      Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng nhập đầy đủ các trường bắt buộc.' })
+      return
+    }
+
+    if (isCreate && (!userForm.password || userForm.password !== userForm.confirmPassword)) {
+      Swal.fire({ icon: 'warning', title: 'Mật khẩu chưa hợp lệ', text: 'Vui lòng kiểm tra lại mật khẩu và xác nhận mật khẩu.' })
+      return
+    }
+
+    try {
+      if (isCreate) {
+        await axios.post(
+          `${env.API_URL}/api/v1/accounts`,
+          {
+            username: userForm.username,
+            password: userForm.password,
+            fullName: userForm.fullName,
+            phone: userForm.phone,
+            email: userForm.email,
+            avatar: userForm.avatar,
+            address: userForm.address,
+            role: [payloadRole]
+          },
+          apiHeaders(token)
+        )
+      } else {
+        await axios.put(
+          `${env.API_URL}/api/v1/accounts/${userForm.username}`,
+          {
+            username: userForm.username,
+            fullName: userForm.fullName,
+            phone: userForm.phone,
+            email: userForm.email,
+            avatar: userForm.avatar,
+            address: userForm.address,
+            role: [payloadRole]
+          },
+          apiHeaders(token)
+        )
+      }
+
+      setIsUserModalOpen(false)
+      await fetchAccounts()
+      Swal.fire({
+        icon: 'success',
+        title: isCreate ? 'Đã tạo tài khoản' : 'Đã cập nhật người dùng',
+        text: isCreate ? 'Người dùng mới đã được thêm vào hệ thống.' : 'Thông tin người dùng đã được cập nhật.'
+      })
+    } catch (error) {
+      console.error('Error saving account', error)
+      Swal.fire({
+        icon: 'error',
+        title: 'Không thể lưu người dùng',
+        text: error.response?.data?.message || 'Đã xảy ra lỗi, vui lòng thử lại.'
+      })
+    }
+  }
+
+  const handleConfirmLock = () => {
+    if (!lockTarget) return
+    const lockReason = lockForm.reason === 'Lý do khác' ? lockForm.otherReason : lockForm.reason
+    if (!lockReason) {
+      Swal.fire({ icon: 'warning', title: 'Thiếu lý do khóa', text: 'Vui lòng chọn hoặc nhập lý do khóa tài khoản.' })
+      return
+    }
+
+    setAccounts((prev) =>
+      prev.map((item) =>
+        item.id === lockTarget.id
+          ? {
+              ...item,
+              status: 'Bị khóa',
+              recentActivities: [
+                {
+                  id: `${item.id}-locked`,
+                  title: `Tài khoản bị khóa: ${lockReason}`,
+                  time: 'Vừa xong',
+                  color: '#E24B4A'
+                },
+                ...item.recentActivities
+              ]
+            }
+          : item
+      )
+    )
+    setLockTarget(null)
+    setLockForm(DEFAULT_LOCK_FORM)
+    Swal.fire({
+      icon: 'success',
+      title: 'Đã khóa tài khoản',
+      text: `${lockTarget.fullName} đã được chuyển sang trạng thái bị khóa.`
+    })
+  }
+
+  const handleToggleLock = (user) => {
+    if (user.status === 'Bị khóa') {
+      setAccounts((prev) =>
+        prev.map((item) =>
+          item.id === user.id
+            ? {
+                ...item,
+                status: 'Đang hoạt động'
+              }
+            : item
+        )
+      )
+      Swal.fire({
+        icon: 'success',
+        title: 'Đã mở khóa tài khoản',
+        text: `${user.fullName} có thể hoạt động trở lại.`
+      })
+      return
+    }
+
+    setLockTarget(user)
+    setLockForm(DEFAULT_LOCK_FORM)
+  }
+
+  const handleExport = () => {
+    const header = ['Ho ten', 'Email', 'So dien thoai', 'Vai tro', 'Trang thai', 'Ngay tham gia']
+    const lines = filteredUsers.map((item) => [item.fullName, item.email, item.phone, item.role, item.status, item.createdAt].join(','))
+    const csv = [header.join(','), ...lines].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'danh-sach-nguoi-dung.csv')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
   return (
-    <Box sx={{backgroundColor: '#fff', borderRadius: '5px',marginTop:'17px'}}>
-      <Grid container spacing={2} sx={{paddingLeft:'30px',paddingTop:'15px', marginBottom:'15px' }}> 
-        <Grid container spacing={2} alignItems="center" justifyContent="space-between" sx={{marginBottom:'10px'}}> 
-          <Typography variant="h5" sx={{marginTop:'15px', marginLeft:'15px'}}>  
-                Bộ lọc  
-            </Typography>
-          <Grid container spacing={1} sx={{marginTop:'10px', marginLeft:'10px'}}>  
-            
-            <Grid item xs={12} sm={2}>  
-              <FormControl fullWidth variant="outlined">  
-                <InputLabel id="role-select-label">Select Role</InputLabel>  
-                <Select  
-                  labelId="role-select-label"  
-                  value={role}  
-                  onChange={(e) => setRole(e.target.value)}  
-                  label="Select Role"  
-                >  
-                  {roles.map((r) => (  
-                    <MenuItem key={r} value={r}>  
-                      {r}  
-                    </MenuItem>  
-                  ))}  
-                </Select>  
-              </FormControl>  
-            </Grid>  
+    <Box sx={{ px: { xs: 2, lg: 3 }, py: 2, background: PAGE_BG, minHeight: '100%' }}>
+      <Stack spacing={2}>
+        <UserManagementHeader totalUsers={accounts.length} onExport={handleExport} onAddUser={handleOpenCreateModal} />
+        <UserStatsBar stats={stats} />
+        <UsersFilterBar
+          filters={filters}
+          searchValue={searchValue}
+          onFilterChange={handleFilterChange}
+          onSearchChange={setSearchValue}
+        />
 
-            {/* Dropdown cho "Select Plan" */}  
-            <Grid item xs={12} sm={2}>  
-              <FormControl fullWidth variant="outlined">  
-                <InputLabel id="plan-select-label">Select Plan</InputLabel>  
-                <Select  
-                  labelId="plan-select-label"  
-                  value={plan}  
-                  onChange={(e) => setPlan(e.target.value)}  
-                  label="Select Plan"  
-                >  
-                  {plans.map((p) => (  
-                    <MenuItem key={p} value={p}>  
-                      {p}  
-                    </MenuItem>  
-                  ))}  
-                </Select>  
-              </FormControl>  
-            </Grid>  
-
-            {/* Dropdown cho "Select Status" */}  
-            <Grid item xs={12} sm={2}>  
-              <FormControl fullWidth variant="outlined">  
-                <InputLabel id="status-select-label">Select Status</InputLabel>  
-                <Select  
-                  labelId="status-select-label"  
-                  value={status}  
-                  onChange={(e) => setStatus(e.target.value)}  
-                  label="Select Status"  
-                >  
-                  {statuses.map((s) => (  
-                    <MenuItem key={s} value={s}>  
-                      {s}  
-                    </MenuItem>  
-                  ))}  
-                </Select>  
-              </FormControl>  
-            </Grid> 
-              
-            <Grid item xs={12} sm={3}>  
-              <TextField  
-                  variant="outlined"  
-                  placeholder="Tìm kiếm người dùng"  
-                  value={search}  
-                  onChange={(e) => setSearch(e.target.value)}  
-                  onKeyDown={(e) => {  
-                      if (e.key === 'Enter') {  
-                          fetchAccounts();  
-                      }  
-                  }}  
-                  InputProps={{  
-                      startAdornment: (  
-                          <InputAdornment position="start">  
-                              <i className="bi bi-search"></i>  
-                          </InputAdornment>  
-                      ),  
-                  }}  
-                  sx={{width: '100%'}}
-
-              />
-            </Grid>    
-            <Grid item xs={12} sm={1}>  
-              <Button  
-                variant="outlined"  
-                color="primary"  
-                sx={{   
-                  height:'100%',
-                  '&:hover': {  
-                    backgroundColor: '#1976d2',
-                  },  
-                }} 
-                startIcon={<i className="bi bi-arrow-up-short" />}
-              >  
-                Export  
-              </Button>  
-            </Grid>   
-            <Grid item xs={12} sm={2}>  
-              <Button  
-                variant="contained"  
-                color="primary"  
-                sx={{   
-                  height:'100%',
-                  '&:hover': {  
-                    backgroundColor: '#1976d2',
-                  },  
-                }} 
-                startIcon={<i className="bi bi-plus-lg"></i>}
-              >  
-                Thêm tài khoản mới  
-              </Button>  
-            </Grid>    
-            
-          </Grid>  
-        </Grid>
-       
-
-        <TableContainer component={Paper} sx={{ width: '100%' }}>
-          <Table>  
-            <TableHead>  
-              <TableRow>  
-                <TableCell>Tên đăng nhập</TableCell>  
-                <TableCell>Họ tên</TableCell>  
-                <TableCell>Số điện thoại</TableCell>  
-                <TableCell>Email</TableCell>  
-                <TableCell>Số CCCD</TableCell>  
-                <TableCell>Giới tính</TableCell>  
-                <TableCell>Ngày sinh</TableCell>  
-                <TableCell>Ảnh</TableCell>  
-                <TableCell>Vai trò</TableCell> 
-                <TableCell>Thao tác</TableCell>  
-              </TableRow>  
-            </TableHead>  
-            <TableBody>  
-              {loading ? (  
-                <TableRow>  
-                  <TableCell colSpan={9} align="center">Loading...</TableCell>  
-                </TableRow>  
-              ) : noResults ? (  
-                <TableRow>  
-                  <TableCell colSpan={9} align="center">  
-                    <Typography color="error">Không có kết quả tìm kiếm nào.</Typography>  
-                  </TableCell>  
-                </TableRow>  
-              ) : (  
-                accounts  
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)  
-                  .map((account,index) => (  
-                    <TableRow key={account.id || index}> 
-                      <TableCell>{account.username}</TableCell>  
-                      <TableCell>{account.fullName}</TableCell>  
-                      <TableCell>{account.phone}</TableCell>  
-                      <TableCell>{account.email}</TableCell>  
-                      <TableCell>{account.cccd}</TableCell>  
-                      <TableCell>{account.gender}</TableCell>  
-                      <TableCell>  
-                        {account.birthday ? format(new Date(account.birthday), 'dd/MM/yyyy') : ''}  
-                      </TableCell>  
-                      <TableCell>  
-                        <img  
-                          src={account.avatar}  
-                          alt="Image"  
-                          style={{ width: '50px', height: '50px', borderRadius: '2px' }}  
-                        />  
-                      </TableCell> 
-                      <TableCell>{Array.isArray(account.role) ? account.role.join(', ') : account.role}</TableCell> 
-                      <TableCell>  
-                        <IconButton color="primary" size="small" onClick={() => handleEdit(account.username)}>  
-                          <EditNoteIcon />  
-                        </IconButton>  
-                        <IconButton color="error" size="small">  
-                          <DeleteIcon />  
-                        </IconButton>  
-                      </TableCell>  
-                    </TableRow>  
-                  ))  
-              )}  
-            </TableBody>
-          </Table> 
-          <TablePagination
-            sx={{
-              marginTop: '10px',
+        {filteredUsers.length === 0 && !loading ? (
+          <UserEmptyState
+            onReset={() => {
+              setFilters(DEFAULT_FILTERS)
+              setSearchValue('')
             }}
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={accounts.length} 
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
           />
-        </TableContainer>
-      </Grid>
+        ) : (
+          <Grid container spacing={2} alignItems="flex-start">
+            <Grid size={{ xs: 12, xl: isDetailOpen ? 7 : 12 }}>
+              <UsersTablePanel
+                rows={paginatedUsers}
+                allRows={filteredUsers}
+                selectedRowId={selectedRowId}
+                selectedIds={selectedIds}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                totalCount={filteredUsers.length}
+                loading={loading}
+                onRowSelect={(id) => {
+                  setSelectedRowId(id)
+                  setIsDetailOpen(true)
+                }}
+                onToggleSelectOne={(id) => {
+                  setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]))
+                }}
+                onToggleSelectAll={(checked) => {
+                  if (!checked) {
+                    setSelectedIds([])
+                    return
+                  }
+                  setSelectedIds(paginatedUsers.map((item) => item.id))
+                }}
+                onPageChange={setPage}
+                onRowsPerPageChange={(size) => {
+                  setRowsPerPage(size)
+                  setPage(0)
+                }}
+                onClearSelection={() => setSelectedIds([])}
+                onEditUser={handleOpenEditModal}
+                onToggleLock={handleToggleLock}
+              />
+            </Grid>
+
+            {selectedUser && isDetailOpen && (
+              <Grid size={{ xs: 12, xl: 5 }}>
+                <UserDetailsPanel
+                  user={selectedUser}
+                  note={userNotes[selectedUser.id] || ''}
+                  onNoteChange={(value) => setUserNotes((prev) => ({ ...prev, [selectedUser.id]: value }))}
+                  onClose={() => setIsDetailOpen(false)}
+                  onEditUser={handleOpenEditModal}
+                  onToggleLock={handleToggleLock}
+                />
+              </Grid>
+            )}
+          </Grid>
+        )}
+      </Stack>
+
+      <UserFormModal
+        open={isUserModalOpen}
+        mode={formMode}
+        form={userForm}
+        showPassword={showPassword}
+        onClose={() => setIsUserModalOpen(false)}
+        onChange={(field, value) => setUserForm((prev) => ({ ...prev, [field]: value }))}
+        onToggleShowPassword={() => setShowPassword((prev) => !prev)}
+        onSubmit={handleSubmitUser}
+      />
+
+      <UserLockModal
+        open={Boolean(lockTarget)}
+        user={lockTarget}
+        form={lockForm}
+        onClose={() => {
+          setLockTarget(null)
+          setLockForm(DEFAULT_LOCK_FORM)
+        }}
+        onChange={(field, value) => setLockForm((prev) => ({ ...prev, [field]: value }))}
+        onConfirm={handleConfirmLock}
+      />
     </Box>
   )
 }
-  export default ListUsers;  
+
+export default ListUsers

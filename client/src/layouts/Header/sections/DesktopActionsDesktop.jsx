@@ -6,6 +6,7 @@ import { useState } from 'react'
 import LanguageSelectDesktop from '../Options/LanguageSelectDesktop'
 import ModeSelect from '../Options/ModeSelect'
 import AccountMenu from './AccountMenu'
+import { getStoredAuthUser } from '~/apis/accountAPI'
 
 const BellIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -52,6 +53,23 @@ export default function DesktopActionsDesktop({
   const { t } = useTranslation()
   const [isAccountOpen, setIsAccountOpen] = useState(false)
   const textColor = theme.palette.mode === 'light' ? '#1f1f1f' : '#E8E8E8'
+  const userRoles = getStoredAuthUser()?.roles ?? []
+  const isAdmin = userRoles.includes('ADMIN')
+  const isHost = userRoles.includes('HOST')
+  const isCustomer = userRoles.includes('CUSTOMER')
+
+  const actionButton = (() => {
+    if (isAdmin) {
+      return { labelKey: 'header.manageAndApprovePosts', to: '/adminManage/manage-posts/list' }
+    }
+    if (isHost) {
+      return { labelKey: 'header.postNow', to: `/quanlytro/${motelId}` }
+    }
+    if (isCustomer) {
+      return { labelKey: 'header.myRooms', to: '/profile' }
+    }
+    return { labelKey: 'header.postNow', to: `/quanlytro/${motelId}` }
+  })()
 
   const iconBtnStyle = {
     display: { xs: 'none', md: 'inline-flex' },
@@ -119,7 +137,7 @@ export default function DesktopActionsDesktop({
       {tokenExists && (
         <Box
           component={Link}
-          to={`/quanlytro/${motelId}`}
+          to={actionButton.to}
           rel="nofollow"
           sx={{
             display: 'inline-flex',
@@ -141,7 +159,7 @@ export default function DesktopActionsDesktop({
           }}
         >
           <EditIcon />
-          {t('header.postNow')}
+          {t(actionButton.labelKey)}
         </Box>
       )}
     </Box>

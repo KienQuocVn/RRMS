@@ -1,48 +1,52 @@
-import { useEffect, useState } from 'react'
-import { Link, Route, Routes } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import Swal from 'sweetalert2'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './AdminManage.css'
-import AddUsers from './Dashboard/AddUsers'
-import AddPosts from './Dashboard/AddPosts'
 import ListUsers from './Dashboard/ListUsers'
 import ListPosts from './Dashboard/ListPosts'
 import DashboardHome from './Dashboard/DashboardHome'
+import AdminSidebar from './components/AdminSidebar'
+import ChangePasswordModal from './components/ChangePasswordModal'
+import { getStoredAuthUser, logout as logoutRequest } from '~/apis/accountAPI'
+import { changePassword } from '~/apis/profileAPI'
+import { useAuth } from '~/hooks/useAuth'
 import {
   Box,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Collapse,
   Typography,
   InputBase,
   Avatar,
   Menu,
   MenuItem,
-  Divider,
   Badge
 } from '@mui/material'
 import {
   Search as SearchIcon,
   Notifications,
-  ExpandLess,
-  ExpandMore,
-  Home,
-  People,
-  Report,
-  PostAdd,
-  ListAlt
+  ExpandMore
 } from '@mui/icons-material'
 import ListSupports from './Dashboard/ListSupports'
 
+const PAGE_TITLES = {
+  '/adminManage': 'Tổng quan',
+  '/adminManage/manage-users/list': 'Người dùng',
+  '/adminManage/manage-users/add': 'Thêm người dùng',
+  '/adminManage/manage-posts/list': 'Duyệt bài đăng',
+  '/adminManage/manage-posts/add': 'Thêm đăng tin',
+  '/adminManage/manage-supports/list': 'Báo cáo vi phạm'
+}
+
 const AdminManage = ({ setIsAdmin }) => {
-  const [openLandlords, setOpenLandlords] = useState(false)
-  const [openUsers, setOpenUsers] = useState(false)
-  const [openPosts, setOpenPosts] = useState(false)
-  const [openReports, setOpenReports] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { setUsername, setAvatar, setToken } = useAuth()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
-  const [user] = useState(JSON.parse(sessionStorage.getItem('user')))
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false)
+  const [changePasswordLoading, setChangePasswordLoading] = useState(false)
+  const [user] = useState(() => JSON.parse(sessionStorage.getItem('user') || 'null'))
+  const pageTitle = PAGE_TITLES[location.pathname] || 'Tổng quan'
+
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget)
   }
@@ -51,25 +55,93 @@ const AdminManage = ({ setIsAdmin }) => {
     setAnchorEl(null)
   }
 
-  const isMenuOpen = Boolean(anchorEl)
-  const handleToggle = (menu) => {
-    switch (menu) {
-      case 'landlords':
-        setOpenLandlords(!openLandlords)
-        break
-      case 'users':
-        setOpenUsers(!openUsers)
-        break
-      case 'posts':
-        setOpenPosts(!openPosts)
-        break
-      case 'reports':
-        setOpenReports(!openReports)
-        break
-      default:
-        break
+  const resetClientSession = useCallback(() => {
+    sessionStorage.removeItem('user')
+    setToken(null)
+    setUsername('')
+    setAvatar('')
+    setIsAdmin(false)
+  }, [setAvatar, setIsAdmin, setToken, setUsername])
+
+  const handleOpenChangePassword = () => {
+    handleMenuClose()
+    setChangePasswordOpen(true)
+  }
+
+  const handleCloseChangePassword = () => {
+    if (changePasswordLoading) return
+    setChangePasswordOpen(false)
+  }
+
+  const handleChangePasswordSubmit = async ({ oldPassword, newPassword }) => {
+    const username = user?.username || getStoredAuthUser()?.username
+
+    if (!username) {
+      throw { response: { data: { message: 'Không tìm thấy thông tin tài khoản, vui lòng đăng nhập lại.' } } }
+    }
+
+    setChangePasswordLoading(true)
+
+    try {
+      await changePassword({ username, oldPassword, newPassword })
+      setChangePasswordOpen(false)
+      Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: 'Thay đổi mật khẩu thành công!'
+      })
+    } finally {
+      setChangePasswordLoading(false)
     }
   }
+
+  const handleLogout = async () => {
+    handleMenuClose()
+
+    const token = getStoredAuthUser()?.token ?? user?.token ?? null
+
+    if (!token) {
+      resetClientSession()
+      navigate('/login')
+      Swal.fire({
+        icon: 'warning',
+        title: 'Thông báo',
+        text: 'Không tìm thấy token, vui lòng đăng nhập lại.'
+      })
+      return
+    }
+
+    try {
+      const response = await logoutRequest(token)
+      resetClientSession()
+      navigate('/login')
+      Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: response?.message || 'Đăng xuất thành công!'
+      })
+    } catch (error) {
+      if (error?.response?.status === 401) {
+        resetClientSession()
+        navigate('/login')
+        Swal.fire({
+          icon: 'success',
+          title: 'Thành công',
+          text: 'Đăng xuất thành công!'
+        })
+        return
+      }
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Đăng xuất thất bại',
+        text: error?.response?.data?.message || 'Đã xảy ra lỗi khi thực hiện đăng xuất.'
+      })
+    }
+  }
+
+  const isMenuOpen = Boolean(anchorEl)
+
   useEffect(() => {
     setIsAdmin(true)
   }, [setIsAdmin])
@@ -81,115 +153,34 @@ const AdminManage = ({ setIsAdmin }) => {
   return (
     <div className="wrapper">
       <aside id="sidebar" className={isCollapsed ? 'collapsed' : ''}>
-        <Box sx={{ padding: 2 }}>
-          <Box display="flex" justifyContent="center" marginBottom={2}>
-            <img src="../logo.png" alt="Logo" className="imglogo" style={{ width: '80%' }} />
-          </Box>
-
-          <Typography variant="subtitle2" color="textSecondary" sx={{ marginBottom: 1 }}>
-            Navigation
-          </Typography>
-
-          <List component="nav">
-            <ListItemButton component={Link} to="/adminManage">
-              <ListItemIcon>
-                <Home />
-              </ListItemIcon>
-              <ListItemText primary="Trang Chủ" />
-            </ListItemButton>
-            {/* Users Management */}
-            <ListItemButton onClick={() => handleToggle('users')}>
-              <ListItemIcon>
-                <People />
-              </ListItemIcon>
-              <ListItemText primary="Quản Lý Người Dùng" />
-              {openUsers ? <ExpandLess /> : <ExpandMore />}
-            </ListItemButton>
-            <Collapse in={openUsers} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-                <ListItemButton component={Link} to="/adminManage/manage-users/add" sx={{ pl: 4 }}>
-                  <ListItemIcon>
-                    <PostAdd />
-                  </ListItemIcon>
-                  <ListItemText primary="Thêm Người Dùng" />
-                </ListItemButton>
-                <ListItemButton component={Link} to="/adminManage/manage-users/list" sx={{ pl: 4 }}>
-                  <ListItemIcon>
-                    <ListAlt />
-                  </ListItemIcon>
-                  <ListItemText primary="Danh Sách Người Dùng" />
-                </ListItemButton>
-              </List>
-            </Collapse>
-
-            {/* Posts Management */}
-            <ListItemButton onClick={() => handleToggle('posts')}>
-              <ListItemIcon>
-                <PostAdd />
-              </ListItemIcon>
-              <ListItemText primary="Quản Lý Đăng Tin" />
-              {openPosts ? <ExpandLess /> : <ExpandMore />}
-            </ListItemButton>
-            <Collapse in={openPosts} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-                <ListItemButton component={Link} to="/adminManage/manage-posts/add" sx={{ pl: 4 }}>
-                  <ListItemIcon>
-                    <PostAdd />
-                  </ListItemIcon>
-                  <ListItemText primary="Thêm Đăng Tin" />
-                </ListItemButton>
-                <ListItemButton component={Link} to="/adminManage/manage-posts/list" sx={{ pl: 4 }}>
-                  <ListItemIcon>
-                    <ListAlt />
-                  </ListItemIcon>
-                  <ListItemText primary="Danh Sách Đăng Tin" />
-                </ListItemButton>
-              </List>
-            </Collapse>
-
-            {/* Reports Management */}
-            <ListItemButton onClick={() => handleToggle('reports')}>
-              <ListItemIcon>
-                <Report />
-              </ListItemIcon>
-              <ListItemText primary="Hỗ Trợ Tìm Phòng" />
-              {openReports ? <ExpandLess /> : <ExpandMore />}
-            </ListItemButton>
-            <Collapse in={openReports} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-                <ListItemButton component={Link} to="/adminManage/manage-supports/list" sx={{ pl: 4 }}>
-                  <ListItemIcon>
-                    <PostAdd />
-                  </ListItemIcon>
-                  <ListItemText primary="Tất Cả Danh Sách" />
-                </ListItemButton>
-              </List>
-            </Collapse>
-          </List>
-        </Box>
+        <AdminSidebar />
       </aside>
-      <div className="main" style={{width:'1500px'}}>
-        <nav className="navbar navbar-expand px-3 border-bottom d-flex justify-content-between align-items-center">
+      <div className="main admin-manage-main">
+        <nav className="admin-top-header navbar navbar-expand px-3 d-flex justify-content-between align-items-center">
           {/* Sidebar Toggle Button */}
           <button className="btn" type="button" onClick={toggleSidebar}>
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          {/* Search Bar */}
+          <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#111827', minWidth: 120 }}>
+            {pageTitle}
+          </Typography>
+
           <Box
             sx={{
               flexGrow: 1,
               display: 'flex',
               alignItems: 'center',
-              maxWidth: 400,
+              maxWidth: 420,
               mx: 2,
-              px: 2,
-              py: 0.5,
-              bgcolor: 'background.paper',
-              borderRadius: 1
+              px: 1.5,
+              py: 0.75,
+              bgcolor: '#f5f7fa',
+              borderRadius: '8px',
+              border: '0.5px solid #e5e7eb'
             }}>
-            <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
-            <InputBase placeholder="Tìm kiếm..." fullWidth />
+            <SearchIcon sx={{ mr: 1, color: '#9ca3af', fontSize: 20 }} />
+            <InputBase placeholder="Tìm kiếm..." fullWidth sx={{ fontSize: 13 }} />
           </Box>
 
           {/* Right Actions */}
@@ -229,36 +220,27 @@ const AdminManage = ({ setIsAdmin }) => {
             transformOrigin={{ vertical: 'top', horizontal: 'center' }}
             open={isMenuOpen}
             onClose={handleMenuClose}>
-            <MenuItem onClick={handleMenuClose}>
-              <i className="bi bi-person" style={{ marginRight: '8px' }}></i> Profile
-            </MenuItem>
-
-            <Divider />
-            <MenuItem onClick={handleMenuClose}>
-              <i className="bi bi-gear" style={{ marginRight: '8px' }}></i> Cài đặt
-            </MenuItem>
-            <MenuItem onClick={handleMenuClose}>
-              <i className="bi bi-clock-history" style={{ marginRight: '8px' }}></i> Lịch sử
-            </MenuItem>
-            <MenuItem onClick={handleMenuClose}>
-              <i className="bi bi-question-circle" style={{ marginRight: '8px' }}></i> Trợ giúp
-            </MenuItem>
-            <MenuItem onClick={handleMenuClose}>
+            <MenuItem onClick={handleOpenChangePassword}>
               <i className="bi bi-lock" style={{ marginRight: '8px' }}></i> Đổi Mật Khẩu
             </MenuItem>
-            <MenuItem onClick={handleMenuClose}>
+            <MenuItem onClick={handleLogout}>
               <i className="bi bi-box-arrow-right" style={{ marginRight: '8px' }}></i> Đăng xuất
             </MenuItem>
           </Menu>
+
+          <ChangePasswordModal
+            open={changePasswordOpen}
+            loading={changePasswordLoading}
+            onClose={handleCloseChangePassword}
+            onSubmit={handleChangePasswordSubmit}
+          />
         </nav>
 
-        <main className="content px-2 py-2" style={{ backgroundColor: 'rgb(228, 238, 245)' }}>
-          <div className="container-fluid">
+        <main className="content admin-manage-content">
+          <div className="container-fluid admin-manage-container">
             <Routes>
               <Route index element={<DashboardHome />} />
-              <Route path="manage-users/add" element={<AddUsers />} />
               <Route path="manage-users/list" element={<ListUsers />} />
-              <Route path="manage-posts/add" element={<AddPosts />} />
               <Route path="manage-posts/list" element={<ListPosts />} />
               <Route path="manage-supports/list" element={<ListSupports />} />
             </Routes>

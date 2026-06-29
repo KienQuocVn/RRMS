@@ -8,12 +8,10 @@ const DashboardIndex = lazy(() => import('../pages/admin/ManagerHome/DashboardIn
 const ManagerMyAccount = lazy(() => import('../pages/admin/ManagerMyAccount/ManagerMyAccount'))
 const ManagerCompanyAT = lazy(() => import('../pages/admin/ManagerCompanyAT/ManagerCompanyAT'))
 const ManagerSettings = lazy(() => import('../pages/admin/ManagerSettings/ManagerSettings'))
-const AdminManagerGroup = lazy(() => import('../pages/admin/AdminManagerGroup'))
-const AdminManagerBoard = lazy(() => import('../pages/admin/AdminManageBoard'))
+const AdminManagerBoard = lazy(() => import('../pages/admin/AdminManage/Dashboard/ListPosts'))
 const AdminManageBoker = lazy(() => import('../pages/admin/ManagerBroker/AdminManageBoker'))
 const PostRooms = lazy(() => import('../pages/admin/ManagerBulletinBoards/PostBulletinBoards'))
 const AdminManage = lazy(() => import('../pages/admin/AdminManage/AdminManage'))
-const RoomManagement = lazy(() => import('../pages/admin/AdminManage/RoomManagement'))
 const InvoiceManager = lazy(() => import('../pages/admin/NavContentAdmin/InvoiceManager/InvoiceManager'))
 const ServiceManager = lazy(() => import('../pages/admin/NavContentAdmin/ServiceManager/ServiceManager'))
 const AssetManager = lazy(() => import('../pages/admin/NavContentAdmin/AssetManager'))
@@ -148,22 +146,6 @@ const AdminRoutes = ({ auth, motel }) => {
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
             <AdminStatis setIsAdmin={setIsAdmin} />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/roomManagement"
-        element={
-          <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <RoomManagement setIsAdmin={setIsAdmin} />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/AdminManagerGroup"
-        element={
-          <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <AdminManagerGroup setIsAdmin={setIsAdmin} />
           </ProtectedRoute>
         }
       />

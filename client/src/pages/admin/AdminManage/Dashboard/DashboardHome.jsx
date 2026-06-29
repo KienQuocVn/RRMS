@@ -1,297 +1,80 @@
-import { Grid, Card, CardContent, Typography, Stack, Box } from '@mui/material'
-import { ReactTabulator } from 'react-tabulator'
-import { BarChart } from '@mui/x-charts/BarChart'
-import { LineChart } from '@mui/x-charts/LineChart'
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-import { env } from '~/configs/environment'
+import { Box, CircularProgress } from '@mui/material'
+import Grid from '@mui/material/Grid2'
+import { DASHBOARD_COLORS } from './constants/dashboardTheme'
+import DashboardPageHeader from './components/DashboardPageHeader'
+import StatCardsRow from './components/StatCardsRow'
+import PostMonthlyBarChart from './components/charts/PostMonthlyBarChart'
+import PostStatusDonutChart from './components/charts/PostStatusDonutChart'
+import NewUsersLineChart from './components/charts/NewUsersLineChart'
+import TopCitiesBarChart from './components/charts/TopCitiesBarChart'
+import PendingPostsTable from './components/PendingPostsTable'
+import RecentActivityFeed from './components/RecentActivityFeed'
+import { useDashboardData } from './hooks/useDashboardData'
 
 const DashboardHome = () => {
-  const userData = JSON.parse(sessionStorage.getItem('user')) // Lấy dữ liệu người dùng từ session storage
-  const token = userData?.token // Lấy token
-  const [cardData, setCardData] = useState([])
-  const [weeklyData, setWeeklyData] = useState([])
-  const [monthlyDataThisYear, setMonthlyDataThisYear] = useState([])
-  const [monthlyDataLastYear, setMonthlyDataLastYear] = useState([])
-  const [totalMotelbyMonth, setTotalMotelbyMonth] = useState(Array(12).fill(0)) // Khởi tạo với 0
-  const [hosts, setHosts] = useState([])
+  const {
+    loading,
+    stats,
+    postsByMonth,
+    postStatus,
+    hostsMonthly,
+    tenantsMonthly,
+    topCities,
+    pendingPosts,
+    activities,
+    approvePost,
+    rejectPost
+  } = useDashboardData()
 
-  useEffect(() => {
-    const fetchCardData = async () => {
-      try {
-        const totalAccountsResponse = await axios.get(`${env.API_URL}/api/v1/statistics/total-accounts`, {
-          headers: {
-            Authorization: `Bearer ${token}` // Thêm token vào header
-          }
-        })
-        const totalTenantsResponse = await axios.get(`${env.API_URL}/api/v1/statistics/total-tenants`, {
-          headers: {
-            Authorization: `Bearer ${token}` // Thêm token vào header
-          }
-        })
-        const totalHostAccountsResponse = await axios.get(`${env.API_URL}/api/v1/statistics/total-host-accounts`, {
-          headers: {
-            Authorization: `Bearer ${token}` // Thêm token vào header
-          }
-        })
-        const totalMotelsResponse = await axios.get(`${env.API_URL}/api/v1/statistics/total-motels`, {
-          headers: {
-            Authorization: `Bearer ${token}` // Thêm token vào header
-          }
-        })
-        const totalAccWeekresponse = await axios.get(`${env.API_URL}/api/v1/statistics/total-account-last-week`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
-        console.log('Dữ liệu nhận được từ API:', totalAccWeekresponse.data) // Kiểm tra dữ liệu
-
-        // Gọi API tổng số nhà trọ theo từng tháng
-        const monthlyMotelsResponse = await axios.get(`${env.API_URL}/api/v1/statistics/total-motel-by-month`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-
-        // Cập nhật dữ liệu tháng
-        const monthlyData = Array(12).fill(0) // Khởi tạo mảng với 12 tháng
-        for (let month in monthlyMotelsResponse.data) {
-          monthlyData[month - 1] = monthlyMotelsResponse.data[month] // -1 vì chỉ số mảng bắt đầu từ 0
-        }
-
-        setTotalMotelbyMonth(monthlyData)
-
-        if (typeof totalAccWeekresponse.data === 'object' && !Array.isArray(totalAccWeekresponse.data)) {
-          // Lấy các giá trị số từ đối tượng
-          const data = Object.values(totalAccWeekresponse.data)
-          setWeeklyData(data)
-        } else {
-          console.error('Dữ liệu không phải là đối tượng:', totalAccWeekresponse.data)
-        }
-
-        setCardData([
-          {
-            title: 'Tổng Số Người Dùng',
-            value: totalAccountsResponse.data + totalTenantsResponse.data,
-            percent: '59.3%',
-            extra: '35,000'
-          },
-          { title: 'Tổng Số Chủ Trọ', value: totalHostAccountsResponse.data, percent: '25.5%', extra: '2,500' },
-          { title: 'Tổng Số Nhà Trọ', value: totalMotelsResponse.data, percent: '40.2%', extra: '1,500' },
-          { title: 'Tổng Số Người Thuê', value: totalTenantsResponse.data, percent: '15.7%', extra: '$2,000' }
-        ])
-
-        // Fetch dữ liệu tài khoản theo tháng
-        const monthlyAccountsThisYearResponse = await axios.get(`${env.API_URL}/api/v1/statistics/accounts-total-this-year`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        const monthlyAccountsLastYearResponse = await axios.get(`${env.API_URL}/api/v1/statistics/accounts-total-last-year`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-
-        // Fetch dữ liệu chủ trọ trong 7 ngày gần đây
-        const recentHostsResponse = await axios.get(`${env.API_URL}/api/v1/statistics/account-recent-hosts`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-
-        // Cập nhật danh sách chủ trọ
-        setHosts(recentHostsResponse.data)
-        console.log('dataaaa:', recentHostsResponse.data)
-        // Cập nhật dữ liệu tháng
-        setMonthlyDataThisYear(monthlyAccountsThisYearResponse.data)
-        setMonthlyDataLastYear(monthlyAccountsLastYearResponse.data)
-
-        setCardData([
-          {
-            title: 'Tổng Số Người Dùng',
-            value: totalAccountsResponse.data + totalTenantsResponse.data,
-            percent: '59.3%',
-            extra: '35,000'
-          },
-          { title: 'Tổng Số Chủ Trọ', value: totalHostAccountsResponse.data, percent: '25.5%', extra: '2,500' },
-          { title: 'Tổng Số Nhà Trọ', value: totalMotelsResponse.data, percent: '40.2%', extra: '1,500' },
-          { title: 'Tổng Số Người Thuê', value: totalTenantsResponse.data, percent: '15.7%', extra: '$2,000' }
-        ])
-      } catch (error) {
-        console.error('Error fetching card data:', error)
-      }
-    }
-
-    fetchCardData()
-  }, [])
-
-  const columns1 = [
-    { title: 'STT', field: 'STT', hozAlign: 'center', minWidth: 50, editor: 'input' },
-    { title: 'Tên Chủ Trọ', field: 'name', hozAlign: 'center', minWidth: 150, editor: 'input' },
-    { title: 'Số Điện Thoại', field: 'phone', hozAlign: 'center', minWidth: 200, editor: 'input' },
-    { title: 'Email', field: 'email', hozAlign: 'center', minWidth: 140, editor: 'input' },
-    { title: 'CCCD', field: 'cccd', hozAlign: 'center', minWidth: 120, editor: 'input' },
-    { title: 'Ngày tạo', field: 'createdDate', hozAlign: 'center', minWidth: 120, editor: 'input' }
-  ]
-
-  const data1 = hosts.map((host, index) => ({
-    STT: index + 1, // Tự động tăng số thứ tự
-    name: host.username,
-    phone: host.phone,
-    email: host.email,
-    cccd: host.cccd,
-    createdDate: host.createdDate
-  }))
-
-  const options = {
-    height: '350px',
-    rowHeight: 30,
-    movableColumns: true,
-    resizableRows: true,
-    movableRows: true,
-    resizableColumns: true,
-    resizableColumnFit: true,
-    layout: 'fitColumns',
-    responsiveLayout: 'collapse'
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 320 }}>
+        <CircularProgress sx={{ color: DASHBOARD_COLORS.primary }} />
+      </Box>
+    )
   }
 
-  // const cardData = [
-  //   { title: 'Tổng số lượt xem trang', value: '100', extra: '35,000' },
-  //   { title: 'Tổng số người dùng', value: '10', extra: '2,500' },
-  //   { title: 'Người dùng mới đã đăng ký', value: '5', extra: '1,500' },
-  //   { title: 'Doanh thu', value: '15.000.000 VNĐ', extra: '$2,000' },
-  // ];
-
-  const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  const seriesThisYear = labels.map((_, index) => monthlyDataThisYear[index] || 0)
-  const seriesLastYear = labels.map((_, index) => monthlyDataLastYear[index] || 0)
-
   return (
-    <div>
-      <Grid container spacing={2}>
-        {cardData.map((card, index) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-            <Card elevation={0}>
-              <CardContent>
-                <Box
-                  sx={{
-                    border: '1px solid #ccc',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                    padding: 2
-                  }}>
-                  <Stack spacing={2}>
-                    <h6>{card.title}</h6>
-                    <Grid container alignItems="center" justifyContent="space-between">
-                      <div>
-                        <h4>{card.value}</h4>
-                      </div>
-                    </Grid>
-                    <Typography variant="caption">
-                      You made an extra{' '}
-                      <Typography component="span" variant="caption" color="text.primary">
-                        {card.extra}
-                      </Typography>{' '}
-                      this year
-                    </Typography>
-                  </Stack>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
+    <Box
+      sx={{
+        fontFamily: '"Inter", system-ui, -apple-system, sans-serif',
+        bgcolor: DASHBOARD_COLORS.pageBg,
+        minHeight: '100%',
+        mx: -2,
+        mt: -2,
+        px: { xs: 2, md: 3 },
+        py: { xs: 2, md: 3 }
+      }}>
+      <DashboardPageHeader />
+      <StatCardsRow stats={stats} />
+
+      <Grid container spacing={2} sx={{ mb: 2 }}>
+        <Grid size={{ xs: 12, lg: 8 }}>
+          <PostMonthlyBarChart data={postsByMonth} />
+        </Grid>
+        <Grid size={{ xs: 12, lg: 4 }}>
+          <PostStatusDonutChart postStatus={postStatus} />
+        </Grid>
       </Grid>
 
-      <Grid container spacing={2}>
-        {/* Cột Biểu đồ Đường */}
-        <Grid item md={7}>
-          <Box mt={4}>
-            <Typography variant="h6" gutterBottom>
-              Số lượng người tạo tài khoản
-            </Typography>
-            <Card>
-              <CardContent style={{ height: '300px' }}>
-                <LineChart
-                  xAxis={[{ scaleType: 'point', data: labels }]}
-                  series={[
-                    { data: seriesThisYear, label: 'Tài Khoản Năm Này', area: true, color: 'rgba(75,192,192,1)' },
-                    { data: seriesLastYear, label: 'Tài Khoản Năm Trước', area: true, color: 'rgba(255,99,132,1)' }
-                  ]}
-                  height={260}
-                  margin={{ top: 20, right: 20, bottom: 30, left: 45 }}
-                />
-              </CardContent>
-            </Card>
-          </Box>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
+        <Grid size={{ xs: 12, lg: 6 }}>
+          <NewUsersLineChart hostsMonthly={hostsMonthly} tenantsMonthly={tenantsMonthly} />
         </Grid>
-
-        {/* Cột Biểu đồ Cột */}
-        <Grid item md={5}>
-          <Box mt={4}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mt={4}>
-              <Typography variant="h6" style={{ marginBottom: '6px' }}>
-                Thống kê tuần trước
-              </Typography>
-              <h5 style={{ color: 'rgb(22, 119, 255)' }}>T 10</h5>
-            </Box>
-            <Card>
-              <CardContent>
-                <Box width="100%" height="286px">
-                  <BarChart
-                    xAxis={[{ scaleType: 'band', data: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'] }]}
-                    series={[
-                      {
-                        data: weeklyData,
-                        fill: 'rgba(92, 219, 211, 0.85)',
-                        border: {
-                          color: 'rgba(0, 0, 0, 0.5)',
-                          width: 2
-                        }
-                      }
-                    ]}
-                    width={450}
-                    height={300}
-                  />
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
+        <Grid size={{ xs: 12, lg: 6 }}>
+          <TopCitiesBarChart cities={topCities} />
         </Grid>
       </Grid>
 
       <Grid container spacing={2}>
-        <Grid item md={8}>
-          {/* Đơn hàng */}
-          <Typography className="mt-3" variant="h6">
-            Chủ trọ mới tạo gần đây
-          </Typography>
-          <Box
-            className="mt-3"
-            sx={{
-              border: '1px', // Đặt border cho toàn bộ bảng
-              borderRadius: '4px', // Bo tròn góc nếu cần
-              overflow: 'hidden', // Để tránh pillowing border
-              bgcolor: 'background.paper' // Tùy chọn: thêm nền
-            }}>
-            <ReactTabulator columns={columns1} data={data1} options={options} />
-          </Box>
+        <Grid size={{ xs: 12, lg: 7 }}>
+          <PendingPostsTable posts={pendingPosts} onApprove={approvePost} onReject={rejectPost} />
         </Grid>
-
-        {/* Cột Biểu đồ Cột */}
-        <Grid item md={4}>
-          <Typography className="mt-3" variant="h6">
-            Tổng số nhà trọ
-          </Typography>
-
-          {/*  */}
-          <Box>
-            <LineChart
-              xAxis={[{ data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }]}
-              series={[
-                {
-                  data: totalMotelbyMonth
-                }
-              ]}
-              // width={500}
-              height={300}
-            />
-          </Box>
+        <Grid size={{ xs: 12, lg: 5 }}>
+          <RecentActivityFeed activities={activities} />
         </Grid>
       </Grid>
-    </div>
+    </Box>
   )
 }
 

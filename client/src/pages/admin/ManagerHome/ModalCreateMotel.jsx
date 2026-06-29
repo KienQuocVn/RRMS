@@ -532,8 +532,8 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <FormControl fullWidth required size="small">
-                <InputLabel>Loại nhà trọ</InputLabel>
-                <Select name="typeRoom" value={motel.typeRoom} onChange={handleInputChange} label="Loại nhà trọ">
+                <InputLabel>Danh mục nhà trọ</InputLabel>
+                <Select name="typeRoom" value={motel.typeRoom} onChange={handleInputChange} label="Danh mục nhà trọ">
                   {typeRooms.map(t => <MenuItem key={t.typeRoomId} value={t.typeRoomId}>{t.name}</MenuItem>)}
                 </Select>
               </FormControl>

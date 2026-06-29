@@ -173,7 +173,6 @@
       "vaBanner": "Nạp Đồng Tốt giá trị linh hoạt",
       "sections": {
         "orders": "Quản lý đơn hàng",
-        "utilities": "Tiện ích",
         "paidServices": "Dịch vụ trả phí",
         "offers": "Ưu đãi, khuyến mãi",
         "others": "Khác"
@@ -207,7 +206,9 @@
       "emptyActivity": "Không có hoạt động nào.",
       "emptyNews": "Chúng tôi không có cập nhật nào. Vui lòng kiểm tra lại sau"
     },
-    "postNow": "ĐĂNG TIN"
+    "postNow": "QUẢN LÝ NHÀ",
+    "manageAndApprovePosts": "QUẢN LÝ & DUYỆT TIN",
+    "myRooms": "PHÒNG CỦA TÔI"
   },
   "footer": {
     "linksTitle": "Liên kết",

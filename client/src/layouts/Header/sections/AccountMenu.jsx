@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Box, Avatar } from '@mui/material'
 import { useTranslation } from 'react-i18next'
+import { getStoredAuthUser } from '~/apis/accountAPI'
 
 const MenuItem = ({ to, icon, label, highlight, badge, onClick }) => (
   <Box sx={{ p: 0 }}>
@@ -35,18 +36,13 @@ const MenuItem = ({ to, icon, label, highlight, badge, onClick }) => (
   </Box>
 )
 
-const SectionLabel = ({ label }) => (
-  <Box sx={{ height: 38, bgcolor: '#f5f5f5', px: 1.5, py: '10px 0 10px' }}>
-    <Box
-      component="span"
-      sx={{ color: '#777777', lineHeight: '18px', fontSize: '0.875rem', fontWeight: 700, display: 'block' }}>
-      {label}
-    </Box>
-  </Box>
-)
 
 export default function AccountMenu({ username, avatar, tokenExists, onMenuClose, onLogout }) {
   const { t } = useTranslation()
+  const userRoles = getStoredAuthUser()?.roles ?? []
+  const isCustomer = userRoles.includes('CUSTOMER')
+  const isHostOrAdmin = userRoles.includes('HOST') || userRoles.includes('ADMIN')
+  const showCustomerMenuItems = tokenExists && isCustomer && !isHostOrAdmin
 
   return (
     <Box
@@ -90,9 +86,8 @@ export default function AccountMenu({ username, avatar, tokenExists, onMenuClose
         )}
       </Box>
 
-      {tokenExists && (
+      {showCustomerMenuItems && (
         <>
-          <SectionLabel label={t('header.accountMenu.sections.utilities')} />
           <MenuItem
             to="/heart"
             icon="/menu-saved-ad.svg"
@@ -107,7 +102,7 @@ export default function AccountMenu({ username, avatar, tokenExists, onMenuClose
           />
         </>
       )}
-      {tokenExists && (
+      {showCustomerMenuItems && (
         <MenuItem
           to="/profile"
           icon="/setting.svg"
