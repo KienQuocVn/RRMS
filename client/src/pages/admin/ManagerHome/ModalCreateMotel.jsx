@@ -22,7 +22,6 @@ import {
   Chip,
   Alert,
   CircularProgress,
-  InputAdornment,
 } from '@mui/material'
 import HomeIcon from '@mui/icons-material/Home'
 import CloseIcon from '@mui/icons-material/Close'
@@ -52,6 +51,15 @@ import {
   parseVndNumber,
 } from '~/utils/currencyInputUtils'
 import AddressMapPicker from './components/AddressMapPicker'
+
+// Helper: Swal hiển thị trên Dialog MUI (zIndex Dialog mặc định là 1300)
+const swal = (opts) => Swal.fire({
+  ...opts,
+  willOpen: () => {
+    const container = Swal.getContainer()
+    if (container) container.style.zIndex = '99999'
+  },
+})
 
 const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
   const navigate = useNavigate()
@@ -378,7 +386,7 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
   const validateMotelArea = () => {
     const totalArea = Number(motel.area)
     if (!motel.area || Number.isNaN(totalArea) || totalArea <= 0) {
-      Swal.fire({
+      swal({
         icon: 'warning',
         title: 'Thiếu thông tin',
         text: 'Vui lòng nhập tổng diện tích nhà trọ (m²) theo sổ đỏ.'
@@ -392,7 +400,7 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
     const totalMotelArea = Number(motel.area)
     const excelTotalArea = jsonData.reduce((sum, item) => sum + (Number(item.area) || 0), 0)
     if (excelTotalArea > totalMotelArea) {
-      Swal.fire({
+      swal({
         icon: 'error',
         title: 'Vượt quá diện tích',
         text: `Tổng diện tích các phòng trong Excel (${excelTotalArea} m²) lớn hơn diện tích căn nhà (${totalMotelArea} m²).`
@@ -410,10 +418,10 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
     try {
       const res = await createMotel(payload)
       await handleCreateServices(res.data.result.motelId)
-      Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đã tạo nhà trọ thành công!' })
+      swal({ icon: 'success', title: 'Thành công', text: 'Đã tạo nhà trọ thành công!' })
       setTimeout(() => window.location.reload(), 1400)
     } catch (error) {
-      Swal.fire({ icon: 'error', title: 'Lỗi', text: getApiErrorMessage(error, 'Có lỗi xảy ra khi tạo nhà trọ') })
+      swal({ icon: 'error', title: 'Lỗi', text: getApiErrorMessage(error, 'Có lỗi xảy ra khi tạo nhà trọ') })
     }
   }
 
@@ -434,12 +442,12 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
           console.error('Lỗi tại dòng', i + 2, error)
         }
       }
-      if (success) Swal.fire({ icon: 'success', title: 'Thành công', text: 'Tạo phòng từ Excel thành công!' })
-      else Swal.fire({ icon: 'warning', title: 'Thông báo', text: 'Một số phòng bị lỗi khi tạo.' })
+      if (success) swal({ icon: 'success', title: 'Thành công', text: 'Tạo phòng từ Excel thành công!' })
+      else swal({ icon: 'warning', title: 'Thông báo', text: 'Một số phòng bị lỗi khi tạo.' })
       navigate(`/quanlytro/${mId}`)
       onClose()
     } catch (error) {
-      Swal.fire({ icon: 'error', title: 'Lỗi', text: getApiErrorMessage(error, 'Có lỗi xảy ra') })
+      swal({ icon: 'error', title: 'Lỗi', text: getApiErrorMessage(error, 'Có lỗi xảy ra') })
     }
   }
 
@@ -447,7 +455,7 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
     const totalRooms = parseInt(dataCreateAuto.totalRoomCreate, 10)
     const totalFloors = parseInt(dataCreateAuto.typeMotelCreate, 10)
     if (isNaN(totalRooms) || isNaN(totalFloors)) {
-      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Vui lòng nhập đúng số lượng' })
+      swal({ icon: 'error', title: 'Lỗi', text: 'Vui lòng nhập đúng số lượng' })
       return
     }
 
@@ -466,22 +474,22 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
       
       toast.info('Đang tạo phòng tự động...')
       await Promise.all(rooms.map(r => createRoom(r)))
-      Swal.fire({ icon: 'success', title: 'Thành công', text: 'Tạo phòng thành công' })
+      swal({ icon: 'success', title: 'Thành công', text: 'Tạo phòng thành công' })
       navigate(`/quanlytro/${mId}`)
       onClose()
     } catch (error) {
-      Swal.fire({ icon: 'error', title: 'Lỗi', text: getApiErrorMessage(error, 'Có lỗi xảy ra') })
+      swal({ icon: 'error', title: 'Lỗi', text: getApiErrorMessage(error, 'Có lỗi xảy ra') })
     }
   }
 
   const handleSave = () => {
     if (!motel.motelName || !motel.typeRoom || !selectedProvince || !selectedWard || !addressDetail.trim()) {
-      Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đủ các trường bắt buộc (*)' })
+      swal({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đủ các trường bắt buộc (*)' })
       return
     }
 
     if (lat == null || lng == null) {
-      Swal.fire({
+      swal({
         icon: 'warning',
         title: 'Thiếu vị trí bản đồ',
         text: 'Vui lòng xác định vị trí trên bản đồ (kéo marker hoặc click trên bản đồ nếu không tìm thấy địa chỉ).'
@@ -498,11 +506,11 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
     } else {
       updateMotel(MotelId, buildMotelPayload())
         .then(() => {
-          Swal.fire({ icon: 'success', title: 'Thành công', text: 'Cập nhật thành công!' })
+          swal({ icon: 'success', title: 'Thành công', text: 'Cập nhật thành công!' })
           setTimeout(() => window.location.reload(), 1400)
         })
         .catch((error) =>
-          Swal.fire({ icon: 'error', title: 'Lỗi', text: getApiErrorMessage(error, 'Có lỗi xảy ra') })
+          swal({ icon: 'error', title: 'Lỗi', text: getApiErrorMessage(error, 'Có lỗi xảy ra') })
         )
     }
   }
@@ -726,7 +734,6 @@ const ModalCreateMotel = ({ username, MotelId, open, onClose }) => {
                 name="averagePrice"
                 value={formatVndInput(motel.averagePrice)}
                 onChange={handleInputChange}
-                InputProps={{ endAdornment: <InputAdornment position="end">đ</InputAdornment> }}
                 {...getVndInputFieldProps()}
               />
             </Grid>

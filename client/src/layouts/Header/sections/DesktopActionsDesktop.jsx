@@ -60,7 +60,7 @@ export default function DesktopActionsDesktop({
 
   const actionButton = (() => {
     if (isAdmin) {
-      return { labelKey: 'header.manageAndApprovePosts', to: '/adminManage/manage-posts/list' }
+      return { labelKey: 'header.manageAndApprovePosts', to: '/adminManage' }
     }
     if (isHost) {
       return { labelKey: 'header.postNow', to: `/quanlytro/${motelId}` }

@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import jakarta.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +19,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Table(name = "rules")
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Rule {
 
     @Id

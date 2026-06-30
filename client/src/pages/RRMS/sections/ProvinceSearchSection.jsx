@@ -13,7 +13,6 @@ function ProvinceSearchSection({ items, onSelectProvince }) {
   return (
     <Box id="province-search" sx={{ mt: 7 }}>
       <SectionHeading
-        eyebrow="Province Search"
         title="Tìm phòng trọ theo tỉnh thành"
         description="Danh sách được lấy trực tiếp từ dữ liệu đang hoạt động trên hệ thống để bạn đi từ phạm vi lớn đến cụ thể hơn."
       />

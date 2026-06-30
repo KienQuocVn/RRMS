@@ -42,10 +42,12 @@ import { getProfileByUsername, introspect } from '~/apis/accountAPI'
 import { getBulletinBoard, postBulletinBoard, updateBulletinBoard } from '~/apis/bulletinBoardAPI'
 import { deleteImageFromApi } from '~/apis/bulletinBoardImageAPI'
 import { getMotelById } from '~/apis/motelAPI'
+import { getRoomByMotelId } from '~/apis/roomAPI'
 import { getAllTypeRoom } from '~/apis/typeRoomAPI'
 import { normalizeProfileResponse } from '~/apis/profileAPI'
 import { useMotel } from '~/hooks/useMotel'
-import { isValidRouteParam } from '~/utils/apiAdapters'
+import { isReserveAPlaceStatus, isValidRouteParam } from '~/utils/apiAdapters'
+import { formatRoomGroupLabel } from '~/utils/roomGroupUtils'
 
 const style = {
   position: 'absolute',
@@ -101,6 +103,23 @@ const validationSchema = Yup.object({
 })
 
 const DEFAULT_FREE_HOURS = 'Giờ giấc tự do'
+
+const isVacantRoom = (room) => {
+  if (!room) return false
+
+  const roomStatus = String(room.status ?? '').toUpperCase()
+  if (roomStatus && roomStatus !== 'AVAILABLE') return false
+
+  const contractStatus = room.latestContract?.status
+  if (contractStatus === 'ACTIVE' || contractStatus === 'IATExpire' || contractStatus === 'ReportEnd') {
+    return false
+  }
+
+  const reserveStatus = room.reserveAPlace?.status || room.roomReservation?.status
+  if (isReserveAPlaceStatus(reserveStatus)) return false
+
+  return true
+}
 
 const fileToDataUrl = (file) =>
   new Promise((resolve, reject) => {
@@ -162,6 +181,8 @@ const createDefaultBulletinBoard = () => ({
   latitude: '',
   status: false,
   isActive: false,
+  motelId: '',
+  roomId: '',
   bulletinBoardImages: [],
   bulletinBoardRules: [],
   bulletinBoards_RentalAm: [],
@@ -182,6 +203,8 @@ const normalizeBulletinBoard = (data = {}) => {
     ...defaults,
     ...boardFields,
     username: boardFields.username ?? account?.username ?? '',
+    motelId: boardFields.motelId ?? data.motel?.motelId ?? '',
+    roomId: boardFields.roomId ?? data.room?.roomId ?? '',
     bulletinBoardImages: data.bulletinBoardImages ?? defaults.bulletinBoardImages,
     bulletinBoardRules: data.bulletinBoardRules ?? defaults.bulletinBoardRules,
     bulletinBoards_RentalAm:
@@ -214,6 +237,16 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
   const [manualPickMode, setManualPickMode] = useState(false)
   const [autoGeocode, setAutoGeocode] = useState(true)
 
+  const [vacantRooms, setVacantRooms] = useState([])
+  const [selectedRoomId, setSelectedRoomId] = useState('')
+  const [selectedRoomFloor, setSelectedRoomFloor] = useState('')
+  const [roomsLoading, setRoomsLoading] = useState(false)
+
+  const activeMotelId = useMemo(() => {
+    if (isValidRouteParam(routeMotelId)) return routeMotelId
+    return motels?.[0]?.motelId || ''
+  }, [routeMotelId, motels])
+
   const [bulletinBoard, setBulletinBoard] = useState(defaultBulletinBoard)
   const rentalAmenities = bulletinBoard.bulletinBoards_RentalAm ?? []
   const boardRules = bulletinBoard.bulletinBoardRules ?? []
@@ -229,6 +262,13 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
       selectedImagePreviews.forEach((url) => URL.revokeObjectURL(url))
     }
   }, [selectedImagePreviews])
+
+  const resetRoomState = useCallback(() => {
+    setVacantRooms([])
+    setSelectedRoomId('')
+    setSelectedRoomFloor('')
+    setRoomsLoading(false)
+  }, [])
 
   const resetAddressState = useCallback(() => {
     setSelectedProvince('')
@@ -286,6 +326,25 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
       setLat(data.latitude)
       setLng(data.longitude)
       setAutoGeocode(false)
+    }
+  }, [])
+
+  const loadVacantRooms = useCallback(async (motelId) => {
+    if (!motelId) {
+      setVacantRooms([])
+      return
+    }
+
+    setRoomsLoading(true)
+    try {
+      const rooms = await getRoomByMotelId(motelId)
+      setVacantRooms((rooms || []).filter(isVacantRoom))
+    } catch (error) {
+      console.error(error)
+      setVacantRooms([])
+      toast.error('Không thể tải danh sách phòng trống.')
+    } finally {
+      setRoomsLoading(false)
     }
   }, [])
 
@@ -381,6 +440,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
 
     if (bulletinBoardId) {
       setSelectedImages([])
+      resetRoomState()
       getBulletinBoard(bulletinBoardId)
         .then(async (res) => {
           const raw = res?.result ?? {}
@@ -388,6 +448,24 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
           const data = normalizeBulletinBoard(raw)
           setBulletinBoard(data)
           applyAddressFromBoard(data)
+
+          const editMotelId = data.motelId || raw.motel?.motelId
+          if (editMotelId) {
+            const rooms = await getRoomByMotelId(editMotelId)
+            const vacant = (rooms || []).filter(isVacantRoom)
+            const currentRoom = raw.room
+            const mergedRooms =
+              currentRoom && !vacant.some((room) => String(room.roomId) === String(currentRoom.roomId))
+                ? [...vacant, currentRoom]
+                : vacant
+            setVacantRooms(mergedRooms)
+
+            if (data.roomId || raw.room?.roomId) {
+              const roomId = data.roomId || raw.room?.roomId
+              setSelectedRoomId(roomId)
+              setSelectedRoomFloor(formatRoomGroupLabel(raw.room?.group) || '')
+            }
+          }
 
           if (boardAccount) {
             setAccount(normalizeProfileResponse(boardAccount))
@@ -404,6 +482,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
     }
 
     resetAddressState()
+    resetRoomState()
     setBulletinBoard(createDefaultBulletinBoard())
     setAccount(undefined)
 
@@ -414,11 +493,9 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
 
         await loadAccountProfile(introspectRes.issuer)
 
-        const activeMotelId = isValidRouteParam(routeMotelId)
-          ? routeMotelId
-          : motels?.[0]?.motelId
-
         if (!activeMotelId) return
+
+        await loadVacantRooms(activeMotelId)
 
         const motelRes = await getMotelById(activeMotelId)
         const motelData = motelRes?.data?.result
@@ -429,6 +506,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
           ...prev,
           ...motelDefaults,
           username: introspectRes.issuer,
+          motelId: activeMotelId,
         }))
         applyAddressFromBoard({
           address: motelData.address,
@@ -441,7 +519,16 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
     }
 
     loadNewPostDefaults()
-  }, [bulletinBoardId, open, resetAddressState, applyAddressFromBoard, loadAccountProfile, routeMotelId, motels])
+  }, [
+    bulletinBoardId,
+    open,
+    resetAddressState,
+    resetRoomState,
+    applyAddressFromBoard,
+    loadAccountProfile,
+    activeMotelId,
+    loadVacantRooms,
+  ])
 
   const handleMapPositionChange = useCallback(({ lat: newLat, lng: newLng }) => {
     setLat(newLat)
@@ -567,6 +654,22 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
   }
 
   const handlePost = async () => {
+    if (activeMotelId && !selectedRoomId) {
+      toast.warning('Vui lòng chọn phòng cần đăng tin.')
+      return
+    }
+
+    const selectedRoom = vacantRooms.find((room) => String(room.roomId) === String(selectedRoomId))
+    if (!isEditMode && activeMotelId && (!selectedRoom || !isVacantRoom(selectedRoom))) {
+      toast.error('Chỉ có thể đăng tin cho phòng đang trống.')
+      return
+    }
+
+    if (isEditMode && selectedRoom && !isVacantRoom(selectedRoom)) {
+      toast.error('Phòng đã chọn không còn trạng thái trống. Vui lòng chọn phòng khác.')
+      return
+    }
+
     if (!selectedProvince || !selectedWard || !addressDetail.trim()) {
       toast.warning('Vui lòng điền đủ thông tin địa chỉ (Tỉnh/Thành, Phường/Xã, Số nhà/tên đường).')
       return
@@ -591,6 +694,8 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
       }))
       const updatedRoom = {
         ...bulletinBoard,
+        motelId: activeMotelId || bulletinBoard.motelId || null,
+        roomId: selectedRoomId || bulletinBoard.roomId || null,
         bulletinBoardImages: [...existingImages, ...formattedNewImages],
       }
 
@@ -657,19 +762,7 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
             </IconButton>
           </Box>
           <Divider sx={{ bgcolor: '#333' }} />
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, mt: 1 }}>
-            <Switch
-              {...label}
-              checked={bulletinBoard.status === true}
-              onChange={(event) => setBulletinBoard({ ...bulletinBoard, status: event.target.checked })}
-            />
-            <Box>
-              <Typography variant="inherit" component="h2">
-                Cho thuê
-              </Typography>
-              <Typography>Khi bật cho thuê, khách thuê có thể tiếp cận tin của bạn</Typography>
-            </Box>
-          </Box>
+          
           <Box sx={{ fontStyle: 'italic' }}>
             <TitleAttribute title="Thông tin chủ nhà" description="Nhập các thông tin về người cho thuê" />
             <Typography>
@@ -763,6 +856,71 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
               />
             </Grid>
           </Grid>
+          {activeMotelId && (
+            <>
+              <TitleAttribute
+                title="Thông tin phòng trọ"
+                description="Chọn phòng đang trống trong nhà trọ để đăng tin"
+              />
+              <Grid container sx={{ my: 2 }}>
+                <Grid item xs={12} sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <FormControl required variant="filled" sx={{ minWidth: 350 }}>
+                    <InputLabel id="post-room-select-label">Tên phòng</InputLabel>
+                    <Select
+                      labelId="post-room-select-label"
+                      value={selectedRoomId}
+                      onChange={(event) => {
+                        const roomId = event.target.value
+                        const room = vacantRooms.find((item) => String(item.roomId) === String(roomId))
+
+                        if (!room || !isVacantRoom(room)) {
+                          toast.warning('Chỉ có thể đăng tin cho phòng đang trống.')
+                          return
+                        }
+
+                        setSelectedRoomId(roomId)
+                        setSelectedRoomFloor(formatRoomGroupLabel(room.group) || 'Chưa phân nhóm')
+                        setBulletinBoard((prev) => ({
+                          ...prev,
+                          roomId,
+                          motelId: activeMotelId,
+                          area: room.area ?? prev.area,
+                          rentPrice: room.price ?? prev.rentPrice,
+                          deposit: room.deposit ?? prev.deposit,
+                          title: prev.title || `Cho thuê phòng ${room.name}`,
+                        }))
+                      }}
+                      disabled={roomsLoading}>
+                      <MenuItem value="">
+                        <em>{roomsLoading ? 'Đang tải phòng...' : 'Chọn phòng'}</em>
+                      </MenuItem>
+                      {vacantRooms.map((room) => (
+                        <MenuItem key={room.roomId} value={room.roomId}>
+                          {room.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {!roomsLoading && vacantRooms.length === 0 && (
+                      <FormHelperText>Không có phòng trống nào trong nhà trọ này.</FormHelperText>
+                    )}
+                  </FormControl>
+
+                  <TextField
+                    label="Số tầng"
+                    variant="filled"
+                    value={selectedRoomFloor}
+                    sx={{ minWidth: 350 }}
+                    slotProps={{
+                      input: {
+                        readOnly: true
+                      }
+                    }}
+                    placeholder="Chọn phòng để hiển thị tầng"
+                  />
+                </Grid>
+              </Grid>
+            </>
+          )}
           <TitleAttribute title="Mô tả" description="Nhập mô tả về nhà cho thuê" />
           <TextareaAutosize
             required

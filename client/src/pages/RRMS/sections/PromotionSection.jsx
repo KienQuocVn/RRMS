@@ -32,7 +32,6 @@ function PromotionSection({ room, stats, onExplorePromotions }) {
   return (
     <Box id="promotion-section" sx={{ mt: 7 }}>
       <SectionHeading
-        eyebrow="Promotion Section"
         title="Ưu đãi và những tin đáng xem ngay lúc này"
         description="Section này tập trung vào giá thuê tốt, tỷ lệ giảm giá và những tín hiệu giúp người thuê ra quyết định nhanh hơn."
         actionLabel="Xem tất cả tin mới"

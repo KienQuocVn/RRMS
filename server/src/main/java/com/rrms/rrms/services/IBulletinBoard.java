@@ -25,6 +25,10 @@ public interface IBulletinBoard {
 
     BulletinBoardResponse approveBulletinBoard(UUID id);
 
+    BulletinBoardResponse rejectBulletinBoard(UUID id, String reason);
+
+    BulletinBoardResponse hideBulletinBoard(UUID id);
+
     void deleteBulletinBoard(UUID id);
 
     BulletinBoardSearchResponse findByBulletinBoardId(UUID id);

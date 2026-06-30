@@ -58,7 +58,9 @@ public class SecurityConfig {
         "/searchs/**",
         "/search/**",
         "/api/v1/search/**",
-        "/api/v1/bulletin-boards/**",
+        "/api/v1/bulletin-boards",
+        "/api/v1/bulletin-boards/{id}",
+        "/api/v1/bulletin-boards/search",
         "/detail/**",
         "/bulletin-board/*",
         "/motels/get-motel-id",
@@ -108,7 +110,8 @@ public class SecurityConfig {
         http.exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint));
 
         http.csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringRequestMatchers(PUBLIC_ENDPOINTS));
+                .ignoringRequestMatchers(PUBLIC_ENDPOINTS)
+                .ignoringRequestMatchers("/api/v1/**"));
         return http.build();
     }
 

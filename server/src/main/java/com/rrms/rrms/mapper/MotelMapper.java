@@ -17,6 +17,7 @@ import com.rrms.rrms.models.MotelService;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface MotelMapper {
     @Mapping(target = "motelServices", source = "motelServices")
+    @Mapping(target = "account", ignore = true)
     MotelResponse motelToMotelResponse(Motel motel);
 
     Motel motelRequestToMotel(MotelRequest motelRequest);

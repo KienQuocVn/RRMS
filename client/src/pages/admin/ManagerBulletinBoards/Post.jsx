@@ -27,6 +27,8 @@ const Post = () => {
             item.area,
             item.status,
             item.isActive,
+            item.rejectionReason,
+            item.isHidden,
             item.bulletinBoardId
           )
         )
@@ -35,8 +37,8 @@ const Post = () => {
     })
   }
 
-  function createData(nameRoom, typeRoom, address, price, roomArea, available, isActive, bulletinBoardId) {
-    return { nameRoom, typeRoom, address, price, roomArea, available, isActive, bulletinBoardId }
+  function createData(nameRoom, typeRoom, address, price, roomArea, available, isActive, rejectionReason, isHidden, bulletinBoardId) {
+    return { nameRoom, typeRoom, address, price, roomArea, available, isActive, rejectionReason, isHidden, bulletinBoardId }
   }
 
   useEffect(() => {
@@ -53,6 +55,8 @@ const Post = () => {
             item.area,
             item.status,
             item.isActive,
+            item.rejectionReason,
+            item.isHidden,
             item.bulletinBoardId
           )
         )

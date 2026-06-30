@@ -2,19 +2,15 @@ import { Alert, Box, Container } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getLatestSearchRooms, getSearchRooms } from '~/apis/searchAPI'
-import DistrictSearchSection from './sections/DistrictSearchSection'
 import DownloadOwnerBlockSection from './sections/DownloadOwnerBlockSection'
 import HeaderHomeSection from './sections/HeaderHomeSection'
 import LatestRoomsSection from './sections/LatestRoomsSection'
-import MarketplaceInsightsSection from './sections/MarketplaceInsightsSection'
 import MenuHomeSection from './sections/MenuHomeSection'
 import OwnerBookingSection from './sections/OwnerBookingSection'
-import PopularRoomsSection from './sections/PopularRoomsSection'
+// import PopularRoomsSection from './sections/PopularRoomsSection'
 import PromotionSection from './sections/PromotionSection'
 import ProvinceSearchSection from './sections/ProvinceSearchSection'
-import ReadyToMoveRoomsSection from './sections/ReadyToMoveRoomsSection'
 import SuggestSpecialSection from './sections/SuggestSpecialSection'
-import WardSection from './sections/WardSection'
 import { buildFixedProvinceGroups, buildRrmsDashboard, RRMS_SPECIAL_HASHTAGS } from './sections/rrmsData'
 
 const LATEST_PER_PAGE = 6
@@ -135,15 +131,7 @@ function RRMS({ setIsAdmin }) {
 
   const districtOptions = useMemo(() => dashboard.districtGroups.slice(0, 24), [dashboard.districtGroups])
 
-  const popularKeywords = useMemo(() => {
-    const keywords = [
-      ...dashboard.districtGroups.slice(0, 10).map((item) => item.label),
-      ...dashboard.provinceGroups.slice(0, 6).map((item) => item.label),
-      ...dashboard.wardGroups.slice(0, 4).map((item) => item.label)
-    ]
 
-    return [...new Set(keywords)].slice(0, 20)
-  }, [dashboard.districtGroups, dashboard.provinceGroups, dashboard.wardGroups])
 
   useEffect(() => {
     setCurrentLatestPage(1)
@@ -213,18 +201,6 @@ function RRMS({ setIsAdmin }) {
         ) : null}
 
         <MenuHomeSection onJumpToSection={handleJumpToSection} />
-        <DownloadOwnerBlockSection stats={dashboard.stats} />
-        <PromotionSection room={dashboard.promotionHeroRoom} stats={dashboard.stats} onExplorePromotions={() => handleSearch(searchText)} />
-        <ProvinceSearchSection items={provinceSearchItems} onSelectProvince={handleSelectLocation} />
-        <SuggestSpecialSection
-          title="Tìm phòng gần khu vực Quận 10, Hồ Chí Minh"
-          items={specialSearchTags}
-          onSelectHashtag={handleSelectLocation}
-        />
-        <PopularRoomsSection rooms={dashboard.popularRooms} loading={loading} onViewAll={() => navigate('/search')} />
-        <ReadyToMoveRoomsSection rooms={dashboard.readyRooms} loading={loading} />
-        <DistrictSearchSection items={dashboard.districtGroups} onSelectDistrict={handleSelectLocation} />
-        <WardSection items={dashboard.wardGroups} onSelectWard={handleSelectLocation} />
         <LatestRoomsSection
           rooms={latestVisibleRooms}
           loading={loading}
@@ -232,14 +208,23 @@ function RRMS({ setIsAdmin }) {
           totalPages={latestTotalPages}
           onPageChange={setCurrentLatestPage}
         />
+        <PromotionSection room={dashboard.promotionHeroRoom} stats={dashboard.stats} onExplorePromotions={() => handleSearch(searchText)} />
+        <ProvinceSearchSection items={provinceSearchItems} onSelectProvince={handleSelectLocation} />
+        <SuggestSpecialSection
+          title="Tìm phòng theo khu vực, Hồ Chí Minh"
+          items={specialSearchTags}
+          onSelectHashtag={handleSelectLocation}
+        />
+        {/* <PopularRoomsSection rooms={dashboard.popularRooms} loading={loading} onViewAll={() => navigate('/search')} /> */}
+        <DownloadOwnerBlockSection stats={dashboard.stats} />
         <OwnerBookingSection stats={dashboard.stats} />
-        <MarketplaceInsightsSection
+        {/* <MarketplaceInsightsSection
           stats={dashboard.stats}
           keywords={popularKeywords}
           onSelectKeyword={handleSelectLocation}
           onOpenSupport={() => navigate('/support')}
           onOpenBroker={() => navigate('/register')}
-        />
+        /> */}
       </Container>
     </Box>
   )

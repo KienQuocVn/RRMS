@@ -18,12 +18,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "bulletin_board_rental_amenities")
-@JsonIgnoreProperties({"bulletinBoard"})
+@JsonIgnoreProperties({"bulletinBoard", "hibernateLazyInitializer", "handler"})
 @Builder
 public class BulletinBoardRentalAmenity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "bullet_in_rentalaid")
     private UUID bulletInRentalAId;
 
     @ManyToOne

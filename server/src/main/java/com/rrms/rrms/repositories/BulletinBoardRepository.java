@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,15 +30,70 @@ public interface BulletinBoardRepository extends JpaRepository<BulletinBoard, UU
 
     BulletinBoard findByBulletinBoardId(UUID id);
 
+    @EntityGraph(
+            attributePaths = {
+                "account",
+                "bulletinBoardImages",
+                "bulletinBoardReviews",
+                "bulletinBoardRules",
+                "bulletinBoardRentalAmenities",
+                "motel",
+                "motel.typeRoom",
+                "room"
+            })
     @Query("SELECT r FROM BulletinBoard r WHERE r.isActive = :isActive")
     List<BulletinBoard> findAllByIsActive(@Param("isActive") Boolean isActive);
 
+    @EntityGraph(
+            attributePaths = {
+                "account",
+                "bulletinBoardImages",
+                "bulletinBoardReviews",
+                "bulletinBoardRules",
+                "bulletinBoardRentalAmenities",
+                "motel",
+                "motel.typeRoom",
+                "room"
+            })
+    @Query("SELECT b FROM BulletinBoard b ORDER BY b.createdAt DESC")
+    List<BulletinBoard> findAllWithDetails();
+
+    @EntityGraph(
+            attributePaths = {
+                "account",
+                "bulletinBoardImages",
+                "bulletinBoardReviews",
+                "bulletinBoardRules",
+                "bulletinBoardRentalAmenities",
+                "motel",
+                "room"
+            })
     @Query("SELECT b FROM BulletinBoard b WHERE b.isActive = true ORDER BY b.rentPrice ASC")
     List<BulletinBoard> findAllActiveOrderByPriceAsc();
 
+    @EntityGraph(
+            attributePaths = {
+                "account",
+                "bulletinBoardImages",
+                "bulletinBoardReviews",
+                "bulletinBoardRules",
+                "bulletinBoardRentalAmenities",
+                "motel",
+                "room"
+            })
     @Query("SELECT b FROM BulletinBoard b WHERE b.isActive = true ORDER BY b.rentPrice DESC")
     List<BulletinBoard> findAllActiveOrderByPriceDesc();
 
+    @EntityGraph(
+            attributePaths = {
+                "account",
+                "bulletinBoardImages",
+                "bulletinBoardReviews",
+                "bulletinBoardRules",
+                "bulletinBoardRentalAmenities",
+                "motel",
+                "room"
+            })
     @Query(
             """
 			SELECT b

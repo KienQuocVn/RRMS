@@ -74,14 +74,6 @@ const AdminRoutes = ({ auth, motel }) => {
         element={<AdminManageBoker setIsAdmin={setIsAdmin} motels={motels} setmotels={setMotels} />}
       />
       <Route
-        path="/adminManage"
-        element={
-          <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <AdminManage setIsAdmin={setIsAdmin} />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/adminManage/*"
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>

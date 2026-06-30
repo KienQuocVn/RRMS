@@ -30,7 +30,9 @@ public class DB {
     private static final List<MotelSeedSpec> MOTEL_SEED_SPECS = List.of(
             new MotelSeedSpec(
                     "Nhà nghỉ Sài Gòn Central",
-                    "12 Tô Hiến Thành, Quận 10, Hồ Chí Minh",
+                    "12 Tô Hiến Thành, 27283, 79",
+                    10.772198,
+                    106.665802,
                     210.0,
                     3200000L,
                     4,
@@ -38,7 +40,9 @@ public class DB {
                     "Không gian sạch sẽ, hợp người đi làm và sinh viên cần di chuyển nhanh trong trung tâm."),
             new MotelSeedSpec(
                     "Nhà nghỉ Thành Thái Garden",
-                    "88 Thành Thái, Quận 10, Hồ Chí Minh",
+                    "88 Thành Thái, 27283, 79",
+                    10.773772,
+                    106.667839,
                     198.0,
                     3400000L,
                     4,
@@ -46,7 +50,9 @@ public class DB {
                     "Khu vực sầm uất, thuận tiện tới trường học, bệnh viện và các tuyến xe buýt lớn."),
             new MotelSeedSpec(
                     "Nhà nghỉ Bình Thạnh Riverside",
-                    "25 Nguyễn Gia Trí, Bình Thạnh, Hồ Chí Minh",
+                    "25 Nguyễn Gia Trí, 26965, 79",
+                    10.801157,
+                    106.714318,
                     186.0,
                     3600000L,
                     4,
@@ -54,7 +60,9 @@ public class DB {
                     "Phù hợp người đi làm gần Điện Biên Phủ, Landmark 81 và tuyến metro tương lai."),
             new MotelSeedSpec(
                     "Nhà nghỉ Cầu Giấy Hub",
-                    "45 Trần Thái Tông, Cầu Giấy, Hà Nội",
+                    "45 Trần Thái Tông, 00160, 01",
+                    21.033326,
+                    105.789662,
                     204.0,
                     3300000L,
                     4,
@@ -62,7 +70,9 @@ public class DB {
                     "Thuận tiện đi làm khu Duy Tân, Keangnam và các trường đại học phía Tây Hà Nội."),
             new MotelSeedSpec(
                     "Nhà nghỉ Hà Đông Comfort",
-                    "102 Quang Trung, Hà Đông, Hà Nội",
+                    "102 Quang Trung, 00658, 01",
+                    20.969674,
+                    105.775654,
                     194.0,
                     2950000L,
                     4,
@@ -70,7 +80,9 @@ public class DB {
                     "Phòng yên tĩnh, gần tàu điện Cát Linh - Hà Đông và các khu đô thị mới."),
             new MotelSeedSpec(
                     "Nhà nghỉ Ninh Kiều View",
-                    "17 Mậu Thân, Ninh Kiều, Cần Thơ",
+                    "17 Mậu Thân, 31117, 92",
+                    10.035065,
+                    105.779875,
                     182.0,
                     2800000L,
                     4,
@@ -78,7 +90,9 @@ public class DB {
                     "Dễ dàng di chuyển tới bến Ninh Kiều, chợ đêm và các trường đại học trung tâm."),
             new MotelSeedSpec(
                     "Nhà nghỉ Thuận An Smart Stay",
-                    "66 Nguyễn Văn Tiết, Thuận An, Bình Dương",
+                    "66 Nguyễn Văn Tiết, 25747, 74",
+                    10.933801,
+                    106.711574,
                     188.0,
                     2700000L,
                     4,
@@ -86,7 +100,9 @@ public class DB {
                     "Phù hợp công nhân và chuyên gia cần ở gần VSIP, Aeon Mall và quốc lộ 13."),
             new MotelSeedSpec(
                     "Nhà nghỉ Dĩ An Transit",
-                    "9 ĐT743A, Dĩ An, Bình Dương",
+                    "9 ĐT743A, 25762, 74",
+                    10.906626,
+                    106.769986,
                     176.0,
                     2650000L,
                     4,
@@ -94,7 +110,9 @@ public class DB {
                     "Kết nối nhanh tới khu công nghiệp Sóng Thần, Đại học Quốc gia và bến xe miền Đông mới."),
             new MotelSeedSpec(
                     "Nhà nghỉ Hải Châu Breeze",
-                    "21 Hoàng Diệu, Hải Châu, Đà Nẵng",
+                    "21 Hoàng Diệu, 20194, 48",
+                    16.061511,
+                    108.220770,
                     192.0,
                     3100000L,
                     4,
@@ -102,7 +120,9 @@ public class DB {
                     "Không gian sáng, gần trung tâm hành chính, sông Hàn và cầu Rồng."),
             new MotelSeedSpec(
                     "Nhà nghỉ Biển Xanh",
-                    "5 Trần Phú, Nha Trang",
+                    "5 Trần Phú, 22363, 56",
+                    12.247668,
+                    109.194928,
                     208.0,
                     3900000L,
                     4,
@@ -113,6 +133,8 @@ public class DB {
     private record MotelSeedSpec(
             String motelName,
             String address,
+            Double latitude,
+            Double longitude,
             Double area,
             Long averagePrice,
             int maxPerson,
@@ -159,6 +181,7 @@ public class DB {
             BulletinBoardRuleRepository bulletinBoardRuleRepository,
             RentalAmenitiesRepository rentalAmenitiesRepository,
             BulletinBoardRentalAmenityRepository bulletinBoardRentalAmenityRepository,
+            ViolationReportRepository violationReportRepository,
             CarRepository carRepository) {
         return args -> {
             if (accountRepository.count() > 0) {
@@ -274,7 +297,7 @@ public class DB {
             seedSupports(supportRepository, customer, employee);
 
             // 8. Marketplace (Bulletin Boards)
-            seedBulletinBoards(
+            List<BulletinBoard> bulletinBoards = seedBulletinBoards(
                     faker,
                     bulletinBoardRepository,
                     bulletinBoardImageRepository,
@@ -287,7 +310,16 @@ public class DB {
                     host,
                     customer);
 
-            // 9. Favorites (ManyToMany)
+            // 9. Violation reports for admin dashboard
+            seedViolationReports(
+                    violationReportRepository,
+                    bulletinBoardReviewsRepository,
+                    bulletinBoards,
+                    host,
+                    customer,
+                    employee);
+
+            // 10. Favorites (ManyToMany)
             seedFavorites(accountRepository, bulletinBoardRepository, "customer", 3);
 
             log.info("Comprehensive seeding completed successfully.");
@@ -467,6 +499,8 @@ public class DB {
                     .account(host)
                     .motelName(spec.motelName())
                     .address(spec.address())
+                    .latitude(spec.latitude())
+                    .longitude(spec.longitude())
                     .area(spec.area())
                     .averagePrice(spec.averagePrice())
                     .maxperson(spec.maxPerson())
@@ -803,18 +837,35 @@ public class DB {
     }
 
     private void seedSupports(SupportRepository repo, Account customer, Account employee) {
-        Support s1 = new Support();
-        s1.setAccount(customer);
-        s1.setNameContact(customer.getFullName());
-        s1.setPhoneContact(customer.getPhone());
-        s1.setCreateDate(LocalDateTime.now());
-        s1.setPriceFirst(2000000L);
-        s1.setPriceEnd(4000000L);
-        s1.setDateOfStay(java.sql.Date.valueOf(LocalDate.now()));
-        repo.save(s1);
+        List<SupportSeedSpec> specs = List.of(
+                new SupportSeedSpec(customer, customer.getFullName(), customer.getPhone(), 0, 2000000L, 4000000L),
+                new SupportSeedSpec(employee, "Nguyen Thanh Ha", "0901000101", 1, 2800000L, 5200000L),
+                new SupportSeedSpec(customer, "Tran Minh Duc", "0901000102", 2, 3200000L, 6500000L),
+                new SupportSeedSpec(employee, "Pham Hoai Linh", "0901000103", 3, 1800000L, 3500000L),
+                new SupportSeedSpec(customer, "Le Gia Bao", "0901000104", 5, 2500000L, 4500000L),
+                new SupportSeedSpec(employee, "Vo Khanh Vy", "0901000105", 8, 4000000L, 7500000L),
+                new SupportSeedSpec(customer, "Dang Quoc Anh", "0901000106", 12, 2200000L, 3900000L),
+                new SupportSeedSpec(employee, "Bui Ngoc Diep", "0901000107", 18, 3000000L, 6000000L),
+                new SupportSeedSpec(customer, "Hoang Thao Chi", "0901000108", 24, 3500000L, 7000000L),
+                new SupportSeedSpec(employee, "Mai Phuc Nguyen", "0901000109", 31, 2600000L, 4800000L));
+
+        for (SupportSeedSpec spec : specs) {
+            Support support = new Support();
+            support.setAccount(spec.account());
+            support.setNameContact(spec.nameContact());
+            support.setPhoneContact(spec.phoneContact());
+            support.setCreateDate(LocalDateTime.now().minusDays(spec.daysAgo()));
+            support.setPriceFirst(spec.priceFirst());
+            support.setPriceEnd(spec.priceEnd());
+            support.setDateOfStay(java.sql.Date.valueOf(LocalDate.now().plusDays(Math.max(1, 7 - spec.daysAgo()))));
+            repo.save(support);
+        }
     }
 
-    private void seedBulletinBoards(
+    private record SupportSeedSpec(
+            Account account, String nameContact, String phoneContact, int daysAgo, long priceFirst, long priceEnd) {}
+
+    private List<BulletinBoard> seedBulletinBoards(
             Faker f,
             BulletinBoardRepository bbRepo,
             BulletinBoardImageRepository bbiRepo,
@@ -833,6 +884,7 @@ public class DB {
                 "Giữ gìn vệ sinh khu sinh hoạt chung",
                 "Không nuôi thú cưng kích thước lớn",
                 "Thông báo trước khi chuyển phòng");
+        List<BulletinBoard> seededBoards = new ArrayList<>();
 
         for (int i = 0; i < rooms.size(); i++) {
             Room room = rooms.get(i);
@@ -864,9 +916,11 @@ public class DB {
             bb.setMoveInDate(LocalDate.now().plusDays(i % 4));
             bb.setOpeningHours("05:30");
             bb.setCloseHours("23:30");
-            bb.setStatus(true);
-            bb.setIsActive(true);
+            bb.setLongitude(motel.getLongitude());
+            bb.setLatitude(motel.getLatitude());
+            applyBulletinBoardSeedState(bb, i);
             bb = bbRepo.save(bb);
+            seededBoards.add(bb);
 
             for (int image = 0; image < 3; image++) {
                 bbiRepo.save(new BulletinBoardImage(
@@ -896,7 +950,232 @@ public class DB {
                         .build());
             }
         }
+        return seededBoards;
     }
+
+    private void applyBulletinBoardSeedState(BulletinBoard bulletinBoard, int index) {
+        int bucket = index % 20;
+        if (bucket < 11) {
+            bulletinBoard.setIsActive(true);
+            bulletinBoard.setStatus(true);
+            bulletinBoard.setIsHidden(false);
+            bulletinBoard.setRejectionReason(null);
+            return;
+        }
+        if (bucket < 14) {
+            bulletinBoard.setIsActive(false);
+            bulletinBoard.setStatus(true);
+            bulletinBoard.setIsHidden(false);
+            bulletinBoard.setRejectionReason(null);
+            return;
+        }
+        if (bucket < 17) {
+            bulletinBoard.setIsActive(false);
+            bulletinBoard.setStatus(false);
+            bulletinBoard.setIsHidden(false);
+            bulletinBoard.setRejectionReason(
+                    "Thông tin không chính xác: giá và diện tích không khớp với thực tế khi liên hệ.");
+            return;
+        }
+        bulletinBoard.setIsActive(true);
+        bulletinBoard.setStatus(false);
+        bulletinBoard.setIsHidden(true);
+        bulletinBoard.setRejectionReason(null);
+    }
+
+    private void seedViolationReports(
+            ViolationReportRepository violationReportRepository,
+            BulletinBoardReviewsRepository reviewRepository,
+            List<BulletinBoard> bulletinBoards,
+            Account host,
+            Account customer,
+            Account employee) {
+        if (bulletinBoards.isEmpty()) {
+            return;
+        }
+
+        List<BulletinBoardReviews> reviews = reviewRepository.findAll();
+        BulletinBoard pendingBoard = bulletinBoards.stream()
+                .filter(board -> Boolean.FALSE.equals(board.getIsActive()))
+                .findFirst()
+                .orElse(bulletinBoards.get(0));
+        BulletinBoard rejectedBoard = bulletinBoards.stream()
+                .filter(board -> board.getRejectionReason() != null)
+                .findFirst()
+                .orElse(bulletinBoards.get(1));
+        BulletinBoard hiddenBoard = bulletinBoards.stream()
+                .filter(board -> Boolean.TRUE.equals(board.getIsHidden()))
+                .findFirst()
+                .orElse(bulletinBoards.get(2));
+        BulletinBoard approvedBoard = bulletinBoards.stream()
+                .filter(board -> Boolean.TRUE.equals(board.getIsActive()) && !Boolean.TRUE.equals(board.getIsHidden()))
+                .findFirst()
+                .orElse(bulletinBoards.get(3));
+        BulletinBoardReviews commentReview = reviews.isEmpty() ? null : reviews.get(0);
+
+        List<ViolationReportSeedSpec> specs = List.of(
+                new ViolationReportSeedSpec(
+                        customer,
+                        ViolationSubjectType.POST,
+                        pendingBoard,
+                        null,
+                        null,
+                        "Lừa đảo",
+                        "Bài đăng yêu cầu chuyển cọc trước nhưng không cung cấp giấy tờ xác minh.",
+                        ViolationReportStatus.PENDING,
+                        2),
+                new ViolationReportSeedSpec(
+                        employee,
+                        ViolationSubjectType.POST,
+                        pendingBoard,
+                        null,
+                        null,
+                        "Thông tin sai lệch",
+                        "Giá trong bài thấp hơn nhiều so với giá báo khi gọi điện.",
+                        ViolationReportStatus.PENDING,
+                        5),
+                new ViolationReportSeedSpec(
+                        customer,
+                        ViolationSubjectType.POST,
+                        pendingBoard,
+                        null,
+                        null,
+                        "Spam",
+                        "Người đăng liên tục thay đổi nội dung trao đổi sau khi liên hệ.",
+                        ViolationReportStatus.REVIEWING,
+                        8),
+                new ViolationReportSeedSpec(
+                        employee,
+                        ViolationSubjectType.POST,
+                        rejectedBoard,
+                        null,
+                        null,
+                        "Hình ảnh không phù hợp",
+                        "Hình ảnh trong bài là ảnh từ nguồn khác, không đúng với phòng thực tế.",
+                        ViolationReportStatus.RESOLVED,
+                        12),
+                new ViolationReportSeedSpec(
+                        customer,
+                        ViolationSubjectType.POST,
+                        rejectedBoard,
+                        null,
+                        null,
+                        "Lừa đảo",
+                        "Yêu cầu thanh toán phí giữ chỗ trước khi cho xem phòng.",
+                        ViolationReportStatus.RESOLVED,
+                        15),
+                new ViolationReportSeedSpec(
+                        employee,
+                        ViolationSubjectType.USER,
+                        null,
+                        host,
+                        null,
+                        "Thông tin sai lệch",
+                        "Người dùng thường xuyên thay đổi diện tích phòng giữa bài đăng và lúc tư vấn.",
+                        ViolationReportStatus.REVIEWING,
+                        4),
+                new ViolationReportSeedSpec(
+                        customer,
+                        ViolationSubjectType.USER,
+                        null,
+                        host,
+                        null,
+                        "Spam",
+                        "Đăng bài trùng lặp nhiều lần trong thời gian ngắn để đẩy tin.",
+                        ViolationReportStatus.RESOLVED,
+                        20),
+                new ViolationReportSeedSpec(
+                        employee,
+                        ViolationSubjectType.POST,
+                        hiddenBoard,
+                        null,
+                        null,
+                        "Giá không hợp lý",
+                        "Giá niêm yết không khớp với giá thực tế khi đến xem phòng.",
+                        ViolationReportStatus.IGNORED,
+                        7),
+                new ViolationReportSeedSpec(
+                        customer,
+                        ViolationSubjectType.POST,
+                        approvedBoard,
+                        null,
+                        null,
+                        "Lừa đảo",
+                        "Người đăng yêu cầu thanh toán phí giữ chỗ trước khi cho xem phòng và không có địa chỉ rõ ràng.",
+                        ViolationReportStatus.PENDING,
+                        1),
+                new ViolationReportSeedSpec(
+                        employee,
+                        ViolationSubjectType.POST,
+                        approvedBoard,
+                        null,
+                        null,
+                        "Lừa đảo",
+                        "Sau khi chuyển cọc thì người đăng không phản hồi.",
+                        ViolationReportStatus.PENDING,
+                        3));
+
+        if (commentReview != null) {
+            specs = new ArrayList<>(specs);
+            specs.add(new ViolationReportSeedSpec(
+                    customer,
+                    ViolationSubjectType.COMMENT,
+                    null,
+                    null,
+                    commentReview,
+                    "Nội dung phản cảm",
+                    "Bình luận sử dụng ngôn từ xúc phạm và gây khó chịu cho người xem.",
+                    ViolationReportStatus.PENDING,
+                    6));
+            specs.add(new ViolationReportSeedSpec(
+                    employee,
+                    ViolationSubjectType.COMMENT,
+                    null,
+                    null,
+                    commentReview,
+                    "Spam",
+                    "Bình luận chèn link ngoài và số điện thoại không liên quan.",
+                    ViolationReportStatus.REVIEWING,
+                    10));
+        }
+
+        for (ViolationReportSeedSpec spec : specs) {
+            ViolationReport report = ViolationReport.builder()
+                    .reporter(spec.reporter())
+                    .subjectType(spec.subjectType())
+                    .bulletinBoard(spec.bulletinBoard())
+                    .reportedAccount(spec.reportedAccount())
+                    .review(spec.review())
+                    .reason(spec.reason())
+                    .content(spec.content())
+                    .status(spec.status())
+                    .build();
+            if (spec.status() == ViolationReportStatus.RESOLVED) {
+                report.setResolutionAction(ViolationResolutionAction.WARN);
+                report.setResolvedAt(LocalDateTime.now().minusDays(1));
+            } else if (spec.status() == ViolationReportStatus.IGNORED) {
+                report.setResolutionAction(ViolationResolutionAction.IGNORE);
+                report.setResolvedAt(LocalDateTime.now().minusDays(2));
+            }
+            report.setCreatedAt(LocalDateTime.now().minusDays(spec.daysAgo()));
+            report.setUpdatedAt(report.getCreatedAt());
+            report = violationReportRepository.save(report);
+            report.setCreatedAt(LocalDateTime.now().minusDays(spec.daysAgo()));
+            report.setUpdatedAt(report.getCreatedAt());
+            violationReportRepository.save(report);
+        }
+    }
+
+    private record ViolationReportSeedSpec(
+            Account reporter,
+            ViolationSubjectType subjectType,
+            BulletinBoard bulletinBoard,
+            Account reportedAccount,
+            BulletinBoardReviews review,
+            String reason,
+            String content,
+            ViolationReportStatus status,
+            int daysAgo) {}
 
     private String buildBulletinBoardDescription(MotelSeedSpec seedSpec, Room room) {
         String baseDescription = seedSpec != null

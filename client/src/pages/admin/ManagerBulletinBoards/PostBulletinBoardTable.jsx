@@ -21,7 +21,8 @@ import LastPageIcon from '@mui/icons-material/LastPage'
 import { useState } from 'react'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { deleteBulletinBoard } from '~/apis/bulletinBoardAPI'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
+import { deleteBulletinBoard, hideBulletinBoard } from '~/apis/bulletinBoardAPI'
 import Swal from 'sweetalert2'
 function TablePaginationActions(props) {
   const theme = useTheme()
@@ -107,6 +108,7 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
               <TableCell>Diện tích</TableCell>
               <TableCell>Tình trạng</TableCell>
               <TableCell>Trạng thái</TableCell>
+              <TableCell>Lý do từ chối</TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
@@ -164,11 +166,29 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
                         fontSize: '0.75rem',
                         borderRadius: '6px'
                       }}
-                      label={row.isActive ? 'Đã phê duyệt' : 'Chờ phê duyệt'}
+                      label={
+                        row.isHidden
+                          ? 'Đã ẩn'
+                          : row.isActive
+                            ? 'Đã phê duyệt'
+                            : row.rejectionReason
+                              ? 'Từ chối'
+                              : 'Chờ phê duyệt'
+                      }
                     />
                   </TableCell>
+                  <TableCell
+                    sx={{
+                      maxWidth: 180,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
+                    title={row.rejectionReason || ''}>
+                    {row.rejectionReason || '—'}
+                  </TableCell>
                   <TableCell>
-                    <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <EditIcon
                         sx={{ cursor: 'pointer', color: '#1e90ff' }}
                         onClick={() => {
@@ -176,6 +196,32 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
                           handleOpen()
                         }}
                       />
+                      {!row.isHidden && (
+                        <VisibilityOffIcon
+                          sx={{ cursor: 'pointer', color: '#f39c12' }}
+                          onClick={() => {
+                            Swal.fire({
+                              icon: 'warning',
+                              title: 'Xác nhận ẩn tin đăng',
+                              text: `Bạn có chắc muốn ẩn tin "${row.nameRoom}" khỏi danh sách công khai?`,
+                              showCancelButton: true,
+                              confirmButtonText: 'Ẩn tin',
+                              cancelButtonText: 'Hủy',
+                              reverseButtons: true
+                            }).then(async (result) => {
+                              if (result.isConfirmed) {
+                                try {
+                                  await hideBulletinBoard(row.bulletinBoardId)
+                                  refreshBulletinBoards()
+                                  Swal.fire('Thành công', 'Tin đăng đã được ẩn.', 'success')
+                                } catch {
+                                  Swal.fire('Lỗi', 'Không thể ẩn tin đăng. Vui lòng thử lại.', 'error')
+                                }
+                              }
+                            })
+                          }}
+                        />
+                      )}
                       <DeleteIcon
                         sx={{ cursor: 'pointer', color: '#ff4757' }}
                         onClick={() => {
@@ -202,7 +248,7 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
             )}
             {emptyRows > 0 && (
               <TableRow key="empty-rows" style={{ height: 53 * emptyRows }}>
-                <TableCell colSpan={9} />
+                <TableCell colSpan={10} />
               </TableRow>
             )}
           </TableBody>

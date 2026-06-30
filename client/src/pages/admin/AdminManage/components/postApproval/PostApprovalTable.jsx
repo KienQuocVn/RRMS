@@ -111,6 +111,17 @@ const PostApprovalTable = ({
   const pageCount = Math.max(Math.ceil(posts.length / rowsPerPage), 1)
   const paginatedPosts = posts.slice(page * rowsPerPage, (page + 1) * rowsPerPage)
   const allVisibleChecked = paginatedPosts.length > 0 && paginatedPosts.every((post) => checkedIds.includes(post.uiKey))
+  const columnWidths = [
+    '45px',    // Checkbox
+    '22%',     // Tiêu đề
+    '13%',     // Chủ trọ
+    '11%',     // Loại phòng
+    '15%',     // Địa chỉ
+    '10%',     // Giá/tháng
+    '10%',     // Ngày đăng
+    '10%',     // Trạng thái
+    '140px'    // Hành động
+  ]
 
   return (
     <Box sx={{ ...dashboardCardSx, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 720 }}>
@@ -172,13 +183,14 @@ const PostApprovalTable = ({
       )}
 
       <Box sx={{ overflowX: 'auto', flexGrow: 1 }}>
-        <Table size="small">
+        <Table size="small" sx={{ tableLayout: 'fixed', minWidth: 950 }}>
           <TableHead>
             <TableRow sx={{ bgcolor: '#f9fafb' }}>
               {HEADER_COLUMNS.map((column, index) => (
                 <TableCell
                   key={column || index}
                   sx={{
+                    width: columnWidths[index],
                     fontSize: 11,
                     fontWeight: 600,
                     textTransform: 'uppercase',
@@ -233,8 +245,8 @@ const PostApprovalTable = ({
                         onChange={() => onToggleCheck(post.uiKey)}
                       />
                     </TableCell>
-                    <TableCell sx={{ minWidth: 220, py: 1.5 }}>
-                      <Stack direction="row" spacing={1.25} alignItems="center">
+                    <TableCell sx={{ py: 1.5, overflow: 'hidden' }}>
+                      <Stack direction="row" spacing={1.25} alignItems="center" sx={{ overflow: 'hidden', width: '100%' }}>
                         {post.images[0] ? (
                           <Box
                             component="img"
@@ -246,7 +258,8 @@ const PostApprovalTable = ({
                               borderRadius: '10px',
                               objectFit: 'cover',
                               bgcolor: '#eef2f7',
-                              border: `0.5px solid ${DASHBOARD_COLORS.border}`
+                              border: `0.5px solid ${DASHBOARD_COLORS.border}`,
+                              flexShrink: 0
                             }}
                           />
                         ) : (
@@ -260,29 +273,30 @@ const PostApprovalTable = ({
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              color: '#cbd5e1'
+                              color: '#cbd5e1',
+                              flexShrink: 0
                             }}>
                             <ImageOutlinedIcon sx={{ fontSize: 18 }} />
                           </Box>
                         )}
-                        <Typography sx={{ fontSize: 13, fontWeight: 500, color: DASHBOARD_COLORS.textDark }} noWrap>
+                        <Typography sx={{ fontSize: 13, fontWeight: 500, color: DASHBOARD_COLORS.textDark, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={post.title}>
                           {post.title || 'Chưa có tiêu đề'}
                         </Typography>
                       </Stack>
                     </TableCell>
-                    <TableCell sx={{ minWidth: 150, py: 1.5 }}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Avatar sx={{ width: 28, height: 28, fontSize: 11, bgcolor: '#efe8df', color: '#6b7280' }}>
+                    <TableCell sx={{ py: 1.5, overflow: 'hidden' }}>
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ overflow: 'hidden', width: '100%' }}>
+                        <Avatar sx={{ width: 28, height: 28, fontSize: 11, bgcolor: '#efe8df', color: '#6b7280', flexShrink: 0 }}>
                           {post.ownerInitials}
                         </Avatar>
-                        <Typography sx={{ fontSize: 13 }} noWrap>
+                        <Typography sx={{ fontSize: 13, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }} title={post.ownerName}>
                           {post.ownerName}
                         </Typography>
                       </Stack>
                     </TableCell>
-                    <TableCell sx={{ fontSize: 13, minWidth: 110 }}>{post.roomTypeLabel}</TableCell>
-                    <TableCell sx={{ fontSize: 13, minWidth: 160 }} title={post.addressParts.fullAddress}>
-                      <Typography sx={{ fontSize: 13 }} noWrap>
+                    <TableCell sx={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.roomTypeLabel}</TableCell>
+                    <TableCell sx={{ fontSize: 13, overflow: 'hidden' }} title={post.addressParts.fullAddress}>
+                      <Typography sx={{ fontSize: 13, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                         {post.addressParts.shortAddress}
                       </Typography>
                     </TableCell>
@@ -290,10 +304,10 @@ const PostApprovalTable = ({
                       {post.priceLabel}
                     </TableCell>
                     <TableCell sx={{ fontSize: 13, whiteSpace: 'nowrap' }}>{post.postedDateLabel}</TableCell>
-                    <TableCell sx={{ minWidth: 110 }}>
+                    <TableCell>
                       <StatusChip label={post.statusLabel} />
                     </TableCell>
-                    <TableCell sx={{ minWidth: 140 }}>
+                    <TableCell sx={{ overflow: 'visible' }}>
                       <Stack direction="row" spacing={0.25} alignItems="center">
                         <Tooltip title="Xem chi tiết">
                           <IconButton

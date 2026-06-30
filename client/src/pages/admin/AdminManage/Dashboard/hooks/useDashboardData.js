@@ -73,7 +73,9 @@ const buildPostsByMonth = (boards = []) => {
   return monthly
 }
 
-const buildActivityFeed = (pendingBoards = [], recentHosts = []) => {
+const INCLUDE_STATIC_DASHBOARD_EVENTS = false
+
+const buildActivityFeed = (pendingBoards = [], recentHosts = [], supports = []) => {
   const events = []
 
   pendingBoards.slice(0, 3).forEach((board, index) => {
@@ -94,7 +96,16 @@ const buildActivityFeed = (pendingBoards = [], recentHosts = []) => {
     })
   })
 
-  if (pendingBoards.length > 0) {
+  supports.slice(0, 3).forEach((support, index) => {
+    events.push({
+      id: `support-report-${support.supportId}`,
+      type: 'report',
+      text: `Báo cáo hỗ trợ: ${support.contactName || support.account?.username || 'Người dùng'}`,
+      timeAgo: `${(index + 1) * 15} phút trước`
+    })
+  })
+
+  if (INCLUDE_STATIC_DASHBOARD_EVENTS && pendingBoards.length > 0) {
     events.push({
       id: 'report-sample',
       type: 'report',
@@ -103,7 +114,7 @@ const buildActivityFeed = (pendingBoards = [], recentHosts = []) => {
     })
   }
 
-  if (recentHosts.length > 0) {
+  if (INCLUDE_STATIC_DASHBOARD_EVENTS && recentHosts.length > 0) {
     events.push({
       id: 'approved-sample',
       type: 'post_approved',
@@ -112,12 +123,14 @@ const buildActivityFeed = (pendingBoards = [], recentHosts = []) => {
     })
   }
 
-  events.push({
+  if (INCLUDE_STATIC_DASHBOARD_EVENTS) {
+    events.push({
     id: 'rejected-sample',
     type: 'post_rejected',
     text: 'Bài bị từ chối: Thiếu thông tin liên hệ',
     timeAgo: '3 giờ trước'
-  })
+    })
+  }
 
   return events.slice(0, 8)
 }
@@ -177,7 +190,8 @@ export const useDashboardData = () => {
         accountsLastYearRes,
         recentHostsRes,
         allBoardsRes,
-        pendingBoardsRes
+        pendingBoardsRes,
+        supportsRes
       ] = await Promise.all([
         axios.get(`${env.API_URL}/api/v1/statistics/total-accounts`, { headers }),
         axios.get(`${env.API_URL}/api/v1/statistics/total-tenants`, { headers }),
@@ -189,7 +203,8 @@ export const useDashboardData = () => {
         axios.get(`${env.API_URL}/api/v1/statistics/accounts-total-last-year`, { headers }),
         axios.get(`${env.API_URL}/api/v1/statistics/account-recent-hosts`, { headers }),
         axios.get(`${env.API_URL}/api/v1/bulletin-boards`, { headers }),
-        axios.get(`${env.API_URL}/api/v1/bulletin-boards/inactive`, { headers })
+        axios.get(`${env.API_URL}/api/v1/bulletin-boards/inactive`, { headers }),
+        axios.get(`${env.API_URL}/support/getAll`, { headers })
       ])
 
       const totalAccounts = Number(unwrapApiResult(totalAccountsRes, 0))
@@ -203,6 +218,7 @@ export const useDashboardData = () => {
       const recentHosts = unwrapApiResult(recentHostsRes, []) || []
       const allBoards = unwrapApiResult(allBoardsRes, []) || []
       const pendingBoards = unwrapApiResult(pendingBoardsRes, []) || []
+      const supports = unwrapApiResult(supportsRes, []) || []
 
       const currentMonth = new Date().getMonth()
       const usersThisMonth = accountsThisYear[currentMonth] || 0
@@ -235,7 +251,7 @@ export const useDashboardData = () => {
       setTenantsMonthly(accountsThisYear.map((v) => Math.round(v * tenantRatio)))
       setTopCities(buildTopCities(allBoards))
       setPendingPosts(pendingBoards.slice(0, 5))
-      setActivities(buildActivityFeed(pendingBoards, recentHosts))
+      setActivities(buildActivityFeed(pendingBoards, recentHosts, supports))
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
     } finally {

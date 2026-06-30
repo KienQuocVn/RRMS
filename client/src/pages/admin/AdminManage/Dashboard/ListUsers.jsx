@@ -62,7 +62,7 @@ const ListUsers = () => {
   const [rowsPerPage, setRowsPerPage] = useState(8)
   const [selectedRowId, setSelectedRowId] = useState(null)
   const [selectedIds, setSelectedIds] = useState([])
-  const [isDetailOpen, setIsDetailOpen] = useState(true)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [userNotes, setUserNotes] = useState({})
   const [formMode, setFormMode] = useState('create')
   const [userForm, setUserForm] = useState(DEFAULT_FORM)
@@ -99,22 +99,23 @@ const ListUsers = () => {
 
   useEffect(() => {
     setPage(0)
+    setIsDetailOpen(false)
   }, [filters, searchValue])
 
   useEffect(() => {
     if (!filteredUsers.length) {
       setSelectedRowId(null)
       setSelectedIds([])
+      setIsDetailOpen(false)
       return
     }
 
-    const selectedExists = filteredUsers.some((item) => item.id === selectedRowId)
-    if (!selectedExists) {
-      setSelectedRowId(filteredUsers[0].id)
-      setSelectedIds((prev) => (prev.length ? prev.filter((id) => filteredUsers.some((item) => item.id === id)) : [filteredUsers[0].id]))
-      setIsDetailOpen(true)
-    } else {
-      setSelectedIds((prev) => prev.filter((id) => filteredUsers.some((item) => item.id === id)))
+    if (selectedRowId) {
+      const selectedExists = filteredUsers.some((item) => item.id === selectedRowId)
+      if (!selectedExists) {
+        setSelectedRowId(null)
+        setIsDetailOpen(false)
+      }
     }
   }, [filteredUsers, selectedRowId])
 
@@ -127,6 +128,7 @@ const ListUsers = () => {
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
+    setIsDetailOpen(false)
   }
 
   const handleOpenCreateModal = () => {

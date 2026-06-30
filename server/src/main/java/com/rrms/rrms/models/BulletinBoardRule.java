@@ -19,7 +19,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Table(name = "bulletin_board_rules")
 @Builder
-@JsonIgnoreProperties({"bulletinBoard"})
+@JsonIgnoreProperties({"bulletinBoard", "hibernateLazyInitializer", "handler"})
 public class BulletinBoardRule {
 
     @Id
@@ -31,6 +31,6 @@ public class BulletinBoardRule {
     private BulletinBoard bulletinBoard;
 
     @ManyToOne
-    @JoinColumn(columnDefinition = "rule_id")
+    @JoinColumn(name = "rule_rule_id")
     private Rule rule;
 }

@@ -2,8 +2,8 @@ package com.rrms.rrms.models;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -92,31 +92,37 @@ public class BulletinBoard extends BaseEntity {
     @Column(columnDefinition = "BOOLEAN")
     private Boolean isActive;
 
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
+    @Column(name = "is_hidden", columnDefinition = "BOOLEAN")
+    private Boolean isHidden;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "motel_id")
+    @JoinColumn(name = "motel_id", columnDefinition = "binary(16)")
     private Motel motel;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
+    @JoinColumn(name = "room_id", columnDefinition = "binary(16)")
     private Room room;
 
     @OneToMany(mappedBy = "bulletinBoard", cascade = CascadeType.MERGE, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default
-    private List<BulletinBoardImage> bulletinBoardImages = new ArrayList<>();
+    private Set<BulletinBoardImage> bulletinBoardImages = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "bulletinBoard", cascade = CascadeType.MERGE, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default
-    private List<BulletinBoardReviews> bulletinBoardReviews = new ArrayList<>();
+    private Set<BulletinBoardReviews> bulletinBoardReviews = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "bulletinBoard", cascade = CascadeType.MERGE, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default
-    private List<BulletinBoardRule> bulletinBoardRules = new ArrayList<>();
+    private Set<BulletinBoardRule> bulletinBoardRules = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "bulletinBoard", cascade = CascadeType.MERGE, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default
-    private List<BulletinBoardRentalAmenity> bulletinBoardRentalAmenities = new ArrayList<>();
+    private Set<BulletinBoardRentalAmenity> bulletinBoardRentalAmenities = new LinkedHashSet<>();
 }

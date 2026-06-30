@@ -18,12 +18,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "bulletin_board_images")
-@JsonIgnoreProperties({"bulletinBoard"})
+@JsonIgnoreProperties({"bulletinBoard", "hibernateLazyInitializer", "handler"})
 @Builder
 public class BulletinBoardImage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID bulletinBoardImageId;
 
     @ManyToOne

@@ -16,14 +16,15 @@ import {
 } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import GppBadOutlinedIcon from '@mui/icons-material/GppBadOutlined'
-import { ACTION_OPTIONS, getDefaultNotificationMessage } from './violationReportData'
+import { ACTION_OPTIONS, getDefaultNotificationMessage } from './violationReportConstants'
 import { BORDER, PRIMARY, PRIMARY_HOVER } from './violationReportStyles'
 
-const ViolationResolveModal = ({ open, report, onClose }) => {
-  const [action, setAction] = useState('hide')
+const ViolationResolveModal = ({ open, report, onClose, onSubmit }) => {
+  const [action, setAction] = useState('HIDE')
   const [sendNotification, setSendNotification] = useState(true)
   const [notificationText, setNotificationText] = useState('')
   const [lockDays, setLockDays] = useState(7)
+  const [submitting, setSubmitting] = useState(false)
   const currentReport = report || {
     subjectTitle: 'Bài đăng đang chọn',
     reason: 'Lừa đảo'
@@ -34,6 +35,25 @@ const ViolationResolveModal = ({ open, report, onClose }) => {
   }, [action, currentReport])
 
   const selectedOption = useMemo(() => ACTION_OPTIONS.find((option) => option.value === action), [action])
+
+  const handleConfirm = async () => {
+    if (!onSubmit) {
+      onClose?.()
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      await onSubmit({
+        action,
+        adminNote: '',
+        notificationMessage: sendNotification ? notificationText : '',
+        lockDays
+      })
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <Dialog
@@ -142,11 +162,13 @@ const ViolationResolveModal = ({ open, report, onClose }) => {
           />
 
           <Stack direction="row" justifyContent="flex-end" spacing={1.25}>
-            <Button variant="outlined" onClick={onClose} sx={{ borderColor: '#D1D5DB', color: '#4B5563', textTransform: 'none', borderRadius: '8px' }}>
+            <Button variant="outlined" onClick={onClose} disabled={submitting} sx={{ borderColor: '#D1D5DB', color: '#4B5563', textTransform: 'none', borderRadius: '8px' }}>
               Hủy
             </Button>
             <Button
               variant="contained"
+              onClick={handleConfirm}
+              disabled={submitting}
               sx={{
                 bgcolor: PRIMARY,
                 textTransform: 'none',

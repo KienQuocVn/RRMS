@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rrms.rrms.dto.response.BulletinBoardSearchResponse;
 import com.rrms.rrms.enums.ErrorCode;
@@ -22,6 +23,7 @@ import lombok.experimental.FieldDefaults;
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SearchService implements ISearchService {
     BulletinBoardMapper bulletinBoardMapper;
     private final BulletinBoardRepository bulletinBoardRepository;

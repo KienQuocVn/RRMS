@@ -10,7 +10,7 @@ import {
 } from '@mui/material'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded'
-import { FILTER_OPTIONS } from './violationReportData'
+import { FILTER_OPTIONS } from './violationReportConstants'
 import { BORDER, CARD_BG, PRIMARY, PRIMARY_HOVER } from './violationReportStyles'
 
 const selectSx = {

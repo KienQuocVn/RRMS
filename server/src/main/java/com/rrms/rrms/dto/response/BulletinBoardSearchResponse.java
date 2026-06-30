@@ -4,6 +4,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,15 +34,25 @@ public class BulletinBoardSearchResponse implements Serializable {
 
     AccountResponse account;
     String title;
+    String rentalCategory;
     String description;
     BigDecimal rentPrice;
     BigDecimal promotionalRentalPrice;
+    BigDecimal deposit;
     Integer area;
     BigDecimal electricityPrice;
     BigDecimal waterPrice;
+    String maxPerson;
     LocalDate moveInDate;
+    String openingHours;
+    String closeHours;
     String address;
+    Double longitude;
+    Double latitude;
+    Boolean status;
     Boolean isActive;
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
     MotelResponse motel;
     RoomResponse room;
     List<BulletinBoardImage> bulletinBoardImages;

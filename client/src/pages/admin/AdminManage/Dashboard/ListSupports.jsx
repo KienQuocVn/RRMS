@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Box, Stack } from '@mui/material'
 import Grid from '@mui/material/Grid2'
+import Swal from 'sweetalert2'
+import { getViolationReportStats, getViolationReports, resolveViolationReport } from '~/apis/violationReportAPI'
 import ViolationEmptyState from './components/violationReports/ViolationEmptyState'
 import ViolationFiltersBar from './components/violationReports/ViolationFiltersBar'
 import ViolationReportDetailPanel from './components/violationReports/ViolationReportDetailPanel'
@@ -8,7 +10,7 @@ import ViolationReportsHeader from './components/violationReports/ViolationRepor
 import ViolationReportsTable from './components/violationReports/ViolationReportsTable'
 import ViolationResolveModal from './components/violationReports/ViolationResolveModal'
 import ViolationStatsRow from './components/violationReports/ViolationStatsRow'
-import { VIOLATION_REPORTS } from './components/violationReports/violationReportData'
+import { mapStatsToQuickStats } from './components/violationReports/violationReportConstants'
 
 const DEFAULT_FILTERS = {
   status: 'Chờ xử lý',
@@ -28,20 +30,26 @@ const matchesSeverity = (reportCount, filter) => {
 
 const matchesReason = (report, filter) => {
   if (filter === 'Tất cả') return true
-  if (filter === 'Thông tin sai lệch') return report.reason === 'Thông tin sai lệch' || report.reason === 'Giá không hợp lý'
+  if (filter === 'Thông tin sai lệch') {
+    return report.reason === 'Thông tin sai lệch' || report.reason === 'Giá không hợp lý'
+  }
   return report.reason === filter
 }
 
 const parseReportDate = (report) => {
-  const [datePart] = report.createdAtLabel.split(' lúc ')
+  const [datePart] = (report.createdAtLabel || '').split(' lúc ')
+  if (!datePart) return null
   const [day, month, year] = datePart.split('/').map(Number)
+  if (!day || !month || !year) return null
   return new Date(year, month - 1, day)
 }
 
 const matchesTime = (report, filter) => {
   if (filter === 'Tất cả') return true
   const reportDate = parseReportDate(report)
-  const today = new Date(2026, 5, 29)
+  if (!reportDate) return true
+
+  const today = new Date()
   const diffDays = Math.floor((today - reportDate) / (1000 * 60 * 60 * 24))
 
   if (filter === 'Hôm nay') return diffDays === 0
@@ -50,34 +58,67 @@ const matchesTime = (report, filter) => {
   return true
 }
 
+const mapApiReport = (report) => ({
+  ...report,
+  id: report.caseKey
+})
+
 const ListSupports = () => {
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
   const [searchValue, setSearchValue] = useState('')
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(8)
-  const [selectedRowId, setSelectedRowId] = useState(VIOLATION_REPORTS[0]?.id || null)
-  const [isDetailOpen, setIsDetailOpen] = useState(true)
-  const [selectedIds, setSelectedIds] = useState([VIOLATION_REPORTS[0]?.id].filter(Boolean))
+  const [reports, setReports] = useState([])
+  const [quickStats, setQuickStats] = useState(mapStatsToQuickStats())
+  const [selectedRowId, setSelectedRowId] = useState(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const [selectedIds, setSelectedIds] = useState([])
   const [resolveModalReport, setResolveModalReport] = useState(null)
 
+  const fetchReports = useCallback(async () => {
+    try {
+      const [reportsResponse, statsResponse] = await Promise.all([getViolationReports(), getViolationReportStats()])
+      const nextReports = (reportsResponse?.result || []).map(mapApiReport)
+      const stats = statsResponse?.result || {}
+
+      setReports(nextReports)
+      setQuickStats(mapStatsToQuickStats(stats))
+    } catch (error) {
+      console.error('Error fetching violation reports:', error)
+      setReports([])
+      setQuickStats(mapStatsToQuickStats())
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchReports()
+  }, [fetchReports])
+
   const filteredReports = useMemo(() => {
-    return VIOLATION_REPORTS.filter((report) => {
+    return reports.filter((report) => {
       const matchesStatus = filters.status === 'Tất cả' || report.status === filters.status
       const matchesType = filters.subjectType === 'Tất cả' || report.subjectType === filters.subjectType
-      const hasSearch = !searchValue.trim()
-        || [report.subjectTitle, report.latestContent, report.lastReporter.name, report.reason].join(' ').toLowerCase().includes(searchValue.toLowerCase())
+      const hasSearch =
+        !searchValue.trim() ||
+        [report.subjectTitle, report.latestContent, report.lastReporter?.name, report.reason]
+          .join(' ')
+          .toLowerCase()
+          .includes(searchValue.toLowerCase())
 
-      return matchesStatus
-        && matchesType
-        && matchesReason(report, filters.reason)
-        && matchesSeverity(report.reportCount, filters.severity)
-        && matchesTime(report, filters.time)
-        && hasSearch
+      return (
+        matchesStatus &&
+        matchesType &&
+        matchesReason(report, filters.reason) &&
+        matchesSeverity(report.reportCount, filters.severity) &&
+        matchesTime(report, filters.time) &&
+        hasSearch
+      )
     })
-  }, [filters, searchValue])
+  }, [filters, reports, searchValue])
 
   useEffect(() => {
     setPage(0)
+    setIsDetailOpen(false)
   }, [filters, searchValue])
 
   const paginatedRows = useMemo(() => {
@@ -89,22 +130,24 @@ const ListSupports = () => {
     if (!filteredReports.length) {
       setSelectedRowId(null)
       setSelectedIds([])
+      setIsDetailOpen(false)
       return
     }
 
-    const selectedStillExists = filteredReports.some((report) => report.id === selectedRowId)
-    if (!selectedStillExists) {
-      setSelectedRowId(filteredReports[0].id)
-      setIsDetailOpen(true)
+    if (selectedRowId) {
+      const selectedStillExists = filteredReports.some((report) => report.id === selectedRowId)
+      if (!selectedStillExists) {
+        setSelectedRowId(null)
+        setIsDetailOpen(false)
+      }
     }
-
-    setSelectedIds((prev) => prev.filter((id) => filteredReports.some((report) => report.id === id)))
   }, [filteredReports, selectedRowId])
 
   const selectedReport = filteredReports.find((report) => report.id === selectedRowId) || null
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
+    setIsDetailOpen(false)
   }
 
   const handleRowSelect = (id) => {
@@ -133,11 +176,32 @@ const ListSupports = () => {
     setSearchValue('')
   }
 
+  const handleResolveSubmit = async ({ action, adminNote, notificationMessage, lockDays }) => {
+    if (!resolveModalReport?.caseKey) return
+
+    try {
+      await resolveViolationReport({
+        caseKey: resolveModalReport.caseKey,
+        action,
+        adminNote,
+        notificationMessage,
+        lockDays
+      })
+
+      setResolveModalReport(null)
+      await fetchReports()
+      await Swal.fire('Thành công', 'Đã xử lý báo cáo vi phạm.', 'success')
+    } catch (error) {
+      console.error('Error resolving violation report:', error)
+      Swal.fire('Lỗi', error?.response?.data?.message || 'Không thể xử lý báo cáo. Vui lòng thử lại.', 'error')
+    }
+  }
+
   return (
     <Box sx={{ px: { xs: 2, lg: 3 }, py: 2, background: '#f5f7fa', minHeight: '100%' }}>
       <Stack spacing={2}>
         <ViolationReportsHeader />
-        <ViolationStatsRow />
+        <ViolationStatsRow stats={quickStats} />
         <ViolationFiltersBar
           filters={filters}
           searchValue={searchValue}
@@ -174,7 +238,12 @@ const ListSupports = () => {
         )}
       </Stack>
 
-      <ViolationResolveModal open={Boolean(resolveModalReport)} report={resolveModalReport} onClose={() => setResolveModalReport(null)} />
+      <ViolationResolveModal
+        open={Boolean(resolveModalReport)}
+        report={resolveModalReport}
+        onClose={() => setResolveModalReport(null)}
+        onSubmit={handleResolveSubmit}
+      />
     </Box>
   )
 }

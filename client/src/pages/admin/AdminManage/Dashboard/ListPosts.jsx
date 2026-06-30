@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import axios from 'axios'
 import Swal from 'sweetalert2'
 import { Alert, Box, CircularProgress } from '@mui/material'
 import Grid from '@mui/material/Grid2'
-import { env } from '~/configs/environment'
 
+import { approveBulletinBoard, getAllBulletinBoards, hideBulletinBoard, rejectBulletinBoard } from '~/apis/bulletinBoardAPI'
 import { DASHBOARD_COLORS } from './constants/dashboardTheme'
 import PostApprovalHeader from '../components/postApproval/PostApprovalHeader'
 import PostApprovalStatsBar from '../components/postApproval/PostApprovalStatsBar'
@@ -41,7 +40,7 @@ const ListPosts = ({ setIsAdmin } = {}) => {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(8)
   const [activePostId, setActivePostId] = useState(null)
-  const [isPreviewOpen, setIsPreviewOpen] = useState(true)
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [checkedIds, setCheckedIds] = useState([])
   const [showInlineRejectReason, setShowInlineRejectReason] = useState(false)
   const [rejectModalState, setRejectModalState] = useState({
@@ -54,32 +53,20 @@ const ListPosts = ({ setIsAdmin } = {}) => {
   })
   const [actionStats, setActionStats] = useState({})
 
-  const userData = JSON.parse(sessionStorage.getItem('user') || 'null')
-  const token = userData?.token
-
-  const authHeaders = useMemo(
-    () => ({
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }),
-    [token]
-  )
-
   const fetchBulletinBoards = useCallback(async () => {
     setLoading(true)
     setError('')
 
     try {
-      const response = await axios.get(`${env.API_URL}/api/v1/bulletin-boards/inactive`, authHeaders)
-      setBulletinBoards(response.data?.result || [])
+      const response = await getAllBulletinBoards()
+      setBulletinBoards(response?.result || [])
     } catch (err) {
       console.error('Lỗi khi tải danh sách bài đăng:', err)
       setError('Không thể tải danh sách bài đăng chờ duyệt. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }
-  }, [authHeaders])
+  }, [])
 
   useEffect(() => {
     setIsAdmin?.(true)
@@ -96,11 +83,11 @@ const ListPosts = ({ setIsAdmin } = {}) => {
 
     return normalizedPosts.filter((post) => {
       const matchesKeyword =
-        !keyword ||
-        [post.title, post.ownerName, post.addressParts.fullAddress]
-          .join(' ')
-          .toLowerCase()
-          .includes(keyword)
+          !keyword ||
+          [post.title, post.ownerName, post.addressParts.fullAddress]
+              .join(' ')
+              .toLowerCase()
+              .includes(keyword)
 
       const matchesStatus = filters.status === 'Tất cả' || post.statusLabel === filters.status
       const matchesRoomType = filters.roomType === 'Tất cả' || post.roomTypeLabel === filters.roomType
@@ -116,20 +103,21 @@ const ListPosts = ({ setIsAdmin } = {}) => {
 
   const activePost = useMemo(
     () =>
-      isPreviewOpen
-        ? filteredPosts.find((post) => post.uiKey === activePostId) || filteredPosts[0] || null
+      isPreviewOpen && activePostId
+        ? filteredPosts.find((post) => post.uiKey === activePostId) || null
         : null,
     [activePostId, filteredPosts, isPreviewOpen]
   )
 
   useEffect(() => {
-    if (!filteredPosts.length) {
+    if (!filteredPosts.length || !activePostId) {
       setActivePostId(null)
       return
     }
 
-    if (!activePostId || !filteredPosts.some((post) => post.uiKey === activePostId)) {
-      setActivePostId(filteredPosts[0].uiKey)
+    if (!filteredPosts.some((post) => post.uiKey === activePostId)) {
+      setActivePostId(null)
+      setIsPreviewOpen(false)
     }
   }, [activePostId, filteredPosts])
 
@@ -140,8 +128,8 @@ const ListPosts = ({ setIsAdmin } = {}) => {
     }
   }, [filteredPosts.length, page, rowsPerPage])
 
-  const updateActionStat = (key, value) => {
-    setActionStats((prev) => ({ ...prev, [key]: (prev[key] ?? value) + 1 }))
+  const updateActionStat = (key) => {
+    setActionStats((prev) => ({ ...prev, [key]: (prev[key] ?? 0) + 1 }))
   }
 
   const removeBoardsFromState = (ids = []) => {
@@ -164,10 +152,10 @@ const ListPosts = ({ setIsAdmin } = {}) => {
     if (!isConfirmed) return
 
     try {
-      await Promise.all(ids.map((id) => axios.put(`${env.API_URL}/api/v1/bulletin-boards/${id}/approve`, {}, authHeaders)))
+      await Promise.all(ids.map((id) => approveBulletinBoard(id)))
 
       removeBoardsFromState(ids)
-      updateActionStat('approvedToday', 8)
+      updateActionStat('approvedToday')
       setShowInlineRejectReason(false)
       await Swal.fire('Thành công', successMessage, 'success')
     } catch (err) {
@@ -212,10 +200,10 @@ const ListPosts = ({ setIsAdmin } = {}) => {
     }
 
     try {
-      await Promise.all(rejectModalState.ids.map((id) => axios.delete(`${env.API_URL}/api/v1/bulletin-boards/${id}`, authHeaders)))
+      await Promise.all(rejectModalState.ids.map((id) => rejectBulletinBoard(id, finalReason)))
 
       removeBoardsFromState(rejectModalState.ids)
-      updateActionStat('rejectedToday', 3)
+      updateActionStat('rejectedToday')
       closeRejectModal()
 
       Swal.fire(
@@ -231,9 +219,31 @@ const ListPosts = ({ setIsAdmin } = {}) => {
     }
   }
 
-  const handleMenuAction = (action, post) => {
+  const handleMenuAction = async (action, post) => {
+    if (action === 'Ẩn bài') {
+      const { isConfirmed } = await Swal.fire({
+        title: 'Xác nhận ẩn bài đăng',
+        text: `Bạn có chắc muốn ẩn bài "${post.title}" khỏi danh sách công khai?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ẩn bài',
+        cancelButtonText: 'Hủy'
+      })
+
+      if (!isConfirmed) return
+
+      try {
+        await hideBulletinBoard(post.uiKey)
+        removeBoardsFromState([post.uiKey])
+        Swal.fire('Thành công', 'Bài đăng đã được ẩn.', 'success')
+      } catch (err) {
+        console.error('Lỗi khi ẩn bài:', err)
+        Swal.fire('Lỗi', 'Không thể ẩn bài đăng. Vui lòng thử lại.', 'error')
+      }
+      return
+    }
+
     const messages = {
-      'Ẩn bài': `Tính năng "${action}" cho bài "${post.title}" đang được cập nhật.`,
       'Liên hệ chủ trọ': `Liên hệ chủ trọ: ${post.ownerPhone}`,
       'Xem lịch sử': `Bài "${post.title}" đang ở trạng thái ${post.statusLabel}.`
     }
@@ -244,7 +254,7 @@ const ListPosts = ({ setIsAdmin } = {}) => {
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
     setPage(0)
-    setIsPreviewOpen(true)
+    setIsPreviewOpen(false)
   }
 
   const handleToggleCheck = (id) => {

@@ -83,13 +83,6 @@ export const POST_APPROVAL_STATS_THEME = [
   }
 ]
 
-export const DEFAULT_APPROVAL_STATS = {
-  pending: 12,
-  approvedToday: 8,
-  rejectedToday: 3,
-  monthTotal: 124
-}
-
 export const previewSectionLabelSx = {
   fontSize: 11,
   fontWeight: 600,
@@ -102,7 +95,7 @@ export const previewSectionLabelSx = {
 export const getBoardStatusLabel = (board) => {
   if (board?.reviewStatus) return board.reviewStatus
   if (board?.isHidden) return 'Đã ẩn'
-  if (board?.isRejected) return 'Từ chối'
+  if (board?.rejectionReason || board?.isRejected) return 'Từ chối'
   if (board?.isActive) return 'Đã duyệt'
   return 'Chờ duyệt'
 }
@@ -173,12 +166,19 @@ export const extractAddressParts = (address = '') => {
 
 export const getRoomTypeLabel = (board) => board?.rentalCategory || 'Phòng trọ'
 
-export const buildDerivedStats = (boards = [], actionStats = {}) => ({
-  pending: boards.filter((board) => getBoardStatusLabel(board) === 'Chờ duyệt').length || DEFAULT_APPROVAL_STATS.pending,
-  approvedToday: actionStats.approvedToday ?? DEFAULT_APPROVAL_STATS.approvedToday,
-  rejectedToday: actionStats.rejectedToday ?? DEFAULT_APPROVAL_STATS.rejectedToday,
-  monthTotal: boards.length || DEFAULT_APPROVAL_STATS.monthTotal
-})
+export const buildDerivedStats = (boards = [], actionStats = {}) => {
+  const now = new Date()
+  const currentMonth = now.getMonth()
+  const pending = boards.filter((board) => getBoardStatusLabel(board) === 'Chờ duyệt').length
+  const monthTotal = boards.filter((board) => getBoardPostedDate(board)?.getMonth() === currentMonth).length
+
+  return {
+    pending,
+    approvedToday: actionStats.approvedToday ?? 0,
+    rejectedToday: actionStats.rejectedToday ?? 0,
+    monthTotal: monthTotal || boards.length
+  }
+}
 
 export const matchesPriceRange = (price, priceRange) => {
   if (priceRange === 'Tất cả') return true
@@ -226,21 +226,57 @@ export const normalizeBoard = (board, index = 0) => {
     ownerEmail: board?.account?.email || 'Chưa cập nhật',
     ownerAvatar: board?.account?.avatar || '',
     ownerRole: 'Chủ trọ',
+    rejectionReason: board?.rejectionReason || '',
     ownerStats: {
-      totalPosts: 8,
-      approvedPosts: 5
+      totalPosts: 0,
+      approvedPosts: 0
     },
-    history: [
-      {
-        id: 'created',
-        label: 'Bài được đăng',
-        timestamp: formatDateTime(postedDate || new Date())
-      },
-      {
-        id: 'pending',
-        label: 'Đang chờ admin duyệt',
-        timestamp: formatDateTime(postedDate || new Date())
-      }
-    ]
+    history: buildBoardHistory(board, postedDate)
   }
+}
+
+const buildBoardHistory = (board, postedDate) => {
+  const statusLabel = getBoardStatusLabel(board)
+  const baseTimestamp = formatDateTime(postedDate || new Date())
+  const history = [
+    {
+      id: 'created',
+      label: 'Bài được đăng',
+      timestamp: baseTimestamp
+    }
+  ]
+
+  if (statusLabel === 'Chờ duyệt') {
+    history.push({
+      id: 'pending',
+      label: 'Đang chờ admin duyệt',
+      timestamp: baseTimestamp
+    })
+  }
+
+  if (statusLabel === 'Đã duyệt') {
+    history.push({
+      id: 'approved',
+      label: 'Bài đã được duyệt',
+      timestamp: baseTimestamp
+    })
+  }
+
+  if (statusLabel === 'Từ chối') {
+    history.push({
+      id: 'rejected',
+      label: 'Bài bị từ chối',
+      timestamp: baseTimestamp
+    })
+  }
+
+  if (statusLabel === 'Đã ẩn') {
+    history.push({
+      id: 'hidden',
+      label: 'Bài đã bị ẩn',
+      timestamp: baseTimestamp
+    })
+  }
+
+  return history
 }

@@ -24,7 +24,6 @@ function LatestRoomsSection({ rooms, loading, currentPage, totalPages, onPageCha
   return (
     <Box id="latest-rooms" sx={{ mt: 7 }}>
       <SectionHeading
-        eyebrow="Room For Rent - Latest"
         title="Phòng cho thuê mới nhất"
         description="Danh sách cuối trang giữ vai trò như feed chính của RRMS, lấy trực tiếp từ API mới nhất và phân trang để dễ theo dõi."
       />

@@ -34,7 +34,11 @@ const toDateValue = (value) => {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-const sortByNewest = (rooms) => [...rooms].sort((left, right) => toDateValue(right?.moveInDate) - toDateValue(left?.moveInDate))
+const sortByNewest = (rooms) =>
+  [...rooms].sort(
+    (left, right) =>
+      toDateValue(right?.createdAt || right?.moveInDate) - toDateValue(left?.createdAt || left?.moveInDate)
+  )
 
 const dedupeRooms = (rooms) => {
   const seen = new Set()

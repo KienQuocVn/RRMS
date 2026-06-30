@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.request.BulletinBoardRequest;
+import com.rrms.rrms.dto.request.RejectBulletinBoardRequest;
 import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.BulletinBoardResponse;
 import com.rrms.rrms.dto.response.BulletinBoardSearchResponse;
@@ -108,6 +109,31 @@ public class BulletinBoardController {
         BulletinBoardResponse updatedBoard = bulletinBoardService.approveBulletinBoard(id);
         return ApiResponse.<BulletinBoardResponse>builder()
                 .message("Duyệt bảng tin thành công")
+                .code(HttpStatus.OK.value())
+                .result(updatedBoard)
+                .build();
+    }
+
+    @Operation(summary = "Reject bulletin board")
+    @PutMapping("/{id}/reject")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ApiResponse<BulletinBoardResponse> rejectBulletinBoard(
+            @PathVariable UUID id, @RequestBody RejectBulletinBoardRequest request) {
+        BulletinBoardResponse updatedBoard = bulletinBoardService.rejectBulletinBoard(id, request.getReason());
+        return ApiResponse.<BulletinBoardResponse>builder()
+                .message("Từ chối bảng tin thành công")
+                .code(HttpStatus.OK.value())
+                .result(updatedBoard)
+                .build();
+    }
+
+    @Operation(summary = "Hide bulletin board")
+    @PutMapping("/{id}/hide")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
+    public ApiResponse<BulletinBoardResponse> hideBulletinBoard(@PathVariable UUID id) {
+        BulletinBoardResponse updatedBoard = bulletinBoardService.hideBulletinBoard(id);
+        return ApiResponse.<BulletinBoardResponse>builder()
+                .message("Ẩn bảng tin thành công")
                 .code(HttpStatus.OK.value())
                 .result(updatedBoard)
                 .build();

@@ -30,7 +30,7 @@ public interface AccountMapper {
     // AccountResponse sẽ được lấy từ
     // phương thức mapRole
     @Mapping(target = "permissions", source = "account", qualifiedByName = "mapPermissions")
-    // Thiết lập rằng trường "permissions" sẽ được lấy từ phương thức mapPermissions
+    @Mapping(target = "password", ignore = true)
     AccountResponse toAccountResponse(
             Account account); // Phương thức nhận một Account và trả về đối tượng AccountResponse
 

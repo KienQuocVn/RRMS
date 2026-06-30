@@ -4,6 +4,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,6 +45,10 @@ public class BulletinBoardResponse implements Serializable {
     Double latitude;
     Boolean status;
     Boolean isActive;
+    String rejectionReason;
+    Boolean isHidden;
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
     MotelResponse motel;
     RoomResponse room;
     List<BulletinBoardImage> bulletinBoardImages;

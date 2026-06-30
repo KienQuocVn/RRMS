@@ -27,6 +27,31 @@ export const deleteBulletinBoard = async (id) => {
   return response.data
 }
 
+export const getInactiveBulletinBoards = async () => {
+  const response = await httpClient.get('/api/v1/bulletin-boards/inactive')
+  return response.data
+}
+
+export const getAllBulletinBoards = async () => {
+  const response = await httpClient.get('/api/v1/bulletin-boards')
+  return response.data
+}
+
+export const approveBulletinBoard = async (id) => {
+  const response = await httpClient.put(`/api/v1/bulletin-boards/${id}/approve`)
+  return response.data
+}
+
+export const rejectBulletinBoard = async (id, reason) => {
+  const response = await httpClient.put(`/api/v1/bulletin-boards/${id}/reject`, { reason })
+  return response.data
+}
+
+export const hideBulletinBoard = async (id) => {
+  const response = await httpClient.put(`/api/v1/bulletin-boards/${id}/hide`)
+  return response.data
+}
+
 export const searchBulletinBoardByAddress = async (address) => {
   const response = await publicHttpClient.get(`/api/v1/bulletin-boards/search?address=${address}`)
   return response.data

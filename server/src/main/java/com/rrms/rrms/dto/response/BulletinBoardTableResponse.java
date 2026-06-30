@@ -25,4 +25,6 @@ public class BulletinBoardTableResponse implements Serializable {
     Integer area;
     Boolean status;
     Boolean isActive;
+    String rejectionReason;
+    Boolean isHidden;
 }

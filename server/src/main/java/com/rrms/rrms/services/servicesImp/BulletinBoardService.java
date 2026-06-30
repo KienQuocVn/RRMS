@@ -7,6 +7,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.elasticsearch.ResourceNotFoundException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +19,7 @@ import com.rrms.rrms.dto.response.BulletinBoardResponse;
 import com.rrms.rrms.dto.response.BulletinBoardSearchResponse;
 import com.rrms.rrms.dto.response.BulletinBoardTableResponse;
 import com.rrms.rrms.enums.ErrorCode;
+import com.rrms.rrms.enums.RoomStatus;
 import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.BulletinBoardMapper;
 import com.rrms.rrms.models.Account;
@@ -66,7 +70,7 @@ public class BulletinBoardService implements IBulletinBoard {
 
     @Override
     public List<BulletinBoardResponse> getAllBulletinBoards() {
-        return bulletinBoardRepository.findAll().stream()
+        return bulletinBoardRepository.findAllWithDetails().stream()
                 .map(bulletinBoardMapper::toBulletinBoardResponse)
                 .toList();
     }
@@ -84,6 +88,7 @@ public class BulletinBoardService implements IBulletinBoard {
 
         BulletinBoard bulletinBoard = bulletinBoardMapper.toBulletinBoard(bulletinBoardRequest);
         bulletinBoard.setAccount(account);
+        applyApprovalStateOnCreate(bulletinBoard);
         applyRoomAndMotelReferences(bulletinBoard, bulletinBoardRequest);
         bulletinBoard = bulletinBoardRepository.save(bulletinBoard);
 
@@ -102,6 +107,7 @@ public class BulletinBoardService implements IBulletinBoard {
         log.debug("Updating bulletin board id: {}", bulletinBoard.getBulletinBoardId());
 
         bulletinBoardMapper.updateBulletinBoardFromRequest(bulletinBoardRequest, bulletinBoard);
+        applyApprovalStateOnUpdate(bulletinBoard);
         applyRoomAndMotelReferences(bulletinBoard, bulletinBoardRequest);
         bulletinBoardRepository.save(bulletinBoard);
 
@@ -153,9 +159,49 @@ public class BulletinBoardService implements IBulletinBoard {
         BulletinBoard bulletinBoard = bulletinBoardRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("BulletinBoard not found"));
+
+        if (Boolean.TRUE.equals(bulletinBoard.getIsActive())) {
+            throw new AppException(ErrorCode.BULLETIN_BOARD_ALREADY_APPROVED);
+        }
+
         bulletinBoard.setIsActive(true);
-        bulletinBoard = bulletinBoardRepository.save(bulletinBoard);
-        return bulletinBoardMapper.toBulletinBoardResponse(bulletinBoard);
+        bulletinBoard.setRejectionReason(null);
+        bulletinBoard.setIsHidden(false);
+        bulletinBoardRepository.save(bulletinBoard);
+        return bulletinBoardMapper.toBulletinBoardResponse(reloadBulletinBoard(id));
+    }
+
+    @Override
+    public BulletinBoardResponse rejectBulletinBoard(UUID id, String reason) {
+        if (reason == null || reason.isBlank()) {
+            throw new AppException(ErrorCode.INVALID_INPUT);
+        }
+
+        BulletinBoard bulletinBoard = bulletinBoardRepository
+                .findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.BULLETIN_BOARD_NOT_FOUND));
+
+        bulletinBoard.setIsActive(false);
+        bulletinBoard.setStatus(false);
+        bulletinBoard.setRejectionReason(reason.trim());
+        bulletinBoardRepository.save(bulletinBoard);
+        return bulletinBoardMapper.toBulletinBoardResponse(reloadBulletinBoard(id));
+    }
+
+    @Override
+    public BulletinBoardResponse hideBulletinBoard(UUID id) {
+        BulletinBoard bulletinBoard = bulletinBoardRepository
+                .findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.BULLETIN_BOARD_NOT_FOUND));
+
+        if (Boolean.TRUE.equals(bulletinBoard.getIsHidden())) {
+            throw new AppException(ErrorCode.BULLETIN_BOARD_ALREADY_HIDDEN);
+        }
+
+        bulletinBoard.setIsHidden(true);
+        bulletinBoard.setStatus(false);
+        bulletinBoardRepository.save(bulletinBoard);
+        return bulletinBoardMapper.toBulletinBoardResponse(reloadBulletinBoard(id));
     }
 
     public void deleteBulletinBoard(UUID id) {
@@ -228,6 +274,36 @@ public class BulletinBoardService implements IBulletinBoard {
         }
     }
 
+    private void applyApprovalStateOnCreate(BulletinBoard bulletinBoard) {
+        if (isCurrentUserAdmin()) {
+            if (bulletinBoard.getIsActive() == null) {
+                bulletinBoard.setIsActive(true);
+            }
+            return;
+        }
+
+        bulletinBoard.setIsActive(false);
+    }
+
+    private void applyApprovalStateOnUpdate(BulletinBoard bulletinBoard) {
+        if (isCurrentUserAdmin()) {
+            return;
+        }
+
+        bulletinBoard.setIsActive(false);
+    }
+
+    private boolean isCurrentUserAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch("ROLE_ADMIN"::equals);
+    }
+
     private BulletinBoard reloadBulletinBoard(UUID bulletinBoardId) {
         return bulletinBoardRepository
                 .findById(bulletinBoardId)
@@ -250,6 +326,7 @@ public class BulletinBoardService implements IBulletinBoard {
         }
 
         if (room != null) {
+            validateRoomAvailableForPosting(room);
             Motel roomMotel = room.getMotel();
             if (motel != null && roomMotel != null && !roomMotel.getMotelId().equals(motel.getMotelId())) {
                 throw new IllegalArgumentException("Room does not belong to the provided motel");
@@ -299,6 +376,12 @@ public class BulletinBoardService implements IBulletinBoard {
         }
 
         return null;
+    }
+
+    private void validateRoomAvailableForPosting(Room room) {
+        if (room.getStatus() != RoomStatus.AVAILABLE) {
+            throw new AppException(ErrorCode.ROOM_NOT_AVAILABLE);
+        }
     }
 
     private boolean matchesAddress(String left, String right) {

@@ -29,6 +29,11 @@ public enum ErrorCode {
     SERVICE_ID_REQUIRED(HttpStatus.BAD_REQUEST.value(), "Service id required", HttpStatus.BAD_REQUEST),
     INVALID_SEARCH_PARAMETER(HttpStatus.BAD_REQUEST.value(), "Invalid search parameter", HttpStatus.BAD_REQUEST),
     BULLETIN_BOARD_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Bulletin board not found", HttpStatus.NOT_FOUND),
+    BULLETIN_BOARD_ALREADY_APPROVED(
+            HttpStatus.BAD_REQUEST.value(), "Bulletin board already approved", HttpStatus.BAD_REQUEST),
+    ROOM_NOT_AVAILABLE(HttpStatus.BAD_REQUEST.value(), "Room is not available for posting", HttpStatus.BAD_REQUEST),
+    BULLETIN_BOARD_ALREADY_HIDDEN(
+            HttpStatus.BAD_REQUEST.value(), "Bulletin board is already hidden", HttpStatus.BAD_REQUEST),
     BULLETIN_BOARD_REVIEW_NOT_FOUND(
             HttpStatus.NOT_FOUND.value(), "Bulletin board review not found", HttpStatus.NOT_FOUND),
     BULLETIN_BOARD_IMAGE_NOT_FOUND(

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Box, List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { Box, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined'
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined'
 import ReportOutlinedIcon from '@mui/icons-material/ReportOutlined'
@@ -15,7 +15,6 @@ const MENU_ITEMS = [
   { label: 'Duyệt bài đăng', to: '/adminManage/manage-posts/list', icon: FactCheckOutlinedIcon },
   { label: 'Báo cáo vi phạm', to: '/adminManage/manage-supports/list', icon: ReportOutlinedIcon },
   { label: 'Người dùng', to: '/adminManage/manage-users/list', icon: PeopleOutlineIcon },
-  // Các mục dưới đây chưa có route riêng -> disable để không bị active sai
   { label: 'Nhà trọ', to: null, icon: BusinessOutlinedIcon, disabled: true },
   { label: 'Phòng trọ', to: null, icon: MeetingRoomOutlinedIcon, disabled: true },
   { label: 'Giao dịch', to: null, icon: PaymentsOutlinedIcon, disabled: true },
@@ -33,14 +32,9 @@ const AdminSidebar = () => {
 
   return (
     <Box sx={{ px: 1.5, py: 2, height: '100%' }}>
-      <Box sx={{ px: 1, mb: 2.5 }}>
-        <Typography sx={{ fontSize: 15, fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>
-          Quản Lý
-        </Typography>
-        <Typography sx={{ fontSize: 15, fontWeight: 700, color: '#20a9e7', lineHeight: 1.3 }}>
-          Nhà Trọ
-        </Typography>
-      </Box>
+      <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
+        <Box component="img" src="/bg2.png" sx={{ width: 110, height: 54 }} />
+      </Link>
 
       <List component="nav" disablePadding>
         {MENU_ITEMS.map((item) => {

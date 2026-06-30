@@ -3,7 +3,7 @@ import OutlinedFlagRoundedIcon from '@mui/icons-material/OutlinedFlagRounded'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded'
 import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded'
-import { QUICK_STATS } from './violationReportData'
+import { EMPTY_QUICK_STATS } from './violationReportConstants'
 
 const ICON_MAP = {
   flag: OutlinedFlagRoundedIcon,
@@ -12,7 +12,7 @@ const ICON_MAP = {
   chart: BarChartRoundedIcon
 }
 
-const ViolationStatsRow = () => {
+const ViolationStatsRow = ({ stats = EMPTY_QUICK_STATS }) => {
   return (
     <Box
       sx={{
@@ -25,7 +25,7 @@ const ViolationStatsRow = () => {
         gap: 1.5,
         width: '100%'
       }}>
-      {QUICK_STATS.map((item) => {
+      {stats.map((item) => {
         const Icon = ICON_MAP[item.iconKey]
         return (
           <Box

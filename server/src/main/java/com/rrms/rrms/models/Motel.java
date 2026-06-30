@@ -6,6 +6,7 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ import lombok.Setter;
 @Table(
         name = "motels",
         indexes = {@Index(name = "idx_motel_username", columnList = "username")})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Motel extends BaseEntity {
 
     @Id

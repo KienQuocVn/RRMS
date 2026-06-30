@@ -10,7 +10,6 @@ function SuggestSpecialSection({ title, items, onSelectHashtag }) {
   return (
     <Box id="sugget-special-ssection" sx={{ mt: 7 }}>
       <SectionHeading
-        eyebrow="Suggest Special Section"
         title={title}
         description="Chọn nhanh hashtag theo trường học và điểm quan tâm lớn để chuyển thẳng sang trang tìm kiếm, vẫn giữ nguyên bộ lọc tỉnh thành đầy đủ như hiện tại."
       />
