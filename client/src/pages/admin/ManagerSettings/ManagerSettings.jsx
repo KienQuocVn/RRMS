@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import { useParams } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import ModelDeposit from './ModelDeposit'
 
-import Swal from 'sweetalert2'
 import { CreateTRC, getTRCByMotelId, updateTRCById } from '~/apis/TRCAPI'
 import { deleteContractTemplate, getContractTemplatesByMotelId } from '~/apis/contractTemplateAPI'
 import { getMotelById } from '~/apis/motelAPI'
+import { getProfileByUsername } from '~/apis/accountAPI'
 
 import { Box, Container, Grid, Typography, Paper } from '@mui/material'
 import SettingsSidebar from './components/SettingsSidebar'
@@ -53,6 +54,16 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
       try {
         const response = await getTRCByMotelId(motelId)
         const temporaryContract = response?.data?.result
+        
+        let profile = null
+        if (username) {
+          try {
+            profile = await getProfileByUsername(username)
+          } catch (e) {
+            console.error('Error fetching host profile:', e)
+          }
+        }
+
         if (temporaryContract) {
           setFormData((prevData) => ({
             ...prevData,
@@ -71,6 +82,19 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
         } else {
           setIsExistingData(false)
           setTRCID('')
+          if (profile) {
+            setFormData((prevData) => ({
+              ...prevData,
+              representativename: profile.fullName || '',
+              phone: profile.phone || '',
+              birth: profile.birthday || '',
+              permanentaddress: profile.address || '',
+              job: profile.job || '',
+              identifier: profile.cccd || '',
+              placeofissue: profile.placeOfIssue || '',
+              dateofissue: profile.dateOfIssue || ''
+            }))
+          }
         }
       } catch (error) {
         console.error('Error fetching temporary contract by motel:', error)
@@ -101,14 +125,13 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
   }
 
   const handleSave = async () => {
-    // Form validation check is simple now since we use uncontrolled native or we can use custom checks
     if (!formData.representativename || !formData.phone || !formData.birth || !formData.permanentaddress || !formData.job || !formData.identifier || !formData.placeofissue || !formData.dateofissue) {
       Swal.fire({
         icon: 'error',
         title: 'Lỗi',
         text: 'Vui lòng điền đầy đủ các thông tin bắt buộc (*)'
       })
-      return;
+      return
     }
     
     try {

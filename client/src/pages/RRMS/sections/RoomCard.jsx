@@ -18,10 +18,7 @@ const cardShellSx = {
   overflow: 'hidden',
   textDecoration: 'none',
   transition: 'transform 180ms ease, box-shadow 180ms ease',
-  '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: '0 24px 68px rgba(15, 23, 42, 0.12)'
-  }
+  
 }
 
 const RoomMeta = ({ icon, text }) => (
@@ -193,12 +190,9 @@ export const LatestRoomCard = ({ room }) => {
               borderRadius: 999,
               px: 2,
               fontWeight: 800,
-              background: 'linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)',
+              background: 'linear-gradient(135deg, #20a9e7 0%, #2b7ed7 100%)',
               boxShadow: 'none',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)',
-                boxShadow: 'none'
-              }
+              
             }}>
             Xem chi tiết
           </Button>

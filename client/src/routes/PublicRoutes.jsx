@@ -13,6 +13,7 @@ const Support = lazy(() => import('../pages/support/Support'))
 const Contact = lazy(() => import('../pages/contact/Contact'))
 const Introduce = lazy(() => import('../pages/introduce/Introduce'))
 const Profile = lazy(() => import('../pages/profile/Profile'))
+const CustomerManage = lazy(() => import('../pages/admin/CustomerManage/CustomerManage'))
 const PaymentPage = lazy(() => import('../pages/cart/PaymentPage'))
 const Heart = lazy(() => import('../pages/cart/Heart'))
 const RRMS = lazy(() => import('../pages/RRMS/RRMS'))
@@ -37,6 +38,8 @@ const PublicRoutes = ({ auth }) => {
       <Route path="/contact" element={<Contact setIsAdmin={setIsAdmin} />} />
       <Route path="/introduce" element={<Introduce setIsAdmin={setIsAdmin} />} />
       <Route path="/profile" element={<Profile setIsAdmin={setIsAdmin} username={username} />} />
+      <Route path="/customerManage" element={<CustomerManage setIsAdmin={setIsAdmin} />} />
+      <Route path="/customerManage/*" element={<CustomerManage setIsAdmin={setIsAdmin} />} />
       <Route path="/payment" element={<PaymentPage setIsAdmin={setIsAdmin} />} />
       <Route path="/support" element={<Support setIsAdmin={setIsAdmin} />} />
       <Route path="/heart" element={<Heart setIsAdmin={setIsAdmin} />} />

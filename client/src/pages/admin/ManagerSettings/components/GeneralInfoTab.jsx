@@ -24,6 +24,7 @@ const GeneralInfoTab = ({ formData, handleInputChange, handleDateChange, handleS
             variant="contained" 
             color="success" 
             startIcon={<LaunchOutlinedIcon />}
+            onClick={() => window.open(`/cai-dat/${formData.motelId}/hop-dong-mau`, '_blank')}
             sx={{ textTransform: 'none', borderRadius: 1.5, bgcolor: '#20a9e7' }}
           >
             Xem hợp đồng thuê phần mềm

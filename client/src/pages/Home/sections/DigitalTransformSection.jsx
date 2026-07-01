@@ -51,16 +51,19 @@ export default function DigitalTransformSection() {
       <Container maxWidth="lg">
         <Box className="home-section-content">
           <Box sx={{ textAlign: 'center' }}>
-            <Typography sx={{
+            <Typography
+              sx={{
                 fontSize: { xs: '2rem', md: '2.4rem' },
                 fontWeight: 900,
                 lineHeight: 1.15,
                 textTransform: 'uppercase',
                 textAlign: 'center'
-              }} className='home-section-title'>
+              }}
+              className="home-section-title">
               Vì sao nên chọn <span className="accent">phần mềm quản lý nhà trọ</span> miễn phí RRMS?
             </Typography>
-            <Typography sx={{
+            <Typography
+              sx={{
                 mt: 1.5,
                 mx: 'auto',
                 maxWidth: 920,
@@ -109,7 +112,7 @@ export default function DigitalTransformSection() {
                       display: 'grid',
                       placeItems: 'center',
                       color: '#fff',
-                      background: 'linear-gradient(135deg, #6cd26a 0%, #3caf4a 100%)',
+                      background: 'linear-gradient(135deg, #20a9e7 0%, #2b7ed7 100%)',
                       boxShadow: '0 14px 28px rgba(57, 181, 74, 0.26)'
                     }}>
                     <Icon sx={{ fontSize: 32 }} />

@@ -67,6 +67,26 @@ const InfoCard = ({ label, value, hasCopy, valueColor }) => (
   </Paper>
 )
 
+const formatDateForInput = (dateValue) => {
+  if (!dateValue) return ''
+  try {
+    const d = new Date(dateValue)
+    if (isNaN(d.getTime())) {
+      // Trường hợp dateValue có dạng yyyy-MM-dd
+      if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+        return dateValue
+      }
+      return ''
+    }
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  } catch {
+    return ''
+  }
+}
+
 // ── EditModal ─────────────────────────────────────────────────────────────────
 
 const EditAccountModal = ({ open, onClose, account, onSaved }) => {
@@ -75,13 +95,13 @@ const EditAccountModal = ({ open, onClose, account, onSaved }) => {
     fullName: account?.fullName || '',
     phone: account?.phone || '',
     email: account?.email || '',
-    birthday: account?.birthday || '',
+    birthday: formatDateForInput(account?.birthday),
     gender: account?.gender || '',
     cccd: account?.cccd || '',
     address: account?.address || '',
     job: account?.job || '',
     placeOfIssue: account?.placeOfIssue || '',
-    dateOfIssue: account?.dateOfIssue || '',
+    dateOfIssue: formatDateForInput(account?.dateOfIssue),
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -94,13 +114,13 @@ const EditAccountModal = ({ open, onClose, account, onSaved }) => {
         fullName: account.fullName || '',
         phone: account.phone || '',
         email: account.email || '',
-        birthday: account.birthday || '',
+        birthday: formatDateForInput(account.birthday),
         gender: account.gender || '',
         cccd: account.cccd || '',
         address: account.address || '',
         job: account.job || '',
         placeOfIssue: account.placeOfIssue || '',
-        dateOfIssue: account.dateOfIssue || '',
+        dateOfIssue: formatDateForInput(account.dateOfIssue),
       })
       setError(null)
     }

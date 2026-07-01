@@ -19,12 +19,14 @@ import { getServiceRoombyRoomId } from '~/apis/roomAPI';
 import { getAllDeviceByRomId } from '~/apis/deviceAPT';
 import { getTRCByusername } from '~/apis/TRCAPI';
 import { getMotelById } from '~/apis/motelAPI';
-import { toWords } from 'number-to-words';
+import { getProfileByUsername } from '~/apis/accountAPI';
+
 
 const ContractPreview = ({ setIsAdmin }) => {
   const { contractId, motelId } = useParams();
   const [contract, setContract] = useState({});
   const [TRC, setTRC] = useState({});
+  const [profile, setProfile] = useState({});
   const [motel, setMotel] = useState({});
   const [roomService, setRoomService] = useState([]);
   const [roomDevice, setRoomDevice] = useState([]);
@@ -38,15 +40,17 @@ const ContractPreview = ({ setIsAdmin }) => {
         const roomId = dataContract.room.roomId;
         const username = dataContract.username.username;
 
-        const [dataRoomService, dataRoomDevice, dataTRC] = await Promise.all([
+        const [dataRoomService, dataRoomDevice, dataTRC, dataProfile] = await Promise.all([
           getServiceRoombyRoomId(roomId || ''),
           getAllDeviceByRomId(roomId || ''),
-          getTRCByusername(username || '')
+          getTRCByusername(username || ''),
+          getProfileByUsername(username || '')
         ]);
         
         setRoomService(dataRoomService);
         setRoomDevice(dataRoomDevice.result);
-        setTRC(dataTRC.data.result[0]);
+        setTRC(dataTRC.data.result[0] || null);
+        setProfile(dataProfile || null);
       } catch (error) {
         console.error('Error fetching contract details:', error);
       }
@@ -87,7 +91,57 @@ const ContractPreview = ({ setIsAdmin }) => {
   };
 
   const convertToWords = (number) => {
-    return toWords(number) + ' đồng';
+    if (!number) return '';
+    const units = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+    const places = ['', 'nghìn', 'triệu', 'tỷ'];
+    
+    const readGroup = (group) => {
+      let read = '';
+      const hundreds = Math.floor(group / 100);
+      const tens = Math.floor((group % 100) / 10);
+      const ones = group % 10;
+      
+      if (hundreds > 0) {
+        read += units[hundreds] + ' trăm ';
+      }
+      
+      if (tens > 1) {
+        read += units[tens] + ' mươi ';
+      } else if (tens === 1) {
+        read += 'mười ';
+      } else if (hundreds > 0 && ones > 0) {
+        read += 'lẻ ';
+      }
+      
+      if (ones === 5 && tens > 0) {
+        read += 'lăm ';
+      } else if (ones === 1 && tens > 1) {
+        read += 'mốt ';
+      } else if (ones > 0) {
+        read += units[ones] + ' ';
+      }
+      
+      return read;
+    };
+    
+    let str = '';
+    let i = 0;
+    let temp = Math.floor(number);
+    
+    if (temp === 0) return 'không đồng';
+    
+    while (temp > 0) {
+      const group = temp % 1000;
+      if (group > 0) {
+        const groupStr = readGroup(group);
+        str = groupStr + places[i] + ' ' + str;
+      }
+      temp = Math.floor(temp / 1000);
+      i++;
+    }
+    
+    str = str.trim();
+    return str.charAt(0).toUpperCase() + str.slice(1) + ' đồng';
   };
 
   useEffect(() => {
@@ -147,14 +201,16 @@ const ContractPreview = ({ setIsAdmin }) => {
               BÊN A : BÊN CHO THUÊ (PHÒNG TRỌ)
             </Typography>
             <Box sx={{ pl: 2 }}>
-              <Typography>Họ và tên: {TRC?.representativename || '...............................'}</Typography>
-              <Typography>Năm sinh: {formatDate(TRC?.birth)}</Typography>
-              <Typography>CMND/CCCD: ...............................</Typography>
+              <Typography>Họ và tên: {TRC?.representativename || profile?.fullName || '...............................'}</Typography>
+              <Typography>Năm sinh: {formatDate(TRC?.birth || profile?.birthday)}</Typography>
+              <Typography>CMND/CCCD: {TRC?.identifier || profile?.cccd || '...............................'}</Typography>
               <Box sx={{ display: 'flex', gap: 4 }}>
-                <Typography>Ngày cấp: {formatDate(TRC?.dateofissue)}</Typography>
-                <Typography>Nơi cấp: {TRC?.placeofissue || '...............................'}</Typography>
+                <Typography>Ngày cấp: {formatDate(TRC?.dateofissue || profile?.dateOfIssue)}</Typography>
+                <Typography>Nơi cấp: {TRC?.placeofissue || profile?.placeOfIssue || '...............................'}</Typography>
               </Box>
-              <Typography>Thường trú: {TRC?.permanentaddress || '...................................................'}</Typography>
+              <Typography>Số điện thoại: {TRC?.phone || profile?.phone || '...............................'}</Typography>
+              <Typography>Địa chỉ tòa nhà: {motel?.address || '...................................................'}</Typography>
+              <Typography>Thường trú: {TRC?.permanentaddress || profile?.address || '...................................................'}</Typography>
             </Box>
           </Box>
 
@@ -165,13 +221,13 @@ const ContractPreview = ({ setIsAdmin }) => {
             </Typography>
             <Box sx={{ pl: 2 }}>
               <Typography>Họ và tên: {contract?.tenant?.fullname || '...............................'}</Typography>
-              <Typography>Năm sinh: {contract?.tenant?.birthday || '...................'}</Typography>
-              <Typography>CMND/CCCD: {contract?.tenant?.cccd || '...................'}</Typography>
+              <Typography>Năm sinh: {formatDate(contract?.tenant?.birthday)}</Typography>
+              <Typography>CMND/CCCD: {contract?.tenant?.cccd || '...............................'}</Typography>
               <Box sx={{ display: 'flex', gap: 4 }}>
-                <Typography>Ngày cấp: {contract?.tenant?.licenseDate || '...................'}</Typography>
-                <Typography>Nơi cấp: {contract?.tenant?.placeOfLicense || '...................'}</Typography>
+                <Typography>Ngày cấp: {formatDate(contract?.tenant?.licenseDate)}</Typography>
+                <Typography>Nơi cấp: {contract?.tenant?.placeOfLicense || '...............................'}</Typography>
               </Box>
-              <Typography>Thường trú: {contract?.tenant?.temporaryResidence ? '...................' : '...................................................'}</Typography>
+              <Typography>Thường trú: {contract?.tenant?.temporaryResidence || '...................................................'}</Typography>
             </Box>
           </Box>
 
@@ -182,7 +238,9 @@ const ContractPreview = ({ setIsAdmin }) => {
             <Typography sx={{ fontWeight: 'bold' }}>Điều 1:</Typography>
             <Box component="ul" sx={{ pl: 2 }}>
               <li style={{ marginBottom: '8px' }}>
-                Bên A đồng ý cho bên B thuê một phòng trọ thuộc địa chỉ: {motel?.address || '....'}
+                Bên A đồng ý cho bên B thuê một phòng trọ
+                {contract?.room?.roomName ? <b> {contract.room.roomName} </b> : ' '}
+                thuộc địa chỉ: {motel?.address || contract?.room?.motel?.address || '....'}
               </li>
               <li style={{ marginBottom: '8px' }}>
                 Dịch vụ sử dụng
@@ -274,13 +332,20 @@ const ContractPreview = ({ setIsAdmin }) => {
             </Box>
           </Box>
 
+          {/* Ngày ký */}
+          <Box sx={{ textAlign: 'right', mt: 4, mb: 2 }}>
+            <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+              {motel?.address ? motel.address.split(',').pop()?.trim() || 'TP. Hồ Chí Minh' : 'TP. Hồ Chí Minh'}, ngày {contract?.createdate ? new Date(contract.createdate).getDate() : '...'} tháng {contract?.createdate ? new Date(contract.createdate).getMonth() + 1 : '...'} năm {contract?.createdate ? new Date(contract.createdate).getFullYear() : '......'}
+            </Typography>
+          </Box>
+
           {/* Signatures */}
-          <Box sx={{ mt: 8, display: 'flex', justifyContent: 'space-between', textAlign: 'center' }}>
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', textAlign: 'center' }}>
             <Box sx={{ width: '45%' }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>BÊN A</Typography>
               <Typography variant="body2" sx={{ fontStyle: 'italic', mb: 10 }}>Ký và ghi rõ họ tên</Typography>
               <Divider sx={{ mb: 1, borderColor: '#333' }} />
-              <Typography>...............................</Typography>
+              <Typography>{TRC?.representativename || profile?.fullName || '...............................'}</Typography>
             </Box>
             <Box sx={{ width: '45%' }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>BÊN B</Typography>

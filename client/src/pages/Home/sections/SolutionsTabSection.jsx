@@ -217,11 +217,8 @@ export default function SolutionsTabSection() {
               endIcon={<ArrowForwardRoundedIcon />}
               className="home-cta-button secondary"
               sx={{
-                background: 'linear-gradient(135deg, #63cd72 0%, #36b95d 100%)',
+                background: 'linear-gradient(135deg, #20a9e7 0%, #2b7ed7 100%)',
                 color: '#fff',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #4bc45d 0%, #259f49 100%)'
-                }
               }}>
               Xem toàn bộ tính năng
             </Button>

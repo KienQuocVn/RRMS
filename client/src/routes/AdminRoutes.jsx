@@ -26,6 +26,7 @@ const MotelSetting = lazy(() => import('../pages/admin/MotelSettings/MotelSettin
 const ResidenceForm = lazy(() => import('../pages/admin/NavContentAdmin/ResidenceForm'))
 const AppPromo = lazy(() => import('../pages/admin/NavContentAdmin/AppPromo'))
 const VehicleManager = lazy(() => import('../pages/admin/NavContentAdmin/VehicleManagement/VehicleManager'))
+const SoftwareContractPreview = lazy(() => import('../pages/admin/ManagerSettings/components/SoftwareContractPreview'))
 
 const AdminRoutes = ({ auth, motel }) => {
   const { username, setUsername, setIsAdmin } = auth
@@ -325,6 +326,14 @@ const AdminRoutes = ({ auth, motel }) => {
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
             <ContractPreview setIsAdmin={setIsAdmin} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/cai-dat/:motelId/hop-dong-mau"
+        element={
+          <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
+            <SoftwareContractPreview setIsAdmin={setIsAdmin} />
           </ProtectedRoute>
         }
       />

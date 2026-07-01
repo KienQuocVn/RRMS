@@ -19,7 +19,9 @@ const ManagerMyAccount = ({ setIsAdmin, TaiKhoan, motels, setmotels }) => {
 
   useEffect(() => {
     setIsAdmin(true)
-    fetchAccountByUsername(TaiKhoan)
+    const storedUser = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')) : null
+    const realUsername = storedUser?.username || TaiKhoan
+    fetchAccountByUsername(realUsername)
   }, [TaiKhoan])
 
   useEffect(() => {

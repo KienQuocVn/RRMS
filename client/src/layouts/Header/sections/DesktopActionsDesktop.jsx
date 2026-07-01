@@ -66,7 +66,7 @@ export default function DesktopActionsDesktop({
       return { labelKey: 'header.postNow', to: `/quanlytro/${motelId}` }
     }
     if (isCustomer) {
-      return { labelKey: 'header.myRooms', to: '/profile' }
+      return { labelKey: 'header.myRooms', to: '/customerManage' }
     }
     return { labelKey: 'header.postNow', to: `/quanlytro/${motelId}` }
   })()

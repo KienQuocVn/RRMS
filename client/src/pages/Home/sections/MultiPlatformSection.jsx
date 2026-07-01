@@ -5,7 +5,7 @@ const platforms = [
     img: 'https://quanlytro.me/images/banner_mobile_flatform.webp',
     title: 'Quản lý nhà trọ trên điện thoại',
     buttonLabel: 'Quản lý trên điện thoại',
-    buttonColor: 'linear-gradient(135deg, #2ed573 0%, #24c76b 100%)',
+    buttonColor: 'linear-gradient(135deg, #20a9e7 0%, #2b7ed7 100%)',
     description:
       'Quản lý ngay trên chiếc điện thoại. Nhẹ nhàng, thuận tiện, linh hoạt với đầy đủ tính năng và được đồng bộ với các nền tảng khác.'
   },
@@ -13,7 +13,7 @@ const platforms = [
     img: 'https://quanlytro.me/images/banner_ipad_flatform.webp',
     title: 'Quản lý nhà trọ trên iPad',
     buttonLabel: 'Quản lý trên máy tính bảng',
-    buttonColor: 'linear-gradient(135deg, #7a6dff 0%, #59a2ff 100%)',
+    buttonColor: 'linear-gradient(135deg, #20a9e7 0%, #2b7ed7 100%)',
     description:
       'Nếu bạn đang có chiếc máy tính bảng là một lợi thế. Bạn có thể kết hợp được sự linh hoạt giữa điện thoại và máy tính.'
   },
@@ -21,7 +21,7 @@ const platforms = [
     img: 'https://quanlytro.me/images/banner_desktop_flatform.webp',
     title: 'Quản lý nhà trọ trên máy tính',
     buttonLabel: 'Quản lý trên máy tính',
-    buttonColor: 'linear-gradient(135deg, #5dc3ff 0%, #34b1ff 100%)',
+    buttonColor: 'linear-gradient(135deg, #20a9e7 0%, #2b7ed7 100%)',
     description:
       'Quản lý ngay trên website mà không cần cài đặt app. Tất cả các tính năng sẽ rất chi tiết, sẽ giúp bạn quản lý thuận tiện đầy đủ.'
   }
