@@ -68,10 +68,10 @@ const RoomFilterBar = ({
             <HomeIcon />
           </Box>
           <Box sx={{ borderLeft: '3px solid #20a9e7', pl: 2 }}>
-            <Typography variant="h6" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: '#333', fontSize: '1.2rem', lineHeight: 1.2 }}>
               Quản lý danh sách phòng
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="body2" sx={{ color: '#777', fontStyle: 'italic', fontSize: '0.85rem' }}>
               Tất cả danh sách phòng 
             </Typography>
           </Box>

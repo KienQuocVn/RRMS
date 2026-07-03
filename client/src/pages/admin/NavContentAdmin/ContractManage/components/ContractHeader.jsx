@@ -6,10 +6,10 @@ const ContractHeader = ({ onAddContract }) => {
   return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
       <Box sx={{ borderLeft: '4px solid #20a9e7', pl: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: '#333', fontSize: '1.2rem', lineHeight: 1.2 }}>
           Tất cả hợp đồng
         </Typography>
-        <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#666' }}>
+        <Typography variant="body2" sx={{ color: '#777', fontStyle: 'italic', fontSize: '0.85rem' }}>
           Danh sách hợp đồng được tạo khi thêm phiên bản ở mới
         </Typography>
       </Box>

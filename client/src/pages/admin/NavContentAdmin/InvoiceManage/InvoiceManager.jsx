@@ -3,6 +3,7 @@ import { Box, Paper } from '@mui/material'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import * as XLSX from 'xlsx'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import { env } from '~/configs/environment'
 import { isValidRouteParam } from '~/utils/apiAdapters'
@@ -27,7 +28,7 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const [modalOpenInvoice, setModalOpenInvoice] = useState(false)
   const [modalOpenCollectMoney, setModalOpenCollectMoney] = useState(false)
   const [bulkInvoiceOpen, setBulkInvoiceOpen] = useState(false)
-  const [filterStatus, setFilterStatus] = useState({ done: false, new: false })
+  const [filterStatus, setFilterStatus] = useState({ done: false, new: false, debt: false, cancel: false })
   const [sortValue, setSortValue] = useState('room-asc')
   const [searchText, setSearchText] = useState('')
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
@@ -275,12 +276,44 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
     }))
   }
 
+  const handleMonthChange = (month, year) => {
+    setSelectedMonth(month)
+    setSelectedYear(year)
+  }
+
+  const invoicesByMonth = useMemo(() => {
+    const filterYearMonthStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`
+    return invoices.filter((inv) => inv.invoiceCreateMonth === filterYearMonthStr)
+  }, [invoices, selectedMonth, selectedYear])
+
   const filteredData = useMemo(() => {
-    return invoices
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const filtered = invoicesByMonth
       .filter((currentInvoice) => {
-        if (filterStatus.done && currentInvoice.paymentStatus === 'PAID') return true
-        if (filterStatus.new && currentInvoice.paymentStatus !== 'PAID') return true
-        return !filterStatus.done && !filterStatus.new
+        // Tìm kiếm theo tên phòng
+        if (searchText && !currentInvoice.roomName?.toLowerCase().includes(searchText.toLowerCase())) {
+          return false
+        }
+
+        const isPaid = currentInvoice.paymentStatus === 'PAID'
+        const isCanceled = currentInvoice.paymentStatus === 'CANCELED'
+        const isOverdue = currentInvoice.dueDate && new Date(currentInvoice.dueDate).setHours(0, 0, 0, 0) < today
+        const isDebt = currentInvoice.paymentStatus === 'PARTIAL' || (currentInvoice.paymentStatus === 'UNPAID' && isOverdue)
+        const isUnpaid = currentInvoice.paymentStatus === 'UNPAID' && !isOverdue
+
+        const matchesDone = filterStatus.done && isPaid
+        const matchesNew = filterStatus.new && isUnpaid
+        const matchesDebt = filterStatus.debt && isDebt
+        const matchesCancel = filterStatus.cancel && isCanceled
+
+        const anyFilterSelected = filterStatus.done || filterStatus.new || filterStatus.debt || filterStatus.cancel
+        if (anyFilterSelected) {
+          return matchesDone || matchesNew || matchesDebt || matchesCancel
+        }
+
+        return true
       })
       .map((currentInvoice) => {
         const serviceData = {}
@@ -307,10 +340,143 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
             0
           ),
           total: currentInvoice.totalAmount,
-          status: currentInvoice.paymentStatus === 'PAID' ? 'Đã thu xong' : 'Chưa thu'
+          status: currentInvoice.paymentStatus === 'CANCELED'
+            ? 'Đã bị hủy'
+            : currentInvoice.paymentStatus === 'PAID'
+              ? 'Đã thu xong'
+              : 'Chưa thu'
         }
       })
-  }, [invoices, services, filterStatus])
+
+    // Sắp xếp dữ liệu
+    filtered.sort((a, b) => {
+      if (sortValue === 'room-asc') {
+        return a.roomName.localeCompare(b.roomName, 'vi', { numeric: true })
+      }
+      if (sortValue === 'room-desc') {
+        return b.roomName.localeCompare(a.roomName, 'vi', { numeric: true })
+      }
+      if (sortValue === 'date-asc') {
+        return new Date(a.invoiceCreateDate || 0) - new Date(b.invoiceCreateDate || 0)
+      }
+      if (sortValue === 'date-desc') {
+        return new Date(b.invoiceCreateDate || 0) - new Date(a.invoiceCreateDate || 0)
+      }
+      return 0
+    })
+
+    return filtered
+  }, [invoicesByMonth, services, filterStatus, searchText, sortValue])
+
+  const handlePrint = () => {
+    if (filteredData.length === 0) {
+      Swal.fire('Thông báo', 'Không có dữ liệu hóa đơn để in', 'info')
+      return
+    }
+
+    const printWindow = window.open('', '_blank')
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Danh sách hóa đơn - Tháng ${selectedMonth}/${selectedYear}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ccc; padding: 10px; text-align: left; font-size: 13px; }
+            th { background-color: #20a9e7; color: white; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            h2 { text-align: center; color: #20a9e7; margin-bottom: 5px; }
+            .meta { text-align: center; font-size: 14px; margin-bottom: 20px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <h2>DANH SÁCH HÓA ĐƠN</h2>
+          <div class="meta">Tháng ${String(selectedMonth).padStart(2, '0')}/${selectedYear}</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Tên phòng</th>
+                <th>Tiền phòng</th>
+                ${services.map(s => `<th>${s}</th>`).join('')}
+                <th>Thu/Trả cọc</th>
+                <th>Cộng thêm/Giảm trừ</th>
+                <th>Tổng cộng</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredData.map(row => `
+                <tr>
+                  <td><strong>${row.roomName}</strong></td>
+                  <td>${row.roomPrice?.toLocaleString('vi-VN')} đ</td>
+                  ${services.map(s => `<td>${(row[s] || 0)?.toLocaleString('vi-VN')} đ</td>`).join('')}
+                  <td>${(row.deposit || 0)?.toLocaleString('vi-VN')} đ</td>
+                  <td>${(row.adjustments || 0)?.toLocaleString('vi-VN')} đ</td>
+                  <td><strong>${row.total?.toLocaleString('vi-VN')} đ</strong></td>
+                  <td>${row.status}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <script>
+            window.onload = function() {
+              window.print();
+              window.close();
+            }
+          </script>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
+  }
+
+  const handleExportExcel = (type = 'full') => {
+    if (filteredData.length === 0) {
+      Swal.fire('Thông báo', 'Không có dữ liệu hóa đơn để xuất', 'info')
+      return
+    }
+
+    let excelData = []
+    if (type === 'compact') {
+      excelData = filteredData.map((row) => {
+        const totalServicesPrice = services.reduce((sum, serviceName) => sum + (row[serviceName] || 0), 0)
+        return {
+          'Tên phòng': row.roomName,
+          'Tiền phòng (đ)': row.roomPrice,
+          'Tổng tiền dịch vụ (đ)': totalServicesPrice,
+          'Thu/Trả cọc (đ)': row.deposit || 0,
+          'Cộng thêm/Giảm trừ (đ)': row.adjustments || 0,
+          'Tổng cộng cần thu (đ)': row.total,
+          'Trạng thái': row.status
+        }
+      })
+    } else {
+      excelData = filteredData.map((row) => {
+        const rowData = {
+          'Tên phòng': row.roomName,
+          'Tiền phòng (đ)': row.roomPrice
+        }
+        services.forEach((serviceName) => {
+          rowData[`${serviceName} (đ)`] = row[serviceName] || 0
+        })
+        rowData['Thu/Trả cọc (đ)'] = row.deposit || 0
+        rowData['Cộng thêm/Giảm trừ (đ)'] = row.adjustments || 0
+        rowData['Tổng cộng cần thu (đ)'] = row.total
+        rowData['Trạng thái'] = row.status
+        return rowData
+      })
+    }
+
+    const ws = XLSX.utils.json_to_sheet(excelData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, `HoaDon_${selectedMonth}_${selectedYear}`)
+
+    const fileName = type === 'compact'
+      ? `DanhSachHoaDon_RutGon_${selectedMonth}_${selectedYear}.xlsx`
+      : `DanhSachHoaDon_DayDu_${selectedMonth}_${selectedYear}.xlsx`
+    XLSX.writeFile(wb, fileName)
+    Swal.fire('Thành công!', `Đã xuất file excel ${fileName}`, 'success')
+  }
 
   const bulkInvoiceRooms = useMemo(() => {
     const roomMap = new Map()
@@ -363,12 +529,7 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         }}
       >
         <Box sx={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #eee' }}>
-          <YearMonthFilter
-            onMonthChange={(month, year) => {
-              setSelectedMonth(month)
-              setSelectedYear(year)
-            }}
-          />
+          <YearMonthFilter onMonthChange={handleMonthChange} />
         </Box>
 
         <Box sx={{ p: '14px 16px 10px' }}>
@@ -376,9 +537,11 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
             onCreateInvoice={() => setBulkInvoiceOpen(true)}
+            onPrint={handlePrint}
+            onExportExcel={handleExportExcel}
           />
           <InvoiceFilterBar
-            invoices={invoices}
+            invoices={invoicesByMonth}
             filterStatus={filterStatus}
             handleFilterChange={handleFilterChange}
             filteredData={filteredData}

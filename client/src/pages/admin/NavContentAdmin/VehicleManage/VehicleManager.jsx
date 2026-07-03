@@ -82,10 +82,10 @@ const VehicleManager = ({ motels, setmotels, setIsAdmin, setIsNavAdmin }) => {
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ width: 4, height: 40, bgcolor: Colors.info, mr: 2, borderRadius: 1 }} />
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#333', fontSize: '1.2rem', lineHeight: 1.2 }}>
                 Tất cả xe
               </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+              <Typography variant="body2" sx={{ color: '#777', fontStyle: 'italic', fontSize: '0.85rem' }}>
                 Danh sách các xe của khách thuê
               </Typography>
             </Box>

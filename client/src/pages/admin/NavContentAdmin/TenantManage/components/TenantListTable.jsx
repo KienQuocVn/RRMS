@@ -1,13 +1,6 @@
 import { Fragment } from 'react'
-import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
-import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined'
-import DirectionsCarFilledOutlinedIcon from '@mui/icons-material/DirectionsCarFilledOutlined'
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
-import PhoneIphoneOutlinedIcon from '@mui/icons-material/PhoneIphoneOutlined'
-import WorkOutlineOutlinedIcon from '@mui/icons-material/WorkOutlineOutlined'
 import {
-  Avatar,
   Box,
   Chip,
   Paper,
@@ -31,14 +24,19 @@ const headCellSx = {
   backgroundColor: '#f8fbff',
   borderBottom: '1px solid #d8e1eb',
   borderRight: '1px solid #e7edf5',
+  fontSize: '0.78rem',
+  py: 1,
+  px: 1,
   whiteSpace: 'nowrap'
 }
 
 const bodyCellSx = {
   borderBottom: '1px solid #e7edf5',
   borderRight: '1px solid #eef2f7',
-  verticalAlign: 'top',
-  py: 1.75
+  verticalAlign: 'middle',
+  fontSize: '0.78rem',
+  py: 1,
+  px: 1
 }
 
 const getDisplayValue = (...values) => {
@@ -69,19 +67,7 @@ const getGenderLabel = (value) => {
   return getDisplayValue(value)
 }
 
-const getInitials = (fullName) => {
-  const words = String(fullName ?? '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
 
-  if (!words.length) return '?'
-
-  return words
-    .slice(-2)
-    .map((word) => word[0]?.toUpperCase())
-    .join('')
-}
 
 const getVehicleLabel = (row) =>
   getDisplayValue(row.licensePlate, row.vehicleNumber, row.vehicle?.number, row.vehicle?.licensePlate)
@@ -127,24 +113,24 @@ const TenantListTable = ({
         boxShadow: 'none'
       }}>
       <TableContainer sx={{ maxHeight: 720 }}>
-        <Table stickyHeader sx={{ minWidth: 1600 }}>
+        <Table stickyHeader size="small" sx={{ minWidth: 1450 }}>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ ...headCellSx, minWidth: 240 }}>Tên khách thuê</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 120 }}>Số điện thoại</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 100 }}>Ngày sinh</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 80 }}>Giới tính</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 250 }}>Địa chỉ & Nghề nghiệp</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 150 }}>Thông tin CCCD</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 140 }}>Xe</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 110 }}>Ngày tạm trú</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 110 }}>Hạn tạm trú</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 100 }}>Quan hệ</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 120 }}>Mẫu tạm trú</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 130 }}>Loại người thuê</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 140 }}>Trạng thái giấy tờ</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 140 }}>Trạng thái tạm trú</TableCell>
-              <TableCell sx={{ ...headCellSx, minWidth: 72, backgroundColor: '#dfeafb', borderRight: 0 }} />
+              <TableCell sx={{ ...headCellSx, minWidth: 160 }}>Tên khách thuê</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 100 }}>Số điện thoại</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 75 }}>Ngày sinh</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 65 }}>Giới tính</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 120 }}>Địa chỉ <br/> Nghề nghiệp</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 120 }}>Thông tin CCCD</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 90 }}>Xe</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 85 }}>Ngày tạm trú</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 85 }}>Hạn tạm trú</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 75 }}>Quan hệ</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 100 }}>Mẫu tạm trú</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 100 }}>Loại người thuê</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 100 }}>Trạng thái <br/> giấy tờ</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 100 }}>Trạng thái <br/> tạm trú</TableCell>
+              <TableCell sx={{ ...headCellSx, minWidth: 50, backgroundColor: '#dfeafb', borderRight: 0 }} />
             </TableRow>
           </TableHead>
 
@@ -195,28 +181,27 @@ const TenantListTable = ({
                         }
                       }}>
                       <TableCell sx={{ ...bodyCellSx, backgroundColor: '#eef6ff' }}>
-                        <Stack direction="row" spacing={1.5}>
-                          <Avatar sx={{ bgcolor: '#e53935', width: 40, height: 40, fontWeight: 700 }}>
-                            {getInitials(row.fullname || row.fullName)}
-                          </Avatar>
+                        <Stack direction="row" spacing={1.25} alignItems="center">
+                          
 
                           <Box sx={{ minWidth: 0 }}>
-                            <Typography sx={{ fontWeight: 700, color: '#1f2937' }}>
+                            <Typography sx={{ fontWeight: 700, color: '#1f2937', fontSize: '0.78rem', lineHeight: 1.2 }}>
                               {getDisplayValue(row.fullname, row.fullName)}
                             </Typography>
-                            <Typography variant="body2" sx={{ color: '#475569' }}>
+                            <Typography sx={{ color: '#475569', fontSize: '0.72rem', mt: 0.25, wordBreak: 'break-all' }}>
                               {getDisplayValue(row.username, row.email)}
                             </Typography>
 
-                            <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
+                            <Stack direction="row" spacing={0.5} useFlexGap flexWrap="wrap" sx={{ mt: 0.75 }}>
                               <Chip
                                 size="small"
                                 label={row.type_of_tenant ? 'Đại diện liên hệ' : 'Thành viên phòng'}
                                 sx={{
-                                  height: 22,
+                                  height: 18,
                                   bgcolor: row.type_of_tenant ? '#e7f7e7' : '#fff4df',
                                   color: row.type_of_tenant ? '#2e7d32' : '#ef6c00',
-                                  fontWeight: 600
+                                  fontWeight: 600,
+                                  fontSize: '0.68rem'
                                 }}
                               />
 
@@ -225,10 +210,11 @@ const TenantListTable = ({
                                   size="small"
                                   label="Chưa có TK App"
                                   sx={{
-                                    height: 22,
+                                    height: 18,
                                     bgcolor: '#fff1f2',
                                     color: '#f97316',
-                                    fontWeight: 600
+                                    fontWeight: 600,
+                                    fontSize: '0.68rem'
                                   }}
                                 />
                               )}
@@ -238,37 +224,33 @@ const TenantListTable = ({
                       </TableCell>
 
                       <TableCell sx={bodyCellSx}>
-                        <Stack direction="row" spacing={0.75} alignItems="center">
-                          <PhoneIphoneOutlinedIcon sx={{ color: '#0f172a', fontSize: 18 }} />
-                          <Typography sx={{ fontWeight: 700 }}>{getDisplayValue(row.phone)}</Typography>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Typography sx={{ fontWeight: 700, fontSize: '0.78rem' }}>{getDisplayValue(row.phone)}</Typography>
                         </Stack>
                       </TableCell>
 
                       <TableCell sx={bodyCellSx}>
-                        <Stack direction="row" spacing={0.75} alignItems="center">
-                          <CakeOutlinedIcon sx={{ color: '#64748b', fontSize: 18 }} />
-                          <Typography variant="body2" sx={{ color: '#64748b' }}>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Typography sx={{ color: '#64748b', fontSize: '0.78rem' }}>
                             {formatDate(row.birthday)}
                           </Typography>
                         </Stack>
                       </TableCell>
 
                       <TableCell sx={bodyCellSx}>
-                        <Typography variant="body2">{getGenderLabel(row.gender)}</Typography>
+                        <Typography sx={{ fontSize: '0.78rem' }}>{getGenderLabel(row.gender)}</Typography>
                       </TableCell>
 
                       <TableCell sx={bodyCellSx}>
-                        <Stack spacing={1}>
-                          <Stack direction="row" spacing={0.75} alignItems="flex-start">
-                            <HomeOutlinedIcon sx={{ color: '#16a34a', fontSize: 18, mt: '2px' }} />
-                            <Typography variant="body2" sx={{ color: '#475569' }}>
+                        <Stack spacing={0.75}>
+                          <Stack direction="row" spacing={0.5} alignItems="flex-start">
+                            <Typography sx={{ color: '#475569', fontSize: '0.75rem', wordBreak: 'break-word' }}>
                               {getDisplayValue(row.address)}
                             </Typography>
                           </Stack>
 
-                          <Stack direction="row" spacing={0.75} alignItems="flex-start">
-                            <WorkOutlineOutlinedIcon sx={{ color: '#f59e0b', fontSize: 18, mt: '2px' }} />
-                            <Typography variant="body2" sx={{ color: '#475569' }}>
+                          <Stack direction="row" spacing={0.5} alignItems="flex-start">
+                            <Typography sx={{ color: '#475569', fontSize: '0.75rem', wordBreak: 'break-word' }}>
                               {getDisplayValue(row.job)}
                             </Typography>
                           </Stack>
@@ -277,44 +259,42 @@ const TenantListTable = ({
 
                       <TableCell sx={bodyCellSx}>
                         <Stack spacing={0.5}>
-                          <Stack direction="row" spacing={0.75} alignItems="center">
-                            <BadgeOutlinedIcon sx={{ color: '#475569', fontSize: 18 }} />
-                            <Typography sx={{ fontWeight: 700 }}>{getDisplayValue(row.cccd)}</Typography>
+                          <Stack direction="row" spacing={0.5} alignItems="center">
+                            <Typography sx={{ fontWeight: 700, fontSize: '0.78rem' }}>{getDisplayValue(row.cccd)}</Typography>
                           </Stack>
-                          <Typography variant="caption" sx={{ color: '#64748b' }}>
+                          <Typography sx={{ color: '#64748b', fontSize: '0.7rem' }}>
                             Ngày cấp: {formatDate(row.licenseDate)}
                           </Typography>
-                          <Typography variant="caption" sx={{ color: '#64748b' }}>
+                          <Typography sx={{ color: '#64748b', fontSize: '0.7rem' }}>
                             Nơi cấp: {getDisplayValue(row.placeOfLicense)}
                           </Typography>
                         </Stack>
                       </TableCell>
 
                       <TableCell sx={bodyCellSx}>
-                        <Stack direction="row" spacing={0.75} alignItems="center">
-                          <DirectionsCarFilledOutlinedIcon sx={{ color: '#475569', fontSize: 18 }} />
-                          <Typography variant="body2">{getVehicleLabel(row)}</Typography>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Typography sx={{ fontSize: '0.75rem', wordBreak: 'break-word' }}>{getVehicleLabel(row)}</Typography>
                         </Stack>
                       </TableCell>
 
                       <TableCell sx={bodyCellSx}>
-                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                        <Typography sx={{ color: '#64748b', fontSize: '0.75rem' }}>
                           {getResidenceStart(row)}
                         </Typography>
                       </TableCell>
 
                       <TableCell sx={bodyCellSx}>
-                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                        <Typography sx={{ color: '#64748b', fontSize: '0.75rem' }}>
                           {getResidenceEnd(row)}
                         </Typography>
                       </TableCell>
 
                       <TableCell sx={bodyCellSx}>
-                        <Typography variant="body2">{getDisplayValue(row.relationship)}</Typography>
+                        <Typography sx={{ fontSize: '0.75rem' }}>{getDisplayValue(row.relationship)}</Typography>
                       </TableCell>
 
                       <TableCell sx={bodyCellSx}>
-                        <Typography variant="body2">{getResidenceTemplate(row)}</Typography>
+                        <Typography sx={{ fontSize: '0.75rem', wordBreak: 'break-word' }}>{getResidenceTemplate(row)}</Typography>
                       </TableCell>
 
                       <TableCell sx={bodyCellSx}>
@@ -322,10 +302,11 @@ const TenantListTable = ({
                           size="small"
                           label={row.type_of_tenant ? 'Người liên hệ' : 'Thành viên'}
                           sx={{
-                            height: 22,
+                            height: 18,
                             bgcolor: row.type_of_tenant ? '#7bc043' : '#e2e8f0',
                             color: row.type_of_tenant ? '#fff' : '#334155',
-                            fontWeight: 700
+                            fontWeight: 700,
+                            fontSize: '0.68rem'
                           }}
                         />
                       </TableCell>
@@ -335,10 +316,11 @@ const TenantListTable = ({
                           size="small"
                           label={row.informationVerify ? 'Đã đầy đủ' : 'Chưa đầy đủ'}
                           sx={{
-                            height: 22,
+                            height: 18,
                             bgcolor: row.informationVerify ? '#ff9800' : '#fb8c00',
                             color: '#fff',
-                            fontWeight: 700
+                            fontWeight: 700,
+                            fontSize: '0.68rem'
                           }}
                         />
                       </TableCell>
@@ -348,10 +330,11 @@ const TenantListTable = ({
                           size="small"
                           label={row.temporaryResidence ? 'Đã có tạm trú' : 'Chưa có tạm trú'}
                           sx={{
-                            height: 22,
+                            height: 18,
                             bgcolor: row.temporaryResidence ? '#20a9e7' : '#e53935',
                             color: '#fff',
-                            fontWeight: 700
+                            fontWeight: 700,
+                            fontSize: '0.68rem'
                           }}
                         />
                       </TableCell>

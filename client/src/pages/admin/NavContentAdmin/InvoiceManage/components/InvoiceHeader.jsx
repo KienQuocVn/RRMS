@@ -15,17 +15,36 @@ import PrintIcon from '@mui/icons-material/Print'
 import TableViewIcon from '@mui/icons-material/TableView'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const PRIMARY = '#20a9e7'
 const AMBER = '#f59e0b'
 const AMBER_DARK = '#d97706'
 
-const InvoiceHeader = ({ selectedMonth, selectedYear, onCreateInvoice }) => {
+const InvoiceHeader = ({ selectedMonth, selectedYear, onCreateInvoice, onPrint, onExportExcel }) => {
   const [anchorElExcel, setAnchorElExcel] = useState(null)
   const openExcel = Boolean(anchorElExcel)
+  const navigate = useNavigate()
+  const { motelId } = useParams()
 
   const handleExcelClick = (e) => setAnchorElExcel(e.currentTarget)
   const handleExcelClose = () => setAnchorElExcel(null)
+
+  const handleSettingsClick = () => {
+    if (motelId) {
+      navigate(`/quanlytro/${motelId}/cai-dat-nha-tro#bill_setting`)
+    }
+  }
+
+  const handleExportCompactClick = () => {
+    onExportExcel && onExportExcel('compact')
+    handleExcelClose()
+  }
+
+  const handleExportFullClick = () => {
+    onExportExcel && onExportExcel('full')
+    handleExcelClose()
+  }
 
   return (
     <Box
@@ -40,16 +59,13 @@ const InvoiceHeader = ({ selectedMonth, selectedYear, onCreateInvoice }) => {
     >
       {/* Left: Title */}
       <Box>
-        <Typography
-          variant="h6"
-          sx={{ fontWeight: 700, color: '#1a1a2e', fontSize: '1.1rem', lineHeight: 1.3 }}
-        >
+        <Typography variant="h6" sx={{ fontWeight: 700, color: '#333', fontSize: '1.2rem', lineHeight: 1.2 }}>
           Tất cả hóa đơn -{' '}
           <Box component="span" sx={{ color: PRIMARY }}>
             {String(selectedMonth).padStart(2, '0')}/{selectedYear}
           </Box>
         </Typography>
-        <Typography variant="caption" sx={{ color: '#777', fontStyle: 'italic' }}>
+        <Typography variant="body2" sx={{ color: '#777', fontStyle: 'italic', fontSize: '0.85rem' }}>
           Tất cả hóa đơn thu tiền nhà xuất hiện ở đây
         </Typography>
       </Box>
@@ -77,6 +93,7 @@ const InvoiceHeader = ({ selectedMonth, selectedYear, onCreateInvoice }) => {
         <Button
           variant="contained"
           startIcon={<SettingsIcon />}
+          onClick={handleSettingsClick}
           sx={{
             backgroundColor: '#20a9e7',
             color: '#fff',
@@ -99,6 +116,7 @@ const InvoiceHeader = ({ selectedMonth, selectedYear, onCreateInvoice }) => {
         <Button
           variant="contained"
           startIcon={<PrintIcon />}
+          onClick={onPrint}
           sx={{
             backgroundColor: '#20a9e7',
             color: '#fff',
@@ -126,6 +144,7 @@ const InvoiceHeader = ({ selectedMonth, selectedYear, onCreateInvoice }) => {
         >
           <Button
             startIcon={<TableViewIcon />}
+            onClick={() => onExportExcel && onExportExcel('full')}
             sx={{
               backgroundColor: AMBER,
               color: '#fff',
@@ -165,14 +184,14 @@ const InvoiceHeader = ({ selectedMonth, selectedYear, onCreateInvoice }) => {
           }}
         >
           <MenuItem
-            onClick={handleExcelClose}
+            onClick={handleExportCompactClick}
             sx={{ fontSize: '0.85rem', gap: 1 }}
           >
             <TableViewIcon fontSize="small" sx={{ color: AMBER }} />
             Xuất excel (Rút gọn)
           </MenuItem>
           <MenuItem
-            onClick={handleExcelClose}
+            onClick={handleExportFullClick}
             sx={{ fontSize: '0.85rem', gap: 1 }}
           >
             <TableViewIcon fontSize="small" sx={{ color: AMBER }} />

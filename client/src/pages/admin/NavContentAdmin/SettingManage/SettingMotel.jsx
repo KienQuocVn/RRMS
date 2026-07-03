@@ -80,6 +80,9 @@ const SettingMotel = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
 
   useEffect(() => {
     setIsAdmin(true)
+    if (window.location.hash === '#bill_setting') {
+      setValue(3)
+    }
   }, [setIsAdmin])
 
   return (

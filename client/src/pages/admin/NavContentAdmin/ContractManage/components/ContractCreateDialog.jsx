@@ -1,21 +1,25 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Alert,
   Box,
   Button,
   Card,
   Checkbox,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   FormControlLabel,
   Grid,
   IconButton,
   InputAdornment,
+  InputLabel,
   MenuItem,
   Radio,
   RadioGroup,
+  Select,
   Stack,
   Switch,
   TextField,
@@ -30,7 +34,8 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import Swal from 'sweetalert2'
-import { getPhuongXa, getQuanHuyen, getTinhThanh } from '~/apis/addressAPI'
+import { getPhuongXaByTinh, getTinhThanh } from '~/apis/addressAPI'
+import AddressMapPicker from '~/pages/admin/ManagerHome/components/AddressMapPicker'
 import { getBrokers } from '~/apis/brokerAPI'
 import { createContract, createTenant, getContractTemplatesByMotelId } from '~/apis/contractTemplateAPI'
 import { changeQuantityRoomDevice, deleteRoomDevice, getAllDeviceByRomId, getAllMotelDevices, insertRoomDevice } from '~/apis/deviceAPT'
@@ -40,7 +45,7 @@ import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/n
 import { formatVndInput, parseVndInput } from '~/utils/currencyInputUtils'
 
 const LEASE_TERM_OPTIONS = [
-  { value: '0', label: 'Tuy chinh' },
+  { value: '0', label: 'Tùy chỉnh' },
   { value: '1', label: '1 tháng' },
   { value: '2', label: '2 tháng' },
   { value: '3', label: '3 tháng' },
@@ -60,7 +65,7 @@ const COLLECTION_CYCLE_OPTIONS = [
   { value: '2', label: '2 tháng' },
   { value: '3', label: '3 tháng' },
   { value: '6', label: '6 tháng' },
-  { value: '12', label: '1 nam' }
+  { value: '12', label: '1 năm' }
 ]
 
 const getInitialTenant = () => ({
@@ -104,14 +109,40 @@ const getInitialContract = (username) => ({
   status: 'ACTIVE'
 })
 
-const formatChargeType = (chargeType) => {
-  if (!chargeType) return ''
+const getUnitLabel = (unit) => {
+  const map = { CAI: 'Cái', cai: 'Cái', CHIEC: 'Chiếc', chiec: 'Chiếc', BO: 'Bộ', bo: 'Bộ', CAP: 'Cặp', cap: 'Cặp' }
+  return map[unit] || unit || 'Cái'
+}
 
+// Map chargeType → nhãn đơn vị hiển thị + nhãn input
+const getServiceUnitInfo = (chargeType, nameService = '') => {
+  if (!chargeType) return { unitLabel: 'tháng', inputLabel: 'Số lượng', isMeter: false }
   const normalized = String(chargeType).trim().toLowerCase()
-  if (normalized.includes('nguoi')) return 'Nguoi'
-  if (normalized.includes('thang')) return 'Thang'
-  if (normalized.includes('phong')) return 'Phong'
-  return chargeType
+  const name = String(nameService).trim().toLowerCase()
+
+  if (normalized === 'meter' || normalized.includes('meter')) {
+    // Phân biệt điện/nước dựa trên tên dịch vụ
+    if (name.includes('điện') || name.includes('dien')) {
+      return { unitLabel: 'kWh', inputLabel: 'Chỉ số điện hiện tại', isMeter: true }
+    }
+    if (name.includes('nước') || name.includes('nuoc')) {
+      return { unitLabel: 'khối', inputLabel: 'Chỉ số nước hiện tại', isMeter: true }
+    }
+    return { unitLabel: 'số đo', inputLabel: 'Chỉ số hiện tại', isMeter: true }
+  }
+  if (normalized === 'fixed' || normalized.includes('fixed')) {
+    return { unitLabel: 'tháng', inputLabel: 'Số lượng', isMeter: false }
+  }
+  if (normalized.includes('nguoi') || normalized.includes('người')) {
+    return { unitLabel: 'người', inputLabel: 'Số người', isMeter: false }
+  }
+  if (normalized.includes('phong') || normalized.includes('phòng')) {
+    return { unitLabel: 'phòng', inputLabel: 'Số phòng', isMeter: false }
+  }
+  if (normalized.includes('thang') || normalized.includes('tháng')) {
+    return { unitLabel: 'tháng', inputLabel: 'Số tháng', isMeter: false }
+  }
+  return { unitLabel: chargeType, inputLabel: 'Số lượng', isMeter: false }
 }
 
 const calculateCloseDate = (moveInDate, leaseTerm) => {
@@ -198,11 +229,17 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
   const [contract, setContract] = useState(() => getInitialContract(username))
   const [identityDocumentType, setIdentityDocumentType] = useState('cccd')
   const [provinces, setProvinces] = useState([])
-  const [districts, setDistricts] = useState([])
   const [wards, setWards] = useState([])
   const [selectedProvince, setSelectedProvince] = useState('')
-  const [selectedDistrict, setSelectedDistrict] = useState('')
   const [selectedWard, setSelectedWard] = useState('')
+  const [addressDetail, setAddressDetail] = useState('')
+  const [fullAddress, setFullAddress] = useState('')
+  const [lat, setLat] = useState(null)
+  const [lng, setLng] = useState(null)
+  const [geocodeLoading, setGeocodeLoading] = useState(false)
+  const [geocodeError, setGeocodeError] = useState('')
+  const [manualPickMode, setManualPickMode] = useState(false)
+  const [autoGeocode, setAutoGeocode] = useState(true)
   const [motelServices, setMotelServices] = useState([])
   const [motelDevices, setMotelDevices] = useState([])
   const [roomServices, setRoomServices] = useState([])
@@ -223,31 +260,32 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
     return Array.isArray(rooms) ? rooms : []
   }, [rooms])
 
-  const selectedProvinceName = useMemo(
-    () => provinces.find((province) => String(province.id) === String(selectedProvince))?.full_name ?? '',
-    [provinces, selectedProvince]
+  const getProvinceName = useCallback(
+    (id) => provinces.find((p) => String(p.id) === String(id))?.full_name || '',
+    [provinces]
   )
 
-  const selectedDistrictName = useMemo(
-    () => districts.find((district) => String(district.id) === String(selectedDistrict))?.full_name ?? '',
-    [districts, selectedDistrict]
+  const getWardName = useCallback(
+    (id) => wards.find((w) => String(w.id) === String(id))?.full_name || '',
+    [wards]
   )
 
-  const selectedWardName = useMemo(
-    () => wards.find((ward) => String(ward.id) === String(selectedWard))?.full_name ?? '',
-    [wards, selectedWard]
-  )
-
-  const resetDialogState = () => {
+  const resetDialogState = useCallback(() => {
     setSelectedRoomId(null)
     setSelectedRoom(null)
     setTenant(getInitialTenant())
     setContract(getInitialContract(username))
     setIdentityDocumentType('cccd')
     setSelectedProvince('')
-    setSelectedDistrict('')
     setSelectedWard('')
-    setDistricts([])
+    setAddressDetail('')
+    setFullAddress('')
+    setLat(null)
+    setLng(null)
+    setGeocodeLoading(false)
+    setGeocodeError('')
+    setManualPickMode(false)
+    setAutoGeocode(true)
     setWards([])
     setRoomServices([])
     setRoomDevices([])
@@ -259,9 +297,33 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
     setBrokerCommission('')
     setBrokerPayment('0')
     setCreateBrokerExpense(false)
-  }
+  }, [username])
 
-  const bootstrapDialog = async () => {
+  // Khởi tạo roomServices từ motelServices (chưa chọn phòng) để checkbox hoạt động ngay
+  const initRoomServicesFromCatalog = useCallback((serviceCatalog) => {
+    const initialized = serviceCatalog.map((service) => ({
+      ...service,
+      roomServiceId: null,
+      roomId: null,
+      quantity: 1,
+      isSelected: false
+    }))
+    setRoomServices(initialized)
+  }, [])
+
+  // Khởi tạo roomDevices từ motelDevices (chưa chọn phòng) để checkbox hoạt động ngay
+  const initRoomDevicesFromCatalog = useCallback((deviceCatalog) => {
+    const initialized = deviceCatalog.map((device) => ({
+      ...device,
+      roomDeviceId: null,
+      roomId: null,
+      quantity: 1,
+      isSelected: false
+    }))
+    setRoomDevices(initialized)
+  }, [])
+
+  const bootstrapDialog = useCallback(async () => {
     if (!motelId) {
       return
     }
@@ -290,15 +352,21 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
       motelResponse.value?.data?.code === 200 &&
       Array.isArray(motelResponse.value.data.result?.motelServices)
     ) {
-      setMotelServices(motelResponse.value.data.result.motelServices)
+      const services = motelResponse.value.data.result.motelServices
+      setMotelServices(services)
+      initRoomServicesFromCatalog(services)
     } else {
       setMotelServices([])
+      setRoomServices([])
     }
 
     if (motelDeviceResponse.status === 'fulfilled' && motelDeviceResponse.value?.code === 200) {
-      setMotelDevices(motelDeviceResponse.value.result ?? [])
+      const devices = motelDeviceResponse.value.result ?? []
+      setMotelDevices(devices)
+      initRoomDevicesFromCatalog(devices)
     } else {
       setMotelDevices([])
+      setRoomDevices([])
     }
 
     if (contractTemplateResponse.status === 'fulfilled') {
@@ -312,24 +380,92 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
     } else {
       setBrokers([])
     }
+  }, [motelId, initRoomServicesFromCatalog, initRoomDevicesFromCatalog])
+
+  // ── Geocode query (tự động khi address thay đổi) ──
+  const geocodeQuery = useMemo(() => {
+    const detail = addressDetail.trim()
+    const wardName = getWardName(selectedWard)
+    const provinceName = getProvinceName(selectedProvince)
+    if (!detail || !wardName || !provinceName) return ''
+    return `${detail}, ${wardName}, ${provinceName}, Việt Nam`
+  }, [addressDetail, selectedWard, selectedProvince, getWardName, getProvinceName])
+
+  useEffect(() => {
+    if (!geocodeQuery) {
+      setFullAddress('')
+      setGeocodeError('')
+      setManualPickMode(false)
+      return undefined
+    }
+    setFullAddress(geocodeQuery.replace(/, Việt Nam$/, ''))
+    if (!autoGeocode) return undefined
+    const timer = setTimeout(async () => {
+      setGeocodeLoading(true)
+      setGeocodeError('')
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geocodeQuery)}&format=json&limit=1&countrycodes=vn`,
+          { headers: { Accept: 'application/json', 'Accept-Language': 'vi', 'User-Agent': 'RRMS/1.0 (contract-address-picker)' } }
+        )
+        if (!res.ok) throw new Error('Geocoding failed')
+        const data = await res.json()
+        if (data?.length > 0) {
+          setLat(parseFloat(data[0].lat))
+          setLng(parseFloat(data[0].lon))
+          setManualPickMode(false)
+          setGeocodeError('')
+        } else {
+          setGeocodeError('Không tìm thấy địa chỉ trên bản đồ. Vui lòng click trên bản đồ để chọn vị trí thủ công.')
+          setManualPickMode(true)
+        }
+      } catch {
+        setGeocodeError('Lỗi khi tra cứu địa chỉ. Vui lòng click trên bản đồ để chọn vị trí thủ công.')
+        setManualPickMode(true)
+      } finally {
+        setGeocodeLoading(false)
+      }
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [geocodeQuery, autoGeocode])
+
+  const handleMapPositionChange = useCallback(({ lat: newLat, lng: newLng }) => {
+    setLat(newLat)
+    setLng(newLng)
+  }, [])
+
+  // ── Address handlers ──
+  const handleProvinceChange = (e) => {
+    const id = e.target.value
+    setSelectedProvince(id)
+    setSelectedWard('')
+    setWards([])
+    setLat(null)
+    setLng(null)
+    setGeocodeError('')
+    setManualPickMode(false)
+    setAutoGeocode(true)
+    getPhuongXaByTinh(id).then((res) => {
+      if (res.data.error === 0) setWards(res.data.data)
+    }).catch(console.error)
   }
 
-  const fetchDistricts = async (provinceId) => {
-    const response = await getQuanHuyen(provinceId)
-    if (response?.data?.error === 0) {
-      setDistricts(response.data.data)
-    } else {
-      setDistricts([])
-    }
+  const handleWardChange = (e) => {
+    setSelectedWard(e.target.value)
+    setLat(null)
+    setLng(null)
+    setGeocodeError('')
+    setManualPickMode(false)
+    setAutoGeocode(true)
   }
 
-  const fetchWards = async (districtId) => {
-    const response = await getPhuongXa(districtId)
-    if (response?.data?.error === 0) {
-      setWards(response.data.data)
-    } else {
-      setWards([])
-    }
+  const handleAddressDetailChange = (e) => {
+    setAddressDetail(e.target.value)
+    setLat(null)
+    setLng(null)
+    setGeocodeError('')
+    setManualPickMode(false)
+    setAutoGeocode(true)
   }
 
   const fetchRoomServices = async (roomId, serviceCatalog) => {
@@ -393,8 +529,9 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
       console.error('Error fetching room detail for contract dialog:', error)
       Swal.fire({
         icon: 'error',
-        title: 'Thong bao',
-        text: 'Khong the tai thong tin phong. Vui long thu lai.'
+        title: 'Thông báo',
+        text: 'Không thể tải chi tiết phòng. Vui lòng thử lại sau.',
+        customClass: { container: 'swal-on-top' }
       })
     }
   }
@@ -440,10 +577,9 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
 
   const handleServiceQuantityChange = (serviceId, value) => {
     if (isNegativeNumberValue(value)) return
-    const normalizedQuantity = Math.max(1, Number(value) || 1)
     setRoomServices((previousServices) =>
       previousServices.map((service) =>
-        service.motelServiceId === serviceId ? { ...service, quantity: normalizedQuantity } : service
+        service.motelServiceId === serviceId ? { ...service, quantity: value } : service
       )
     )
   }
@@ -460,16 +596,15 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
 
   const handleDeviceQuantityChange = (deviceId, value) => {
     if (isNegativeNumberValue(value)) return
-    const normalizedQuantity = Math.max(1, Number(value) || 1)
     setRoomDevices((previousDevices) =>
       previousDevices.map((device) =>
-        device.motel_device_id === deviceId ? { ...device, quantity: normalizedQuantity } : device
+        device.motel_device_id === deviceId ? { ...device, quantity: value } : device
       )
     )
   }
 
   const buildAddress = () => {
-    return [tenant.address, selectedWardName, selectedDistrictName, selectedProvinceName]
+    return [addressDetail, getWardName(selectedWard), getProvinceName(selectedProvince)]
       .map((part) => (part ? String(part).trim() : ''))
       .filter(Boolean)
       .join(', ')
@@ -522,31 +657,31 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
 
   const validateBeforeSubmit = () => {
     if (!selectedRoom?.roomId) {
-      return 'Ban chua chon phong lap hop dong.'
+      return 'Bạn chưa chọn phòng để tạo hợp đồng.'
     }
 
     if (!tenant.fullName?.trim()) {
-      return 'Vui long nhap ten khach thue.'
+      return 'Vui lòng nhập họ tên khách thuê.'
     }
 
     if (!tenant.phone?.trim()) {
-      return 'Vui long nhap so dien thoai khach thue.'
+      return 'Vui lòng nhập số điện thoại khách thuê.'
     }
 
     if (!contract.contractTemplateId) {
-      return 'Vui long chon mau hop dong.'
+      return 'Vui lòng chọn mẫu hợp đồng.'
     }
 
     if (!contract.moveInDate) {
-      return 'Vui long chon ngay vao o.'
+      return 'Vui lòng chọn ngày vào ở.'
     }
 
     if (!contract.price) {
-      return 'Vui long nhap gia thue.'
+      return 'Vui lòng nhập giá thuê.'
     }
 
     if (!contract.deposit) {
-      return 'Vui long nhap muc tien coc.'
+      return 'Vui lòng nhập mức tiền cọc.'
     }
 
     return null
@@ -557,8 +692,9 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
     if (validationMessage) {
       Swal.fire({
         icon: 'warning',
-        title: 'Thong bao',
-        text: validationMessage
+        title: 'Thông báo',
+        text: validationMessage,
+        customClass: { container: 'swal-on-top' }
       })
       return
     }
@@ -567,10 +703,11 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
       setSubmitting(true)
       Swal.fire({
         icon: 'info',
-        title: 'Dang xu ly...',
-        text: 'He thong dang tao hop dong moi.',
+        title: 'Đang xử lý...',
+        text: 'Hệ thống đang tạo hợp đồng mới',
         allowOutsideClick: false,
         showConfirmButton: false,
+        customClass: { container: 'swal-on-top' },
         didOpen: () => {
           Swal.showLoading()
         }
@@ -588,7 +725,7 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
 
       const tenantId = tenantResponse?.result?.tenantId ?? tenantResponse?.tenantId
       if (!tenantId) {
-        throw new Error('Khong the tao khach thue moi.')
+        throw new Error('Không thể tạo khách thuê mới')
       }
 
       const contractResponse = await createContract({
@@ -602,8 +739,9 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
 
       Swal.fire({
         icon: 'success',
-        title: 'Thanh cong',
-        text: 'Da tao hop dong moi thanh cong.'
+        title: 'Thành công',
+        text: 'Đã tạo hợp đồng mới thành công.',
+        customClass: { container: 'swal-on-top' }
       })
 
       onCreated?.(contractResponse)
@@ -611,11 +749,12 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
       onClose?.()
     } catch (error) {
       console.error('Error creating contract from ContractCreateDialog:', error)
-      const apiMessage = error?.response?.data?.message || error?.message || 'Co loi xay ra trong qua trinh tao hop dong.'
+      const apiMessage = error?.response?.data?.message || error?.message || 'Có lỗi xảy ra trong quá trình tạo hợp đồng.'
       Swal.fire({
         icon: 'error',
-        title: 'Khong the tao hop dong',
-        text: apiMessage
+        title: 'Khổng thể tạo hợp đồng',
+        text: apiMessage,
+        customClass: { container: 'swal-on-top' }
       })
     } finally {
       setSubmitting(false)
@@ -630,13 +769,25 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
     bootstrapDialog().catch((error) => {
       console.error('Error bootstrapping contract dialog:', error)
     })
-  }, [open, motelId])
+  }, [open, bootstrapDialog])
 
   useEffect(() => {
     if (!open) {
       resetDialogState()
     }
-  }, [open, username])
+  }, [open, resetDialogState])
+
+  // Tự động tính toán số tiền hoa hồng môi giới khi % hoa hồng hoặc giá thuê thay đổi
+  useEffect(() => {
+    if (brokerCommission && contract.price) {
+      const priceNum = Number(contract.price) || 0
+      const commissionPercent = Number(brokerCommission) || 0
+      const calculatedPayment = Math.round((priceNum * commissionPercent) / 100)
+      setBrokerPayment(String(calculatedPayment))
+    } else if (!brokerCommission) {
+      setBrokerPayment('0')
+    }
+  }, [brokerCommission, contract.price])
 
   return (
     <Dialog
@@ -694,8 +845,8 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                       sx={{
                         borderRadius: 2.5,
                         cursor: 'pointer',
-                        borderColor: isSelected ? '#82C91E' : '#D9E2EC',
-                        boxShadow: isSelected ? '0 12px 30px rgba(130, 201, 30, 0.12)' : 'none'
+                        borderColor: isSelected ? '#20a9e7' : '#D9E2EC',
+                        boxShadow: isSelected ? '0 12px 30px rgba(30, 170, 201, 0.12)' : 'none'
                       }}>
                       <Box sx={{ p: 2, display: 'flex', gap: 1.5, alignItems: 'center' }}>
                         <Box
@@ -703,7 +854,7 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                             width: 42,
                             height: 42,
                             borderRadius: '50%',
-                            bgcolor: isSelected ? '#82C91E' : '#EEF2F7',
+                            bgcolor: isSelected ? '#20a9e7' : '#EEF2F7',
                             color: isSelected ? '#FFFFFF' : '#64748B',
                             display: 'flex',
                             alignItems: 'center',
@@ -733,10 +884,10 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                           </Typography>
                           <Stack direction="row" justifyContent="space-between" sx={{ mt: 1.25 }} spacing={1}>
                             <Typography variant="body1" sx={{ color: '#1F2937', fontWeight: 700 }}>
-                              {formatVndInput(roomItem.price)} d
+                              {formatVndInput(roomItem.price)} đ
                             </Typography>
                             <Typography variant="body2" sx={{ color: '#4B5563' }}>
-                              0/1 nguoi
+                              0/1 người
                             </Typography>
                           </Stack>
                         </Box>
@@ -772,12 +923,16 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
+                      required
                       fullWidth
                       type="date"
                       label="Ngày vào ở"
                       value={contract.moveInDate}
                       onChange={(event) => handleContractChange('moveInDate', event.target.value)}
                       InputLabelProps={{ shrink: true }}
+                      sx={{
+                        '& .MuiFormLabel-asterisk': { color: 'red' }
+                      }}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -798,18 +953,26 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                 <Grid container spacing={1.5}>
                   <Grid item xs={6}>
                     <TextField
+                      required
                       fullWidth
                       label="Tên người ở"
                       value={tenant.fullName}
                       onChange={(event) => handleTenantChange('fullName', event.target.value)}
+                      sx={{
+                        '& .MuiFormLabel-asterisk': { color: 'red' }
+                      }}
                     />
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
+                      required
                       fullWidth
                       label="Số điện thoại người ở"
                       value={tenant.phone}
                       onChange={(event) => handleTenantChange('phone', event.target.value)}
+                      sx={{
+                        '& .MuiFormLabel-asterisk': { color: 'red' }
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -853,81 +1016,79 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                       <MenuItem value="OTHER">Khac</MenuItem>
                     </TextField>
                   </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Tỉnh/Thành phố"
-                      value={selectedProvince}
-                      onChange={async (event) => {
-                        const nextProvince = event.target.value
-                        setSelectedProvince(nextProvince)
-                        setSelectedDistrict('')
-                        setSelectedWard('')
-                        setDistricts([])
-                        setWards([])
-                        if (nextProvince) {
-                          await fetchDistricts(nextProvince)
-                        }
-                      }}
-                    >
-                      <MenuItem value="">Chon Tinh/Thanh pho</MenuItem>
-                      {provinces.map((province) => (
-                        <MenuItem key={province.id} value={province.id}>
-                          {province.full_name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth required size="small">
+                      <InputLabel>Tỉnh/Thành</InputLabel>
+                      <Select value={selectedProvince} onChange={handleProvinceChange} label="Tỉnh/Thành">
+                        {provinces.map((p) => (
+                          <MenuItem key={p.id} value={p.id}>{p.full_name}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
                   </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Quận / Huyện"
-                      value={selectedDistrict}
-                      onChange={async (event) => {
-                        const nextDistrict = event.target.value
-                        setSelectedDistrict(nextDistrict)
-                        setSelectedWard('')
-                        setWards([])
-                        if (nextDistrict) {
-                          await fetchWards(nextDistrict)
-                        }
-                      }}
-                      disabled={!selectedProvince}
-                    >
-                      <MenuItem value="">Chon Quan/Huyen</MenuItem>
-                      {districts.map((district) => (
-                        <MenuItem key={district.id} value={district.id}>
-                          {district.full_name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Phường / Xã"
-                      value={selectedWard}
-                      onChange={(event) => setSelectedWard(event.target.value)}
-                      disabled={!selectedDistrict}
-                    >
-                      <MenuItem value="">Chon Phuong/Xa</MenuItem>
-                      {wards.map((ward) => (
-                        <MenuItem key={ward.id} value={ward.id}>
-                          {ward.full_name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth required size="small" disabled={!selectedProvince}>
+                      <InputLabel>Phường/Xã</InputLabel>
+                      <Select value={selectedWard} onChange={handleWardChange} label="Phường/Xã">
+                        {wards.map((w) => (
+                          <MenuItem key={w.id} value={w.id}>{w.full_name}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
                   </Grid>
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Địa chỉ chi tiết"
-                      value={tenant.address}
-                      onChange={(event) => handleTenantChange('address', event.target.value)}
+                      required
+                      size="small"
+                      label="Số nhà, tên đường"
+                      value={addressDetail}
+                      onChange={handleAddressDetailChange}
+                      placeholder="VD: 123 Nguyễn Văn Linh"
                     />
+                  </Grid>
+
+                  {fullAddress && (
+                    <Grid item xs={12}>
+                      <Typography variant="body2" color="text.secondary">
+                        Địa chỉ đầy đủ: <strong>{fullAddress}</strong>
+                      </Typography>
+                    </Grid>
+                  )}
+
+                  {geocodeLoading && (
+                    <Grid item xs={12}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <CircularProgress size={18} />
+                        <Typography variant="body2" color="text.secondary">Đang tra cứu vị trí trên bản đồ...</Typography>
+                      </Box>
+                    </Grid>
+                  )}
+
+                  {geocodeError && (
+                    <Grid item xs={12}>
+                      <Alert severity="warning">{geocodeError}</Alert>
+                    </Grid>
+                  )}
+
+                  <Grid item xs={12}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      {manualPickMode
+                        ? 'Click trên bản đồ để chọn vị trí, hoặc kéo marker để điều chỉnh.'
+                        : 'Kéo marker trên bản đồ để điều chỉnh vị trí chính xác hơn.'}
+                    </Typography>
+                    <AddressMapPicker
+                      active={open}
+                      lat={lat}
+                      lng={lng}
+                      onPositionChange={handleMapPositionChange}
+                      allowMapClick={manualPickMode || lat == null}
+                    />
+                    {lat != null && lng != null && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Tọa độ: Lat {lat.toFixed(6)}, Lng {lng.toFixed(6)}
+                      </Typography>
+                    )}
                   </Grid>
                   <Grid item xs={12}>
                     <TextField
@@ -985,42 +1146,42 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
               <Grid item xs={12}>
                 <SectionTitle title="Dịch vụ sử dụng" subtitle="Thêm dịch vụ sử dụng như: điện, nước, rác, wifi..." />
                 <Stack spacing={1.5}>
-                  {motelServices.map((service) => {
-                    const isSelected = roomServices.some(
-                      (currentService) => currentService.motelServiceId === service.motelServiceId && currentService.isSelected
-                    )
-                    const currentQuantity =
-                      roomServices.find((currentService) => currentService.motelServiceId === service.motelServiceId)?.quantity ?? 1
+                  {roomServices.map((service) => {
+                    const { unitLabel, inputLabel, isMeter } = getServiceUnitInfo(service.chargetype, service.nameService)
 
                     return (
                       <Card
                         key={service.motelServiceId}
                         variant="outlined"
-                        sx={{ borderRadius: 2, borderColor: isSelected ? '#3B82F6' : '#D9E2EC' }}
+                        sx={{ borderRadius: 2, borderColor: service.isSelected ? '#3B82F6' : '#D9E2EC' }}
                       >
                         <Box sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'space-between' }}>
                           <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
-                            <Checkbox checked={isSelected} onChange={(event) => handleServiceToggle(service.motelServiceId, event.target.checked)} />
+                            <Checkbox
+                              checked={service.isSelected}
+                              onChange={(event) => handleServiceToggle(service.motelServiceId, event.target.checked)}
+                            />
                             <Box sx={{ minWidth: 0 }}>
                               <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
                                 {service.nameService}
                               </Typography>
                               <Typography variant="body2" sx={{ color: '#4B5563' }}>
-                                Gia: <b>{formatVndInput(service.price)}d</b> / {formatChargeType(service.chargetype)}
+                                Giá: <b>{formatVndInput(service.price)}đ</b> / {unitLabel}
                               </Typography>
                             </Box>
                           </Stack>
                           <TextField
                             size="small"
                             type="number"
-                            value={currentQuantity}
-                            disabled={!isSelected}
+                            label={inputLabel}
+                            value={service.quantity}
+                            disabled={!service.isSelected}
                             onChange={(event) => handleServiceQuantityChange(service.motelServiceId, event.target.value)}
-                            sx={{ width: 170 }}
+                            sx={{ width: isMeter ? 190 : 150 }}
                             {...getNonNegativeNumberFieldProps(1)}
                             InputProps={{
                               endAdornment: (
-                                <InputAdornment position="end">{formatChargeType(service.chargetype)}</InputAdornment>
+                                <InputAdornment position="end">{unitLabel}</InputAdornment>
                               )
                             }}
                           />
@@ -1036,20 +1197,26 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                 <Grid container spacing={1.5}>
                   <Grid item xs={6}>
                     <TextField
+                      required
                       fullWidth
                       label="Giá thuê"
                       value={formatVndInput(contract.price)}
                       onChange={(event) => handleMoneyFieldChange('price', event.target.value)}
-                      InputProps={{ endAdornment: <InputAdornment position="end">d</InputAdornment> }}
+                      sx={{
+                        '& .MuiFormLabel-asterisk': { color: 'red' }
+                      }}
                     />
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
+                      required
                       fullWidth
                       label="Mức tiền cọc"
                       value={formatVndInput(contract.deposit)}
                       onChange={(event) => handleMoneyFieldChange('deposit', event.target.value)}
-                      InputProps={{ endAdornment: <InputAdornment position="end">d</InputAdornment> }}
+                      sx={{
+                        '& .MuiFormLabel-asterisk': { color: 'red' }
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -1086,11 +1253,15 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
               <Grid item xs={12}>
                 <SectionTitle title="Chọn mẫu văn bản hợp đồng" subtitle="Mẫu văn bản hợp đồng dùng khi in" />
                 <TextField
+                  required
                   select
                   fullWidth
                   label="Danh sách mẫu văn bản hợp đồng đang có"
                   value={contract.contractTemplateId}
                   onChange={(event) => handleContractChange('contractTemplateId', event.target.value)}
+                  sx={{
+                    '& .MuiFormLabel-asterisk': { color: 'red' }
+                  }}
                 >
                   <MenuItem value="">Chọn mẫu văn bản hợp đồng</MenuItem>
                   {contractTemplates.map((contractTemplate) => (
@@ -1120,35 +1291,43 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                   subtitle="Các tài sản trong quá trình thuê phòng"
                 />
                 <Stack spacing={1.5}>
-                  {motelDevices.map((device) => {
-                    const isSelected = roomDevices.some(
-                      (currentDevice) => currentDevice.motel_device_id === device.motel_device_id && currentDevice.isSelected
-                    )
-                    const currentQuantity =
-                      roomDevices.find((currentDevice) => currentDevice.motel_device_id === device.motel_device_id)?.quantity ?? 1
-
+                  {roomDevices.map((device) => {
+                    const unitLabel = getUnitLabel(device.unit)
                     return (
-                      <Card key={device.motel_device_id} variant="outlined" sx={{ borderRadius: 2 }}>
+                      <Card
+                        key={device.motel_device_id}
+                        variant="outlined"
+                        sx={{ borderRadius: 2, borderColor: device.isSelected ? '#3B82F6' : '#D9E2EC' }}
+                      >
                         <Box sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'space-between' }}>
                           <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
-                            <Checkbox checked={isSelected} onChange={(event) => handleDeviceToggle(device.motel_device_id, event.target.checked)} />
+                            <Checkbox
+                              checked={device.isSelected}
+                              onChange={(event) => handleDeviceToggle(device.motel_device_id, event.target.checked)}
+                            />
                             <Box sx={{ minWidth: 0 }}>
                               <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
                                 {device.deviceName}
                               </Typography>
                               <Typography variant="body2" sx={{ color: '#4B5563' }}>
-                                Gia tri: <b>{formatVndInput(device.value)}d</b> / {device.unit}
+                                Giá trị: <b>{formatVndInput(device.value)}đ</b> / {unitLabel}
                               </Typography>
                             </Box>
                           </Stack>
                           <TextField
                             size="small"
                             type="number"
-                            value={currentQuantity}
-                            disabled={!isSelected}
+                            label="Số lượng"
+                            value={device.quantity}
+                            disabled={!device.isSelected}
                             onChange={(event) => handleDeviceQuantityChange(device.motel_device_id, event.target.value)}
-                            sx={{ width: 140 }}
+                            sx={{ width: 150 }}
                             {...getNonNegativeNumberFieldProps(1)}
+                            InputProps={{
+                              endAdornment: (
+                                <InputAdornment position="end">{unitLabel}</InputAdornment>
+                              )
+                            }}
                           />
                         </Box>
                       </Card>
@@ -1209,9 +1388,9 @@ function ContractCreateDialog({ open, onClose, motelId, rooms = [], onCreated })
                     <TextField
                       fullWidth
                       label="Số tiền nhận"
-                      value={brokerPayment}
-                      onChange={(event) => setBrokerPayment(event.target.value.replace(/[^0-9]/g, ''))}
-                      InputProps={{ endAdornment: <InputAdornment position="end">d</InputAdornment> }}
+                      value={formatVndInput(brokerPayment)}
+                      onChange={(event) => setBrokerPayment(parseVndInput(event.target.value))}
+                      InputProps={{ endAdornment: <InputAdornment position="end">đ</InputAdornment> }}
                     />
                   </Grid>
                   <Grid item xs={12}>

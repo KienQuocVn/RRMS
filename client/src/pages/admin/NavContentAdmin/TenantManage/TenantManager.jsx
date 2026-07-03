@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { env } from '~/configs/environment'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
-import AddTenantModal from '../ModalTenant'
+import AddTenantModal from './AddTenant'
 import TenantFilterBar from './components/TenantFilterBar'
 import TenantListTable from './components/TenantListTable'
 
@@ -40,7 +40,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [editId, setEditId] = useState(null)
-  const [activeFilter, setActiveFilter] = useState(FILTER_KEYS.ALL)
+  const [statusFilters, setStatusFilters] = useState({})
   const [searchValue, setSearchValue] = useState('')
 
   const navigate = useNavigate()
@@ -112,7 +112,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         }
       }
     } catch (error) {
-      console.error('Error fetching data:', error.response?.data || error.message || error)
+      console.error('Lỗi khi tải dữ liệu:', error.response?.data || error.message || error)
     }
   }
 
@@ -131,7 +131,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       Swal.fire({
         icon: 'error',
         title: 'Lỗi',
-        text: 'Token is missing, please login again.'
+        text: 'Mã đăng nhập bị thiếu, vui lòng đăng nhập lại.'
       })
       return
     }
@@ -156,11 +156,11 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         }
       })
 
-      console.log('Tenant deleted successfully:', response.data)
+      console.log('Người thuê đã bị xóa thành công:', response.data)
       Swal.fire({ icon: 'success', title: 'Thành công', text: 'Xóa khách thuê thành công!' })
       reloadData()
     } catch (error) {
-      console.error('Error deleting tenant:', error)
+      console.error('Lỗi khi xóa khách thuê:', error)
       Swal.fire({
         icon: 'error',
         title: 'Lỗi',
@@ -197,12 +197,23 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   ]
 
   const searchKeyword = normalizeText(searchValue)
+  const selectedFilterKeys = Object.entries(statusFilters)
+    .filter(([, isSelected]) => isSelected)
+    .map(([key]) => key)
+
+  const matchesFilterOption = (row, filterKey) => {
+    if (filterKey === FILTER_KEYS.TEMPORARY_REGISTERED) return row.temporaryResidence === true
+    if (filterKey === FILTER_KEYS.TEMPORARY_MISSING) return row.temporaryResidence === false
+    if (filterKey === FILTER_KEYS.DOCUMENT_COMPLETE) return row.informationVerify === true
+    if (filterKey === FILTER_KEYS.DOCUMENT_MISSING) return row.informationVerify === false
+
+    return true
+  }
 
   const filteredRows = rows.filter((row) => {
-    if (activeFilter === FILTER_KEYS.TEMPORARY_REGISTERED && row.temporaryResidence !== true) return false
-    if (activeFilter === FILTER_KEYS.TEMPORARY_MISSING && row.temporaryResidence !== false) return false
-    if (activeFilter === FILTER_KEYS.DOCUMENT_COMPLETE && row.informationVerify !== true) return false
-    if (activeFilter === FILTER_KEYS.DOCUMENT_MISSING && row.informationVerify !== false) return false
+    if (selectedFilterKeys.length > 0 && !selectedFilterKeys.some((filterKey) => matchesFilterOption(row, filterKey))) {
+      return false
+    }
 
     if (!searchKeyword) return true
 
@@ -217,7 +228,14 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
 
   useEffect(() => {
     setPage(0)
-  }, [activeFilter, searchValue])
+  }, [statusFilters, searchValue])
+
+  const handleStatusFilterChange = (filterKey, isChecked) => {
+    setStatusFilters((prevFilters) => ({
+      ...prevFilters,
+      [filterKey]: isChecked
+    }))
+  }
 
   useEffect(() => {
     const maxPage = Math.max(0, Math.ceil(filteredRows.length / rowsPerPage) - 1)
@@ -288,10 +306,10 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
             />
 
             <Box sx={{ minWidth: 0 }}>
-              <Typography variant="h4" sx={{ fontWeight: 700, color: '#1f2937', mb: 0.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#333', fontSize: '1.2rem', lineHeight: 1.2 }}>
                 Quản lý danh sách khách thuê
               </Typography>
-              <Typography variant="body1" sx={{ color: 'text.secondary', fontStyle: 'italic', mb: 1.5 }}>
+              <Typography variant="body2" sx={{ color: '#777', fontStyle: 'italic', fontSize: '0.85rem' }}>
                 Tất cả danh sách khách thuê trong ký túc xá/sleepbox của bạn
               </Typography>
               <Chip
@@ -361,7 +379,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                 minHeight: 40,
                 borderRadius: 2,
                 bgcolor: '#20a9e7',
-                '&:hover': { bgcolor: '#409444' }
+                '&:hover': { bgcolor: '#2b7ed7' }
               }}>
               Tra cứu khách thuê cũ
             </Button>
@@ -399,12 +417,11 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         </Box>
 
         <TenantFilterBar
-          totalCount={rows.length}
           filters={filterOptions}
-          activeFilter={activeFilter}
-          onFilterChange={setActiveFilter}
+          statusFilters={statusFilters}
+          onStatusFilterChange={handleStatusFilterChange}
           searchValue={searchValue}
-          onSearchChange={(event) => setSearchValue(event.target.value)}
+          onSearchChange={setSearchValue}
         />
 
         <TenantListTable

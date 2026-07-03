@@ -22,10 +22,10 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const [show, setShow] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilters, setStatusFilters] = useState({
-    ACTIVE: true,
-    ReportEnd: true,
-    IATExpire: true,
-    ENDED: true
+    ACTIVE: false,
+    ReportEnd: false,
+    IATExpire: false,
+    ENDED: false
   })
   const [rooms, setRooms] = useState([])
   const [room, setRoom] = useState(null)
@@ -103,7 +103,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       const dataRoom = await getRoomByMotelIdYContract(activeMotelId)
       setRooms(dataRoom)
     } catch (error) {
-      console.error('Error fetching rooms:', error)
+      console.error('Lỗi khi truy xuất phòng:', error)
       setRooms([])
     }
   }
@@ -113,7 +113,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       const response = await getContractByIdMotel(id)
       setContracts(response || [])
     } catch (error) {
-      console.error('Error fetching motel contracts:', error)
+      console.error('Lỗi khi truy xuất hợp đồng khách sạn:', error)
       setContracts([])
     }
   }
@@ -128,7 +128,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       const response = await getAllMotelDevices(motelId)
       setdevice(response?.result ?? [])
     } catch (error) {
-      console.error('Error fetching motel devices:', error)
+      console.error('Lỗi khi truy xuất thiết bị khách sạn:', error)
       setdevice([])
     }
   }
@@ -144,7 +144,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       setdeviceByRoom(response?.result ?? [])
       return response
     } catch (error) {
-      console.error('Error fetching room devices:', error)
+      console.error('Lỗi khi truy xuất thiết bị phòng:', error)
       setdeviceByRoom([])
       return { result: [] }
     }
@@ -163,16 +163,16 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
     if (response?.code === 200) {
       Swal.fire({
         icon: 'success',
-        title: 'Thanh cong',
-        text: 'Da ap dung tai san cho phong.'
+        title: 'Thành công',
+        text: 'Đã áp dụng tài sản cho phòng.'
       })
       return
     }
 
     Swal.fire({
       icon: 'error',
-      title: 'That bai',
-      text: 'Khong the ap dung tai san cho phong.'
+      title: 'Thất bại',
+      text: 'Không thể áp dụng tài sản cho phòng.'
     })
   }
 
@@ -181,16 +181,16 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
     if (response?.result === true) {
       Swal.fire({
         icon: 'success',
-        title: 'Thanh cong',
-        text: 'Da go tai san khoi phong.'
+        title: 'Thành công',
+        text: 'Đã bỏ tài sản khỏi phòng.'
       })
       return
     }
 
     Swal.fire({
       icon: 'error',
-      title: 'That bai',
-      text: 'Khong the go tai san khoi phong.'
+      title: 'Thất bại',
+      text: 'Không thể bỏ tài sản khỏi phòng.'
     })
   }
 
@@ -208,8 +208,8 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
 
     Swal.fire({
       icon: 'error',
-      title: 'That bai',
-      text: 'Khong the cap nhat so luong tai san.'
+      title: 'Thất bại',
+      text: 'Không thể cập nhật số lượng tài sản.'
     })
   }
 
@@ -223,7 +223,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         setdeviceByRoom([])
       }
     } catch (error) {
-      console.error('Error fetching contract room data:', error)
+      console.error('Lỗi khi truy xuất dữ liệu phòng hợp đồng:', error)
     }
   }
 
@@ -268,14 +268,14 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         .writeText(shareLink)
         .then(() => {
           Swal.fire({
-            title: '<strong><u>Thong bao</u></strong>',
+            title: '<strong><u>Thông báo</u></strong>',
             icon: 'info',
-            html: `Da sao chep lien ket hop dong.<br><a href="${shareLink}" target="_blank">${shareLink}</a>`,
+            html: `Đã sao chép liên kết hợp đồng.<br><a href="${shareLink}" target="_blank">${shareLink}</a>`,
             showCloseButton: true,
             showCancelButton: true,
             focusConfirm: false,
-            confirmButtonText: 'Mo lien ket',
-            cancelButtonText: 'Dong'
+            confirmButtonText: 'Mở liên kết',
+            cancelButtonText: 'Đóng'
           }).then((result) => {
             if (result.isConfirmed) {
               window.open(shareLink, '_blank')
@@ -283,10 +283,10 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
           })
         })
         .catch((error) => {
-          console.error('Khong the sao chep lien ket:', error)
+          console.error('Không thể sao chép liên kết:', error)
           Swal.fire({
-            title: 'Loi',
-            text: 'Khong the sao chep lien ket. Vui long thu lai.',
+            title: 'Lỗi',
+            text: 'Không thể sao chép liên kết. Vui lòng thử lại.',
             icon: 'error'
           })
         })
@@ -304,22 +304,22 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         .then(() => {
           Swal.fire({
             icon: 'success',
-            title: 'Thanh cong',
-            text: 'Da sao chep ma ket noi hop dong.'
+            title: 'Thành công',
+            text: 'Đã sao chép mã kết nối hợp đồng.'
           })
         })
         .catch((error) => {
-          console.error('Khong the sao chep ma ket noi:', error)
+          console.error('Không thể sao chép mã kết nối:', error)
         })
     }
   }
 
   const formatCurrencyValue = (value) => {
     if (value === null || value === undefined || Number.isNaN(Number(value))) {
-      return 'Chua cap nhat'
+      return 'Chưa cập nhật'
     }
 
-    return `${Number(value).toLocaleString('vi-VN')}d`
+    return `${Number(value).toLocaleString('vi-VN')} đ`
   }
 
   const formatUnitLabel = (unit) => {
@@ -335,7 +335,6 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
     if (motelId) {
       fetchMotelContract(motelId)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -348,8 +347,11 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         isNavAdmin={true}
       />
 
-      <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '10px', margin: '0 10px 10px 10px' }}>
+      <div style={{ padding: '20px 20px 12px 20px', backgroundColor: '#f8f9fa', borderRadius: '10px 10px 0 0', margin: '0 10px 0 10px' }}>
         <ContractHeader onAddContract={handleShow} />
+      </div>
+
+      <div style={{ padding: '10px 20px', backgroundColor: '#ffffff', border: '1px solid #e8e8e8', margin: '0 10px 10px 10px', borderRadius: '0 0 10px 10px' }}>
         <ContractFilters
           counts={contractCounts}
           statusFilters={statusFilters}
@@ -432,7 +434,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                   </svg>
                 </div>
                 <h5 className="modal-title" id="addRoomLabel">
-                  Thong tin tai san
+                  Thông tin tài sản
                   <span className="room-name"> &quot;{room.name}&quot;</span>
                 </h5>
                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close">
@@ -462,7 +464,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                         <div className="flex-grow-1">
                           <h6 className="mb-1">{item.deviceName}</h6>
                           <p className="mb-0">
-                            Gia: <strong>{formatCurrencyValue(item.value)}</strong> / {formatUnitLabel(item.unit)}
+                            Giá: <strong>{formatCurrencyValue(item.value)}</strong> / {formatUnitLabel(item.unit)}
                           </p>
                         </div>
                         <div className="d-flex align-items-center">
@@ -482,14 +484,14 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                             }
                             style={{ width: '100px' }}
                           />
-                          <span className="mx-2">So luong</span>
+                          <span className="mx-2">Số lượng</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div>
-                    <p className="text-danger mt-2">Can tro chua thiet lap tai san nao, can them tai san.</p>
+                    <p className="text-danger mt-2">Căn phòng chưa thiết lập tài sản nào, cần thêm tài sản.</p>
                   </div>
                 )}
               </div>

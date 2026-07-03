@@ -12,11 +12,11 @@ const IncomeSummaryHeader = ({ motelName, onImportClick }) => {
         gap: 1.5,
         flexWrap: 'wrap'
       }}>
-      <Box sx={{ borderLeft: '4px solid #2e7d32', pl: 1.5 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, color: '#263238', lineHeight: 1.25 }}>
+      <Box sx={{ borderLeft: '4px solid #20a9e7', pl: 1.5 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: '#333', fontSize: '1.2rem', lineHeight: 1.2 }}>
           Khoản thu / chi - tổng kết {motelName || 'Nhà trọ'}
         </Typography>
-        <Typography variant="body2" sx={{ color: '#667085', fontStyle: 'italic', mt: 0.25 }}>
+        <Typography variant="body2" sx={{ color: '#777', fontStyle: 'italic', fontSize: '0.85rem' }}>
           Bạn sẽ thống kê được các khoản thu / chi qua hàng tháng, quý, năm.
         </Typography>
       </Box>

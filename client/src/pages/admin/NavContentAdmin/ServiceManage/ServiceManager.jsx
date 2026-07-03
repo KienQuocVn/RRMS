@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Box, Paper, Grid } from '@mui/material'
 import ServiceList from './components/ServiceList'
 import UsageReport from './components/UsageReport'
@@ -7,6 +7,7 @@ import ModelCreateService from './ModelCreateService'
 import ModelUpdateService from './ModelUpdateService'
 import { useParams } from 'react-router-dom'
 import Swal from 'sweetalert2'
+import httpClient from '~/apis/httpClient'
 import { isValidRouteParam } from '~/utils/apiAdapters'
 import { getMotelDetail, getRoomsByMotelId, deleteMotelServiceAPI } from '~/apis/motelServiceAPI'
 
@@ -15,7 +16,8 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const [motelServices, setMotelServices] = useState([])
   const [selectedService, setSelectedService] = useState(null)
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
-  const [roomData, setRoomData] = useState([])
+  const [rooms, setRooms] = useState([])
+  const [invoices, setInvoices] = useState([])
   // State cho bộ lọc tháng - mặc định tháng hiện tại
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date()
@@ -26,22 +28,28 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
     try {
       if (!isValidRouteParam(id)) {
         setMotelServices([])
-        setRoomData([])
+        setRooms([])
+        setInvoices([])
         return
       }
 
-      const [serviceRes, roomRes] = await Promise.all([
+      const [serviceRes, roomRes, invoiceRes] = await Promise.all([
         getMotelDetail(id),
-        getRoomsByMotelId(id)
+        getRoomsByMotelId(id),
+        httpClient.get(`/api/v1/invoices/motel/${id}`)
       ])
 
       if (serviceRes?.code === 200 && serviceRes.result?.motelServices) {
         const services = serviceRes.result.motelServices || []
-        const rooms = roomRes?.result || []
+        const fetchedRooms = roomRes?.result || []
+        const fetchedInvoices = invoiceRes?.data?.result?.items || []
+
+        setRooms(fetchedRooms)
+        setInvoices(fetchedInvoices)
 
         // Đếm số phòng đang áp dụng dịch vụ
         const serviceCounts = {}
-        rooms.forEach((room) => {
+        fetchedRooms.forEach((room) => {
           const roomServices = room.services || []
           roomServices.forEach((rs) => {
             const serviceId = rs.service?.motelServiceId || rs.serviceId
@@ -57,35 +65,57 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         }))
 
         setMotelServices(servicesWithCount)
-
-        // Chuẩn bị dữ liệu phòng cho bảng báo cáo
-        const roomDataFormatted = rooms.map((room) => {
-          const roomServices = (room.services || []).reduce((acc, rs) => {
-            const serviceId = rs.service?.motelServiceId || rs.serviceId
-            if (serviceId) {
-              acc[`usage_${serviceId}`] = rs.quantity || 0
-              acc[`total_${serviceId}`] = (rs.quantity || 0) * (rs.service?.price || 0)
-            }
-            return acc
-          }, {})
-
-          return {
-            nameRoom: room.name,
-            ...roomServices
-          }
-        })
-
-        setRoomData(roomDataFormatted)
       } else {
         setMotelServices([])
-        setRoomData([])
+        setRooms([])
+        setInvoices([])
       }
     } catch (error) {
       console.error('Lỗi khi gọi API:', error)
       setMotelServices([])
-      setRoomData([])
+      setRooms([])
+      setInvoices([])
     }
   }, [])
+
+  const roomData = useMemo(() => {
+    const filterYearMonthStr = `${selectedMonth.year}-${String(selectedMonth.month).padStart(2, '0')}`
+
+    // Lọc hóa đơn của tháng được chọn
+    const monthlyInvoices = invoices.filter((inv) => inv.invoiceCreateMonth === filterYearMonthStr)
+
+    return rooms.map((room) => {
+      // Tìm hóa đơn của phòng này trong tháng đó
+      const roomInvoice = monthlyInvoices.find((inv) => inv.roomId === room.roomId)
+      const roomServices = {}
+
+      motelServices.forEach((service) => {
+        const serviceId = service.motelServiceId
+        if (roomInvoice) {
+          // Nếu có hóa đơn, lấy lượng sử dụng từ chi tiết hóa đơn
+          const serviceDetail = roomInvoice.serviceDetails?.find(
+            (sd) => sd.serviceName === service.nameService
+          )
+          roomServices[`usage_${serviceId}`] = serviceDetail ? (serviceDetail.quantity || 0) : 0
+          roomServices[`total_${serviceId}`] = serviceDetail ? (serviceDetail.totalPrice || 0) : 0
+        } else {
+          // Nếu không có hóa đơn, lấy từ cài đặt mặc định của phòng (nếu phòng có đăng ký dịch vụ này)
+          const registeredService = room.services?.find(
+            (rs) => (rs.service?.motelServiceId || rs.serviceId) === serviceId
+          )
+          roomServices[`usage_${serviceId}`] = registeredService ? (registeredService.quantity || 0) : 0
+          roomServices[`total_${serviceId}`] = registeredService 
+            ? (registeredService.quantity || 0) * (registeredService.service?.price || service.price || 0)
+            : 0
+        }
+      })
+
+      return {
+        nameRoom: room.name,
+        ...roomServices
+      }
+    })
+  }, [rooms, invoices, motelServices, selectedMonth])
 
   const deleteMotelService = async (serviceId) => {
     if (!serviceId) {

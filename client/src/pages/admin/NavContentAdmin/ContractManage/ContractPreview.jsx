@@ -22,6 +22,28 @@ import { getMotelById } from '~/apis/motelAPI';
 import { getProfileByUsername } from '~/apis/accountAPI';
 
 
+const getUnitLabel = (unit) => {
+  const map = { CAI: 'Cái', cai: 'Cái', CHIEC: 'Chiếc', chiec: 'Chiếc', BO: 'Bộ', bo: 'Bộ', CAP: 'Cặp', cap: 'Cặp' };
+  return map[unit] || unit || 'Cái';
+};
+
+const getServiceUnitLabel = (chargeType, nameService = '') => {
+  if (!chargeType) return 'tháng';
+  const normalized = String(chargeType).trim().toLowerCase();
+  const name = String(nameService).trim().toLowerCase();
+
+  if (normalized === 'meter' || normalized.includes('meter')) {
+    if (name.includes('điện') || name.includes('dien')) return 'kWh';
+    if (name.includes('nước') || name.includes('nuoc')) return 'khối';
+    return 'số đo';
+  }
+  if (normalized === 'fixed' || normalized.includes('fixed')) return 'tháng';
+  if (normalized.includes('nguoi') || normalized.includes('người')) return 'người';
+  if (normalized.includes('phong') || normalized.includes('phòng')) return 'phòng';
+  if (normalized.includes('thang') || normalized.includes('tháng')) return 'tháng';
+  return chargeType;
+};
+
 const ContractPreview = ({ setIsAdmin }) => {
   const { contractId, motelId } = useParams();
   const [contract, setContract] = useState({});
@@ -257,8 +279,10 @@ const ContractPreview = ({ setIsAdmin }) => {
                         <TableRow key={i}>
                           <TableCell align="center">{service.service.nameService}</TableCell>
                           <TableCell align="center">
-                            {service.service.price.toLocaleString('vi-VN')}đ/{service.service.chargetype}
-                            <Typography variant="caption" display="block">(Chỉ số hiện tại: {service.quantity})</Typography>
+                            {service.service.price.toLocaleString('vi-VN')}đ/{getServiceUnitLabel(service.service.chargetype, service.service.nameService)}
+                            {String(service.service.chargetype).toLowerCase().includes('meter') && (
+                              <Typography variant="caption" display="block">(Chỉ số hiện tại: {service.quantity})</Typography>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -283,7 +307,7 @@ const ContractPreview = ({ setIsAdmin }) => {
                           <TableCell align="center">{device.motelDevice.deviceName}</TableCell>
                           <TableCell align="center">{device.quantity}</TableCell>
                           <TableCell align="center">
-                            {device.motelDevice.value.toLocaleString('vi-VN')}đ/{device.motelDevice.unit}
+                            {device.motelDevice.value.toLocaleString('vi-VN')}đ/{getUnitLabel(device.motelDevice.unit)}
                           </TableCell>
                         </TableRow>
                       ))}

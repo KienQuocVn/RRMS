@@ -79,11 +79,35 @@ const ServiceList = ({ motelServices, openEditModal, deleteMotelService }) => {
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#555', fontWeight: 600, fontSize: '0.82rem' }}>
                   {service.price?.toLocaleString('vi-VN')}đ/{' '}
-                  {service.chargetype === 'nguoi'
-                    ? 'Người'
-                    : service.chargetype === 'thang'
-                      ? 'Tháng'
-                      : service.chargetype}
+                  {(() => {
+                    const chargeMap = {
+                      'nguoi': 'Người',
+                      'thang': 'Tháng',
+                      'kwh': 'kWh',
+                      'khoi': 'Khối',
+                      'chiec': 'Chiếc',
+                      'lan': 'Lần',
+                      'cai': 'Cái',
+                      'fixed': 'Tháng',
+                      'FIXED': 'Tháng',
+                      'meter': 'Chỉ số',
+                      'METER': 'Chỉ số',
+                    };
+
+                    let chargetype = service.chargetype;
+
+                    if (chargetype === 'METER' || chargetype === 'meter') {
+                      const name = service.nameService?.toLowerCase() || '';
+                      if (name.includes('điện')) chargetype = 'kwh';
+                      else if (name.includes('nước')) chargetype = 'khoi';
+                    } else if (chargetype === 'FIXED' || chargetype === 'fixed') {
+                      const name = service.nameService?.toLowerCase() || '';
+                      if (name.includes('người')) chargetype = 'nguoi';
+                      else chargetype = 'thang';
+                    }
+
+                    return chargeMap[chargetype] || chargetype;
+                  })()}
                 </Typography>
                 {service.count > 0 ? (
                   <Typography

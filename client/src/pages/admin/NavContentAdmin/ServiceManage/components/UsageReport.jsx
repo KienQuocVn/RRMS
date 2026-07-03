@@ -7,6 +7,8 @@ import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import * as XLSX from 'xlsx';
+import Swal from 'sweetalert2';
 
 const PRIMARY_COLOR = '#20a9e7';
 
@@ -159,9 +161,88 @@ const UsageReport = ({ roomData, motelServices, selectedMonth, setSelectedMonth 
       'chiec': '(Chiếc)',
       'lan': '(Lần)',
       'cai': '(Cái)',
+      'fixed': '(Tháng)',
+      'FIXED': '(Tháng)',
+      'meter': '(Chỉ số)',
+      'METER': '(Chỉ số)',
     };
-    const unit = chargeMap[service.chargetype] || `(${service.chargetype})`;
+
+    let chargetype = service.chargetype;
+
+    // Đoán đơn vị dựa trên tên dịch vụ nếu chargetype là METER hoặc FIXED
+    if (chargetype === 'METER' || chargetype === 'meter') {
+      const name = service.nameService?.toLowerCase() || '';
+      if (name.includes('điện')) {
+        chargetype = 'kwh';
+      } else if (name.includes('nước')) {
+        chargetype = 'khoi';
+      }
+    } else if (chargetype === 'FIXED' || chargetype === 'fixed') {
+      const name = service.nameService?.toLowerCase() || '';
+      if (name.includes('người')) {
+        chargetype = 'nguoi';
+      } else {
+        chargetype = 'thang';
+      }
+    }
+
+    const unit = chargeMap[chargetype] || `(${chargetype})`;
     return `${service.nameService} ${unit}`;
+  };
+
+  const handleExportExcel = () => {
+    if (roomData.length === 0) {
+      Swal.fire('Thông báo', 'Không có dữ liệu sử dụng dịch vụ để xuất', 'info');
+      return;
+    }
+
+    const excelData = roomData.map((room) => {
+      const rowData = {
+        'Tên phòng': room.nameRoom
+      };
+
+      motelServices.forEach((service) => {
+        const usageKey = `usage_${service.motelServiceId}`;
+        const totalKey = `total_${service.motelServiceId}`;
+        
+        let unitLabel = '';
+        const name = service.nameService?.toLowerCase() || '';
+        let chargetype = service.chargetype;
+
+        if (chargetype === 'METER' || chargetype === 'meter') {
+          if (name.includes('điện')) chargetype = 'kwh';
+          else if (name.includes('nước')) chargetype = 'khoi';
+        } else if (chargetype === 'FIXED' || chargetype === 'fixed') {
+          if (name.includes('người')) chargetype = 'nguoi';
+          else chargetype = 'thang';
+        }
+
+        const chargeMap = {
+          'nguoi': 'Người',
+          'thang': 'Tháng',
+          'kwh': 'kWh',
+          'khoi': 'Khối',
+          'chiec': 'Chiếc',
+          'lan': 'Lần',
+          'cai': 'Cái'
+        };
+        unitLabel = chargeMap[chargetype] || chargetype;
+        
+        rowData[`${service.nameService} - Sử dụng (${unitLabel})`] = room[usageKey] !== undefined ? room[usageKey] : '?';
+        rowData[`${service.nameService} - Thành tiền (đ)`] = room[totalKey] !== undefined ? room[totalKey] : '?';
+      });
+
+      return rowData;
+    });
+
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'BaoCaoSuDungDichVu');
+
+    const fileName = `BaoCaoSuDungDichVu_${String(selectedMonth.month).padStart(2, '0')}_${selectedMonth.year}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+    
+    Swal.fire('Thành công!', `Đã xuất file excel ${fileName}`, 'success');
   };
 
   return (
@@ -184,6 +265,7 @@ const UsageReport = ({ roomData, motelServices, selectedMonth, setSelectedMonth 
           <Button
             id="download-excel"
             variant="contained"
+            onClick={handleExportExcel}
             startIcon={<InsertDriveFileOutlinedIcon />}
             sx={{
               backgroundColor: '#20a9e7',

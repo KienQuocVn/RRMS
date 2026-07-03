@@ -2,7 +2,6 @@ import {
   Box,
   Checkbox,
   FormControlLabel,
-  Chip,
   Select,
   MenuItem,
   InputAdornment,
@@ -48,9 +47,18 @@ const InvoiceFilterBar = ({
   searchText,
   onSearchChange
 }) => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
   const paidCount = invoices.filter((inv) => inv.paymentStatus === 'PAID').length
-  const unpaidCount = invoices.filter((inv) => inv.paymentStatus !== 'PAID' && inv.paymentStatus !== 'CANCELED').length
-  const debtCount = 0
+  const unpaidCount = invoices.filter((inv) => {
+    const isOverdue = inv.dueDate && new Date(inv.dueDate).setHours(0, 0, 0, 0) < today
+    return inv.paymentStatus === 'UNPAID' && !isOverdue
+  }).length
+  const debtCount = invoices.filter((inv) => {
+    const isOverdue = inv.dueDate && new Date(inv.dueDate).setHours(0, 0, 0, 0) < today
+    return inv.paymentStatus === 'PARTIAL' || (inv.paymentStatus === 'UNPAID' && isOverdue)
+  }).length
   const canceledCount = invoices.filter((inv) => inv.paymentStatus === 'CANCELED').length
 
   return (
@@ -155,6 +163,8 @@ const InvoiceFilterBar = ({
             <Checkbox
               size="small"
               id="debt"
+              checked={filterStatus.debt || false}
+              onChange={handleFilterChange}
               sx={{
                 color: '#aaa',
                 '&.Mui-checked': { color: '#ef5350' },
@@ -179,6 +189,8 @@ const InvoiceFilterBar = ({
             <Checkbox
               size="small"
               id="cancel"
+              checked={filterStatus.cancel || false}
+              onChange={handleFilterChange}
               sx={{
                 color: '#aaa',
                 '&.Mui-checked': { color: '#9e9e9e' },
