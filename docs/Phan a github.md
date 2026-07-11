@@ -18,7 +18,7 @@ Dự án: **RRMS** — backend `server` (Spring Boot 3.3.3, JDK 17, port `7000`)
   ```
   Không đổi tên `server` → `backend`, không đổi `client` → `frontend`.
 
-- [ ] **2. Kiểm tra `.gitignore` chặn đúng các file/thư mục sau** (không được có trong git tracking):
+- [x] **2. Kiểm tra `.gitignore` chặn đúng các file/thư mục sau** (không được có trong git tracking):
   ```text
   server/target/
   client/node_modules/
@@ -64,7 +64,7 @@ Dự án: **RRMS** — backend `server` (Spring Boot 3.3.3, JDK 17, port `7000`)
   - [x] `client/Dockerfile`
   - [x] `docker-compose.yml`
 
-- [ ] **5. Commit và push code lên GitHub:**
+- [x] **5. Commit và push code lên GitHub:**
   ```bash
   git status
   git add .
@@ -72,11 +72,11 @@ Dự án: **RRMS** — backend `server` (Spring Boot 3.3.3, JDK 17, port `7000`)
   git push
   ```
 
-- [ ] **6. Nghiệm thu trên GitHub** — mở lại repo trên github.com, xác nhận:
-  - [ ] Có đầy đủ `server/` và `client/`
-  - [ ] KHÔNG thấy `target/`
-  - [ ] KHÔNG thấy `node_modules/`
-  - [ ] KHÔNG thấy file `.env` chứa giá trị thật
+- [x] **6. Nghiệm thu trên GitHub** — mở lại repo trên github.com, xác nhận:
+  - [x] Có đầy đủ `server/` và `client/`
+  - [x] KHÔNG thấy `target/`
+  - [x] KHÔNG thấy `node_modules/`
+  - [x] KHÔNG thấy file `.env` chứa giá trị thật
 
 ## Kết quả Phần A
 
