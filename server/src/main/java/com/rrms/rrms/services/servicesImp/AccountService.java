@@ -515,10 +515,6 @@ public class AccountService implements IAccountService {
                 .findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
 
-        // Return a mapped response (in a real scenario, use a mapper)
-        // Here we just return an empty list or mapped response if available.
-        // As this needs BulletinBoardMapper which we haven't injected, we can return null or an empty list for now.
-        // Wait, BulletinBoardMapper exists? We can inject it later if needed.
         return new ArrayList<>();
     }
 

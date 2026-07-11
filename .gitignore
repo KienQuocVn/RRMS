@@ -31,3 +31,12 @@ bin/
 ### Docker ###
 .env
 .env.local
+server/.env
+client/.env
+mobile/.env
+
+### Build outputs ###
+server/target/
+client/node_modules/
+client/dist/
+*.log

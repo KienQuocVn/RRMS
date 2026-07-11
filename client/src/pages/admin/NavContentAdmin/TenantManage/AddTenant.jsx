@@ -592,7 +592,7 @@ const AddTenantModalV2 = ({ open, onClose, reloadData, avatar, editId }) => {
                 <FormControl sx={fieldSx}>
                   <InputLabel>Mẫu tạm trú áp dụng</InputLabel>
                   <Select defaultValue="CT01" label="Mẫu tạm trú áp dụng">
-                    <MenuItem value="CT01">CT01 (Mặc định LOZIDO)</MenuItem>
+                    <MenuItem value="CT01">CT01 (Mặc định rrms)</MenuItem>
                   </Select>
                 </FormControl>
 
