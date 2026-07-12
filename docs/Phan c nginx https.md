@@ -70,13 +70,13 @@
 
 ### C2 — Trỏ domain và cấp HTTPS bằng Certbot
 
-- [ ] **2.1. Trỏ DNS**: thêm A record cho `rrms.click` (và `www.rrms.click` nếu cần) trỏ về `YOUR_VPS_IP`. Kiểm tra:
+- [x] **2.1. Trỏ DNS**: thêm A record cho `rrms.click` (và `www.rrms.click` nếu cần) trỏ về `YOUR_VPS_IP`. Kiểm tra:
   ```bash
   ping rrms.click
   dig +short rrms.click
   ```
 
-- [ ] **2.2. Xác nhận `server_name` trong file Nginx đúng domain thật**, sau đó:
+- [x] **2.2. Xác nhận `server_name` trong file Nginx đúng domain thật**, sau đó:
   ```bash
   sudo nginx -t && sudo systemctl reload nginx
   ```
