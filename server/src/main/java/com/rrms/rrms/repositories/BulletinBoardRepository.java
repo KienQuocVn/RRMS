@@ -15,6 +15,17 @@ import com.rrms.rrms.models.BulletinBoard;
 public interface BulletinBoardRepository extends JpaRepository<BulletinBoard, UUID> {
     List<BulletinBoard> findByAccount(Account account);
 
+    @EntityGraph(
+            attributePaths = {
+                "account",
+                "bulletinBoardImages",
+                "bulletinBoardReviews",
+                "bulletinBoardRules",
+                "bulletinBoardRentalAmenities",
+                "motel",
+                "motel.typeRoom",
+                "room"
+            })
     @Query(
             """
 			SELECT r

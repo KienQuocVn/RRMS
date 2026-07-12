@@ -151,7 +151,10 @@ public class BulletinBoardService implements IBulletinBoard {
 
     @Override
     public List<BulletinBoardSearchResponse> searchBulletinBoards(String address) {
-        return bulletinBoardElasticsearchRepository.findByAddress(address);
+        List<BulletinBoard> bulletinBoards = bulletinBoardRepository.findByAddress(address);
+        return bulletinBoards.stream()
+                .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
+                .toList();
     }
 
     @Override
