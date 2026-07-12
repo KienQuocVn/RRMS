@@ -81,17 +81,17 @@
   sudo nginx -t && sudo systemctl reload nginx
   ```
 
-- [ ] **2.3. Cài Certbot:**
+- [x] **2.3. Cài Certbot:**
   ```bash
   sudo apt install -y certbot python3-certbot-nginx
   ```
 
-- [ ] **2.4. Xin chứng chỉ HTTPS:**
+- [x] **2.4. Xin chứng chỉ HTTPS:**
   ```bash
   sudo certbot --nginx -d rrms.click -d www.rrms.click
   ```
 
-- [ ] **2.5. Kiểm tra cơ chế tự gia hạn:**
+- [x] **2.5. Kiểm tra cơ chế tự gia hạn:**
   ```bash
   sudo certbot renew --dry-run   # phải thấy "Congratulations, all simulated renewals succeeded"
   ```
