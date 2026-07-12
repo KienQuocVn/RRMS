@@ -99,24 +99,24 @@ Cấu hình thực tế cần giữ nguyên trong phần này:
   free -h   # xác nhận thấy dòng Swap: 2.0Gi
   ```
 
-- [ ] **3.1. Chạy hạ tầng** 
+- [x] **3.1. Chạy hạ tầng** 
   ```bash
   docker compose up -d mysql redis elasticsearch
   docker compose ps
   ```
 
-- [ ] **3.2. Kiểm tra MySQL có database `rrms`:**
+- [x] **3.2. Kiểm tra MySQL có database `rrms`:**
   ```bash
   docker exec -it rrms-mysql mysql -uroot -p12345 -e "SHOW DATABASES;"
   ```
 
-- [ ] **3.3. Kiểm tra Elasticsearch khởi động thành công** (quan trọng — `BulletinBoardService` inject repository Elasticsearch, backend sẽ lỗi nếu ES không lên):
+- [x] **3.3. Kiểm tra Elasticsearch khởi động thành công** (quan trọng — `BulletinBoardService` inject repository Elasticsearch, backend sẽ lỗi nếu ES không lên):
   ```bash
   curl http://localhost:9200
   ```
   Phải trả về JSON có `"cluster_name"`, `"tagline": "You Know, for Search"` — không lỗi kết nối.
 
-- [ ] **3.4. Kiểm tra log nếu có container lỗi:**
+- [x] **3.4. Kiểm tra log nếu có container lỗi:**
   ```bash
   docker compose logs -f mysql
   docker compose logs -f elasticsearch
@@ -124,20 +124,20 @@ Cấu hình thực tế cần giữ nguyên trong phần này:
 
 ### B4 — Build backend, build frontend
 
-- [ ] **4.1. Build file `.jar` backend:**
+- [x] **4.1. Build file `.jar` backend:**
   ```bash
   cd /var/www/rrms/server
   ./mvnw clean package -DskipTests
   ls target/*.jar   # ví dụ: rrms-0.0.1-SNAPSHOT.jar
   ```
 
-- [ ] **4.2. Chạy thử trực tiếp trước khi giao cho systemd:**
+- [x] **4.2. Chạy thử trực tiếp trước khi giao cho systemd:**
   ```bash
   PORT=7000 SPRING_PROFILES_ACTIVE=dev java -jar target/rrms-0.0.1-SNAPSHOT.jar
   ```
   Mở tab SSH khác, test: `curl http://localhost:7000` → có phản hồi thì Ctrl+C tắt tiến trình thử.
 
-- [ ] **4.3. Build frontend thành file tĩnh** (đảm bảo `VITE_APP_API_URL` trong `client/.env` đã đúng domain thật TRƯỚC khi build):
+- [x] **4.3. Build frontend thành file tĩnh** (đảm bảo `VITE_APP_API_URL` trong `client/.env` đã đúng domain thật TRƯỚC khi build):
   ```bash
   cd /var/www/rrms/client
   npm install
@@ -145,7 +145,7 @@ Cấu hình thực tế cần giữ nguyên trong phần này:
   ls dist   # index.html  assets/...
   ```
 
-- [ ] **4.4. Dọn dẹp disk sau khi build** (VPS chỉ có 20GB, `node_modules` + Maven cache + Docker image dễ chiếm vài GB không cần thiết sau khi đã có file build):
+- [x] **4.4. Dọn dẹp disk sau khi build** (VPS chỉ có 20GB, `node_modules` + Maven cache + Docker image dễ chiếm vài GB không cần thiết sau khi đã có file build):
   ```bash
   # Xoá node_modules sau khi đã build xong (không cần nữa để chạy production)
   rm -rf /var/www/rrms/client/node_modules
@@ -160,11 +160,11 @@ Cấu hình thực tế cần giữ nguyên trong phần này:
   ```
   > Nếu sau này cần build lại (sửa code), các bước `npm install`/`mvn package` sẽ tự tải lại — không mất gì ngoài thời gian build hơi lâu hơn lần đầu.
 
-- [ ] **4.5. (Tuỳ chọn, nếu disk vẫn thường xuyên căng) Cân nhắc build ở máy local/CI thay vì trên VPS** — chỉ upload file `.jar` và thư mục `client/dist` đã build sẵn lên VPS qua `scp`/`rsync`, VPS chỉ cần chạy, không cần cài Maven/Node hay giữ cache build. Phù hợp nếu muốn tiết kiệm tối đa disk/CPU cho VPS 1 Core.
+- [x] **4.5. (Tuỳ chọn, nếu disk vẫn thường xuyên căng) Cân nhắc build ở máy local/CI thay vì trên VPS** — chỉ upload file `.jar` và thư mục `client/dist` đã build sẵn lên VPS qua `scp`/`rsync`, VPS chỉ cần chạy, không cần cài Maven/Node hay giữ cache build. Phù hợp nếu muốn tiết kiệm tối đa disk/CPU cho VPS 1 Core.
 
 ### B5 — Giữ backend sống bằng systemd
 
-- [ ] **5.1. Tạo file service** `/etc/systemd/system/rrms-backend.service`:
+- [x] **5.1. Tạo file service** `/etc/systemd/system/rrms-backend.service`:
   ```ini
   [Unit]
   Description=RRMS Spring Boot Backend
@@ -185,19 +185,18 @@ Cấu hình thực tế cần giữ nguyên trong phần này:
   ```
   > `-Xms256m -Xmx512m` giới hạn heap JVM tối đa 512MB — nếu không giới hạn, backend Spring Boot có thể tự chiếm nhiều RAM hơn cần thiết, gây cạnh tranh với Elasticsearch (512MB) + MySQL trên VPS chỉ có 2GB tổng. Nếu vẫn thấy RAM căng khi chạy thực tế (kiểm tra bằng `free -h` hoặc `docker stats`), hạ tiếp xuống `-Xmx384m`.
 
-- [ ] **5.2. Cấp quyền cho `www-data` truy cập thư mục project:**
+- [x] **5.2. Cấp quyền cho `www-data` truy cập thư mục project:**
   ```bash
   sudo chown -R www-data:www-data /var/www/rrms/server
-  ```
 
-- [ ] **5.3. Kích hoạt + khởi động service:**
+- [x] **5.3. Kích hoạt + khởi động service:**
   ```bash
   sudo systemctl daemon-reload
   sudo systemctl enable --now rrms-backend
   sudo systemctl status rrms-backend     # phải thấy: active (running)
   ```
 
-- [ ] **5.4. Xem log realtime để xác nhận không lỗi:**
+- [x] **5.4. Xem log realtime để xác nhận không lỗi:**
   ```bash
   sudo journalctl -u rrms-backend -f
   ```
