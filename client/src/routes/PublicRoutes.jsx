@@ -3,7 +3,7 @@ import { Route } from 'react-router-dom'
 
 const Detail = lazy(() => import('../pages/roomDetail/Detail'))
 const Home = lazy(() => import('../pages/Home/Home'))
-const Chart = lazy(() => import('../pages/charts/Chart'))
+const Chart = lazy(() => import('../pages/Charts/Chart'))
 const Search = lazy(() => import('../pages/search/Search'))
 const GoogleLoginRedirect = lazy(() => import('../pages/auth/Login/GoogleLoginRedirect'))
 const Login = lazy(() => import('../pages/auth/Login/Login'))
