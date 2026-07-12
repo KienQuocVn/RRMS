@@ -6,16 +6,16 @@
 
 ### C1 — Cài và cấu hình Nginx
 
-- [ ] **1.1. Cài Nginx:**
+- [x] **1.1. Cài Nginx:**
   ```bash
   sudo apt install -y nginx
   ```
 
-- [ ] **1.2. Tạo file cấu hình site** `/etc/nginx/sites-available/rrms`:
+- [x] **1.2. Tạo file cấu hình site** `/etc/nginx/sites-available/rrms`:
   ```nginx
   server {
       listen 80;
-      server_name rrms.vn www.rrms.vn;   # ← đổi thành domain thật của bạn
+      server_name rrms.click www.rrms.click;   # ← đổi thành domain thật của bạn
 
       client_max_body_size 10M;
 
@@ -46,19 +46,19 @@
   }
   ```
 
-- [ ] **1.3. Kích hoạt site và tắt site mặc định:**
+- [x] **1.3. Kích hoạt site và tắt site mặc định:**
   ```bash
   sudo ln -s /etc/nginx/sites-available/rrms /etc/nginx/sites-enabled/
   sudo rm -f /etc/nginx/sites-enabled/default
   ```
 
-- [ ] **1.4. Kiểm tra cú pháp và reload:**
+- [x] **1.4. Kiểm tra cú pháp và reload:**
   ```bash
   sudo nginx -t            # phải thấy "syntax is ok"
   sudo systemctl reload nginx
   ```
 
-- [ ] **1.5. Mở firewall cho web + giữ SSH:**
+- [x] **1.5. Mở firewall cho web + giữ SSH:**
   ```bash
   sudo ufw allow 'Nginx Full'
   sudo ufw allow OpenSSH
@@ -70,10 +70,10 @@
 
 ### C2 — Trỏ domain và cấp HTTPS bằng Certbot
 
-- [ ] **2.1. Trỏ DNS**: thêm A record cho `rrms.vn` (và `www.rrms.vn` nếu cần) trỏ về `YOUR_VPS_IP`. Kiểm tra:
+- [ ] **2.1. Trỏ DNS**: thêm A record cho `rrms.click` (và `www.rrms.click` nếu cần) trỏ về `YOUR_VPS_IP`. Kiểm tra:
   ```bash
-  ping rrms.vn
-  dig +short rrms.vn
+  ping rrms.click
+  dig +short rrms.click
   ```
 
 - [ ] **2.2. Xác nhận `server_name` trong file Nginx đúng domain thật**, sau đó:
@@ -88,7 +88,7 @@
 
 - [ ] **2.4. Xin chứng chỉ HTTPS:**
   ```bash
-  sudo certbot --nginx -d rrms.vn -d www.rrms.vn
+  sudo certbot --nginx -d rrms.click -d www.rrms.click
   ```
 
 - [ ] **2.5. Kiểm tra cơ chế tự gia hạn:**
@@ -98,9 +98,9 @@
 
 ### C3 — Nghiệm thu toàn hệ thống
 
-- [ ] Mở `https://rrms.vn` → thấy giao diện RRMS với ổ khoá HTTPS.
+- [ ] Mở `https://rrms.click` → thấy giao diện RRMS với ổ khoá HTTPS.
 - [ ] Test các luồng chính (đăng nhập, CRUD, upload...) qua domain thật.
-- [ ] Gõ `http://rrms.vn` → tự động chuyển sang HTTPS.
+- [ ] Gõ `http://rrms.click` → tự động chuyển sang HTTPS.
 - [ ] F5 trang web nhiều lần → không gặp lỗi 404.
 - [ ] Chạy `sudo systemctl restart rrms-backend` rồi reload trang → web vẫn hoạt động.
 - [ ] Reboot VPS (`sudo reboot`), đợi 60 giây, truy cập lại → mọi thứ tự sống lại:
