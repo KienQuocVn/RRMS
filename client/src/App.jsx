@@ -15,7 +15,7 @@ import { useAuth } from './hooks/useAuth'
 import { useMotel } from './hooks/useMotel'
 import { normalizeProfileResponse } from './apis/profileAPI'
 import ChatAI from './pages/AI/ChatAI.jsx'
-import NotFoundPage from './pages/notFoundPage/NotFoundPage.jsx'
+import NotFoundPage from './pages/NotFoundPage/NotFoundPage.jsx'
 
 function AppShell() {
   const location = useLocation()
