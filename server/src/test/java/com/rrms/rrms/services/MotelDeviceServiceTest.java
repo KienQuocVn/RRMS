@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
 
@@ -36,9 +35,6 @@ class MotelDeviceServiceTest {
     @Mock
     private MotelDeviceRepository motelDeviceRepository; // Mock repository
 
-    @Mock
-    private MotelDeviceMapper motelDeviceMapper; // Mock mapper
-
     @InjectMocks
     private MotelDeviceService motelDeviceService; // Inject mocks vào service
 
@@ -49,7 +45,6 @@ class MotelDeviceServiceTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this); // Mở các mock trước mỗi test
         motelDeviceId = UUID.randomUUID();
     }
 

@@ -118,7 +118,7 @@ public class MotelDeviceControllerTest {
     public void testDeleteMotelDevice_Success() throws Exception {
         // Arrange: Mock the service to simulate a successful deletion
         UUID motelDeviceId = UUID.randomUUID();
-        doNothing().when(motelDeviceService).deleteMotelDevice(motelDeviceId); // Giả lập việc xóa thành công
+        doReturn(true).when(motelDeviceService).deleteMotelDevice(motelDeviceId); // Giả lập việc xóa thành công
 
         // Act: Perform DELETE request to delete motel device
         ResultActions result = mockMvc.perform(

@@ -33,6 +33,7 @@ import com.rrms.rrms.models.Account;
 import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.repositories.MotelRepository;
 import com.rrms.rrms.services.servicesImp.MotelService;
+import com.rrms.rrms.services.support.MotelAreaValidator;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,6 +53,9 @@ class MotelServiceTest {
 
     @Mock
     AccountMapper accountMapper;
+
+    @Mock
+    MotelAreaValidator motelAreaValidator;
 
     Motel motel;
     MotelRequest motelRequest;

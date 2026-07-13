@@ -11,17 +11,16 @@ public class CustomerEnvironmentTest {
 
     @Test
     void testSelectEnvDev() {
-        CustomerEnvironment devEnv = CustomerEnvironment.selectEnv(CustomerEnvironment.EnvTarget.DEV);
-        assertEquals("MOMOLRJZ20181206", devEnv.getPartnerInfo().getPartnerCode());
-        assertEquals("mTCKt9W3eU1m39TW", devEnv.getPartnerInfo().getAccessKey());
-        assertEquals("SetA5RDnLHvt51AULf51DyauxUo3kDU6", devEnv.getPartnerInfo().getSecretKey());
-        assertEquals("development", devEnv.getTarget());
+        assertThrows(IllegalStateException.class, () -> {
+            CustomerEnvironment.selectEnv(CustomerEnvironment.EnvTarget.DEV);
+        });
     }
 
     @Test
     void testSelectEnvStringDev() {
-        CustomerEnvironment devEnv = CustomerEnvironment.selectEnv("dev");
-        assertEquals("development", devEnv.getTarget());
+        assertThrows(IllegalStateException.class, () -> {
+            CustomerEnvironment.selectEnv("dev");
+        });
     }
 
     @Test
