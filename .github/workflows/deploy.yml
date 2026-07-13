@@ -1,0 +1,132 @@
+# .github/workflows/deploy.yml
+name: Deploy
+
+# Chỉ chạy khi push (hoặc merge PR) vào nhánh main
+on:
+  push:
+    branches: [main]
+
+# Không cho 2 lần deploy chạy chồng lên nhau
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---------- 1. Build backend Spring Boot ----------
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: maven
+
+      - name: Cấp quyền thực thi cho mvnw
+        working-directory: server
+        run: chmod +x mvnw
+
+      - name: Tạo file test.properties từ file application-test.properties mẫu
+        working-directory: server
+        run: cp src/test/resources/application-test.properties src/test/resources/test.properties
+
+      - name: Test backend
+        working-directory: server
+        run: ./mvnw -B test
+
+      - name: Build .jar
+        working-directory: server
+        run: ./mvnw -B package -DskipTests
+
+      - name: Tìm tên file jar vừa build
+        id: jar
+        working-directory: server
+        run: |
+          JAR_PATH=$(ls target/*.jar | grep -v original | head -n 1)
+          echo "path=$JAR_PATH" >> "$GITHUB_OUTPUT"
+
+      # ---------- 2. Build frontend React ----------
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Build frontend
+        working-directory: client
+        # VITE_APP_API_URL được "bake" lúc build — nếu domain không đổi,
+        # có thể để trong client/.env.production đã commit sẵn (không chứa secret nhạy cảm)
+        run: |
+          npm ci
+          npm run build
+
+      # ---------- 3. Copy sản phẩm build lên VPS ----------
+      - name: Copy jar + dist lên VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_PORT }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: "server/${{ steps.jar.outputs.path }},client/dist"
+          target: /tmp/rrms-deploy
+
+      # ---------- 4. Kích hoạt bản mới trên VPS ----------
+      - name: Restart service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_PORT }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            set -e
+
+            # Đảm bảo các thư mục đích tồn tại trên VPS
+            mkdir -p /var/www/rrms/server/target /var/www/rrms/client
+
+            # Backend: tìm file .jar đệ quy trong thư mục tạm và di chuyển ghi đè trực tiếp
+            NEW_JAR=$(find /tmp/rrms-deploy -name "*.jar" | head -n 1)
+            if [ -n "$NEW_JAR" ]; then
+              mv -f "$NEW_JAR" /var/www/rrms/server/target/rrms-0.0.1-SNAPSHOT.jar
+            else
+              echo "Error: No JAR file found in /tmp/rrms-deploy"
+              exit 1
+            fi
+
+            # Frontend: thay toàn bộ dist cũ
+            rm -rf /var/www/rrms/client/dist
+            mv /tmp/rrms-deploy/client/dist /var/www/rrms/client/dist
+            rm -rf /tmp/rrms-deploy
+
+            # Khởi động lại backend (systemd đọc lại đúng file .jar cố định)
+            sudo systemctl restart rrms-backend
+
+            # Kiểm tra sống sau deploy — fail ở đây thì workflow đỏ
+            sleep 8
+            curl -fs http://127.0.0.1:7000/api/v1/search || curl -fs http://127.0.0.1:7000/actuator/health
+
+      # ---------- 5. Thông báo Telegram ----------
+      - name: Telegram — deploy thành công
+        if: success()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode=HTML \
+            --data-urlencode text="✅ <b>RRMS deploy THÀNH CÔNG</b>
+          👤 <b>Người thực hiện:</b> ${{ github.actor }}
+          📝 <b>Commit:</b> ${{ github.event.head_commit.message }}
+          🔗 <a href='https://rrms.click'>Xem website</a>"
+
+      - name: Telegram — deploy thất bại
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode=HTML \
+            --data-urlencode text="❌ <b>RRMS deploy THẤT BẠI!</b>
+          👤 <b>Người thực hiện:</b> ${{ github.actor }}
+          📝 <b>Commit:</b> ${{ github.event.head_commit.message }}
+          🔍 <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Xem chi tiết log lỗi</a>"
