@@ -14,7 +14,7 @@ export const useLogin = ({ setUsername, setAvatar }) => {
   const { t } = useTranslation()
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
-  const [validCaptcha, setValidCaptcha] = useState(false)
+  const [validCaptcha, setValidCaptcha] = useState(true) // [CAPTCHA-DISABLED] was: false
   const [captchaResetKey, setCaptchaResetKey] = useState(0)
   const navigate = useNavigate()
 
@@ -130,10 +130,10 @@ export const useLogin = ({ setUsername, setAvatar }) => {
   const handleSubmit = async (event) => {
     event.preventDefault()
 
-    if (!validCaptcha) {
-      toast.error(t('auth.login.alerts.captchaFailed'))
-      return
-    }
+    // [CAPTCHA-DISABLED] if (!validCaptcha) {
+    //   toast.error(t('auth.login.alerts.captchaFailed'))
+    //   return
+    // }
 
     if (!phone || !password) {
       Swal.fire({

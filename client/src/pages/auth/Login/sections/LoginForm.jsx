@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Box, TextField, Button, Divider, IconButton, InputAdornment } from '@mui/material'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
-import ValidCaptcha from '~/components/ValidCaptcha'
+// [CAPTCHA-DISABLED] import ValidCaptcha from '~/components/ValidCaptcha'
 
 const LoginForm = ({ phone, setPhone, password, setPassword, setValidCaptcha, captchaResetKey, handleSubmit }) => {
   const { t } = useTranslation()
@@ -87,7 +87,7 @@ const LoginForm = ({ phone, setPhone, password, setPassword, setValidCaptcha, ca
         {t('auth.login.submit')}
       </Button>
 
-      <ValidCaptcha setValidCaptcha={setValidCaptcha} resetSignal={captchaResetKey} />
+      {/* [CAPTCHA-DISABLED] <ValidCaptcha setValidCaptcha={setValidCaptcha} resetSignal={captchaResetKey} /> */}
 
       <Divider sx={{ my: 1.5 }} />
     </Box>
