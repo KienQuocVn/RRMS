@@ -70,7 +70,7 @@ public class BulletinBoardReviewsControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Create Bulletin Board Reviews successfully"))
+                .andExpect(jsonPath("$.message").value("Tạo đánh giá trên bảng tin thành công"))
                 .andExpect(jsonPath("$.code").value(HttpStatus.CREATED.value()))
                 .andExpect(jsonPath("$.result.rating").value(5));
     }
@@ -92,7 +92,7 @@ public class BulletinBoardReviewsControllerTest {
                         .param("bulletinBoardId", bulletinBoardId.toString())
                         .param("username", username))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Get Bulletin Board Reviews successfully"))
+                .andExpect(jsonPath("$.message").value("Nhận đánh giá bảng tin thành công"))
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.result.rating").value(5));
     }
@@ -114,7 +114,7 @@ public class BulletinBoardReviewsControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/bulletin-board-reviews/rating-history")
                         .param("username", username))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Get Rating History successfully"))
+                .andExpect(jsonPath("$.message").value("Lấy lịch sử xếp hạng thành công"))
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.result[0].rating").value(5))
                 .andExpect(jsonPath("$.result[1].rating").value(4));
@@ -129,7 +129,7 @@ public class BulletinBoardReviewsControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete(
                         "/bulletin-board-reviews/{bulletinBoardReviewsId}", bulletinBoardReviewsId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Delete Bulletin Board Reviews successfully"))
+                .andExpect(jsonPath("$.message").value("Xóa thành công các đánh giá trên bảng tin"))
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.result").value(1));
     }

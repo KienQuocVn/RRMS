@@ -50,7 +50,7 @@ public class ProfileControllerTest {
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value())) // Kiểm tra mã phản hồi
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message")
-                        .value("Get profile successfully")) // Kiểm tra thông báo
+                        .value("Lấy thông tin hồ sơ thành công")) // Kiểm tra thông báo
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result.username")
                         .value("testuser")) // Kiểm tra tên người dùng
                 .andExpect(
@@ -79,7 +79,7 @@ public class ProfileControllerTest {
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value())) // Kiểm tra mã phản hồi
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message")
-                        .value("Update profile successfully")) // Kiểm tra thông báo
+                        .value("Cập nhật thông tin hồ sơ thành công")) // Kiểm tra thông báo
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result.username")
                         .value("newusername")) // Kiểm tra tên người dùng
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result.email")
@@ -105,7 +105,7 @@ public class ProfileControllerTest {
                 .andExpect(
                         MockMvcResultMatchers.jsonPath("$.code").value(HttpStatus.OK.value())) // Kiểm tra mã phản hồi
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message")
-                        .value("Change password successfully")) // Kiểm tra thông báo
+                        .value("Đổi mật khẩu thành công")) // Kiểm tra thông báo
                 .andExpect(MockMvcResultMatchers.jsonPath("$.result")
                         .value("Password changed successfully")); // Kiểm tra thông báo thay đổi mật khẩu
     }

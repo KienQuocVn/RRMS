@@ -26,7 +26,7 @@ import com.rrms.rrms.configs.SecurityConfigTest;
 import com.rrms.rrms.dto.request.MotelDeviceRequest;
 import com.rrms.rrms.dto.response.MotelDeviceResponse;
 import com.rrms.rrms.dto.response.MotelResponse;
-import com.rrms.rrms.services.servicesImp.MotelDeviceService;
+import com.rrms.rrms.services.IMotelDeviceService;
 
 @WebMvcTest(controllers = MotelDeviceController.class) // Controller-specific test
 @ExtendWith(MockitoExtension.class)
@@ -37,7 +37,7 @@ public class MotelDeviceControllerTest {
     private MockMvc mockMvc;
 
     @MockBean // This ensures the mock is injected into the context
-    private MotelDeviceService motelDeviceService;
+    private IMotelDeviceService motelDeviceService;
 
     private UUID motelDeviceId;
 
@@ -84,13 +84,13 @@ public class MotelDeviceControllerTest {
         when(motelDeviceService.getAllMotelDevicesByMotel(motelDeviceId)).thenReturn(devices);
 
         // Act: Perform GET request to fetch motel devices
-        ResultActions result =
-                mockMvc.perform(get("/moteldevices/{motelId}", motelDeviceId).contentType("application/json"));
+        ResultActions result = mockMvc.perform(
+                get("/api/v1/motel-devices/motel/{motelId}", motelDeviceId).contentType("application/json"));
 
         // Assert: Expect status 200 OK and correct response
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.message").value("success"))
+                .andExpect(jsonPath("$.message").value("Lấy danh sách thiết bị của nhà trọ thành công"))
                 .andExpect(jsonPath("$.result.size()").value(2)) // Expect 2 devices
                 .andExpect(jsonPath("$.result[0].deviceName").value("Device 1"))
                 .andExpect(jsonPath("$.result[1].deviceName").value("Device 2"));
@@ -103,13 +103,13 @@ public class MotelDeviceControllerTest {
         when(motelDeviceService.getAllMotelDevicesByMotel(motelDeviceId)).thenReturn(List.of());
 
         // Act: Perform GET request to fetch motel devices
-        ResultActions result =
-                mockMvc.perform(get("/moteldevices/{motelId}", motelDeviceId).contentType("application/json"));
+        ResultActions result = mockMvc.perform(
+                get("/api/v1/motel-devices/motel/{motelId}", motelDeviceId).contentType("application/json"));
 
         // Assert: Expect status 200 OK and empty result
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.message").value("success"))
+                .andExpect(jsonPath("$.message").value("Lấy danh sách thiết bị của nhà trọ thành công"))
                 .andExpect(jsonPath("$.result.size()").value(0)); // Expect no devices
     }
 
@@ -122,7 +122,7 @@ public class MotelDeviceControllerTest {
 
         // Act: Perform DELETE request to delete motel device
         ResultActions result = mockMvc.perform(
-                delete("/moteldevices/{motelDeviceId}", motelDeviceId).contentType("application/json"));
+                delete("/api/v1/motel-devices/{motelDeviceId}", motelDeviceId).contentType("application/json"));
 
         // Log the actual response for debugging
         String responseString = result.andReturn().getResponse().getContentAsString();
@@ -131,27 +131,25 @@ public class MotelDeviceControllerTest {
         // Assert: Expect status 200 OK and correct response
         result.andExpect(status().isOk()) // Kiểm tra mã trạng thái 200 OK
                 .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.message").value("success"))
+                .andExpect(jsonPath("$.message").value("Xóa thiết bị khỏi nhà trọ thành công"))
                 .andExpect(jsonPath("$.result").value(true)); // result should be true on success
     }
 
     @WithMockUser
     @Test
     public void testDeleteMotelDevice_Failure() throws Exception {
-        // Arrange: Mock the service to simulate an exception during deletion
+        // Arrange: Mock the service to simulate deletion failure (returns false)
         UUID motelDeviceId = UUID.randomUUID();
-        doThrow(new RuntimeException("Deletion failed"))
-                .when(motelDeviceService)
-                .deleteMotelDevice(motelDeviceId);
+        doReturn(false).when(motelDeviceService).deleteMotelDevice(motelDeviceId);
 
         // Act: Perform DELETE request to delete motel device
         ResultActions result = mockMvc.perform(
-                delete("/moteldevices/{motelDeviceId}", motelDeviceId).contentType("application/json"));
+                delete("/api/v1/motel-devices/{motelDeviceId}", motelDeviceId).contentType("application/json"));
 
-        // Assert: Expect status 400 BAD_REQUEST and correct response
+        // Assert: Expect status 200 and bad request code in body
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.message").value("error"))
+                .andExpect(jsonPath("$.message").value("Xóa thiết bị khỏi nhà trọ thất bại"))
                 .andExpect(jsonPath("$.result").value(false)); // result should be false on failure
     }
 
@@ -192,14 +190,14 @@ public class MotelDeviceControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
 
         // Act: Perform POST request to insert a motel device
-        ResultActions result = mockMvc.perform(post("/moteldevices")
+        ResultActions result = mockMvc.perform(post("/api/v1/motel-devices")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(motelDeviceRequest)));
 
         // Assert: Expect status 200 OK and correct response
         result.andExpect(status().isOk()) // Expect status 200 OK
-                .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.message").value("success"))
+                .andExpect(jsonPath("$.code").value(201))
+                .andExpect(jsonPath("$.message").value("Thêm thiết bị vào nhà trọ thành công"))
                 .andExpect(jsonPath("$.result.deviceName").value("Device 1"))
                 .andExpect(jsonPath("$.result.supplier").value("Supplier 1"));
     }
@@ -227,13 +225,13 @@ public class MotelDeviceControllerTest {
         ObjectMapper objectMapper = new ObjectMapper(); // Ensure ObjectMapper is instantiated
 
         // Act: Perform POST request to insert a motel device
-        ResultActions result = mockMvc.perform(post("/moteldevices")
+        ResultActions result = mockMvc.perform(post("/api/v1/motel-devices")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(motelDeviceRequest))); // Serialize request to JSON
 
         // Assert: Expect status 400 BAD REQUEST and error response
         result.andExpect(status().isOk()) // Expect status 400 Bad Request
                 .andExpect(jsonPath("$.code").value(400))
-                .andExpect(jsonPath("$.message").value("error"));
+                .andExpect(jsonPath("$.message").value("Thêm thiết bị vào nhà trọ thất bại"));
     }
 }

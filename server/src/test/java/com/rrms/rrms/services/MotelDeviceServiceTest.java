@@ -24,6 +24,7 @@ import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.models.MotelDevice;
 import com.rrms.rrms.repositories.MotelDeviceRepository;
 import com.rrms.rrms.repositories.MotelRepository;
+import com.rrms.rrms.repositories.RoomDeviceRepository;
 import com.rrms.rrms.services.servicesImp.MotelDeviceService;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,6 +41,9 @@ class MotelDeviceServiceTest {
 
     @Mock
     private MotelDeviceMapper mapper; // Mock mapper
+
+    @Mock
+    private RoomDeviceRepository roomDeviceRepository; // Mock repository
 
     private UUID motelDeviceId;
 
@@ -148,6 +152,9 @@ class MotelDeviceServiceTest {
 
         // Mock phương thức findById trả về Optional chứa đối tượng MotelDevice
         when(motelDeviceRepository.findById(motelDeviceId)).thenReturn(Optional.of(motelDevice));
+
+        // Mock roomDeviceRepository trả về null (không có phòng nào đang dùng thiết bị này)
+        when(roomDeviceRepository.findByMotelDevice(motelDevice)).thenReturn(null);
 
         // Gọi phương thức delete
         motelDeviceService.deleteMotelDevice(motelDeviceId);

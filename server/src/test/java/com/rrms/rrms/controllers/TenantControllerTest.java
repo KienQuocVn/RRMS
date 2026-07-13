@@ -61,7 +61,7 @@ public class TenantControllerTest {
         // Perform the GET request
         mockMvc.perform(get("/tenant"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Get all tenants successfully"))
+                .andExpect(jsonPath("$.message").value("Lấy danh sách người thuê thành công"))
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.result.length()").value(2))
                 .andExpect(jsonPath("$.result[0].address").value("Tenant 1")) // Kiểm tra trường `name`
@@ -79,7 +79,7 @@ public class TenantControllerTest {
         // Perform the GET request
         mockMvc.perform(get("/tenant"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Get all tenants successfully"))
+                .andExpect(jsonPath("$.message").value("Lấy danh sách người thuê thành công"))
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.result.length()").value(0));
 
@@ -110,7 +110,7 @@ public class TenantControllerTest {
                         .content(new ObjectMapper()
                                 .writeValueAsString(tenantRequest))) // Chuyển tenantRequest thành JSON
                 .andExpect(jsonPath("$.code").value(HttpStatus.CREATED.value())) // Kiểm tra mã trả về
-                .andExpect(jsonPath("$.message").value("success")) // Kiểm tra thông báo
+                .andExpect(jsonPath("$.message").value("Thêm người thuê thành công")) // Kiểm tra thông báo
                 .andExpect(jsonPath("$.result.address").value("John Doe")) // Kiểm tra address trong result
                 .andExpect(jsonPath("$.result.email").value("johndoe@example.com")); // Kiểm tra email trong result
 
@@ -142,7 +142,8 @@ public class TenantControllerTest {
                         .content(new ObjectMapper().writeValueAsString(tenantRequest)))
                 .andExpect(status().isOk()) // Kiểm tra mã trạng thái trả về 200 OK
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value())) // Kiểm tra mã code trả về
-                .andExpect(jsonPath("$.message").value("success")) // Kiểm tra thông báo thành công
+                .andExpect(
+                        jsonPath("$.message").value("Cập nhật người thuê thành công")) // Kiểm tra thông báo thành công
                 .andExpect(jsonPath("$.result.tenantId").value(tenantId.toString())) // Kiểm tra tenantId
                 .andExpect(jsonPath("$.result.address").value("Updated Address")) // Kiểm tra địa chỉ
                 .andExpect(jsonPath("$.result.email").value("updated@example.com")) // Kiểm tra email
@@ -164,7 +165,7 @@ public class TenantControllerTest {
         mockMvc.perform(delete("/tenant/{id}", tenantId))
                 .andExpect(status().isOk()) // Kiểm tra mã trạng thái trả về là 200
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value())) // Kiểm tra mã code trả về
-                .andExpect(jsonPath("$.message").value("success")) // Kiểm tra thông báo thành công
+                .andExpect(jsonPath("$.message").value("Xóa người thuê thành công")) // Kiểm tra thông báo thành công
                 .andExpect(jsonPath("$.result").value(true)); // Kiểm tra kết quả là true
 
         // Kiểm tra rằng phương thức delete của tenantService đã được gọi một lần
@@ -244,7 +245,8 @@ public class TenantControllerTest {
         mockMvc.perform(get("/tenant/roomId/{roomId}", roomId))
                 .andExpect(status().isOk()) // Kiểm tra mã trạng thái trả về là 200
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value())) // Kiểm tra mã code trả về là 200
-                .andExpect(jsonPath("$.message").value("Get all tenants by room id successfully")) // Kiểm tra thông báo
+                .andExpect(jsonPath("$.message")
+                        .value("Lấy danh sách người thuê theo phòng thành công")) // Kiểm tra thông báo
                 .andExpect(jsonPath("$.result").isArray()) // Kiểm tra kết quả trả về là một mảng
                 .andExpect(jsonPath("$.result[0].fullname").value("Tenant1")) // Kiểm tra tên tenant đầu tiên
                 .andExpect(jsonPath("$.result[1].fullname").value("Tenant2")); // Kiểm tra tên tenant thứ hai

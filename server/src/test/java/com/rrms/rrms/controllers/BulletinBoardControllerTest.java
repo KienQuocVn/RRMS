@@ -65,9 +65,9 @@ class BulletinBoardControllerTest {
 
         when(bulletinBoardService.getAllBulletinBoards()).thenReturn(bulletinBoardList);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/bulletin-board").contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/bulletin-boards").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Get all bulletin board successfully"))
+                .andExpect(jsonPath("$.message").value("Lấy tất cả bảng tin thành công"))
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.result.size()").value(2));
     }
@@ -83,10 +83,10 @@ class BulletinBoardControllerTest {
 
         when(bulletinBoardService.getBulletinBoardById(boardId)).thenReturn(bulletinBoardResponse);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/bulletin-board/{id}", boardId)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/bulletin-boards/{id}", boardId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Get bulletin board by id successfully"))
+                .andExpect(jsonPath("$.message").value("Lấy bảng tin theo id thành công"))
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.result.title").value("Board 1"));
     }
@@ -104,10 +104,10 @@ class BulletinBoardControllerTest {
         when(bulletinBoardService.createBulletinBoard(any(BulletinBoardRequest.class)))
                 .thenReturn(response);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/bulletin-board")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/bulletin-boards")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(jsonPath("$.message").value("Create bulletin board successfully"))
+                .andExpect(jsonPath("$.message").value("Tạo bảng tin thành công"))
                 .andExpect(jsonPath("$.code").value(HttpStatus.CREATED.value()))
                 .andExpect(jsonPath("$.result.title").value("New Board"));
     }
@@ -126,11 +126,11 @@ class BulletinBoardControllerTest {
         when(bulletinBoardService.updateBulletinBoard(eq(boardId), any(BulletinBoardRequest.class)))
                 .thenReturn(response);
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/bulletin-board/{id}", boardId)
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/bulletin-boards/{id}", boardId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Update bulletin board successfully"))
+                .andExpect(jsonPath("$.message").value("Cập nhật bảng tin thành công"))
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.result.title").value("Updated Board"));
     }
@@ -142,9 +142,11 @@ class BulletinBoardControllerTest {
 
         doNothing().when(bulletinBoardService).deleteBulletinBoard(boardId);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/bulletin-board/{id}", boardId)
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/bulletin-boards/{id}", boardId)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent()); // Mã trạng thái 204 khi xóa thành công
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Xóa bảng tin thành công"))
+                .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()));
     }
 
     // Test tìm kiếm bulletin board
@@ -165,12 +167,12 @@ class BulletinBoardControllerTest {
 
         when(bulletinBoardService.searchBulletinBoards(address)).thenReturn(searchResults);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/bulletin-board/search")
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/bulletin-boards/search")
                         .param("address", address)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Search bulletin board successfully"))
+                .andExpect(jsonPath("$.message").value("Tìm kiếm bảng tin thành công"))
                 .andExpect(jsonPath("$.code").value(HttpStatus.OK.value()))
-                .andExpect(jsonPath("$.result.size()").value(0));
+                .andExpect(jsonPath("$.result.size()").value(2));
     }
 }
