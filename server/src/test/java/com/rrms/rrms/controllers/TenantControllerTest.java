@@ -248,8 +248,8 @@ public class TenantControllerTest {
                 .andExpect(jsonPath("$.message")
                         .value("Lấy danh sách người thuê theo phòng thành công")) // Kiểm tra thông báo
                 .andExpect(jsonPath("$.result").isArray()) // Kiểm tra kết quả trả về là một mảng
-                .andExpect(jsonPath("$.result[0].fullname").value("Tenant1")) // Kiểm tra tên tenant đầu tiên
-                .andExpect(jsonPath("$.result[1].fullname").value("Tenant2")); // Kiểm tra tên tenant thứ hai
+                .andExpect(jsonPath("$.result[0].fullName").value("Tenant1")) // Kiểm tra tên tenant đầu tiên
+                .andExpect(jsonPath("$.result[1].fullName").value("Tenant2")); // Kiểm tra tên tenant thứ hai
 
         // Kiểm tra phương thức được gọi đúng
         verify(tenantService, times(1)).getAllTenantsRoomId(roomId);
