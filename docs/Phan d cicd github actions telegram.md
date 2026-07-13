@@ -43,9 +43,9 @@ Lập trình viên (máy local)
 
 GitHub Actions cần thông tin đăng nhập VPS để copy file và chạy lệnh. Ta lưu chúng dưới dạng Secrets — biến được GitHub mã hoá, chỉ runner đọc được lúc chạy và tự động bị che thành `***` trong log:
 
-- [ ] Mở repo `RRMS` trên GitHub → tab **Settings**.
-- [ ] Menu trái → **Secrets and variables** → **Actions**.
-- [ ] Bấm **New repository secret**, tạo lần lượt 4 secret sau (Name gõ CHÍNH XÁC, Value là giá trị của bạn):
+- [x] Mở repo `RRMS` trên GitHub → tab **Settings**.
+- [x] Menu trái → **Secrets and variables** → **Actions**.
+- [x] Bấm **New repository secret**, tạo lần lượt 4 secret sau (Name gõ CHÍNH XÁC, Value là giá trị của bạn):
   - `VPS_HOST` — IP của VPS, ví dụ `103.72.97.127`.
   - `VPS_PORT` — cổng SSH, mặc định `24700`.
   - `VPS_USER` — user SSH (ví dụ `root`).
@@ -123,7 +123,7 @@ jobs:
         run: npm run build
 ```
 
-- [ ] Tạo file trên theo đúng nội dung.
+- [x] Tạo file trên theo đúng nội dung.
 
 ---
 
@@ -253,7 +253,7 @@ jobs:
 
 Thụt lề bằng ĐÚNG 2 dấu cách mỗi cấp, tuyệt đối không dùng phím Tab. Lỗi "Invalid workflow file" gần như luôn do thụt lề sai. Nên bật hiển thị whitespace trong editor khi sửa YAML.
 
-- [ ] Tạo 2 file `ci.yml` và `deploy.yml` theo đúng nội dung ở trên.
+- [x] Tạo 2 file `ci.yml` và `deploy.yml` theo đúng nội dung ở trên.
 
 Commit và push — pipeline chạy ngay:
 
@@ -266,6 +266,6 @@ git push
 # Mở repo trên GitHub → tab "Actions" → thấy 2 workflow đang chạy 🎉
 ```
 
-- [ ] Vào tab **Actions** của repo: workflow `Deploy` chạy khoảng 3–5 phút (Maven + npm build). Khi mọi step xanh ✓ → mở `https://rrms.click` → website đã sống. Đây là lần auto-deploy đầu tiên của bạn — từ giờ không bao giờ phải SSH deploy tay nữa.
+- [x] Vào tab **Actions** của repo: workflow `Deploy` chạy khoảng 3–5 phút (Maven + npm build). Khi mọi step xanh ✓ → mở `https://rrms.click` → website đã sống. Đây là lần auto-deploy đầu tiên của bạn — từ giờ không bao giờ phải SSH deploy tay nữa.
 
 > Phần thông báo Telegram (Bước 21–22) được tách sang **Phần E**, nối tiếp ngay sau Bước 20 này.
