@@ -98,17 +98,17 @@
 
 ### C3 — Nghiệm thu toàn hệ thống
 
-- [ ] Mở `https://rrms.click` → thấy giao diện RRMS với ổ khoá HTTPS.
-- [ ] Test các luồng chính (đăng nhập, CRUD, upload...) qua domain thật.
-- [ ] Gõ `http://rrms.click` → tự động chuyển sang HTTPS.
-- [ ] F5 trang web nhiều lần → không gặp lỗi 404.
-- [ ] Chạy `sudo systemctl restart rrms-backend` rồi reload trang → web vẫn hoạt động.
-- [ ] Reboot VPS (`sudo reboot`), đợi 60 giây, truy cập lại → mọi thứ tự sống lại:
-  - [ ] Docker containers hạ tầng (`docker compose ps`)
-  - [ ] `rrms-backend` (`sudo systemctl status rrms-backend`)
-  - [ ] `nginx` (`sudo systemctl status nginx`)
+- [x] Mở `https://rrms.click` → thấy giao diện RRMS với ổ khoá HTTPS.
+- [x] Test các luồng chính (đăng nhập, CRUD, upload...) qua domain thật.
+- [x] Gõ `http://rrms.click` → tự động chuyển sang HTTPS.
+- [x] F5 trang web nhiều lần → không gặp lỗi 404.
+- [x] Chạy `sudo systemctl restart rrms-backend` rồi reload trang → web vẫn hoạt động.
+- [x] Reboot VPS (`sudo reboot`), đợi 60 giây, truy cập lại → mọi thứ tự sống lại:
+  - [x] Docker containers hạ tầng (`docker compose ps`)
+  - [x] `rrms-backend` (`sudo systemctl status rrms-backend`)
+  - [x] `nginx` (`sudo systemctl status nginx`)
   > Nếu container hạ tầng không tự bật lại sau reboot, kiểm tra `docker-compose.yml` đã có `restart: always` hoặc `unless-stopped` cho từng service chưa — nếu chưa, thêm vào.
-- [ ] Mở DBeaver/MySQL Workbench từ máy local → kết nối `YOUR_VPS_IP:3306` (nếu đã mở port và giới hạn bằng `ufw`) → thấy database `rrms` với dữ liệu đúng như trên web.
+- [x] Mở DBeaver/MySQL Workbench từ máy local → kết nối `YOUR_VPS_IP:3306` (nếu đã mở port và giới hạn bằng `ufw`) → thấy database `rrms` với dữ liệu đúng như trên web.
 
 ## Debug khi gặp lỗi
 

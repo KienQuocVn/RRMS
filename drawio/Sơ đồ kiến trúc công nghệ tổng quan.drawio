@@ -1,0 +1,140 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36">
+  <diagram name="RRMS — Sơ đồ kiến trúc công nghệ tổng quan" id="rrms-tech-overview-diagram-id">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ==================== CLOUD DEPLOYMENT FRAME (OUTER) ==================== -->
+        <mxCell id="group_vercel" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#660000;dashed=1;" value="Vercel Hosting Cloud" vertex="1">
+          <mxGeometry x="60" y="60" width="280" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="content_vercel" parent="group_vercel" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" value="" vertex="1">
+          <mxGeometry y="26" width="280" height="164" as="geometry" />
+        </mxCell>
+
+        <mxCell id="group_aws_render" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#3a005c;dashed=1;" value="Render / AWS Cloud Services" vertex="1">
+          <mxGeometry x="380" y="300" width="730" height="460" as="geometry" />
+        </mxCell>
+        <mxCell id="content_aws_render" parent="group_aws_render" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" value="" vertex="1">
+          <mxGeometry y="26" width="730" height="434" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== CLIENT LAYER ==================== -->
+        <mxCell id="node_web_tech" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;align=center;" value="Web Frontend Application&#xa;[React JS &amp; Vite]&#xa;- Material UI (MUI)&#xa;- Axios HTTP Client&#xa;- Redux Toolkit / React Context" vertex="1">
+          <mxGeometry x="90" y="110" width="220" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="node_mobile_tech" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;align=center;" value="Mobile App (Android/iOS)&#xa;[React Native &amp; TypeScript]&#xa;- Expo SDK 54&#xa;- Expo Router (File-based)&#xa;- Zustand State Manager&#xa;- AsyncStorage Local DB" vertex="1">
+          <mxGeometry x="440" y="80" width="240" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== DOCKER COMPOSE ORCHESTRATION (INSIDE CLOUD) ==================== -->
+        <mxCell id="group_docker_compose" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#274e13;" value="Docker Compose Stack Containerization" vertex="1">
+          <mxGeometry x="400" y="340" width="690" height="400" as="geometry" />
+        </mxCell>
+        <mxCell id="content_docker_compose" parent="group_docker_compose" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" value="" vertex="1">
+          <mxGeometry y="26" width="690" height="374" as="geometry" />
+        </mxCell>
+
+        <!-- Container 1: Backend API -->
+        <mxCell id="container_backend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e2f0d9;strokeColor=#385723;fontStyle=1;align=center;" value="Docker Container: Backend API Server&#xa;[Spring Boot 3.3.3 &amp; Java 17]&#xa;- Spring Security (OAuth2 / JWT)&#xa;- Spring Data JPA &amp; Hibernate ORM&#xa;- Flyway Database Migration&#xa;- Tomcat API Server" vertex="1">
+          <mxGeometry x="610" y="390" width="260" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Containers: Databases stack (Dockerized) -->
+        <mxCell id="container_mysql" parent="1" style="shape=datastore;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;align=center;" value="Container: MySQL DB&#xa;(Data Persistence)" vertex="1">
+          <mxGeometry x="430" y="580" width="140" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="container_redis" parent="1" style="shape=datastore;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;align=center;" value="Container: Redis Server&#xa;(OTP Cache &amp; Rate Limit)" vertex="1">
+          <mxGeometry x="600" y="580" width="150" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="container_elastic" parent="1" style="shape=datastore;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;align=center;" value="Container: Elasticsearch&#xa;(FT-Search Engine)" vertex="1">
+          <mxGeometry x="780" y="580" width="150" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="container_logstash" parent="1" style="shape=datastore;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;align=center;" value="Container: Logstash&#xa;(ELK Log Shipper)" vertex="1">
+          <mxGeometry x="950" y="580" width="120" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== NETWORKING & PROTOCOLS ==================== -->
+        <!-- Labels for protocols on arrows -->
+        <mxCell id="edge_web_to_api" edge="1" parent="1" source="node_web_tech" target="container_backend" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#4a86e8;endArrow=classic;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="200" y="270"/>
+              <mxPoint x="740" y="270"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_web_to_api_label" parent="1" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=#4a86e8;" value="HTTPS REST (JSON Payload)" vertex="1">
+          <mxGeometry x="210" y="245" width="200" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge_mob_to_api" edge="1" parent="1" source="node_mobile_tech" target="container_backend" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#4a86e8;endArrow=classic;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="560" y="270"/>
+              <mxPoint x="740" y="270"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_mob_to_api_label" parent="1" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=#4a86e8;" value="HTTPS APIs &amp; OAuth2 / JWT Flow" vertex="1">
+          <mxGeometry x="510" y="245" width="220" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Spring Boot to Databases -->
+        <mxCell id="edge_backend_to_mysql" edge="1" parent="1" source="container_backend" target="container_mysql" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#274e13;endArrow=classic;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="740" y="530"/>
+              <mxPoint x="500" y="530"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_mysql_label" parent="1" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#274e13;" value="JPA / JDBC" vertex="1">
+          <mxGeometry x="460" y="535" width="90" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge_backend_to_redis" edge="1" parent="1" source="container_backend" target="container_redis" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#274e13;endArrow=classic;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="740" y="530"/>
+              <mxPoint x="675" y="530"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_redis_label" parent="1" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#274e13;" value="Lettuce Driver" vertex="1">
+          <mxGeometry x="630" y="535" width="90" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge_backend_to_elastic" edge="1" parent="1" source="container_backend" target="container_elastic" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#274e13;endArrow=classic;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="740" y="530"/>
+              <mxPoint x="855" y="530"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_elastic_label" parent="1" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#274e13;" value="Elastic REST client" vertex="1">
+          <mxGeometry x="810" y="535" width="110" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge_backend_to_logstash" edge="1" parent="1" source="container_backend" target="container_logstash" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1.5;strokeColor=#274e13;endArrow=classic;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="740" y="530"/>
+              <mxPoint x="1010" y="530"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_log_label" parent="1" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#274e13;" value="Logback Encoder" vertex="1">
+          <mxGeometry x="960" y="535" width="100" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
