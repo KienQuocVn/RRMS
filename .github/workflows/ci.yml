@@ -49,7 +49,7 @@ jobs:
           cache-dependency-path: client/package-lock.json
 
       - name: Cài dependency (npm ci nhanh & tái lập được, dùng cho CI)
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build thử
         run: npm run build

@@ -59,7 +59,7 @@ jobs:
         # VITE_APP_API_URL được "bake" lúc build — nếu domain không đổi,
         # có thể để trong client/.env.production đã commit sẵn (không chứa secret nhạy cảm)
         run: |
-          npm ci
+          npm ci --legacy-peer-deps
           npm run build
 
       # ---------- 3. Copy sản phẩm build lên VPS ----------
