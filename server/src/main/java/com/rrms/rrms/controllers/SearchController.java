@@ -30,19 +30,6 @@ public class SearchController {
 
     ISearchService searchService;
 
-    //    @Operation(summary = "Get all rooms sorted by move-in date")
-    //    @GetMapping("/rooms")
-    //    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
-    //    public ApiResponse<List<BulletinBoardSearchResponse>> getRoomHome() {
-    //        ApiResponse<List<BulletinBoardSearchResponse>> apiResponse = new ApiResponse<>();
-    //        Date moveInDate = new Date();
-    //        List<BulletinBoardSearchResponse> rooms = searchService.findByMoveInDateLessThanEqual(moveInDate);
-    //        apiResponse.setCode(HttpStatus.OK.value());
-    //        apiResponse.setMessage("Tìm kiếm thành công");
-    //        apiResponse.setResult(rooms);
-    //        return apiResponse;
-    //    }
-
     @Operation(summary = "Get all rooms sorted by price")
     @GetMapping("/sort")
     public ApiResponse<List<BulletinBoardSearchResponse>> getRoomsSortedByPrice(
@@ -129,10 +116,10 @@ public class SearchController {
                 .build();
     }
 
-    @Operation(summary = "Search room by address (Native Query)")
+    @Operation(summary = "Search room by address (MySQL LIKE)")
     @GetMapping("/by-address")
     public ApiResponse<List<BulletinBoardSearchResponse>> searchByAddress(@RequestParam("address") String address) {
-        log.info("Searching bulletin boards by address (native): {}", address);
+        log.info("Searching bulletin boards by address (MySQL): {}", address);
         List<BulletinBoardSearchResponse> rooms = searchService.listRoomByAddress(address);
         return ApiResponse.<List<BulletinBoardSearchResponse>>builder()
                 .code(HttpStatus.OK.value())
@@ -140,61 +127,4 @@ public class SearchController {
                 .result(rooms)
                 .build();
     }
-
-    //    @GetMapping("/price")
-    //    public ApiResponse<List<Room>> searchPrice(
-    //            @RequestParam("startPrice") Double startPrice, @RequestParam("endPrice") Double endPrice) {
-    //        ApiResponse<List<Room>> apiResponse = new ApiResponse<>();
-    //        List<Room> list = searchService.listRoomPrice(startPrice, endPrice);
-    //        apiResponse.setCode(HttpStatus.OK.value());
-    //        apiResponse.setMessage("Tìm kiếm thành công");
-    //        apiResponse.setResult(list);
-    //
-    //        return apiResponse;
-    //    }
-
-    //    @Operation(summary = "Search room by address")
-    //    @GetMapping("/addressNoElastic")
-    //    public ApiResponse<List<RoomSearchResponse>> findByAddressNoElastic(@RequestParam("address") String address) {
-    //        List<RoomSearchResponse> roomSearchResponseList = searchService.findByAddressNoElastic(address);
-    //        return ApiResponse.<List<RoomSearchResponse>>builder()
-    //                .code(HttpStatus.OK.value())
-    //                .message("success " + roomSearchResponseList.size())
-    //                .result(roomSearchResponseList)
-    //                .build();
-    //    }
-
-    //    @Operation(summary = "Search room by address use elastic search without cache")
-    //    @GetMapping("/nocache/address")
-    //    public ApiResponse<List<RoomSearchResponse>> findByAddressNoCache(@RequestParam("address") String address) {
-    //        List<RoomSearchResponse> roomSearchResponseList = searchService.findByAddress(address);
-    //        return ApiResponse.<List<RoomSearchResponse>>builder()
-    //                .code(HttpStatus.OK.value())
-    //                .message("success " + roomSearchResponseList.size())
-    //                .result(roomSearchResponseList)
-    //                .build();
-    //    }
-    //
-    //    @Operation(summary = "Search room by address use elastic search")
-    //    @Cacheable(value = "room", key = "#address")
-    //    @GetMapping("/address")
-    //    public ApiResponse<List<RoomSearchResponse>> findByAddress(@RequestParam("address") String address) {
-    //        List<RoomSearchResponse> roomSearchResponseList = searchService.findByAddress(address);
-    //        return ApiResponse.<List<RoomSearchResponse>>builder()
-    //                .code(HttpStatus.OK.value())
-    //                .message("success " + roomSearchResponseList.size())
-    //                .result(roomSearchResponseList)
-    //                .build();
-    //    }
-    //
-    //    @Operation(summary = "Search room by address fuzzy use elastic search")
-    //    @GetMapping("/addressFuzzy")
-    //    public ApiResponse<List<RoomSearchResponse>> findByAddressFuzzy(@RequestParam("address") String address) {
-    //        List<RoomSearchResponse> roomSearchResponseList = searchService.findByAddressFuzzy(address);
-    //        return ApiResponse.<List<RoomSearchResponse>>builder()
-    //                .code(HttpStatus.OK.value())
-    //                .message("success " + roomSearchResponseList.size())
-    //                .result(roomSearchResponseList)
-    //                .build();
-    //    }
 }

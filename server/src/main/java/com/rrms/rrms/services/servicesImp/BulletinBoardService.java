@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.data.elasticsearch.ResourceNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,7 +31,6 @@ import com.rrms.rrms.models.RentalAmenities;
 import com.rrms.rrms.models.Room;
 import com.rrms.rrms.models.Rule;
 import com.rrms.rrms.repositories.AccountRepository;
-import com.rrms.rrms.repositories.BulletinBoardElasticsearchRepository;
 import com.rrms.rrms.repositories.BulletinBoardImageRepository;
 import com.rrms.rrms.repositories.BulletinBoardRentalAmenityRepository;
 import com.rrms.rrms.repositories.BulletinBoardRepository;
@@ -64,8 +62,6 @@ public class BulletinBoardService implements IBulletinBoard {
     AccountRepository accountRepository;
     MotelRepository motelRepository;
     RoomRepository roomRepository;
-    BulletinBoardElasticsearchRepository bulletinBoardElasticsearchRepository;
-
     BulletinBoardMapper bulletinBoardMapper;
 
     @Override
@@ -103,7 +99,7 @@ public class BulletinBoardService implements IBulletinBoard {
     public BulletinBoardResponse updateBulletinBoard(UUID bulletinBoardId, BulletinBoardRequest bulletinBoardRequest) {
         BulletinBoard bulletinBoard = bulletinBoardRepository
                 .findById(bulletinBoardId)
-                .orElseThrow(() -> new ResourceNotFoundException("BulletinBoard not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.BULLETIN_BOARD_NOT_FOUND));
         log.debug("Updating bulletin board id: {}", bulletinBoard.getBulletinBoardId());
 
         bulletinBoardMapper.updateBulletinBoardFromRequest(bulletinBoardRequest, bulletinBoard);
@@ -161,7 +157,7 @@ public class BulletinBoardService implements IBulletinBoard {
     public BulletinBoardResponse approveBulletinBoard(UUID id) {
         BulletinBoard bulletinBoard = bulletinBoardRepository
                 .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("BulletinBoard not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.BULLETIN_BOARD_NOT_FOUND));
 
         if (Boolean.TRUE.equals(bulletinBoard.getIsActive())) {
             throw new AppException(ErrorCode.BULLETIN_BOARD_ALREADY_APPROVED);

@@ -54,7 +54,7 @@ Dự án: **RRMS** — backend `server` (Spring Boot 3.3.3, JDK 17, port `7000`)
   VITE_PORT=
   CLIENT_PORT=
   VITE_REDIRECT_URI=
-  ELASTICSEARCH_PORT=
+  # ELASTICSEARCH_PORT / KIBANA_PORT / LOGSTASH_PORT — đã loại bỏ (xem docs/LOAI_BO_ELASTICSEARCH.md)
   KIBANA_PORT=
   LOGSTASH_PORT=
   ```

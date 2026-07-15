@@ -1,11 +1,11 @@
 package com.rrms.rrms.services.servicesImp;
 
 import java.nio.ByteBuffer;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.apache.commons.codec.binary.Hex;
 import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.RoomReservationRequest;
@@ -89,7 +89,7 @@ public class RoomReservationService implements IRoomReservationService {
 
     @Override
     public void deleteRoomReservation(UUID id) {
-        String hexId = Hex.encodeHexString(toBytes(id));
+        String hexId = HexFormat.of().formatHex(toBytes(id));
         if (!roomReservationRepository.existsById(id)) {
             throw new RuntimeException("RoomReservation not found");
         }

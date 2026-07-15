@@ -2,8 +2,6 @@ package com.rrms.rrms.dto.response;
 
 import java.util.UUID;
 
-import org.springframework.data.annotation.Id;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,7 +13,6 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SearchResponse {
-    @Id
     UUID roomId;
 
     String nameRoom;

@@ -1,12 +1,12 @@
 # Phần B — Chuẩn bị VPS: Docker Compose, Java, Node, systemd
 
-> File này dùng để Claude Code (hoặc người thực hiện) làm từng việc theo checklist. Sau khi hoàn thành một mục, tick `[x]` vào đúng dòng đó trước khi chuyển sang mục kế tiếp. Yêu cầu **Phần A đã hoàn thành** (code đã có trên GitHub, sạch secret/build file) **và Phần B0 đã hoàn thành** (`Phan_B0_Xu_ly_ELK.md` — đã gỡ Kibana/Logstash, cấu hình lại Elasticsearch, sửa endpoint bulletin-boards search, đã push code mới lên GitHub).
+> File này dùng để làm từng việc theo checklist. Yêu cầu **Phần A đã hoàn thành**. **Elasticsearch/ELK đã loại bỏ hoàn toàn** (VPS RAM hẹp) — tìm kiếm dùng MySQL/JPA. Chi tiết: [`LOAI_BO_ELASTICSEARCH.md`](./LOAI_BO_ELASTICSEARCH.md).
 
 Cấu hình thực tế cần giữ nguyên trong phần này:
 
 - Backend: thư mục `server`, Spring Boot `3.3.3`, JDK `17`, artifact `com.rrms:rrms:0.0.1-SNAPSHOT`, port `7000`, profile `dev`.
 - Frontend: thư mục `client`, React `18.3.1`, Vite `5.4.1`.
-- Hạ tầng: `mysql:8.0`, `redis:7-alpine`, `elasticsearch:7.17.24` (đã gỡ Kibana/Logstash ở Phần B0), project Docker Compose tên `rrms`, network `rrms-network`.
+- Hạ tầng: `mysql:8.0`, `redis:7-alpine` (không còn Elasticsearch/Kibana/Logstash), project Docker Compose tên `rrms`, network `rrms-network`.
 - DB hiện tại: `DB_NAME=rrms`, `DB_USERNAME=root`, `DB_PASSWORD=12345`, `DB_ROOT_USERNAME=rrms`.
 
 **Không đổi**: tên thư mục `server`/`client`, port `7000`, `DB_NAME=rrms`, version Java/Node/MySQL.
@@ -79,17 +79,15 @@ Cấu hình thực tế cần giữ nguyên trong phần này:
   VITE_PORT=5173
   CLIENT_PORT=5173
   VITE_REDIRECT_URI=https://rrms.vn/oauth2/redirect
-
-  ELASTICSEARCH_PORT=9200
-  # KIBANA_PORT và LOGSTASH_PORT không còn dùng — đã gỡ 2 service này ở Phần B0
   ```
   > **Đổi trước khi lên thật**: các giá trị trên là mẫu đang dùng ở local. Trước khi công khai cho người dùng thật, đổi toàn bộ password/token thành giá trị mạnh, chỉ lưu trên server, không push GitHub. Sửa `VITE_APP_API_URL`, `VITE_REDIRECT_URI` sang đúng domain thật.
+  > Không cần `ELASTICSEARCH_PORT` / `KIBANA_PORT` / `LOGSTASH_PORT` — ELK đã gỡ.
 
 - [x] **2.3. Sao chép các biến DB/JWT/mail/OAuth cần thiết sang `server/.env`** (backend đọc file này qua `spring.config.import`).
 
 ### B3 — Khởi động hạ tầng bằng Docker Compose
 
-- [x] **3.0. Tạo swap file 2GB trước khi chạy Docker Compose** (VPS chỉ có 2GB RAM, cần lưới an toàn tránh OOM khi Elasticsearch + MySQL + backend cùng chạy):
+- [x] **3.0. Tạo swap file 2GB trước khi chạy Docker Compose** (VPS 2GB RAM — vẫn nên có swap cho MySQL + Redis + backend; không còn Elasticsearch):
   ```bash
   sudo fallocate -l 2G /swapfile
   sudo chmod 600 /swapfile
@@ -101,7 +99,7 @@ Cấu hình thực tế cần giữ nguyên trong phần này:
 
 - [x] **3.1. Chạy hạ tầng** 
   ```bash
-  docker compose up -d mysql redis elasticsearch
+  docker compose up -d mysql redis
   docker compose ps
   ```
 
@@ -110,16 +108,16 @@ Cấu hình thực tế cần giữ nguyên trong phần này:
   docker exec -it rrms-mysql mysql -uroot -p12345 -e "SHOW DATABASES;"
   ```
 
-- [x] **3.3. Kiểm tra Elasticsearch khởi động thành công** (quan trọng — `BulletinBoardService` inject repository Elasticsearch, backend sẽ lỗi nếu ES không lên):
+- [x] **3.3. (Đã bỏ) Kiểm tra Elasticsearch** — không còn service ES. Nếu VPS cũ còn container/volume:
   ```bash
-  curl http://localhost:9200
+  docker compose rm -sf elasticsearch kibana logstash 2>/dev/null || true
+  docker volume rm rrms_elasticsearch_data 2>/dev/null || true
   ```
-  Phải trả về JSON có `"cluster_name"`, `"tagline": "You Know, for Search"` — không lỗi kết nối.
 
 - [x] **3.4. Kiểm tra log nếu có container lỗi:**
   ```bash
   docker compose logs -f mysql
-  docker compose logs -f elasticsearch
+  docker compose logs -f redis
   ```
 
 ### B4 — Build backend, build frontend

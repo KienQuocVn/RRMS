@@ -18,7 +18,6 @@ import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.BulletinBoardMapper;
 import com.rrms.rrms.models.BulletinBoard;
 import com.rrms.rrms.repositories.BulletinBoardRepository;
-import com.rrms.rrms.repositories.SearchRepository;
 import com.rrms.rrms.services.servicesImp.SearchService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -38,9 +37,6 @@ public class SearchServiceTest {
 
     BulletinBoard bulletinBoard;
     BulletinBoardSearchResponse bulletinBoardSearchResponse;
-
-    @Mock
-    SearchRepository searchRepository;
 
     @BeforeEach
     void init() {

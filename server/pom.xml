@@ -97,19 +97,6 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
-        <!-- Spring Data Elasticsearch: Hỗ trợ tích hợp Elasticsearch cho việc tìm kiếm và phân tích dữ liệu hiệu quả -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
-        </dependency>
-
-        <!-- Logstash Logback Encoder: Cung cấp các encoder cho Logback để ghi log dưới định dạng JSON, tương thích với Logstash -->
-        <dependency>
-            <groupId>net.logstash.logback</groupId>
-            <artifactId>logstash-logback-encoder</artifactId>
-            <version>7.2</version>
-        </dependency>
-
         <!-- Jackson Datatype JSR310: Hỗ trợ xử lý kiểu dữ liệu ngày tháng (Java 8 Date/Time API) trong JSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>

@@ -150,7 +150,7 @@ public class BulletinBoardController {
                 .build();
     }
 
-    @Operation(summary = "Search bulletin boards using Elasticsearch")
+    @Operation(summary = "Search bulletin boards by address")
     @GetMapping("/search")
     public ApiResponse<List<BulletinBoardSearchResponse>> searchBulletinBoards(
             @RequestParam("address") String address) {

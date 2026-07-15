@@ -1,8 +1,12 @@
-# Phần B0 — Gỡ Kibana/Logstash + cấu hình lại Elasticsearch (làm TRƯỚC Phan_B_VPS_Setup.md)
+# Phần B0 — Gỡ Kibana/Logstash + cấu hình lại Elasticsearch (LỊCH SỬ)
 
-> File này dùng để Claude Code (hoặc người thực hiện) chỉnh sửa code/cấu hình tại **local hoặc repo**, không phải trên VPS. Mục tiêu: gỡ Kibana + Logstash ra khỏi hạ tầng, cấu hình Elasticsearch gọn nhẹ, và xử lý các chỗ code đang phụ thuộc Logstash/Elasticsearch để dự án **chạy không lỗi** trước khi bắt đầu `Phan_B_VPS_Setup.md`. Tick `[x]` sau khi hoàn thành từng mục, kiểm tra kỹ trước khi chuyển bước tiếp theo.
+> **Cập nhật 2026-07-16:** Elasticsearch đã được **loại bỏ hoàn toàn**. File này giữ lại như nhật ký bước trung gian (chỉ gỡ Kibana/Logstash, vẫn giữ ES).  
+> Tham chiếu hiện tại: [`LOAI_BO_ELASTICSEARCH.md`](./LOAI_BO_ELASTICSEARCH.md) và [`Phan b vps setup.md`](./Phan%20b%20vps%20setup.md).
+
+> File gốc: chỉnh code trước khi lên VPS — mục tiêu lúc đó là gỡ Kibana + Logstash, giữ Elasticsearch nhẹ, và sửa search bulletin-boards sang JPA.
 
 ## Bối cảnh (theo rà soát của codex)
+
 
 - `docker-compose.yml` dòng ~46 khai báo `elasticsearch`, `kibana`, `logstash`.
 - `server/logstash/config/logstash.yml` và `server/logstash/pipeline/logstash.conf` — Logstash nhận log JSON qua TCP port `5000`, đẩy vào Elasticsearch index `springboot-%{app}`.

@@ -1,21 +1,16 @@
 @baseUrl = http://localhost:7000
-@roomId = 06d5fefb-ea1a-4b6b-b6ac-1b23f39b31fb
 
+### Danh sách tin đăng đang active (MySQL/JPA)
+GET {{baseUrl}}/api/v1/search
 
-GET {{baseUrl}}/searchs/price?startPrice=1255565.31&endPrice=4229298.69
+### Tìm kiếm theo query / khu vực / giá / diện tích
+GET {{baseUrl}}/api/v1/search?query=Bình&district=Thạnh&minPrice=1000000&maxPrice=5000000
 
-###
+### Sắp xếp theo giá
+GET {{baseUrl}}/api/v1/search/sort?sortOrder=ASC
 
-GET {{baseUrl}}/searchs/name?name=Tây
+### Tin mới nhất
+GET {{baseUrl}}/api/v1/search/latest
 
-###
-
-GET {{baseUrl}}/searchs
-
-# Search danh sách phòng theo địa chỉ bằng Elastic Search
-###
-GET {{baseUrl}}/searchs/address?address=Bình Định
-
-# Search mở danh sách phòng theo địa chỉ bằng Elastic Search
-###
-GET {{baseUrl}}/searchs/addressFuzzy?address=Bình Định
+### Tìm theo địa chỉ (LIKE trên MySQL)
+GET {{baseUrl}}/api/v1/search/by-address?address=Bình
