@@ -1,4 +1,15 @@
+# Bản mẫu trong repo — trên VPS phải thay token/chat_id thật (KHÔNG commit secret lên Git).
 route:
-  receiver: 'tam-thoi'
+  receiver: telegram
+  group_by: ['alertname']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 3h
+
 receivers:
-  - name: 'tam-thoi'
+  - name: telegram
+    telegram_configs:
+      - bot_token: 'DAN_TOKEN_VAO_DAY'
+        chat_id: 123456789
+        parse_mode: 'HTML'
+        send_resolved: true

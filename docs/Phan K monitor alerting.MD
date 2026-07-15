@@ -8,9 +8,9 @@
 
 Dự án RRMS đã có sẵn 1 bot Telegram tạo ở lab CI/CD (**RRMS Deploy**, dùng để báo deploy thành công/thất bại). Có 2 lựa chọn:
 
-- [ ] **Phương án A — Dùng lại bot cũ (nhanh):** dùng đúng `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` đã lưu từ trước. Nhược điểm: tin nhắn "deploy thành công" và tin nhắn "cảnh báo CPU cao" sẽ lẫn vào cùng 1 khung chat, dễ rối khi hệ thống có nhiều sự kiện cùng lúc.
+- [x] **Phương án A — Dùng lại bot cũ (nhanh):** dùng đúng `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` đã lưu từ trước (GitHub Secrets / lab CI-CD Telegram). Nhược điểm: tin nhắn "deploy thành công" và tin nhắn "cảnh báo CPU cao" sẽ lẫn vào cùng 1 khung chat.
 
-- [ ] **Phương án B — Tạo bot riêng cho monitoring (khuyến nghị, tách bạch rõ ràng):**
+- [ ] **Phương án B — Tạo bot riêng cho monitoring (không chọn lần này):**
   1. Mở Telegram → tìm `@BotFather` → **Start** → gõ `/newbot`
   2. Đặt tên hiển thị, ví dụ: `RRMS Monitor`
   3. Đặt username kết thúc bằng `bot`, ví dụ: `rrms_monitor_bot`
@@ -86,17 +86,17 @@ Dự án RRMS đã có sẵn 1 bot Telegram tạo ở lab CI/CD (**RRMS Deploy**
             summary: "🔴 Mất tín hiệu giám sát máy chủ"
             description: "node-exporter không phản hồi hơn 1 phút — kiểm tra: cd /opt/monitoring && docker compose ps"
 
-        # 3) CPU trung bình > 80% liên tục 5 phút
+        # 3) CPU > 80% — rate[2m] + for:2m (rate[5m]+for:5m cần ~10 phút stress; timeout 420s sẽ không kịp FIRING)
         - alert: HighCPU
-          expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
-          for: 5m
+          expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+          for: 2m
           labels:
             severity: warning
           annotations:
             summary: "🟠 CPU đang ở mức {{ $value | printf \"%.0f\" }}%"
-            description: "CPU vượt 80% liên tục 5 phút. Vào VPS chạy: htop xem process nào ngốn (backend Java, MySQL, hay build đang chạy)."
+            description: "CPU vượt 80% liên tục 2 phút. Vào VPS chạy: htop xem process nào ngốn (backend Java, MySQL, hay build đang chạy)."
 
-        # 4) RAM dùng > 85% liên tục 5 phút — VPS chỉ 2GB, dễ chạm ngưỡng hơn bình thường
+        # 4) RAM dùng > 85% liên tục 5 phút — VPS chỉ 2GB
         - alert: HighRAM
           expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 85
           for: 5m
@@ -104,7 +104,7 @@ Dự án RRMS đã có sẵn 1 bot Telegram tạo ở lab CI/CD (**RRMS Deploy**
             severity: warning
           annotations:
             summary: "🟠 RAM đang ở mức {{ $value | printf \"%.0f\" }}%"
-            description: "RAM vượt 85% liên tục 5 phút — nguy cơ backend/MySQL/Elasticsearch bị kill vì hết bộ nhớ (OOM). Cân nhắc tắt tạm Elasticsearch (Phần B, Phương án B)."
+            description: "RAM vượt 85% liên tục 5 phút — nguy cơ backend/MySQL bị kill vì OOM. Kiểm tra: free -h và docker stats --no-stream"
 
         # 5) Ổ đĩa gốc còn dưới 20% — ngưỡng thấp hơn lab gốc vì disk chỉ có 20GB (không phải 40-80GB như VPS thông thường)
         - alert: DiskAlmostFull
@@ -149,12 +149,35 @@ Dự án RRMS đã có sẵn 1 bot Telegram tạo ở lab CI/CD (**RRMS Deploy**
   ```
   Đợi thêm ~1 phút → 📱 nhận: `[RESOLVED] APIDown` ✅
 
-- [ ] **5.2. Diễn tập 2 — CPU quá tải** (mở sẵn tab Grafana dashboard Node Exporter Full để xem đồ thị vọt lên realtime):
+- [x] **5.1.** (đã đạt) Telegram nhận `APIDown` FIRING rồi `RESOLVED`.
+
+- [ ] **5.2. Diễn tập 2 — CPU quá tải** (mở sẵn Grafana Node Exporter Full):
+  > **Vì sao lần đầu không có Telegram dù CPU 100%:** rule cũ `rate(...[5m])` + `for: 5m` cần CPU cao liên tục ~10 phút mới FIRING, trong khi `stress --timeout 420` chỉ 7 phút → alert kẹt ở `pending` rồi hết. Rule đã hạ xuống `rate[2m]` + `for: 2m` để khớp lab.
+
+  **Trên VPS — cập nhật rule rồi chạy lại:**
   ```bash
-  sudo apt install -y stress
+  nano /opt/monitoring/prometheus/alert-rules.yml
+  # Sửa block HighCPU thành:
+  #   expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+  #   for: 2m
+
+  cd /opt/monitoring
+  docker compose restart prometheus
+  sleep 5
+
+  # Kiểm tra CPU query (phải có số, không được rỗng):
+  curl -sG 'http://localhost:9090/api/v1/query' \
+    --data-urlencode 'query=100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100)'
+
   stress --cpu 2 --timeout 420
   ```
-  Sau ~6 phút → 📱 nhận `🟠 HighCPU`. `stress` tự dừng sau 7 phút → vài phút sau nhận `RESOLVED` ✅.
+  Sau ~3–4 phút → 📱 `HighCPU` FIRING. Hết stress (~7 phút) → vài phút sau `RESOLVED` ✅.
+
+  Trong lúc stress (SSH thứ 2) có thể xem trạng thái:
+  ```bash
+  curl -s localhost:9090/api/v1/alerts | grep -E '"alertname"|"state"'
+  ```
+  Phải thấy `"alertname":"HighCPU"` với `"state":"pending"` rồi `"firing"`.
 
 - [ ] **5.3. Kiểm tra độ bền cuối cùng:**
   ```bash
