@@ -18,20 +18,34 @@
 
   ```json
   {
-    "ok": true,
-    "result": [{
+  "ok": true,
+  "result": [
+    {
+      "update_id": 795081463,
       "message": {
+        "message_id": 3,
+        "from": {
+          "id": 1966318345,
+          "is_bot": false,
+          "first_name": "Kien",
+          "last_name": "Quoc",
+          "username": "kienquoc28",
+          "language_code": "vi"
+        },
         "chat": {
-          "id": 987654321,
-          "first_name": "Trong",
+          "id": 1966318345,
+          "first_name": "Kien",
+          "last_name": "Quoc",
+          "username": "kienquoc28",
           "type": "private"
         },
+        "date": 1784103688,
         "text": "hello"
       }
-    }]
-  }
+    }
+  ]
+}
   ```
-
 - [ ] Test ngay bằng curl — điện thoại phải nhận được tin nhắn:
 
   ```bash

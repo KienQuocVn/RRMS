@@ -1,0 +1,4 @@
+route:
+  receiver: 'tam-thoi'
+receivers:
+  - name: 'tam-thoi'
