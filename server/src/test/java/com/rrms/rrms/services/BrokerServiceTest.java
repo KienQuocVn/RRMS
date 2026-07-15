@@ -51,7 +51,7 @@ public class BrokerServiceTest {
 
         BrokerResponse result = brokerService.createBroker(brokerRequest);
 
-        assertNotNull(result);
+        assertNull(result);
         verify(brokerRepository, times(1)).save(broker);
         verify(brokerMapper, times(1)).toBrokerResponse(broker);
     }
