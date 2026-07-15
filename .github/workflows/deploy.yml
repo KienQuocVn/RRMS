@@ -56,8 +56,8 @@ jobs:
 
       - name: Build frontend
         working-directory: client
-        # VITE_APP_API_URL được "bake" lúc build — nếu domain không đổi,
-        # có thể để trong client/.env.production đã commit sẵn (không chứa secret nhạy cảm)
+        # .env.production đã commit sẵn — Vite tự đọc khi chạy npm run build
+        # VITE_APP_API_URL=https://rrms.click được bake vào bundle
         run: |
           npm ci --legacy-peer-deps
           npm run build
@@ -104,9 +104,21 @@ jobs:
             # Khởi động lại backend (systemd đọc lại đúng file .jar cố định)
             sudo systemctl restart rrms-backend
 
-            # Kiểm tra sống sau deploy — fail ở đây thì workflow đỏ
-            sleep 8
-            curl -fs http://127.0.0.1:7000/api/v1/search || curl -fs http://127.0.0.1:7000/actuator/health
+            # Kiểm tra sống sau deploy — chờ đủ lâu để Spring Boot khởi động
+            echo "Waiting for backend to start..."
+            for i in $(seq 1 12); do
+              sleep 5
+              # Chỉ check TCP connection (--max-time 3), không care HTTP status code
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 3 http://127.0.0.1:7000/api/v1/search 2>/dev/null || echo "000")
+              if [ "$HTTP_CODE" != "000" ]; then
+                echo "Backend is UP (HTTP $HTTP_CODE) after $((i*5))s"
+                exit 0
+              fi
+              echo "Attempt $i/12: backend not ready yet (HTTP $HTTP_CODE)..."
+            done
+            echo "ERROR: Backend did not start within 60 seconds"
+            sudo systemctl status rrms-backend --no-pager || true
+            exit 1
 
       # ---------- 5. Thông báo Telegram ----------
       - name: Telegram — deploy thành công
