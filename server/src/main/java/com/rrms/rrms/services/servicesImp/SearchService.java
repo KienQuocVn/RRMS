@@ -138,7 +138,7 @@ public class SearchService implements ISearchService {
 
     @Override
     public List<BulletinBoardSearchResponse> findAllByDatenew() {
-        List<BulletinBoard> bulletinBoards = searchRepository.findAllByDatenew(true);
+        List<BulletinBoard> bulletinBoards = bulletinBoardRepository.findAllByDatenew(true);
         return bulletinBoards.stream()
                 .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
                 .toList();
@@ -146,7 +146,7 @@ public class SearchService implements ISearchService {
 
     @Override
     public List<BulletinBoardSearchResponse> findAllByIsActive() {
-        return searchRepository.findAllByIsActive(true).stream()
+        return bulletinBoardRepository.findAllByIsActiveAsc(true).stream()
                 .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
                 .collect(Collectors.toList());
     }

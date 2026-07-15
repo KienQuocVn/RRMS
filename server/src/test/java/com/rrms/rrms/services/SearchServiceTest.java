@@ -129,7 +129,7 @@ public class SearchServiceTest {
     @Test
     void findAllByDatenew_returnsListOfBulletinBoardSearchResponse() {
         // Arrange: Mock repository to return a list of BulletinBoard objects
-        when(searchRepository.findAllByDatenew(true)).thenReturn(List.of(bulletinBoard));
+        when(bulletinBoardRepository.findAllByDatenew(true)).thenReturn(List.of(bulletinBoard));
 
         // Mock the mapper to convert BulletinBoard to BulletinBoardSearchResponse
         when(bulletinBoardMapper.toBulletinBoardSearchResponse(bulletinBoard)).thenReturn(bulletinBoardSearchResponse);
@@ -143,14 +143,14 @@ public class SearchServiceTest {
         assertEquals("123 Main St", result.get(0).getAddress()); // Ensure the address is correctly mapped
 
         // Verify the interactions with the repository and mapper
-        verify(searchRepository).findAllByDatenew(true);
+        verify(bulletinBoardRepository).findAllByDatenew(true);
         verify(bulletinBoardMapper).toBulletinBoardSearchResponse(bulletinBoard);
     }
 
     @Test
     void findAllByDatenew_whenNoData_returnsEmptyList() {
         // Arrange: Mock repository to return an empty list
-        when(searchRepository.findAllByDatenew(true)).thenReturn(List.of());
+        when(bulletinBoardRepository.findAllByDatenew(true)).thenReturn(List.of());
 
         // Act: Call the method under test
         List<BulletinBoardSearchResponse> result = bulletinBoardService.findAllByDatenew();
@@ -160,13 +160,13 @@ public class SearchServiceTest {
         assertTrue(result.isEmpty()); // Ensure the list is empty
 
         // Verify the interaction with the repository
-        verify(searchRepository).findAllByDatenew(true);
+        verify(bulletinBoardRepository).findAllByDatenew(true);
     }
 
     @Test
     void findAllByDateVieux_returnsListOfBulletinBoardSearchResponse() {
         // Arrange: Mock repository to return a list of BulletinBoard objects
-        when(searchRepository.findAllByIsActive(true)).thenReturn(List.of(bulletinBoard));
+        when(bulletinBoardRepository.findAllByIsActiveAsc(true)).thenReturn(List.of(bulletinBoard));
 
         // Mock the mapper to convert BulletinBoard to BulletinBoardSearchResponse
         when(bulletinBoardMapper.toBulletinBoardSearchResponse(bulletinBoard)).thenReturn(bulletinBoardSearchResponse);
@@ -180,14 +180,14 @@ public class SearchServiceTest {
         assertEquals("123 Main St", result.get(0).getAddress()); // Ensure the address is correctly mapped
 
         // Verify the interactions with the repository and mapper
-        verify(searchRepository).findAllByIsActive(true);
+        verify(bulletinBoardRepository).findAllByIsActiveAsc(true);
         verify(bulletinBoardMapper).toBulletinBoardSearchResponse(bulletinBoard);
     }
 
     @Test
     void findAllByDateVieux_whenNoData_returnsEmptyList() {
         // Arrange: Mock repository to return an empty list
-        when(searchRepository.findAllByIsActive(true)).thenReturn(List.of());
+        when(bulletinBoardRepository.findAllByIsActiveAsc(true)).thenReturn(List.of());
 
         // Act: Call the method under test
         List<BulletinBoardSearchResponse> result = bulletinBoardService.findAllByIsActive();
@@ -197,6 +197,6 @@ public class SearchServiceTest {
         assertTrue(result.isEmpty()); // Ensure the list is empty
 
         // Verify the interaction with the repository
-        verify(searchRepository).findAllByIsActive(true);
+        verify(bulletinBoardRepository).findAllByIsActiveAsc(true);
     }
 }

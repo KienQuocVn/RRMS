@@ -2,6 +2,8 @@
 
 > File này dùng để Claude Code (hoặc người thực hiện) làm từng việc theo checklist. Sau khi hoàn thành một mục, tick `[x]` vào đúng dòng đó trước khi chuyển sang mục kế tiếp.
 
+ssh -p 24700 root@103.72.97.127
+
 Dự án: **RRMS** — backend `server` (Spring Boot 3.3.3, JDK 17, port `7000`), frontend `client` (React 18.3.1, Vite 5.4.1). Không đổi tên thư mục `server`/`client`, không đổi port, không nâng version trong quá trình thực hiện phần này.
 
 ## Checklist
@@ -81,3 +83,6 @@ Dự án: **RRMS** — backend `server` (Spring Boot 3.3.3, JDK 17, port `7000`)
 ## Kết quả Phần A
 
 Khi tất cả các mục trên đã tick `[x]`: source trên GitHub sẵn sàng để pull về VPS, không kèm file build nặng và không kèm file secret thật. Tiếp tục sang **Phần B — Chuẩn bị VPS**.
+
+
+

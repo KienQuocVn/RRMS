@@ -133,4 +133,30 @@ public interface BulletinBoardRepository extends JpaRepository<BulletinBoard, UU
             @Param("maxPrice") BigDecimal maxPrice,
             @Param("minArea") Integer minArea,
             @Param("maxArea") Integer maxArea);
+
+    @EntityGraph(
+            attributePaths = {
+                "account",
+                "bulletinBoardImages",
+                "bulletinBoardReviews",
+                "bulletinBoardRules",
+                "bulletinBoardRentalAmenities",
+                "motel",
+                "room"
+            })
+    @Query("SELECT r FROM BulletinBoard r WHERE r.isActive = :isActive ORDER BY r.createdAt DESC")
+    List<BulletinBoard> findAllByDatenew(@Param("isActive") Boolean isActive);
+
+    @EntityGraph(
+            attributePaths = {
+                "account",
+                "bulletinBoardImages",
+                "bulletinBoardReviews",
+                "bulletinBoardRules",
+                "bulletinBoardRentalAmenities",
+                "motel",
+                "room"
+            })
+    @Query("SELECT r FROM BulletinBoard r WHERE r.isActive = :isActive ORDER BY r.createdAt ASC")
+    List<BulletinBoard> findAllByIsActiveAsc(@Param("isActive") Boolean isActive);
 }
