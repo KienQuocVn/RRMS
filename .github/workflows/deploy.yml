@@ -123,7 +123,6 @@ jobs:
       # ---------- 5. Thông báo Telegram ----------
       - name: Telegram — deploy thành công
         if: success()
-        continue-on-error: true
         run: |
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
@@ -135,7 +134,6 @@ jobs:
 
       - name: Telegram — deploy thất bại
         if: failure()
-        continue-on-error: true
         run: |
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
