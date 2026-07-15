@@ -44,6 +44,8 @@ public class SecurityConfig {
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private static final String[] PUBLIC_ENDPOINTS = {
+        "/actuator/health", // ← THÊM
+        "/actuator/prometheus",
         "/oauth2/authorization/google",
         "/oauth2/callback/google/**",
         "/favicon.ico",

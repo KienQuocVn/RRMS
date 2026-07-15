@@ -6,175 +6,108 @@
 
 ### H1 — docker-compose.yml (khai báo 4 service, đã tối ưu cho VPS 2GB RAM / 20GB disk)
 
-- [x] **1.1. Tạo file** `/opt/monitoring/docker-compose.yml`:
-  ```bash
-  nano /opt/monitoring/docker-compose.yml
-  ```
-  Dán nội dung sau — **nhớ đổi mật khẩu Grafana ở dòng có ghi chú**:
-  ```yaml
-  services:
-    # ---- Bộ não: thu thập & lưu trữ metrics ----
-    prometheus:
-      image: prom/prometheus:v2.53.0
-      container_name: prometheus
-      restart: unless-stopped
-      volumes:
-        - ./prometheus:/etc/prometheus
-        - prometheus-data:/prometheus
-      command:
-        - --config.file=/etc/prometheus/prometheus.yml
-        - --storage.tsdb.retention.time=7d      # disk chỉ 20GB — giữ dữ liệu tối đa 7 ngày
-        - --storage.tsdb.retention.size=512MB    # chặn cứng dung lượng, tránh disk đầy
-      mem_limit: 384m
-      ports:
-        - "127.0.0.1:9090:9090"      # chỉ nghe nội bộ, KHÔNG mở ra internet
-      extra_hosts:
-        - "host.docker.internal:host-gateway"    # để container gọi được backend :7000 trên VPS
-      logging:
-        driver: json-file
-        options:
-          max-size: "10m"
-          max-file: "3"
-
-    # ---- Mắt trên máy chủ: CPU, RAM, disk, network ----
-    node-exporter:
-      image: prom/node-exporter:v1.8.1
-      container_name: node-exporter
-      restart: unless-stopped
-      pid: host
-      volumes:
-        - /:/host:ro,rslave
-      command:
-        - --path.rootfs=/host
-      mem_limit: 64m
-      ports:
-        - "127.0.0.1:9100:9100"
-      logging:
-        driver: json-file
-        options:
-          max-size: "10m"
-          max-file: "3"
-
-    # ---- Màn hình: vẽ dashboard ----
-    grafana:
-      image: grafana/grafana:11.1.0
-      container_name: grafana
-      restart: unless-stopped
-      volumes:
-        - grafana-data:/var/lib/grafana
-      environment:
-        - GF_SECURITY_ADMIN_PASSWORD=DoiMatKhauNay!2026   # ← ĐỔI mật khẩu
-        - GF_SERVER_ROOT_URL=https://rrms.click/grafana
-        - GF_SERVER_SERVE_FROM_SUB_PATH=true
-      mem_limit: 256m
-      ports:
-        - "127.0.0.1:3001:3000"      # 3001 vì cổng 3000 dễ đụng process khác
-      logging:
-        driver: json-file
-        options:
-          max-size: "10m"
-          max-file: "3"
-
-    # ---- Loa báo động: nhận alert từ Prometheus, gửi Telegram ----
-    alertmanager:
-      image: prom/alertmanager:v0.27.0
-      container_name: alertmanager
-      restart: unless-stopped
-      volumes:
-        - ./alertmanager:/etc/alertmanager
-      command:
-        - --config.file=/etc/alertmanager/alertmanager.yml
-      mem_limit: 64m
-      ports:
-        - "127.0.0.1:9093:9093"
-      logging:
-        driver: json-file
-        options:
-          max-size: "10m"
-          max-file: "3"
-
-  volumes:
-    prometheus-data:
-    grafana-data:
-  ```
-  > **`mem_limit` trên từng service** và **retention giới hạn của Prometheus** là 2 điểm khác biệt so với lab gốc — cần thiết vì VPS chỉ có 2GB RAM/20GB disk, phải chủ động khống chế thay vì để mặc định (mặc định Prometheus giữ dữ liệu 15 ngày, không giới hạn dung lượng — dễ ăn hết disk 20GB vốn đã chia sẻ với MySQL/Elasticsearch/code build).
+- [x] **1.1. Tạo file** `/opt/monitoring/docker-compose.yml`
+  → Đã tạo trong repo (`monitoring/docker-compose.yml`), push GitHub, `git pull` + `cp` vào `/opt/monitoring` trên VPS thành công. Xác nhận bằng `docker compose config` — parse hợp lệ, `mem_limit` áp đúng cho 4 service (prometheus 384MB, node-exporter 64MB, grafana 256MB, alertmanager 64MB), mật khẩu Grafana đã đổi từ mẫu sang `Rrms2026_Monitor!` qua file `.env`.
 
 ### H2 — prometheus.yml (lấy số liệu từ đâu — đã đổi sang backend Spring Boot)
 
-- [x] **2.1. Tạo file** `/opt/monitoring/prometheus/prometheus.yml`:
-  ```bash
-  nano /opt/monitoring/prometheus/prometheus.yml
-  ```
-  ```yaml
-  global:
-    scrape_interval: 15s
-    evaluation_interval: 15s
-
-  rule_files:
-    - alert-rules.yml
-
-  alerting:
-    alertmanagers:
-      - static_configs:
-          - targets: ['alertmanager:9093']
-
-  scrape_configs:
-    - job_name: 'node-exporter'                    # sức khoẻ máy chủ VPS
-      static_configs:
-        - targets: ['node-exporter:9100']
-
-    - job_name: 'rrms-backend'                      # sức khoẻ backend Spring Boot
-      metrics_path: '/actuator/prometheus'          # khác mặc định /metrics — Spring Boot Actuator dùng path này
-      static_configs:
-        - targets: ['host.docker.internal:7000']    # backend chạy NGOÀI Docker (systemd), trên VPS
-  ```
-  > **Khác lab gốc**: job đổi tên từ `mern-api` thành `rrms-backend`, port đổi từ `5000` thành `7000`, và bắt buộc thêm dòng `metrics_path: '/actuator/prometheus'` — vì Spring Boot Actuator không dùng đường dẫn mặc định `/metrics` như `prom-client`.
+- [x] **2.1. Tạo file** `/opt/monitoring/prometheus/prometheus.yml`
+  → Đã có trên VPS, job `rrms-backend` trỏ đúng `host.docker.internal:7000`, path `/actuator/prometheus`.
 
 ### H3 — Tạo 2 file cấu hình tạm (Phần K sẽ thay bằng bản thật)
 
-- [x] **3.1. Tạo `alert-rules.yml` bản tạm:**
-  ```bash
-  nano /opt/monitoring/prometheus/alert-rules.yml
-  ```
-  ```yaml
-  groups: []
-  ```
-
-- [x] **3.2. Tạo `alertmanager.yml` bản tạm:**
-  ```bash
-  nano /opt/monitoring/alertmanager/alertmanager.yml
-  ```
-  ```yaml
-  route:
-    receiver: 'tam-thoi'
-  receivers:
-    - name: 'tam-thoi'
-  ```
+- [x] **3.1. Tạo `alert-rules.yml` bản tạm** — đã có trên VPS.
+- [x] **3.2. Tạo `alertmanager.yml` bản tạm** — đã có trên VPS.
 
 ### H4 — Khởi động stack + kiểm tra
 
-- [ ] **4.1. Khởi động cả 4 service:**
+- [x] **4.1. Khởi động cả 4 service:**
   ```bash
   cd /opt/monitoring
   docker compose up -d
   docker compose ps
   ```
-  Cả 4 dòng phải có `STATUS = Up`: `prometheus`, `node-exporter`, `grafana`, `alertmanager`.
+  **Kết quả thực tế:** cả 4 image đã pull xong, cả 4 container `Up`:
+  ```
+  alertmanager    Up   127.0.0.1:9093->9093/tcp
+  grafana         Up   127.0.0.1:3001->3000/tcp
+  node-exporter   Up   127.0.0.1:9100->9100/tcp
+  prometheus      Up   127.0.0.1:9090->9090/tcp
+  ```
 
-- [ ] **4.2. Kiểm tra Prometheus đã "nhìn thấy" cả 2 nguồn số liệu:**
+- [ ] **4.2. Kiểm tra Prometheus đã "nhìn thấy" cả 2 nguồn số liệu** — ⚠️ **CHƯA ĐẠT, đang debug:**
   ```bash
   sleep 20
   curl -s localhost:9090/api/v1/targets | grep -o '"health":"[a-z]*"'
   ```
-  Phải thấy đúng 2 dòng `"health":"up"` (node-exporter và rrms-backend). Nếu có `"down"` → xem mục Debug ở Phần E.
+  **Kết quả lần đầu:**
+  ```
+  "health":"up"      ← node-exporter
+  "health":"down"    ← rrms-backend
+  ```
 
-- [ ] **4.3. Kiểm tra RAM thực tế sau khi bật cả bộ giám sát** (đối chiếu với ước tính ở Phần G):
+  **Quá trình debug đã thực hiện:**
+
+  1. `curl http://127.0.0.1:7000/actuator/prometheus` trên VPS → trả về `{"code":401,"message":"Unauthenticated"}` — backend có chạy (`ss -tlnp` xác nhận Java đang nghe `*:7000`), nhưng bị Spring Security chặn.
+  2. `docker exec prometheus wget ... host.docker.internal:7000/...` → ban đầu **bị treo/timeout** (`context deadline exceeded`) — nguyên nhân: **UFW chặn traffic từ Docker bridge network vào port 7000** (UFW ban đầu chỉ mở `Nginx Full`, `OpenSSH`, `24700/tcp`, không có rule cho 7000).
+  3. Tìm subnet Docker: `docker network inspect monitoring_default` → `Subnet: 172.19.0.0/16`.
+  4. Mở firewall cho đúng subnet đó (không mở toàn bộ ra internet):
+     ```bash
+     sudo ufw allow from 172.19.0.0/16 to any port 7000 proto tcp
+     sudo ufw reload
+     ```
+     → Đã áp dụng thành công, `ufw status` xác nhận rule `7000/tcp ALLOW 172.19.0.0/16`.
+  5. Test lại: `docker exec prometheus wget -qO- --timeout=5 http://host.docker.internal:7000/actuator/prometheus`
+     → **Không còn treo nữa** (xác nhận vấn đề mạng đã fix), nhưng trả về `HTTP/1.1 401` — đúng như dự đoán, vấn đề còn lại thuần là **Spring Security chặn endpoint**, không liên quan tới mạng/Docker/firewall nữa.
+
+  **⏳ Việc cần làm tiếp để hoàn thành mục này:**
+  - Sửa Spring Security config trong code backend (`SecurityConfig.java` hoặc tương đương) để `permitAll()` riêng cho `/actuator/health` và `/actuator/prometheus` (không mở toàn bộ `/actuator/**` để tránh lộ endpoint nhạy cảm như `/actuator/env`).
+  - Build lại, deploy backend (qua CI/CD hoặc restart service thủ công).
+  - Chạy lại `curl http://127.0.0.1:7000/actuator/prometheus` trên VPS → phải thấy dữ liệu metrics (dạng `# HELP jvm_...`) thay vì lỗi 401.
+  - Chạy lại `curl -s localhost:9090/api/v1/targets | grep -o '"health":"[a-z]*"'` → phải thấy **2 dòng `"health":"up"`**.
+  - Khi đạt, tick `[x]` mục 4.2.
+
+- [x] **4.3. Kiểm tra RAM thực tế sau khi bật cả bộ giám sát** (đối chiếu với ước tính ở Phần G):
   ```bash
   free -h
   docker stats --no-stream
   ```
-  Nếu `free -h` cho thấy RAM khả dụng (`available`) gần về 0 hoặc swap dùng nhiều ngay cả lúc hệ thống rảnh → quay lại Phần G, cân nhắc đổi sang Phương án B (tắt Elasticsearch tạm thời).
+  **Kết quả thực tế:**
+  ```
+  Mem:   1.9Gi total | 967Mi used | 84Mi free | 4.0Mi shared | 911Mi buff/cache | 821Mi available
+  Swap:  2.0Gi total | 573Mi used | 1.4Gi free
+  ```
 
-## Kết quả Phần H
+  | Container | MEM USAGE / LIMIT | MEM % |
+  |---|---|---|
+  | prometheus | 60.5 MiB / 384 MiB | 15.77% |
+  | grafana | 145.6 MiB / 256 MiB | 56.87% |
+  | alertmanager | 32.0 MiB / 64 MiB | 49.98% |
+  | node-exporter | 12.6 MiB / 64 MiB | 19.75% |
+  | rrms-redis | 5.0 MiB / 1.918 GiB | 0.25% |
+  | rrms-mysql | 154.7 MiB / 1.918 GiB | 7.87% |
 
-Khi tất cả các mục trên đã tick `[x]`: cả 4 container giám sát đang chạy ổn định, chỉ bind `127.0.0.1` (không lộ ra internet), Prometheus đã thu thập được số liệu từ cả VPS (node-exporter) lẫn backend RRMS. Tiếp tục sang **Phần J — Grafana: dashboard qua Nginx**.
+  **So với baseline Phần G (sau khi tắt Elasticsearch, trước khi bật giám sát):** available giảm từ **912Mi → 821Mi** (giảm ~91MB), swap tăng nhẹ từ 487Mi → 573Mi. Mức tiêu thụ nằm trong dự tính ban đầu (~500-700MB cho 4 container), **chưa cần lo lắng** — RAM available vẫn còn dư dả, không cần quay lại đổi phương án ở Phần G.
+
+  > Sẽ đo lại RAM một lần nữa sau khi target `rrms-backend` lên `up` — vì lúc đó Prometheus sẽ bắt đầu ghi thêm time-series từ backend, có thể tăng nhẹ RAM/disk theo thời gian.
+
+## Kết quả Phần H — HIỆN TẠI
+
+| Mục | Trạng thái |
+|---|---|
+| H1 (docker-compose.yml) | ✅ Hoàn thành |
+| H2 (prometheus.yml) | ✅ Hoàn thành |
+| H3 (2 file cấu hình tạm) | ✅ Hoàn thành |
+| H4.1 (khởi động 4 container) | ✅ Hoàn thành — cả 4 `Up`, chỉ bind `127.0.0.1` |
+| H4.2 (Prometheus thấy đủ 2 target `up`) | ❌ **Chưa đạt** — node-exporter `up`, rrms-backend `down` do Spring Security chặn `/actuator/prometheus` (đã loại trừ nguyên nhân mạng/firewall) |
+| H4.3 (kiểm tra RAM) | ✅ Hoàn thành — RAM còn an toàn, available 821Mi |
+
+**⚠️ Phần H chưa đóng hoàn toàn.** Việc còn lại duy nhất trước khi sang Phần J:
+
+1. Mở endpoint `/actuator/prometheus` (và `/actuator/health`) trong Spring Security config — `permitAll()`, không yêu cầu xác thực.
+2. Build + deploy lại backend.
+3. Xác nhận `curl 127.0.0.1:7000/actuator/prometheus` trả metrics thay vì 401.
+4. Xác nhận Prometheus targets đều `up`.
+5. Tick `[x]` H4.2, đóng Phần H.
+
+Sau khi H4.2 đạt → tiếp tục sang **Phần J — Grafana: dashboard qua Nginx**.
