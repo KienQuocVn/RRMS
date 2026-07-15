@@ -6,14 +6,11 @@
 
 ### J1 — Mở đường Grafana qua Nginx (dùng lại file Nginx đã có từ Phần C của lab Deploy)
 
-- [ ] **1.1. Mở file cấu hình Nginx đang dùng thật cho RRMS:**
-  ```bash
-  sudo nano /etc/nginx/sites-available/rrms
-  ```
+- [x] **1.1. Mở file cấu hình Nginx đang dùng thật cho RRMS** (`/etc/nginx/sites-available/rrms`, symlink từ `sites-enabled`).
 
-- [ ] **1.2. Tìm khối `server { listen 443 ssl; ... }`** (khối Certbot đã tạo ở Phần C lab Deploy) — dán thêm 2 `location` sau vào **bên trong** khối đó, cạnh các `location` cũ (`/`, `/api/`, `/uploads/`):
+- [x] **1.2. Thêm 2 `location` Grafana** vào khối `listen 443 ssl` (cạnh `/`, API, `/uploads/`):
   ```nginx
-      # ---- GRAFANA: dashboard giám sát (thêm mới) ----
+      # ---- 4) GRAFANA: dashboard giám sát ----
       location /grafana/ {
           proxy_set_header Host $host;
           proxy_pass http://127.0.0.1:3001;
@@ -27,62 +24,43 @@
           proxy_pass http://127.0.0.1:3001;
       }
   ```
-  > **Quan trọng**: phải dán vào đúng khối `listen 443 ssl` (khối HTTPS Certbot tạo), không phải khối `listen 80` — nếu dán nhầm, Grafana sẽ chỉ truy cập được qua HTTP không mã hoá hoặc bị lỗi redirect loop.
 
-- [ ] **1.3. Kiểm tra cú pháp và reload:**
-  ```bash
-  sudo nginx -t
-  sudo systemctl reload nginx
-  ```
+- [x] **1.3. Kiểm tra cú pháp và reload** — `nginx -t` OK, `systemctl reload nginx` OK.
+
+- [x] **1.4. Xác nhận Nginx proxy đúng tới Grafana:**
+  - DNS `rrms.click` = IP VPS `103.72.97.127`
+  - `curl -sI https://rrms.click/grafana/` → `302` + `Location: /grafana/login`
+  - Grafana local `:3001` cũng `302` → `/grafana/login`
+
+  > **Lưu ý PWA / cửa sổ thường vs ẩn danh:** Frontend RRMS dùng Vite PWA (Workbox). Service Worker đã đăng ký trên origin `rrms.click` có thể bắt navigation tới `/grafana/` và trả shell React → hiện **404 RRMS** dù Nginx đã đúng. Cửa sổ ẩn danh không có SW nên vào Grafana bình thường. Cách gỡ trên cửa sổ thường: xem mục [Xử lý 404 chỉ ở cửa sổ thường](#xử-lý-404-chỉ-ở-cửa-sổ-thường) bên dưới. Đã thêm `navigateFallbackDenylist` cho `/grafana` trong `client/vite.config.js` (có hiệu lực sau lần build/deploy frontend tiếp theo).
 
 ### J2 — Đăng nhập Grafana + kết nối Prometheus
 
-- [ ] **2.1. Mở trình duyệt:** `https://rrms.click/grafana`
-
-- [ ] **2.2. Đăng nhập**: user `admin`, mật khẩu là giá trị `GF_SECURITY_ADMIN_PASSWORD` đã đặt ở Phần C.
-
-- [ ] **2.3. Thêm data source**: Menu trái → **Connections** → **Data sources** → **Add data source** → chọn **Prometheus**.
-
-- [ ] **2.4. Điền URL** (dùng tên service trong Docker Compose, **không phải `localhost`**):
-  ```
-  http://prometheus:9090
-  ```
-
-- [ ] **2.5. Bấm Save & test** → phải thấy thông báo xanh **"Successfully queried the Prometheus API"**.
+- [x] **2.1.** Mở `https://rrms.click/grafana/` (nên dùng ẩn danh nếu cửa sổ thường còn 404 do SW).
+- [x] **2.2.** Đăng nhập `admin` / mật khẩu trong `/opt/monitoring/.env` (`Rrms2026_Monitor!`).
+- [x] **2.3–2.5.** Thêm data source Prometheus URL `http://prometheus:9090` → Save & test thành công.
 
 ### J3 — Dashboard máy chủ (Node Exporter Full)
 
-- [ ] **3.1. Import dashboard có sẵn**: Menu trái → **Dashboards** → **New** → **Import**.
-
-- [ ] **3.2. Ô "Import via grafana.com" gõ:** `1860` → **Load**.
-
-- [ ] **3.3. Ở mục Prometheus cuối trang, chọn data source vừa tạo → Import.**
-
-- [ ] **3.4. Xác nhận dashboard hiện CPU, RAM, disk, network của VPS theo thời gian thực** — để nguyên tab này, sẽ dùng lại ở Phần E khi diễn tập sự cố.
+- [x] **3.1–3.4.** Import dashboard `1860` (Node Exporter Full), chọn data source prometheus — hiện CPU/RAM/disk/network VPS (Job `node-exporter`, Instance `node-exporter:9100`).
 
 ### J4 — Soi số liệu backend RRMS qua Explore (PromQL đã đổi theo Micrometer/Spring Boot)
 
-> **Khác lab gốc**: `prom-client` (Node) đặt tên metric là `http_request_duration_seconds_*` và `process_resident_memory_bytes`. **Micrometer (Spring Boot)** đặt tên khác: `http_server_requests_seconds_*` và `jvm_memory_used_bytes`. Dùng đúng tên dưới đây, không copy nguyên PromQL từ lab MERN.
+> **Khác lab gốc**: Micrometer (Spring Boot) dùng `http_server_requests_seconds_*` và `jvm_memory_used_bytes`.
 
-- [ ] **4.1. Mở Explore** (menu trái → **Explore**), dán từng dòng vào ô query, bấm **Run query**:
+- [x] **4.1.** Explore đọc được metric backend (`http_server_requests_seconds_count`, ứng dụng `rrms-backend`, instance `host.docker.internal:7000`) — có traffic scrape `/actuator/prometheus` và các API (`/authen/login`, `/api/v1/search`, …).
+- [x] **4.2.** Xác nhận số liệu phản ánh request thật từ backend.
 
-  **Số request/giây mà backend đang nhận:**
-  ```promql
-  rate(http_server_requests_seconds_count{application="rrms-backend"}[5m])
-  ```
+## Xử lý 404 chỉ ở cửa sổ thường
 
-  **Độ trễ p95 — 95% request xử lý nhanh hơn X giây:**
-  ```promql
-  histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{application="rrms-backend"}[5m]))
-  ```
+Nginx **không lỗi**. Trên Chrome/Edge cửa sổ thường:
 
-  **RAM heap mà JVM đang dùng (byte):**
-  ```promql
-  jvm_memory_used_bytes{application="rrms-backend",area="heap"}
-  ```
+1. Mở `https://rrms.click` (trang chủ RRMS).
+2. F12 → tab **Application** → **Storage** → bấm **Clear site data** (hoặc **Service Workers** → **Unregister**).
+3. Đóng tab, mở lại (không cần ẩn danh): `https://rrms.click/grafana/`
 
-- [ ] **4.2. Xác nhận middleware đo đúng** — mở `https://rrms.click`, bấm F5 vài lần / thử vài chức năng (đăng nhập, xem danh sách phòng...), rồi chạy lại query số 1 trong bước 4.1 — đường đồ thị request/giây phải nhích lên theo thao tác vừa làm.
+Sau khi deploy frontend có `navigateFallbackDenylist` cho `/grafana`, SW mới sẽ không còn “nuốt” đường dẫn này.
 
 ## Kết quả Phần J
 
-Khi tất cả các mục trên đã tick `[x]`: Grafana truy cập được qua `https://rrms.click/grafana` (HTTPS, qua Nginx), có dashboard máy chủ (Node Exporter Full) và đã xác nhận đọc được số liệu thật từ backend RRMS qua Explore. Tiếp tục sang **Phần K — Alert: hệ thống tự gọi bạn khi có sự cố**.
+**Phần J đã hoàn thành:** Grafana qua `https://rrms.click/grafana/` (HTTPS, Nginx), dashboard Node Exporter Full, Explore đọc được metric Micrometer từ backend RRMS. Tiếp tục sang **Phần K — Alert: hệ thống tự gọi bạn khi có sự cố**.

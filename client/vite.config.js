@@ -35,6 +35,14 @@ export default defineConfig({
       },
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
+        // Không để SPA fallback nuốt đường dẫn Nginx proxy (Grafana, API, uploads)
+        navigateFallbackDenylist: [
+          /^\/grafana/,
+          /^\/api/,
+          /^\/authen/,
+          /^\/support/,
+          /^\/uploads/,
+        ],
       },
     }),
   ],
