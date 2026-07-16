@@ -30,12 +30,12 @@ Dự án RRMS đã có sẵn 1 bot Telegram tạo ở lab CI/CD (**RRMS Deploy**
 
 ### K2 — alertmanager.yml bản thật
 
-- [ ] **2.1. Mở lại file trên VPS:**
+- [x] **2.1. Mở lại file trên VPS:**
   ```bash
   nano /opt/monitoring/alertmanager/alertmanager.yml
   ```
 
-- [ ] **2.2. Xoá bản tạm, dán bản thật** (thay đúng token + chat_id đã chọn ở E1):
+- [x] **2.2. Xoá bản tạm, dán bản thật** (thay đúng token + chat_id đã chọn ở E1):
   ```yaml
   route:
     receiver: telegram
@@ -56,12 +56,12 @@ Dự án RRMS đã có sẵn 1 bot Telegram tạo ở lab CI/CD (**RRMS Deploy**
 
 ### K3 — Viết 5 quy tắc cảnh báo (đã đổi tên job + lệnh khắc phục theo systemd)
 
-- [ ] **3.1. Mở lại file:**
+- [x] **3.1. Mở lại file:**
   ```bash
   nano /opt/monitoring/prometheus/alert-rules.yml
   ```
 
-- [ ] **3.2. Xoá bản tạm, dán bản thật** (đã đổi `job="mern-api"` → `job="rrms-backend"`, lệnh khắc phục đổi từ `pm2` sang `systemctl`/`journalctl`, và điều chỉnh ngưỡng disk cho phù hợp VPS chỉ có 20GB):
+- [x] **3.2. Xoá bản tạm, dán bản thật** (đã đổi `job="mern-api"` → `job="rrms-backend"`, lệnh khắc phục đổi từ `pm2` sang `systemctl`/`journalctl`, và điều chỉnh ngưỡng disk cho phù hợp VPS chỉ có 20GB):
   ```yaml
   groups:
     - name: canh-bao-he-thong
@@ -120,13 +120,13 @@ Dự án RRMS đã có sẵn 1 bot Telegram tạo ở lab CI/CD (**RRMS Deploy**
 
 ### K4 — Áp dụng cấu hình
 
-- [ ] **4.1. Restart 2 service liên quan** (Prometheus không tự đọc lại file khi sửa):
+- [x] **4.1. Restart 2 service liên quan** (Prometheus không tự đọc lại file khi sửa):
   ```bash
   cd /opt/monitoring
   docker compose restart prometheus alertmanager
   ```
 
-- [ ] **4.2. Kiểm tra Prometheus đã nạp đủ 5 quy tắc:**
+- [x] **4.2. Kiểm tra Prometheus đã nạp đủ 5 quy tắc:**
   ```bash
   sleep 5
   curl -s localhost:9090/api/v1/rules | grep -o '"name":"[A-Za-z]*"'
@@ -137,61 +137,28 @@ Dự án RRMS đã có sẵn 1 bot Telegram tạo ở lab CI/CD (**RRMS Deploy**
 
 > Hệ thống báo động chỉ đáng tin khi đã được thử. **Khác lab gốc dùng `pm2`, RRMS dùng `systemctl`.**
 
-- [ ] **5.1. Diễn tập 1 — Backend chết:**
-  ```bash
-  sudo systemctl stop rrms-backend
-  ```
-  Đợi 1-2 phút → 📱 Telegram phải nhận: `[FIRING:1] APIDown — 🔴 Backend RRMS không phản hồi`
+- [x] **5.1.** Diễn tập backend chết — Telegram nhận `APIDown` FIRING rồi `RESOLVED`.
 
-  Khắc phục:
-  ```bash
-  sudo systemctl start rrms-backend
-  ```
-  Đợi thêm ~1 phút → 📱 nhận: `[RESOLVED] APIDown` ✅
+- [x] **5.2.** Diễn tập CPU — Telegram nhận `HighCPU` FIRING (~100%) rồi `RESOLVED`.
+  > **Lưu ý khi stress trên VPS 1 CPU / 2GB:** CPU 100% có thể làm backend Java không kịp trả lời scrape → Prometheus báo thêm `APIDown` tạm thời, rồi `RESOLVED` khi tải hạ. Đây là **phản ứng phụ bình thường**, không phải lỗi cấu hình.
 
-- [x] **5.1.** (đã đạt) Telegram nhận `APIDown` FIRING rồi `RESOLVED`.
-
-- [ ] **5.2. Diễn tập 2 — CPU quá tải** (mở sẵn Grafana Node Exporter Full):
-  > **Vì sao lần đầu không có Telegram dù CPU 100%:** rule cũ `rate(...[5m])` + `for: 5m` cần CPU cao liên tục ~10 phút mới FIRING, trong khi `stress --timeout 420` chỉ 7 phút → alert kẹt ở `pending` rồi hết. Rule đã hạ xuống `rate[2m]` + `for: 2m` để khớp lab.
-
-  **Trên VPS — cập nhật rule rồi chạy lại:**
-  ```bash
-  nano /opt/monitoring/prometheus/alert-rules.yml
-  # Sửa block HighCPU thành:
-  #   expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
-  #   for: 2m
-
-  cd /opt/monitoring
-  docker compose restart prometheus
-  sleep 5
-
-  # Kiểm tra CPU query (phải có số, không được rỗng):
-  curl -sG 'http://localhost:9090/api/v1/query' \
-    --data-urlencode 'query=100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100)'
-
-  stress --cpu 2 --timeout 420
-  ```
-  Sau ~3–4 phút → 📱 `HighCPU` FIRING. Hết stress (~7 phút) → vài phút sau `RESOLVED` ✅.
-
-  Trong lúc stress (SSH thứ 2) có thể xem trạng thái:
-  ```bash
-  curl -s localhost:9090/api/v1/alerts | grep -E '"alertname"|"state"'
-  ```
-  Phải thấy `"alertname":"HighCPU"` với `"state":"pending"` rồi `"firing"`.
-
-- [ ] **5.3. Kiểm tra độ bền cuối cùng:**
+- [x] **5.3.** Reboot VPS — tự sống lại, không cần thao tác tay:
   ```bash
   sudo reboot
-  ```
-  Đợi ~90 giây, kiểm tra:
-  ```bash
+  # Sau ~90 giây, SSH lại (lệnh phải chạy TRÊN VPS, không phải Windows CMD):
   ssh -p 24700 root@103.72.97.127
-  sudo systemctl status rrms-backend      # active (running)
-  sudo systemctl status nginx             # active (running)
-  cd /var/www/rrms && docker compose ps   # mysql, redis, elasticsearch: Up
-  cd /opt/monitoring && docker compose ps # prometheus, node-exporter, grafana, alertmanager: Up
+  sudo systemctl status rrms-backend nginx --no-pager
+  cd /var/www/rrms && docker compose ps
+  cd /opt/monitoring && docker compose ps
   ```
-  Website (`https://rrms.click`) và Grafana (`https://rrms.click/grafana`) đều phải sống lại mà không cần thao tác tay — nhờ `restart: unless-stopped` (Docker) và `enable` (systemd/Nginx/Docker daemon).
+  **Kết quả thực tế (2026-07-16):**
+  - `rrms-backend`: `active (running)`
+  - `nginx`: `active (running)`
+  - `rrms-mysql`, `rrms-redis`: `Up (healthy)` — không còn Elasticsearch (đã loại bỏ ở Phần B)
+  - `prometheus`, `node-exporter`, `grafana`, `alertmanager`: `Up`
+  - `curl 127.0.0.1:7000/actuator/prometheus` → `200` (trước reboot)
+
+  Kiểm tra thêm trên trình duyệt: `https://rrms.click` và `https://rrms.click/grafana/` (dùng ẩn danh nếu cửa sổ thường còn 404 do PWA).
 
 ## Debug khi gặp lỗi
 
@@ -210,15 +177,14 @@ Dự án RRMS đã có sẵn 1 bot Telegram tạo ở lab CI/CD (**RRMS Deploy**
 
 ## Tiêu chí đạt (toàn bộ lab Monitoring)
 
-- [ ] Endpoint `/actuator/prometheus` của backend RRMS trả về số liệu Micrometer, và **không** truy cập được từ internet qua domain thật (`https://rrms.click/actuator/prometheus` trả về HTML React, không phải metrics).
-- [ ] 4 container (`prometheus`, `node-exporter`, `grafana`, `alertmanager`) đều `Up`; cổng chỉ bind `127.0.0.1`.
-- [ ] Prometheus thấy cả 2 target (`node-exporter` và `rrms-backend`) ở trạng thái `up`.
-- [ ] Truy cập được Grafana qua `https://rrms.click/grafana`, có dashboard **Node Exporter Full** hiển thị CPU/RAM/disk realtime.
-- [ ] Chạy được query PromQL xem request/giây và độ trễ p95 của backend trong tab Explore (đúng tên metric Micrometer: `http_server_requests_seconds_*`, `jvm_memory_used_bytes`).
-- [ ] Diễn tập `sudo systemctl stop rrms-backend` → nhận Telegram `FIRING` trong ~2 phút → `sudo systemctl start rrms-backend` → nhận `RESOLVED`.
-- [ ] Diễn tập `stress` CPU → dashboard vọt lên realtime → nhận cảnh báo `HighCPU` → hết stress nhận `RESOLVED`.
-- [ ] Reboot VPS → website RRMS + toàn bộ hệ giám sát tự sống lại, không cần thao tác tay.
-- [ ] Đã có quyết định rõ ràng và ghi lại về phương án xử lý RAM (Phần B) phù hợp với VPS 2GB thực tế đang dùng.
+- [x] Endpoint `/actuator/prometheus` trả Micrometer; không lộ ra internet qua domain (`https://rrms.click/actuator/prometheus` → HTML React).
+- [x] 4 container monitoring đều `Up`; cổng chỉ bind `127.0.0.1`.
+- [x] Prometheus thấy 2 target `up` (`node-exporter`, `rrms-backend`).
+- [x] Grafana qua `https://rrms.click/grafana/`, dashboard Node Exporter Full, Explore đọc metric backend.
+- [x] Diễn tập `APIDown`: FIRING → RESOLVED qua Telegram.
+- [x] Diễn tập `HighCPU`: dashboard vọt lên → FIRING → RESOLVED qua Telegram.
+- [x] Reboot VPS → backend, nginx, mysql/redis, monitoring tự sống lại.
+- [x] Phương án RAM: đã loại bỏ Elasticsearch, giới hạn `mem_limit` monitoring (Phần B/G).
 
 ## Bài tập
 
