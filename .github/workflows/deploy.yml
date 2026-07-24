@@ -63,14 +63,14 @@ jobs:
           npm run build
 
       # ---------- 3. Copy sản phẩm build lên VPS ----------
-      - name: Copy jar + dist lên VPS
+      - name: Copy jar, dist, rollback script lên VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           port: ${{ secrets.VPS_PORT }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          source: "server/${{ steps.jar.outputs.path }},client/dist"
+          source: "server/${{ steps.jar.outputs.path }},client/dist,scripts/rollback.sh"
           target: /tmp/rrms-deploy
 
       # ---------- 4. Kích hoạt bản mới trên VPS ----------
@@ -85,7 +85,27 @@ jobs:
             set -e
 
             # Đảm bảo các thư mục đích tồn tại trên VPS
-            mkdir -p /var/www/rrms/server/target /var/www/rrms/client
+            mkdir -p /var/www/rrms/server/target /var/www/rrms/client /var/www/rrms/releases
+
+            # ---------- THÊM CƠ CHẾ BACKUP TRƯỚC KHI GHI ĐÈ ----------
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+            # Dùng github.sha để biết commit nào, kết hợp timestamp
+            RELEASE_DIR="/var/www/rrms/releases/${TIMESTAMP}_${{ github.sha }}"
+            mkdir -p "$RELEASE_DIR"
+
+            echo "Backing up current version to $RELEASE_DIR"
+            if [ -f /var/www/rrms/server/target/rrms-0.0.1-SNAPSHOT.jar ]; then
+              cp /var/www/rrms/server/target/rrms-0.0.1-SNAPSHOT.jar "$RELEASE_DIR/"
+            fi
+            if [ -d /var/www/rrms/client/dist ]; then
+              cp -r /var/www/rrms/client/dist "$RELEASE_DIR/"
+            fi
+
+            # Giữ lại 5 bản backup gần nhất, xoá các bản cũ hơn
+            cd /var/www/rrms/releases
+            ls -1t | tail -n +6 | xargs -I {} rm -rf {}
+            cd - > /dev/null
+            # --------------------------------------------------------
 
             # Backend: tìm file .jar đệ quy trong thư mục tạm và di chuyển ghi đè trực tiếp
             NEW_JAR=$(find /tmp/rrms-deploy -name "*.jar" | head -n 1)
@@ -99,6 +119,13 @@ jobs:
             # Frontend: thay toàn bộ dist cũ
             rm -rf /var/www/rrms/client/dist
             mv /tmp/rrms-deploy/client/dist /var/www/rrms/client/dist
+
+            # Rollback script
+            if [ -f /tmp/rrms-deploy/scripts/rollback.sh ]; then
+              mv /tmp/rrms-deploy/scripts/rollback.sh /var/www/rrms/rollback.sh
+              chmod +x /var/www/rrms/rollback.sh
+            fi
+
             rm -rf /tmp/rrms-deploy
 
             # Khởi động lại backend (systemd đọc lại đúng file .jar cố định)

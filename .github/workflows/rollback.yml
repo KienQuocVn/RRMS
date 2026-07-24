@@ -1,0 +1,51 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Tên thư mục release để rollback (VD: 20260724_152000_abc123)'
+        required: true
+        type: string
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Thực thi rollback trên VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_PORT }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            if [ ! -f /var/www/rrms/rollback.sh ]; then
+              echo "Lỗi: Không tìm thấy script /var/www/rrms/rollback.sh trên VPS."
+              exit 1
+            fi
+            
+            # Chạy script rollback
+            /var/www/rrms/rollback.sh "${{ github.event.inputs.release }}"
+            
+      - name: Telegram — rollback thành công
+        if: success()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode=HTML \
+            --data-urlencode text="🔄 <b>RRMS ROLLBACK THÀNH CÔNG</b>
+          👤 <b>Người thực hiện:</b> ${{ github.actor }}
+          ⏪ <b>Phiên bản:</b> ${{ github.event.inputs.release }}
+          🔗 <a href='https://rrms.click'>Xem website</a>"
+
+      - name: Telegram — rollback thất bại
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode=HTML \
+            --data-urlencode text="❌ <b>RRMS ROLLBACK THẤT BẠI!</b>
+          👤 <b>Người thực hiện:</b> ${{ github.actor }}
+          ⏪ <b>Phiên bản:</b> ${{ github.event.inputs.release }}
+          🔍 <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Xem chi tiết log lỗi</a>"
