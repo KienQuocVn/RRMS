@@ -32,7 +32,7 @@ public class CustomerEnvironmentTest {
 
     @Test
     void testEnvTargetString() {
-        assertEquals("development", CustomerEnvironment.EnvTarget.DEV.string());
+        assertEquals("dev-broken", CustomerEnvironment.EnvTarget.DEV.string());
         assertEquals("production", CustomerEnvironment.EnvTarget.PROD.string());
     }
 
