@@ -158,5 +158,4 @@ export const useAuth = create<AuthState>()(
 
 registerUnauthorizedListener(() => {
   useAuth.setState({ token: null, user: null, error: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' });
-});�p lại.' });
 });

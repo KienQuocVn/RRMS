@@ -11,6 +11,34 @@ export const financeService = {
   },
 
   /**
+   * Lấy danh sách hóa đơn theo nhà trọ
+   */
+  getInvoicesByMotel: async (motelId: string, params?: { page?: number, size?: number, sortBy?: string, sortDirection?: string }): Promise<any> => {
+    return apiClient.get(`${API_ENDPOINTS.INVOICES.BASE}/motel/${motelId}`, { params });
+  },
+
+  /**
+   * Cập nhật hóa đơn
+   */
+  updateInvoice: async (invoiceId: string, data: any): Promise<any> => {
+    return apiClient.put(`${API_ENDPOINTS.INVOICES.BASE}/${invoiceId}`, data);
+  },
+
+  /**
+   * Hủy hóa đơn
+   */
+  cancelInvoice: async (invoiceId: string): Promise<any> => {
+    return apiClient.put(`${API_ENDPOINTS.INVOICES.BASE}/${invoiceId}/cancel`);
+  },
+
+  /**
+   * Xóa hóa đơn
+   */
+  deleteInvoice: async (invoiceId: string): Promise<any> => {
+    return apiClient.delete(`${API_ENDPOINTS.INVOICES.BASE}/${invoiceId}`);
+  },
+
+  /**
    * Thu tiền hóa đơn
    */
   collectPayment: async (invoiceId: string, data: any): Promise<any> => {

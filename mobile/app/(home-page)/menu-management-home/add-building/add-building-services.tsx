@@ -24,6 +24,8 @@ import {
 } from "@/constants/theme";
 import { useAddBuildingFlow } from "@/hooks/use-add-building-flow";
 import { motelService } from "@/services/api/motel.service";
+import { apiClient } from "@/services/api/client";
+import { safeAsyncStorage } from "@/services/storage/safe-async-storage";
 
 interface ServiceItem {
   id: string;
@@ -450,8 +452,31 @@ export default function AddBuildingServicesScreen() {
         ? basicInfo.buildingName.trim()
         : `${basicInfo.buildingName.trim()} Nhà trọ`;
 
+      // 1. Fetch type rooms
+      const typeRoomRes = await apiClient.get('/api/v1/type-rooms') as any;
+      const typeRooms = typeRoomRes?.result || [];
+      const defaultTypeRoom = typeRooms.length > 0 ? typeRooms[0] : null;
+
+      if (!defaultTypeRoom) {
+         Alert.alert("Lỗi", "Không tìm thấy danh mục loại nhà trọ");
+         setIsSubmitting(false);
+         return;
+      }
+
+      // 2. Get current user
+      const userStr = await safeAsyncStorage.getItem('user_data');
+      const user = userStr ? JSON.parse(userStr) : null;
+      if (!user?.username) {
+         Alert.alert("Lỗi", "Không tìm thấy thông tin tài khoản đang đăng nhập");
+         setIsSubmitting(false);
+         return;
+      }
+
       // Payload gửi lên BE Java
       const payload = {
+        typeRoom: { typeRoomId: defaultTypeRoom.typeRoomId },
+        account: { username: user.username },
+        methodofcreation: "disable",
         motelName,
         area: Number(basicInfo.sampleArea) || 0,
         averagePrice: Number(basicInfo.samplePrice),

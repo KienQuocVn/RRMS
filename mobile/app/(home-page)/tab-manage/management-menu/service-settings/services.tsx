@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -7,52 +7,59 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+} from "react-native";
+import { RefreshableScrollView as ScrollView } from "@/components/ui/refreshable-scroll-view";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
-import { BorderRadius, Colors, FontSizes, FontWeights, Shadows, Spacing } from '@/constants/theme';
-import { useAuth } from '@/hooks/use-auth';
-import { motelManagementService } from '@/services/api/motel-service.service';
-import { motelService } from '@/services/api/motel.service';
-import { roomService } from '@/services/api/room.service';
-import { MotelResponse } from '@/types/motel.types';
-import { RoomResponse2 } from '@/types/room.types';
-import { MotelServiceItem } from '@/types/service-settings.types';
+import {
+  BorderRadius,
+  Colors,
+  FontSizes,
+  FontWeights,
+  Shadows,
+  Spacing,
+} from "@/constants/theme";
+import { useAuth } from "@/hooks/use-auth";
+import { motelManagementService } from "@/services/api/motel-service.service";
+import { motelService } from "@/services/api/motel.service";
+import { roomService } from "@/services/api/room.service";
+import { MotelResponse } from "@/types/motel.types";
+import { RoomResponse2 } from "@/types/room.types";
+import { MotelServiceItem } from "@/types/service-settings.types";
 
 function formatMoney(value: number) {
-  return value.toLocaleString('vi-VN');
+  return value.toLocaleString("vi-VN");
 }
 
 function normalizeChargeType(value?: string | null) {
-  return String(value || '')
+  return String(value || "")
     .trim()
     .toUpperCase();
 }
 
 function getChargeTypeLabel(value?: string | null) {
-  return normalizeChargeType(value) === 'METER' ? 'Theo đồng hồ' : 'Cố định';
+  return normalizeChargeType(value) === "METER" ? "Theo đồng hồ" : "Cố định";
 }
 
 function getDefaultUnit(serviceName: string, chargeType?: string | null) {
-  if (normalizeChargeType(chargeType) !== 'METER') {
-    return 'Tháng';
+  if (normalizeChargeType(chargeType) !== "METER") {
+    return "Tháng";
   }
 
   const normalized = serviceName.toLowerCase();
 
-  if (normalized.includes('điện') || normalized.includes('dien')) {
-    return 'KWh';
+  if (normalized.includes("điện") || normalized.includes("dien")) {
+    return "KWh";
   }
 
-  if (normalized.includes('nước') || normalized.includes('nuoc')) {
-    return 'Khối';
+  if (normalized.includes("nước") || normalized.includes("nuoc")) {
+    return "Khối";
   }
 
-  return 'Số';
+  return "Số";
 }
 
 function getDeleteErrorMessage(error: any) {
@@ -61,52 +68,62 @@ function getDeleteErrorMessage(error: any) {
     error?.response?.data?.error ||
     error?.message;
 
-  if (typeof responseMessage === 'string' && responseMessage.trim()) {
-    if (responseMessage.toLowerCase().includes('uncategorized')) {
-      return 'Backend đang trả lỗi hệ thống khi xóa. Hãy restart server rồi thử lại.';
+  if (typeof responseMessage === "string" && responseMessage.trim()) {
+    if (responseMessage.toLowerCase().includes("uncategorized")) {
+      return "Backend đang trả lỗi hệ thống khi xóa. Hãy restart server rồi thử lại.";
     }
 
     return responseMessage;
   }
 
-  return 'Không thể xóa dịch vụ lúc này.';
+  return "Không thể xóa dịch vụ lúc này.";
 }
 
 function getServiceIcon(serviceName: string): keyof typeof Ionicons.glyphMap {
   const normalized = serviceName.toLowerCase();
 
-  if (normalized.includes('điện') || normalized.includes('dien')) {
-    return 'flash';
+  if (normalized.includes("điện") || normalized.includes("dien")) {
+    return "flash";
   }
 
-  if (normalized.includes('nước') || normalized.includes('nuoc')) {
-    return 'water';
+  if (normalized.includes("nước") || normalized.includes("nuoc")) {
+    return "water";
   }
 
-  if (normalized.includes('wifi') || normalized.includes('internet')) {
-    return 'wifi';
+  if (normalized.includes("wifi") || normalized.includes("internet")) {
+    return "wifi";
   }
 
-  if (normalized.includes('xe') || normalized.includes('giu xe') || normalized.includes('giữ xe')) {
-    return 'car-sport';
+  if (
+    normalized.includes("xe") ||
+    normalized.includes("giu xe") ||
+    normalized.includes("giữ xe")
+  ) {
+    return "car-sport";
   }
 
-  if (normalized.includes('rác') || normalized.includes('rac')) {
-    return 'trash';
+  if (normalized.includes("rác") || normalized.includes("rac")) {
+    return "trash";
   }
 
-  return 'construct';
+  return "construct";
 }
 
 function getAppliedRoomCount(serviceId: string, rooms: RoomResponse2[]) {
-  return rooms.filter((room) =>
-    Array.isArray(room.services) && room.services.some((service) => service.serviceId === serviceId),
+  return rooms.filter(
+    (room) =>
+      Array.isArray(room.services) &&
+      room.services.some((service) => service.serviceId === serviceId),
   ).length;
 }
 
 function resolveCurrentMotel(motels: MotelResponse[], motelIdParam?: string) {
   if (motelIdParam) {
-    return motels.find((motel) => motel.motelId === motelIdParam) ?? motels[0] ?? null;
+    return (
+      motels.find((motel) => motel.motelId === motelIdParam) ??
+      motels[0] ??
+      null
+    );
   }
 
   return motels[0] ?? null;
@@ -129,7 +146,10 @@ export default function ServicesSettingsScreen() {
   const serviceCards = useMemo(
     () =>
       services.map((service) => {
-        const appliedRoomCount = getAppliedRoomCount(service.motelServiceId, rooms);
+        const appliedRoomCount = getAppliedRoomCount(
+          service.motelServiceId,
+          rooms,
+        );
         const isAllRooms = totalRooms > 0 && appliedRoomCount === totalRooms;
 
         return {
@@ -153,8 +173,13 @@ export default function ServicesSettingsScreen() {
     setIsLoading(true);
 
     try {
-      const motelsResponse = await motelService.getMotelsByAccount(user.username);
-      const currentMotel = resolveCurrentMotel(motelsResponse.result || [], params.motelId);
+      const motelsResponse = await motelService.getMotelsByAccount(
+        user.username,
+      );
+      const currentMotel = resolveCurrentMotel(
+        motelsResponse.result || [],
+        params.motelId,
+      );
 
       if (!currentMotel) {
         setActiveMotel(null);
@@ -163,11 +188,14 @@ export default function ServicesSettingsScreen() {
         return;
       }
 
-      const roomsResponse = await roomService.getRoomsByMotel(currentMotel.motelId);
+      const roomsResponse = await roomService.getRoomsByMotel(
+        currentMotel.motelId,
+      );
       let motelServices = currentMotel.motelServices || [];
 
       if (motelServices.length === 0) {
-        const servicesResponse = await motelManagementService.getAllMotelServices();
+        const servicesResponse =
+          await motelManagementService.getAllMotelServices();
         motelServices = (servicesResponse.result || []).filter(
           (service) => service.motelId === currentMotel.motelId,
         );
@@ -178,8 +206,8 @@ export default function ServicesSettingsScreen() {
       setServices(motelServices);
     } catch (error: any) {
       Alert.alert(
-        'Không thể tải dịch vụ',
-        error?.response?.data?.message || 'Vui lòng thử lại sau.',
+        "Không thể tải dịch vụ",
+        error?.response?.data?.message || "Vui lòng thử lại sau.",
       );
     } finally {
       setIsLoading(false);
@@ -194,31 +222,37 @@ export default function ServicesSettingsScreen() {
 
   const handleDelete = useCallback((service: MotelServiceItem) => {
     Alert.alert(
-      'Xóa dịch vụ',
+      "Xóa dịch vụ",
       `Bạn có chắc muốn xóa "${service.nameService}" khỏi nhà trọ này không?`,
       [
-        { text: 'Hủy', style: 'cancel' },
+        { text: "Hủy", style: "cancel" },
         {
-          text: 'Xóa',
-          style: 'destructive',
+          text: "Xóa",
+          style: "destructive",
           onPress: async () => {
             try {
               setIsDeletingId(service.motelServiceId);
-              await motelManagementService.deleteMotelService(service.motelServiceId);
+              await motelManagementService.deleteMotelService(
+                service.motelServiceId,
+              );
 
               setServices((current) =>
-                current.filter((item) => item.motelServiceId !== service.motelServiceId),
+                current.filter(
+                  (item) => item.motelServiceId !== service.motelServiceId,
+                ),
               );
               setRooms((current) =>
                 current.map((room) => ({
                   ...room,
                   services: Array.isArray(room.services)
-                    ? room.services.filter((item) => item.serviceId !== service.motelServiceId)
+                    ? room.services.filter(
+                        (item) => item.serviceId !== service.motelServiceId,
+                      )
                     : [],
                 })),
               );
             } catch (error: any) {
-              Alert.alert('Xóa thất bại', getDeleteErrorMessage(error));
+              Alert.alert("Xóa thất bại", getDeleteErrorMessage(error));
             } finally {
               setIsDeletingId(null);
             }
@@ -230,14 +264,22 @@ export default function ServicesSettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : Spacing.xl }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+      <View
+        style={[
+          styles.header,
+          { paddingTop: Platform.OS === "ios" ? insets.top : Spacing.xl },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
           <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <View style={styles.headerTextWrap}>
           <Text style={styles.headerTitle}>Cài đặt dịch vụ</Text>
           <Text style={styles.headerSubtitle}>
-            {activeMotel?.motelName || 'Quản lý dịch vụ đang áp dụng'}
+            {activeMotel?.motelName || "Quản lý dịch vụ đang áp dụng"}
           </Text>
         </View>
       </View>
@@ -255,15 +297,25 @@ export default function ServicesSettingsScreen() {
         >
           {!activeMotel ? (
             <View style={styles.emptyState}>
-              <Ionicons name="business-outline" size={28} color={Colors.gray500} />
-              <Text style={styles.emptyTitle}>Chưa tìm thấy nhà trọ đang quản lý</Text>
+              <Ionicons
+                name="business-outline"
+                size={28}
+                color={Colors.gray500}
+              />
+              <Text style={styles.emptyTitle}>
+                Chưa tìm thấy nhà trọ đang quản lý
+              </Text>
               <Text style={styles.emptyDescription}>
                 Hãy tạo hoặc chọn nhà trọ trước khi cấu hình dịch vụ.
               </Text>
             </View>
           ) : serviceCards.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="construct-outline" size={28} color={Colors.gray500} />
+              <Ionicons
+                name="construct-outline"
+                size={28}
+                color={Colors.gray500}
+              />
               <Text style={styles.emptyTitle}>Chưa có dịch vụ nào</Text>
               <Text style={styles.emptyDescription}>
                 Nhấn nút cộng để thêm dịch vụ mới cho {activeMotel.motelName}.
@@ -277,7 +329,8 @@ export default function ServicesSettingsScreen() {
                   activeOpacity={0.75}
                   onPress={() =>
                     router.push({
-                      pathname: '/tab-manage/management-menu/service-settings/edit-services',
+                      pathname:
+                        "/tab-manage/management-menu/service-settings/edit-services",
                       params: {
                         motelId: service.motelId,
                         motelServiceId: service.motelServiceId,
@@ -294,19 +347,24 @@ export default function ServicesSettingsScreen() {
                   </View>
 
                   <View style={styles.serviceContent}>
-                    <Text style={styles.serviceName}>{service.nameService}</Text>
-                    <Text style={styles.serviceType}>{getChargeTypeLabel(service.chargetype)}</Text>
+                    <Text style={styles.serviceName}>
+                      {service.nameService}
+                    </Text>
+                    <Text style={styles.serviceType}>
+                      {getChargeTypeLabel(service.chargetype)}
+                    </Text>
                     <Text style={styles.servicePrice}>
-                      {formatMoney(service.price)} Đồng / {getDefaultUnit(service.nameService, service.chargetype)}
+                      {formatMoney(service.price)} Đồng /{" "}
+                      {getDefaultUnit(service.nameService, service.chargetype)}
                     </Text>
 
                     <View style={styles.badge}>
                       <View style={styles.badgeDot} />
                       <Text style={styles.badgeText}>
                         {service.appliedRoomCount === 0
-                          ? 'Chưa áp dụng cho phòng nào'
+                          ? "Chưa áp dụng cho phòng nào"
                           : service.isAllRooms
-                            ? 'Đang áp dụng tất cả phòng'
+                            ? "Đang áp dụng tất cả phòng"
                             : `Đang áp dụng ${service.appliedRoomCount}/${totalRooms} phòng`}
                       </Text>
                     </View>
@@ -335,7 +393,8 @@ export default function ServicesSettingsScreen() {
         disabled={!activeMotel}
         onPress={() =>
           router.push({
-            pathname: '/tab-manage/management-menu/service-settings/add-services',
+            pathname:
+              "/tab-manage/management-menu/service-settings/add-services",
             params: activeMotel ? { motelId: activeMotel.motelId } : undefined,
           } as any)
         }
@@ -349,27 +408,27 @@ export default function ServicesSettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EDF2F3',
+    backgroundColor: "#EDF2F3",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: "#E5E7EB",
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "#D1D5DB",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.sm,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: "#FAFAFA",
   },
   headerTextWrap: {
     flex: 1,
@@ -396,8 +455,8 @@ const styles = StyleSheet.create({
   },
   centerBox: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: Spacing.sm,
   },
   centerText: {
@@ -408,7 +467,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderRadius: BorderRadius.xl,
     padding: Spacing.xl,
-    alignItems: 'center',
+    alignItems: "center",
     ...Shadows.sm,
   },
   emptyTitle: {
@@ -419,14 +478,14 @@ const styles = StyleSheet.create({
   },
   emptyDescription: {
     marginTop: 6,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: FontSizes.sm,
     lineHeight: 20,
     color: Colors.textSecondary,
   },
   serviceCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     borderRadius: 16,
     paddingHorizontal: 16,
@@ -435,16 +494,16 @@ const styles = StyleSheet.create({
   },
   servicePressable: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   serviceIconWrap: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#F0F2F4',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#F0F2F4",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
   },
   serviceContent: {
@@ -461,7 +520,7 @@ const styles = StyleSheet.create({
   serviceType: {
     fontSize: FontSizes.md,
     lineHeight: 20,
-    color: '#707070',
+    color: "#707070",
     marginBottom: 8,
   },
   servicePrice: {
@@ -472,10 +531,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: '#F2F4F5',
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: "#F2F4F5",
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -497,20 +556,20 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#E5E7EB',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#E5E7EB",
+    alignItems: "center",
+    justifyContent: "center",
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     right: 20,
     bottom: 24,
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#12A04A',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#20a9e7",
+    alignItems: "center",
+    justifyContent: "center",
     ...Shadows.lg,
   },
   fabDisabled: {

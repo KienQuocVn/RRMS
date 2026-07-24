@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -9,38 +9,52 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+} from "react-native";
+import { RefreshableScrollView as ScrollView } from "@/components/ui/refreshable-scroll-view";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
-import { BorderRadius, Colors, FontSizes, FontWeights, Spacing } from '@/constants/theme';
-import { useAuth } from '@/hooks/use-auth';
-import { motelManagementService } from '@/services/api/motel-service.service';
-import { motelService } from '@/services/api/motel.service';
-import { roomService } from '@/services/api/room.service';
-import { MotelResponse } from '@/types/motel.types';
-import { RoomResponse2 } from '@/types/room.types';
+import {
+  BorderRadius,
+  Colors,
+  FontSizes,
+  FontWeights,
+  Spacing,
+} from "@/constants/theme";
+import { useAuth } from "@/hooks/use-auth";
+import { motelManagementService } from "@/services/api/motel-service.service";
+import { motelService } from "@/services/api/motel.service";
+import { roomService } from "@/services/api/room.service";
+import { MotelResponse } from "@/types/motel.types";
+import { RoomResponse2 } from "@/types/room.types";
 
-const SUGGESTED_SERVICE_NAMES = ['Tiền giữ xe', 'Tiền wifi', 'Tiền nước (người)'];
+const SUGGESTED_SERVICE_NAMES = [
+  "Tiền giữ xe",
+  "Tiền wifi",
+  "Tiền nước (người)",
+];
 
 function normalizeDigits(value: string) {
-  return value.replace(/[^\d]/g, '');
+  return value.replace(/[^\d]/g, "");
 }
 
 function formatPricePreview(value: string) {
   if (!value) {
-    return '';
+    return "";
   }
 
-  return Number(value).toLocaleString('vi-VN');
+  return Number(value).toLocaleString("vi-VN");
 }
 
 function resolveCurrentMotel(motels: MotelResponse[], motelIdParam?: string) {
   if (motelIdParam) {
-    return motels.find((motel) => motel.motelId === motelIdParam) ?? motels[0] ?? null;
+    return (
+      motels.find((motel) => motel.motelId === motelIdParam) ??
+      motels[0] ??
+      null
+    );
   }
 
   return motels[0] ?? null;
@@ -49,15 +63,15 @@ function resolveCurrentMotel(motels: MotelResponse[], motelIdParam?: string) {
 function deriveDefaultMeterState(serviceName: string) {
   const normalized = serviceName.trim().toLowerCase();
   return (
-    normalized.includes('điện') ||
-    normalized.includes('dien') ||
-    normalized.includes('nước') ||
-    normalized.includes('nuoc')
+    normalized.includes("điện") ||
+    normalized.includes("dien") ||
+    normalized.includes("nước") ||
+    normalized.includes("nuoc")
   );
 }
 
 function buildUnitOptions(isMeterBased: boolean) {
-  return isMeterBased ? ['Số', 'KWh', 'Khối'] : ['Tháng', 'Người', 'Phòng'];
+  return isMeterBased ? ["Số", "KWh", "Khối"] : ["Tháng", "Người", "Phòng"];
 }
 
 export default function AddServicesScreen() {
@@ -70,14 +84,18 @@ export default function AddServicesScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeMotel, setActiveMotel] = useState<MotelResponse | null>(null);
   const [rooms, setRooms] = useState<RoomResponse2[]>([]);
-  const [serviceName, setServiceName] = useState('');
+  const [serviceName, setServiceName] = useState("");
   const [isMeterBased, setIsMeterBased] = useState(false);
-  const [unit, setUnit] = useState('Tháng');
-  const [priceInput, setPriceInput] = useState('');
+  const [unit, setUnit] = useState("Tháng");
+  const [priceInput, setPriceInput] = useState("");
   const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
 
-  const unitOptions = useMemo(() => buildUnitOptions(isMeterBased), [isMeterBased]);
-  const allRoomsSelected = rooms.length > 0 && selectedRoomIds.length === rooms.length;
+  const unitOptions = useMemo(
+    () => buildUnitOptions(isMeterBased),
+    [isMeterBased],
+  );
+  const allRoomsSelected =
+    rooms.length > 0 && selectedRoomIds.length === rooms.length;
   const selectedRoomsCount = selectedRoomIds.length;
   const unitSuffix = `Đồng/${unit}`;
 
@@ -90,8 +108,13 @@ export default function AddServicesScreen() {
     setIsBootstrapping(true);
 
     try {
-      const motelsResponse = await motelService.getMotelsByAccount(user.username);
-      const currentMotel = resolveCurrentMotel(motelsResponse.result || [], params.motelId);
+      const motelsResponse = await motelService.getMotelsByAccount(
+        user.username,
+      );
+      const currentMotel = resolveCurrentMotel(
+        motelsResponse.result || [],
+        params.motelId,
+      );
 
       if (!currentMotel) {
         setActiveMotel(null);
@@ -99,13 +122,15 @@ export default function AddServicesScreen() {
         return;
       }
 
-      const roomsResponse = await roomService.getRoomsByMotel(currentMotel.motelId);
+      const roomsResponse = await roomService.getRoomsByMotel(
+        currentMotel.motelId,
+      );
       setActiveMotel(currentMotel);
       setRooms(roomsResponse.result || []);
     } catch (error: any) {
       Alert.alert(
-        'Không thể tải dữ liệu',
-        error?.response?.data?.message || 'Vui lòng thử lại sau.',
+        "Không thể tải dữ liệu",
+        error?.response?.data?.message || "Vui lòng thử lại sau.",
       );
     } finally {
       setIsBootstrapping(false);
@@ -122,33 +147,29 @@ export default function AddServicesScreen() {
     setServiceName(value);
     const nextMeterState = deriveDefaultMeterState(value);
     setIsMeterBased(nextMeterState);
-    setUnit(nextMeterState ? 'Số' : 'Tháng');
+    setUnit(nextMeterState ? "Số" : "Tháng");
   }, []);
 
   const handleToggleMeterBased = useCallback(() => {
     setIsMeterBased((current) => {
       const nextValue = !current;
-      setUnit(nextValue ? 'Số' : 'Tháng');
+      setUnit(nextValue ? "Số" : "Tháng");
       return nextValue;
     });
   }, []);
 
   const handleSelectUnit = useCallback(() => {
-    Alert.alert(
-      'Chọn đơn vị',
-      'Hãy chọn đơn vị áp dụng cho dịch vụ.',
-      [
-        ...unitOptions.map((option) => ({
-          text: option,
-          onPress: () => setUnit(option),
-        })),
-        { text: 'Hủy', style: 'cancel' as const },
-      ],
-    );
+    Alert.alert("Chọn đơn vị", "Hãy chọn đơn vị áp dụng cho dịch vụ.", [
+      ...unitOptions.map((option) => ({
+        text: option,
+        onPress: () => setUnit(option),
+      })),
+      { text: "Hủy", style: "cancel" as const },
+    ]);
   }, [unitOptions]);
 
   const handleResetUnit = useCallback(() => {
-    setUnit(isMeterBased ? 'Số' : 'Tháng');
+    setUnit(isMeterBased ? "Số" : "Tháng");
   }, [isMeterBased]);
 
   const handleToggleRoom = useCallback((roomId: string) => {
@@ -170,17 +191,17 @@ export default function AddServicesScreen() {
     const normalizedPrice = normalizeDigits(priceInput);
 
     if (!activeMotel) {
-      Alert.alert('Thiếu nhà trọ', 'Không tìm thấy nhà trọ để thêm dịch vụ.');
+      Alert.alert("Thiếu nhà trọ", "Không tìm thấy nhà trọ để thêm dịch vụ.");
       return;
     }
 
     if (!trimmedServiceName) {
-      Alert.alert('Thiếu thông tin', 'Vui lòng nhập tên dịch vụ.');
+      Alert.alert("Thiếu thông tin", "Vui lòng nhập tên dịch vụ.");
       return;
     }
 
     if (!normalizedPrice) {
-      Alert.alert('Thiếu giá dịch vụ', 'Vui lòng nhập giá dịch vụ.');
+      Alert.alert("Thiếu giá dịch vụ", "Vui lòng nhập giá dịch vụ.");
       return;
     }
 
@@ -190,38 +211,51 @@ export default function AddServicesScreen() {
         motelId: activeMotel.motelId,
         nameService: trimmedServiceName,
         price: Number(normalizedPrice),
-        chargetype: isMeterBased ? 'METER' : 'FIXED',
+        chargetype: isMeterBased ? "METER" : "FIXED",
         selectedRooms: selectedRoomIds,
       });
 
-      Alert.alert('Thành công', 'Dịch vụ mới đã được thêm.', [
+      Alert.alert("Thành công", "Dịch vụ mới đã được thêm.", [
         {
-          text: 'OK',
+          text: "OK",
           onPress: () => router.back(),
         },
       ]);
     } catch (error: any) {
       Alert.alert(
-        'Tạo dịch vụ thất bại',
-        error?.response?.data?.message || 'Không thể thêm dịch vụ lúc này.',
+        "Tạo dịch vụ thất bại",
+        error?.response?.data?.message || "Không thể thêm dịch vụ lúc này.",
       );
     } finally {
       setIsSubmitting(false);
     }
-  }, [activeMotel, isMeterBased, priceInput, router, selectedRoomIds, serviceName]);
+  }, [
+    activeMotel,
+    isMeterBased,
+    priceInput,
+    router,
+    selectedRoomIds,
+    serviceName,
+  ]);
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View
         style={[
           styles.header,
-          { paddingTop: Platform.OS === 'ios' ? insets.top : insets.top + Spacing.sm },
+          {
+            paddingTop:
+              Platform.OS === "ios" ? insets.top : insets.top + Spacing.sm,
+          },
         ]}
       >
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
           <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Thêm mới dịch vụ</Text>
@@ -234,7 +268,10 @@ export default function AddServicesScreen() {
         </View>
       ) : (
         <>
-          <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+          >
             <View style={styles.section}>
               <Text style={styles.label}>
                 Tên dịch vụ <Text style={styles.required}>*</Text>
@@ -266,11 +303,17 @@ export default function AddServicesScreen() {
             <View style={styles.section}>
               <View style={styles.meterCard}>
                 <View style={styles.meterIconWrap}>
-                  <Ionicons name="speedometer-outline" size={20} color="#3F3D56" />
+                  <Ionicons
+                    name="speedometer-outline"
+                    size={20}
+                    color="#3F3D56"
+                  />
                 </View>
 
                 <View style={styles.meterContent}>
-                  <Text style={styles.meterTitle}>Tính theo kiểu đồng hồ điện, nước ?</Text>
+                  <Text style={styles.meterTitle}>
+                    Tính theo kiểu đồng hồ điện, nước ?
+                  </Text>
                   <Text style={styles.meterDescription}>
                     Mức sử dụng của khách thuê có sự chênh lệch trước & sau
                   </Text>
@@ -284,7 +327,12 @@ export default function AddServicesScreen() {
                   onPress={handleToggleMeterBased}
                   style={[styles.toggle, isMeterBased && styles.toggleActive]}
                 >
-                  <View style={[styles.toggleThumb, isMeterBased && styles.toggleThumbActive]} />
+                  <View
+                    style={[
+                      styles.toggleThumb,
+                      isMeterBased && styles.toggleThumbActive,
+                    ]}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -293,9 +341,14 @@ export default function AddServicesScreen() {
 
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Đơn vị và giá</Text>
-              <Text style={styles.sectionSubtitle}>Nhập thông tin đơn vị tính và giá dịch vụ</Text>
+              <Text style={styles.sectionSubtitle}>
+                Nhập thông tin đơn vị tính và giá dịch vụ
+              </Text>
 
-              <TouchableOpacity style={styles.unitBox} onPress={handleSelectUnit}>
+              <TouchableOpacity
+                style={styles.unitBox}
+                onPress={handleSelectUnit}
+              >
                 <View>
                   <Text style={styles.unitLabel}>
                     Đơn vị <Text style={styles.required}>*</Text>
@@ -303,7 +356,10 @@ export default function AddServicesScreen() {
                   <Text style={styles.unitValue}>{unit}</Text>
                 </View>
 
-                <TouchableOpacity style={styles.unitResetButton} onPress={handleResetUnit}>
+                <TouchableOpacity
+                  style={styles.unitResetButton}
+                  onPress={handleResetUnit}
+                >
                   <Ionicons name="close" size={16} color={Colors.textPrimary} />
                 </TouchableOpacity>
               </TouchableOpacity>
@@ -322,7 +378,9 @@ export default function AddServicesScreen() {
                   placeholderTextColor={Colors.gray400}
                   keyboardType="numeric"
                   value={formatPricePreview(priceInput)}
-                  onChangeText={(value) => setPriceInput(normalizeDigits(value))}
+                  onChangeText={(value) =>
+                    setPriceInput(normalizeDigits(value))
+                  }
                 />
                 <View style={styles.priceSuffixChip}>
                   <Text style={styles.priceSuffixText}>{unitSuffix}</Text>
@@ -335,16 +393,30 @@ export default function AddServicesScreen() {
             <View style={styles.section}>
               <View style={styles.roomsHeader}>
                 <View style={styles.roomsHeaderText}>
-                  <Text style={styles.sectionTitle}>Chọn phòng sử dụng ({selectedRoomsCount} đã chọn)</Text>
+                  <Text style={styles.sectionTitle}>
+                    Chọn phòng sử dụng ({selectedRoomsCount} đã chọn)
+                  </Text>
                   <Text style={styles.sectionSubtitle}>
                     Nhấp chọn các phòng muốn áp dụng dịch vụ này
                   </Text>
                 </View>
 
-                <TouchableOpacity style={styles.selectAllBox} onPress={handleToggleSelectAll}>
-                  <View style={[styles.checkboxCircle, allRoomsSelected && styles.checkboxCircleActive]}>
+                <TouchableOpacity
+                  style={styles.selectAllBox}
+                  onPress={handleToggleSelectAll}
+                >
+                  <View
+                    style={[
+                      styles.checkboxCircle,
+                      allRoomsSelected && styles.checkboxCircleActive,
+                    ]}
+                  >
                     {allRoomsSelected ? (
-                      <Ionicons name="checkmark" size={14} color={Colors.white} />
+                      <Ionicons
+                        name="checkmark"
+                        size={14}
+                        color={Colors.white}
+                      />
                     ) : null}
                   </View>
                   <Text style={styles.selectAllText}>Chọn tất cả</Text>
@@ -358,18 +430,35 @@ export default function AddServicesScreen() {
                   return (
                     <TouchableOpacity
                       key={room.roomId}
-                      style={[styles.roomCard, isSelected && styles.roomCardSelected]}
+                      style={[
+                        styles.roomCard,
+                        isSelected && styles.roomCardSelected,
+                      ]}
                       onPress={() => handleToggleRoom(room.roomId)}
                     >
-                      <View style={[styles.checkboxCircle, isSelected && styles.checkboxCircleActive]}>
+                      <View
+                        style={[
+                          styles.checkboxCircle,
+                          isSelected && styles.checkboxCircleActive,
+                        ]}
+                      >
                         {isSelected ? (
-                          <Ionicons name="checkmark" size={14} color={Colors.white} />
+                          <Ionicons
+                            name="checkmark"
+                            size={14}
+                            color={Colors.white}
+                          />
                         ) : null}
                       </View>
                       <View style={styles.roomTextWrap}>
                         <Text style={styles.roomName}>{room.name}</Text>
-                        <Text style={[styles.roomStatus, isSelected && styles.roomStatusSelected]}>
-                          {isSelected ? 'Đang áp dụng' : 'Không áp dụng'}
+                        <Text
+                          style={[
+                            styles.roomStatus,
+                            isSelected && styles.roomStatusSelected,
+                          ]}
+                        >
+                          {isSelected ? "Đang áp dụng" : "Không áp dụng"}
                         </Text>
                       </View>
                     </TouchableOpacity>
@@ -379,15 +468,25 @@ export default function AddServicesScreen() {
 
               {rooms.length === 0 ? (
                 <View style={styles.roomsEmpty}>
-                  <Text style={styles.roomsEmptyText}>Nhà trọ này chưa có phòng để áp dụng dịch vụ.</Text>
+                  <Text style={styles.roomsEmptyText}>
+                    Nhà trọ này chưa có phòng để áp dụng dịch vụ.
+                  </Text>
                 </View>
               ) : null}
             </View>
           </ScrollView>
 
-          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, Spacing.base) }]}>
+          <View
+            style={[
+              styles.footer,
+              { paddingBottom: Math.max(insets.bottom, Spacing.base) },
+            ]}
+          >
             <TouchableOpacity
-              style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+              style={[
+                styles.submitButton,
+                isSubmitting && styles.submitButtonDisabled,
+              ]}
               onPress={handleSubmit}
               disabled={isSubmitting || !activeMotel}
             >
@@ -410,8 +509,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
@@ -424,8 +523,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: Colors.gray300,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: Spacing.sm,
     backgroundColor: Colors.gray50,
   },
@@ -436,8 +535,8 @@ const styles = StyleSheet.create({
   },
   centerBox: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: Spacing.sm,
   },
   centerText: {
@@ -457,7 +556,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 14,
-    backgroundColor: '#EEF2F4',
+    backgroundColor: "#EEF2F4",
   },
   label: {
     marginBottom: 8,
@@ -466,7 +565,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   required: {
-    color: '#E53935',
+    color: "#E53935",
   },
   input: {
     borderWidth: 1,
@@ -485,32 +584,32 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   suggestionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: Spacing.sm,
   },
   suggestionChip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: BorderRadius.full,
-    backgroundColor: '#F2FAED',
+    backgroundColor: "#F2FAED",
   },
   suggestionChipText: {
     fontSize: FontSizes.sm,
-    color: '#30B45C',
+    color: "#30B45C",
     fontWeight: FontWeights.medium,
   },
   meterCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   meterIconWrap: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#E7FAF0',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#E7FAF0",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: Spacing.base,
   },
   meterContent: {
@@ -532,27 +631,27 @@ const styles = StyleSheet.create({
   meterExample: {
     fontSize: FontSizes.xs,
     lineHeight: 16,
-    color: '#F97316',
+    color: "#F97316",
   },
   toggle: {
     width: 52,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#505050',
-    justifyContent: 'center',
+    backgroundColor: "#505050",
+    justifyContent: "center",
     paddingHorizontal: 2,
   },
   toggleActive: {
-    backgroundColor: '#1DB954',
+    backgroundColor: "#1DB954",
   },
   toggleThumb: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#C4C4C4',
+    backgroundColor: "#C4C4C4",
   },
   toggleThumbActive: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     backgroundColor: Colors.white,
   },
   sectionTitle: {
@@ -573,9 +672,9 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.sm,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   unitLabel: {
     fontSize: FontSizes.sm,
@@ -591,9 +690,9 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#ECECEC',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#ECECEC",
+    alignItems: "center",
+    justifyContent: "center",
   },
   priceLabel: {
     marginTop: Spacing.lg,
@@ -609,8 +708,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.gray300,
     borderRadius: BorderRadius.lg,
     paddingRight: Spacing.base,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   priceInput: {
     flex: 1,
@@ -623,7 +722,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
-    backgroundColor: '#F2FAED',
+    backgroundColor: "#F2FAED",
   },
   priceSuffixText: {
     fontSize: FontSizes.base,
@@ -631,9 +730,9 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   roomsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: Spacing.base,
   },
   roomsHeaderText: {
@@ -641,47 +740,47 @@ const styles = StyleSheet.create({
     paddingRight: Spacing.md,
   },
   selectAllBox: {
-    alignItems: 'center',
+    alignItems: "center",
     width: 100,
   },
   selectAllText: {
     marginTop: 4,
     fontSize: FontSizes.sm,
     color: Colors.textPrimary,
-    textAlign: 'center',
+    textAlign: "center",
   },
   checkboxCircle: {
     width: 22,
     height: 22,
     borderRadius: 11,
     borderWidth: 1.5,
-    borderColor: '#2E2E46',
-    backgroundColor: '#F3F5F7',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "#2E2E46",
+    backgroundColor: "#F3F5F7",
+    alignItems: "center",
+    justifyContent: "center",
   },
   checkboxCircleActive: {
-    backgroundColor: '#12A04A',
-    borderColor: '#12A04A',
+    backgroundColor: "#20a9e7",
+    borderColor: "#20a9e7",
   },
   roomsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: Spacing.base,
   },
   roomCard: {
-    width: '47.5%',
+    width: "47.5%",
     borderWidth: 1,
     borderColor: Colors.gray300,
     borderRadius: BorderRadius.lg,
     padding: Spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
   },
   roomCardSelected: {
-    borderColor: '#12A04A',
-    backgroundColor: '#F6FFF8',
+    borderColor: "#20a9e7",
+    backgroundColor: "#F6FFF8",
   },
   roomTextWrap: {
     flex: 1,
@@ -695,24 +794,24 @@ const styles = StyleSheet.create({
   },
   roomStatus: {
     fontSize: FontSizes.sm,
-    color: '#F97316',
+    color: "#F97316",
   },
   roomStatusSelected: {
-    color: '#12A04A',
+    color: "#20a9e7",
   },
   roomsEmpty: {
     marginTop: Spacing.base,
     borderRadius: BorderRadius.md,
-    backgroundColor: '#F8FAFB',
+    backgroundColor: "#F8FAFB",
     padding: Spacing.base,
   },
   roomsEmptyText: {
     fontSize: FontSizes.base,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
   },
   footer: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
@@ -723,10 +822,10 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.gray100,
   },
   submitButton: {
-    backgroundColor: '#12A04A',
+    backgroundColor: "#20a9e7",
     borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 14,
   },
   submitButtonDisabled: {

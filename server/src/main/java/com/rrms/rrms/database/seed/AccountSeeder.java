@@ -106,6 +106,10 @@ public class AccountSeeder {
         return createAccount("host", "Kiều Kiến Quốc", "host@rrms.vn", "0911000002", "001001001002", Gender.FEMALE);
     }
 
+    public Account seedHost2() {
+        return createAccount("host2", "Chủ Trọ 2", "host2@rrms.vn", "0911000005", "001001001005", Gender.FEMALE);
+    }
+
     public Account seedEmployee() {
         return createAccount(
                 "employee", "Kiều Kiến Quốc", "employee@rrms.vn", "0911000003", "001001001003", Gender.MALE);
@@ -136,7 +140,7 @@ public class AccountSeeder {
         Roles rName =
                 switch (user) {
                     case "admin" -> Roles.ADMIN;
-                    case "host" -> Roles.HOST;
+                    case "host", "host2" -> Roles.HOST;
                     case "employee" -> Roles.EMPLOYEE;
                     case "broker" -> Roles.BROKER;
                     default -> Roles.CUSTOMER;

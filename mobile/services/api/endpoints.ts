@@ -81,6 +81,7 @@ export const API_ENDPOINTS = {
 
   // 💰 Invoices & Payments
   INVOICES: {
+    BASE: '/invoices',
     CREATE: '/invoices/create',
     COLLECT: (invoiceId: string) => `/invoices/${invoiceId}/collect-payment`,
   },

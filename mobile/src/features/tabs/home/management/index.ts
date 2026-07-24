@@ -1,11 +1,11 @@
 import type { TabOwnedScreen } from "../../types";
 
 export { default as RoomsListScreen } from "@/app/(home-page)/tab-manage/management-menu/rooms-list";
-export { default as ContractsListScreen } from "@/app/(home-page)/tab-manage/management-menu/contracts-list";
-export { default as InvoicesListScreen } from "@/app/(home-page)/tab-manage/management-menu/invoices-list";
-export { default as TenantsListScreen } from "@/app/(home-page)/tab-manage/management-menu/tenants-list";
+export { default as ContractsListScreen } from "@/app/(home-page)/tab-manage/management-menu/contracts";
+export { default as InvoicesListScreen } from "@/app/(home-page)/tab-manage/management-menu/invoices";
+export { default as TenantsListScreen } from "@/app/(home-page)/tab-manage/management-menu/tenants";
 export { default as AssetsListScreen } from "@/app/(home-page)/tab-manage/management-menu/assets-list/assets";
-export { default as VehiclesListScreen } from "@/app/(home-page)/tab-manage/management-menu/vehicles-list";
+export { default as VehiclesListScreen } from "@/app/(home-page)/tab-manage/management-menu/vehicles";
 
 export const homeManagementScreens: TabOwnedScreen[] = [
   {
@@ -34,28 +34,28 @@ export const homeManagementScreens: TabOwnedScreen[] = [
     source: "app/(home-page)/tab-manage/management-menu/rooms-list.tsx",
   },
   {
-    id: "contracts-list",
+    id: "contracts",
     tab: "home",
     section: "management",
     label: "Quan ly hop dong",
-    route: "/tab-manage/management-menu/contracts-list",
-    source: "app/(home-page)/tab-manage/management-menu/contracts-list.tsx",
+    route: "/tab-manage/management-menu/contracts",
+    source: "app/(home-page)/tab-manage/management-menu/contracts/index.tsx",
   },
   {
-    id: "invoices-list",
+    id: "invoices",
     tab: "home",
     section: "management",
     label: "Quan ly hoa don",
-    route: "/tab-manage/management-menu/invoices-list",
-    source: "app/(home-page)/tab-manage/management-menu/invoices-list.tsx",
+    route: "/tab-manage/management-menu/invoices",
+    source: "app/(home-page)/tab-manage/management-menu/invoices/index.tsx",
   },
   {
-    id: "tenants-list",
+    id: "tenants",
     tab: "home",
     section: "management",
     label: "Quan ly khach thue",
-    route: "/tab-manage/management-menu/tenants-list",
-    source: "app/(home-page)/tab-manage/management-menu/tenants-list.tsx",
+    route: "/tab-manage/management-menu/tenants",
+    source: "app/(home-page)/tab-manage/management-menu/tenants/index.tsx",
   },
   {
     id: "assets-list",
@@ -66,12 +66,12 @@ export const homeManagementScreens: TabOwnedScreen[] = [
     source: "app/(home-page)/tab-manage/management-menu/assets-list/assets.tsx",
   },
   {
-    id: "vehicles-list",
+    id: "vehicles",
     tab: "home",
     section: "management",
     label: "Danh sach xe",
-    route: "/tab-manage/management-menu/vehicles-list",
-    source: "app/(home-page)/tab-manage/management-menu/vehicles-list.tsx",
+    route: "/tab-manage/management-menu/vehicles",
+    source: "app/(home-page)/tab-manage/management-menu/vehicles/index.tsx",
   },
   {
     id: "services",

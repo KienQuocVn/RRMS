@@ -85,6 +85,7 @@ public class DB {
             // ── 2. Accounts ────────────────────────────────────────────────────
             Account admin = accountSeeder.seedAdmin();
             Account host = accountSeeder.seedHost();
+            Account host2 = accountSeeder.seedHost2();
             Account employee = accountSeeder.seedEmployee();
             Account customer = accountSeeder.seedCustomer();
 

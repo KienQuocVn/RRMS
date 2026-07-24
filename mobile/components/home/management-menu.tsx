@@ -19,12 +19,12 @@ import {
 /** Map menu id → route path */
 const MENU_ROUTES: Record<string, string> = {
   rooms: "/tab-manage/management-menu/rooms-list",
-  invoices: "/tab-manage/management-menu/invoices-list",
+  invoices: "/tab-manage/management-menu/invoices",
   services: "/tab-manage/management-menu/service-settings/services",
-  contracts: "/tab-manage/management-menu/contracts-list",
-  tenants: "/tab-manage/management-menu/tenants-list",
+  contracts: "/tab-manage/management-menu/contracts",
+  tenants: "/tab-manage/management-menu/tenants",
   assets: "/tab-manage/management-menu/assets-list/assets",
-  vehicles: "/tab-manage/management-menu/vehicles-list",
+  vehicles: "/tab-manage/management-menu/vehicles",
   "tenant-app": "/tab-manage/management-menu/tenant-app-settings",
   "invoice-settings": "/tab-manage/management-menu/invoice-settings",
   "motel-settings": "/tab-manage/management-menu/motel-settings",

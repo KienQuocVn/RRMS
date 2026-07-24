@@ -14,7 +14,7 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
+import { RefreshableScrollView as ScrollView } from "@/components/ui/refreshable-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -29,34 +29,46 @@ import { motelDeviceService } from "@/services/api/motel-device.service";
 
 // Danh sách các biểu tượng tài sản có trong hình mẫu
 const ASSET_ICONS = [
-  { id: 'refrigerator', iconName: 'cube-outline' as const, label: 'Tủ lạnh' },
-  { id: 'washing_machine', iconName: 'sync-outline' as const, label: 'Máy giặt' },
-  { id: 'air_conditioner', iconName: 'thermometer-outline' as const, label: 'Điều hòa' },
-  { id: 'bulb', iconName: 'bulb-outline' as const, label: 'Bóng đèn' },
-  { id: 'table', iconName: 'grid-outline' as const, label: 'Bàn' },
-  { id: 'sofa', iconName: 'tv-outline' as const, label: 'Ghế sofa' },
-  { id: 'wardrobe', iconName: 'file-tray-stacked-outline' as const, label: 'Tủ quần áo' },
-  { id: 'bookshelf', iconName: 'book-outline' as const, label: 'Giá sách' },
-  { id: 'key', iconName: 'key-outline' as const, label: 'Chìa khóa' },
-  { id: 'key_hanger', iconName: 'keypad-outline' as const, label: 'Móc treo' },
-  { id: 'bed', iconName: 'bed-outline' as const, label: 'Giường' },
-  { id: 'desk', iconName: 'desktop-outline' as const, label: 'Bàn học' },
+  { id: "refrigerator", iconName: "cube-outline" as const, label: "Tủ lạnh" },
+  {
+    id: "washing_machine",
+    iconName: "sync-outline" as const,
+    label: "Máy giặt",
+  },
+  {
+    id: "air_conditioner",
+    iconName: "thermometer-outline" as const,
+    label: "Điều hòa",
+  },
+  { id: "bulb", iconName: "bulb-outline" as const, label: "Bóng đèn" },
+  { id: "table", iconName: "grid-outline" as const, label: "Bàn" },
+  { id: "sofa", iconName: "tv-outline" as const, label: "Ghế sofa" },
+  {
+    id: "wardrobe",
+    iconName: "file-tray-stacked-outline" as const,
+    label: "Tủ quần áo",
+  },
+  { id: "bookshelf", iconName: "book-outline" as const, label: "Giá sách" },
+  { id: "key", iconName: "key-outline" as const, label: "Chìa khóa" },
+  { id: "key_hanger", iconName: "keypad-outline" as const, label: "Móc treo" },
+  { id: "bed", iconName: "bed-outline" as const, label: "Giường" },
+  { id: "desk", iconName: "desktop-outline" as const, label: "Bàn học" },
 ];
 
 const UNIT_OPTIONS = [
-  { label: 'Cái', value: 'cai' },
-  { label: 'Chiếc', value: 'chiec' },
-  { label: 'Bộ', value: 'bo' },
-  { label: 'Cặp', value: 'cap' },
+  { label: "Cái", value: "cai" },
+  { label: "Chiếc", value: "chiec" },
+  { label: "Bộ", value: "bo" },
+  { label: "Cặp", value: "cap" },
 ];
 
 function normalizeDigits(value: string) {
-  return value.replace(/[^\d]/g, '');
+  return value.replace(/[^\d]/g, "");
 }
 
 function formatNumber(value: string) {
-  if (!value) return '';
-  return Number(value).toLocaleString('vi-VN');
+  if (!value) return "";
+  return Number(value).toLocaleString("vi-VN");
 }
 
 export default function AddAssetsScreen() {
@@ -65,7 +77,7 @@ export default function AddAssetsScreen() {
   const params = useLocalSearchParams<{ motelId: string }>();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Các field form
   const [deviceName, setDeviceName] = useState("");
   const [selectedIcon, setSelectedIcon] = useState("refrigerator");
@@ -76,22 +88,18 @@ export default function AddAssetsScreen() {
   const [selectedUnit, setSelectedUnit] = useState("cai"); // mặc định là 'cai' (Cái)
 
   const handleSelectUnit = useCallback(() => {
-    Alert.alert(
-      'Chọn đơn vị tính',
-      'Vui lòng chọn đơn vị tính mẫu:',
-      [
-        ...UNIT_OPTIONS.map((opt) => ({
-          text: opt.label,
-          onPress: () => setSelectedUnit(opt.value),
-        })),
-        { text: 'Hủy', style: 'cancel' as const },
-      ]
-    );
+    Alert.alert("Chọn đơn vị tính", "Vui lòng chọn đơn vị tính mẫu:", [
+      ...UNIT_OPTIONS.map((opt) => ({
+        text: opt.label,
+        onPress: () => setSelectedUnit(opt.value),
+      })),
+      { text: "Hủy", style: "cancel" as const },
+    ]);
   }, []);
 
   const getUnitDisplay = (val: string) => {
-    const found = UNIT_OPTIONS.find(o => o.value === val);
-    return found ? found.label : 'Cái';
+    const found = UNIT_OPTIONS.find((o) => o.value === val);
+    return found ? found.label : "Cái";
   };
 
   const handleSubmit = useCallback(async () => {
@@ -101,27 +109,27 @@ export default function AddAssetsScreen() {
     const cleanQty = normalizeDigits(totalQuantity);
 
     if (!params.motelId) {
-      Alert.alert('Lỗi', 'Không tìm thấy thông tin nhà trọ.');
+      Alert.alert("Lỗi", "Không tìm thấy thông tin nhà trọ.");
       return;
     }
 
     if (!trimmedName) {
-      Alert.alert('Thiếu thông tin', 'Vui lòng nhập tên tài sản.');
+      Alert.alert("Thiếu thông tin", "Vui lòng nhập tên tài sản.");
       return;
     }
 
     if (!cleanValue) {
-      Alert.alert('Thiếu thông tin', 'Vui lòng nhập giá trị tài sản.');
+      Alert.alert("Thiếu thông tin", "Vui lòng nhập giá trị tài sản.");
       return;
     }
 
     if (!cleanValueInput) {
-      Alert.alert('Thiếu thông tin', 'Vui lòng nhập giá nhập vào.');
+      Alert.alert("Thiếu thông tin", "Vui lòng nhập giá nhập vào.");
       return;
     }
 
     if (!cleanQty || Number(cleanQty) <= 0) {
-      Alert.alert('Thiếu thông tin', 'Số lượng tài sản phải lớn hơn 0.');
+      Alert.alert("Thiếu thông tin", "Số lượng tài sản phải lớn hơn 0.");
       return;
     }
 
@@ -144,30 +152,44 @@ export default function AddAssetsScreen() {
 
       const response = await motelDeviceService.insertDevice(payload);
       if (response.code === 201 || response.result) {
-        Alert.alert('Thành công', 'Đã thêm tài sản mới.', [
-          { text: 'OK', onPress: () => router.back() }
+        Alert.alert("Thành công", "Đã thêm tài sản mới.", [
+          { text: "OK", onPress: () => router.back() },
         ]);
       } else {
-        Alert.alert('Thất bại', response.message || 'Không thể thêm tài sản.');
+        Alert.alert("Thất bại", response.message || "Không thể thêm tài sản.");
       }
     } catch (error: any) {
-      const errMsg = error?.response?.data?.message || error?.message || 'Lỗi hệ thống';
-      Alert.alert('Lỗi', errMsg);
+      const errMsg =
+        error?.response?.data?.message || error?.message || "Lỗi hệ thống";
+      Alert.alert("Lỗi", errMsg);
     } finally {
       setIsSubmitting(false);
     }
-  }, [deviceName, selectedIcon, value, valueInput, totalQuantity, supplier, selectedUnit, params.motelId, router]);
+  }, [
+    deviceName,
+    selectedIcon,
+    value,
+    valueInput,
+    totalQuantity,
+    supplier,
+    selectedUnit,
+    params.motelId,
+    router,
+  ]);
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       {/* ── Header ── */}
       <View
         style={[
           styles.header,
-          { paddingTop: Platform.OS === "ios" ? insets.top : insets.top + Spacing.sm },
+          {
+            paddingTop:
+              Platform.OS === "ios" ? insets.top : insets.top + Spacing.sm,
+          },
         ]}
       >
         <TouchableOpacity
@@ -180,8 +202,8 @@ export default function AddAssetsScreen() {
         <Text style={styles.headerTitle}>Thêm tài sản</Text>
       </View>
 
-      <ScrollView 
-        style={styles.scrollView} 
+      <ScrollView
+        style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -208,16 +230,13 @@ export default function AddAssetsScreen() {
               return (
                 <TouchableOpacity
                   key={item.id}
-                  style={[
-                    styles.iconBox,
-                    isSelected && styles.iconBoxSelected
-                  ]}
+                  style={[styles.iconBox, isSelected && styles.iconBoxSelected]}
                   onPress={() => setSelectedIcon(item.id)}
                 >
-                  <Ionicons 
-                    name={item.iconName} 
-                    size={26} 
-                    color={isSelected ? '#12A04A' : Colors.textSecondary} 
+                  <Ionicons
+                    name={item.iconName}
+                    size={26}
+                    color={isSelected ? "#20a9e7" : Colors.textSecondary}
                   />
                 </TouchableOpacity>
               );
@@ -295,16 +314,23 @@ export default function AddAssetsScreen() {
           <Text style={styles.label}>Đơn vị tính</Text>
           <View style={styles.unitContainer}>
             <TextInput
-              style={[styles.input, { flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }]}
+              style={[
+                styles.input,
+                {
+                  flex: 1,
+                  borderTopRightRadius: 0,
+                  borderBottomRightRadius: 0,
+                },
+              ]}
               value={getUnitDisplay(selectedUnit)}
               editable={false}
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.selectModelButton}
               onPress={handleSelectUnit}
               activeOpacity={0.7}
             >
-              <Ionicons name="grid-outline" size={16} color="#12A04A" />
+              <Ionicons name="grid-outline" size={16} color="#20a9e7" />
               <Text style={styles.selectModelText}>Chọn mẫu</Text>
             </TouchableOpacity>
           </View>
@@ -322,7 +348,12 @@ export default function AddAssetsScreen() {
       </ScrollView>
 
       {/* Footer Buttons */}
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, Spacing.base) }]}>
+      <View
+        style={[
+          styles.footer,
+          { paddingBottom: Math.max(insets.bottom, Spacing.base) },
+        ]}
+      >
         <TouchableOpacity
           style={styles.closeButton}
           onPress={() => router.back()}
@@ -332,7 +363,10 @@ export default function AddAssetsScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+          style={[
+            styles.submitButton,
+            isSubmitting && styles.submitButtonDisabled,
+          ]}
           onPress={handleSubmit}
           disabled={isSubmitting}
         >
@@ -340,7 +374,12 @@ export default function AddAssetsScreen() {
             <ActivityIndicator size="small" color={Colors.white} />
           ) : (
             <>
-              <Ionicons name="add" size={20} color={Colors.white} style={{ marginRight: 4 }} />
+              <Ionicons
+                name="add"
+                size={20}
+                color={Colors.white}
+                style={{ marginRight: 4 }}
+              />
               <Text style={styles.submitButtonText}>Thêm tài sản</Text>
             </>
           )}
@@ -356,8 +395,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
@@ -370,10 +409,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: Colors.gray300,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: Spacing.sm,
-    backgroundColor: Colors.gray500 || '#FAFAFA',
+    backgroundColor: Colors.gray500 || "#FAFAFA",
   },
   headerTitle: {
     fontSize: FontSizes.lg,
@@ -392,7 +431,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   rowFields: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.md,
   },
   label: {
@@ -402,7 +441,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   required: {
-    color: '#E53935',
+    color: "#E53935",
   },
   input: {
     borderWidth: 1,
@@ -415,8 +454,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   currencyInputWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: Colors.gray300,
     borderRadius: BorderRadius.lg,
@@ -436,50 +475,50 @@ const styles = StyleSheet.create({
     fontWeight: FontWeights.bold,
   },
   iconsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
     marginTop: 4,
   },
   iconBox: {
-    width: '14.5%', // 6 icons per row approx
+    width: "14.5%", // 6 icons per row approx
     aspectRatio: 1,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: "#E5E7EB",
     borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FAFAFA',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FAFAFA",
   },
   iconBoxSelected: {
-    borderColor: '#12A04A',
-    backgroundColor: '#E7FAF0',
+    borderColor: "#20a9e7",
+    backgroundColor: "#E7FAF0",
   },
   unitContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   selectModelButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#12A04A',
+    borderColor: "#20a9e7",
     borderLeftWidth: 0,
     borderTopRightRadius: BorderRadius.lg,
     borderBottomRightRadius: BorderRadius.lg,
-    backgroundColor: '#E7FAF0',
+    backgroundColor: "#E7FAF0",
     paddingHorizontal: Spacing.md,
-    height: '100%',
+    height: "100%",
     paddingVertical: 14,
   },
   selectModelText: {
-    color: '#12A04A',
+    color: "#20a9e7",
     fontWeight: FontWeights.bold,
     fontSize: FontSizes.md,
     marginLeft: 4,
   },
   statusBox: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: "#EAEAEA",
     borderRadius: BorderRadius.lg,
     paddingHorizontal: Spacing.base,
     paddingVertical: 16,
@@ -490,7 +529,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   footer: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
@@ -499,30 +538,30 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.base,
     borderTopWidth: 1,
     borderTopColor: Colors.gray100,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.md,
   },
   closeButton: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
     borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 14,
   },
   closeButtonText: {
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: '#1F2937',
+    color: "#1F2937",
   },
   submitButton: {
     flex: 2,
-    backgroundColor: '#12A04A',
+    backgroundColor: "#20a9e7",
     borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 14,
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   submitButtonDisabled: {
     opacity: 0.7,

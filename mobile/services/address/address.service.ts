@@ -8,29 +8,20 @@ export interface AddressOption {
   longitude?: number;
 }
 
-interface AddressKitProvince {
-  code: string;
-  name: string;
-  englishName?: string;
-  administrativeLevel?: string;
+interface EsgooResponse {
+  error: number;
+  error_text: string;
+  data: EsgooItem[];
 }
 
-interface AddressKitCommune {
-  code: string;
-  name: string;
-  englishName?: string;
-  administrativeLevel?: string;
-  provinceCode?: string;
-  provinceID?: string;
-  province_id?: string;
-}
-
-interface AddressKitProvinceResponse {
-  provinces?: AddressKitProvince[];
-}
-
-interface AddressKitCommuneResponse {
-  communes?: AddressKitCommune[];
+interface EsgooItem {
+  id: string;
+  name?: string;
+  name_en?: string;
+  full_name: string;
+  full_name_en?: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 interface CachedPayload<T> {
@@ -38,8 +29,7 @@ interface CachedPayload<T> {
   data: T;
 }
 
-const ADDRESSKIT_BASE_URL = 'https://production.cas.so/address-kit';
-const ADDRESSKIT_EFFECTIVE_DATE = 'latest';
+const ESGOO_API_BASE = 'https://esgoo.net/api-tinhthanh-new';
 const ADDRESS_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const STORAGE_PREFIX = 'rrms.address-cache';
 
@@ -70,25 +60,24 @@ function sortOptions(options: AddressOption[]) {
   );
 }
 
-function mapProvinceToOption(province: AddressKitProvince): AddressOption {
+function mapEsgooProvinceToOption(item: EsgooItem): AddressOption {
   return {
-    code: province.code,
-    name: province.name,
-    ...PROVINCE_CENTER_MAP[province.code],
+    code: item.id,
+    name: item.full_name,
+    ...PROVINCE_CENTER_MAP[item.id],
   };
 }
 
-function mapCommuneToOption(commune: AddressKitCommune, provinceCode: string): AddressOption {
+function mapEsgooCommuneToOption(item: EsgooItem, provinceCode: string): AddressOption {
   return {
-    code: commune.code,
-    name: commune.name,
-    parentCode:
-      commune.provinceCode ?? commune.provinceID ?? commune.province_id ?? provinceCode,
+    code: item.id,
+    name: item.full_name,
+    parentCode: provinceCode,
   };
 }
 
-async function fetchJson<T>(path: string): Promise<T> {
-  const response = await fetch(`${ADDRESSKIT_BASE_URL}/${ADDRESSKIT_EFFECTIVE_DATE}${path}`, {
+async function fetchEsgoo<T>(path: string): Promise<T> {
+  const response = await fetch(`${ESGOO_API_BASE}${path}`, {
     headers: {
       Accept: 'application/json',
     },
@@ -178,9 +167,11 @@ async function loadCachedResource<T>(key: string, loader: () => Promise<T>): Pro
 
 export async function getProvinces() {
   return loadCachedResource('provinces', async () => {
-    const response = await fetchJson<AddressKitProvinceResponse>('/provinces');
+    const response = await fetchEsgoo<EsgooResponse>('/1/0.htm');
+    
+    if (response.error !== 0) return [];
 
-    return sortOptions((response.provinces ?? []).map(mapProvinceToOption));
+    return sortOptions((response.data ?? []).map(mapEsgooProvinceToOption));
   });
 }
 
@@ -194,12 +185,12 @@ export async function getCommunes(provinceCode: string) {
   }
 
   return loadCachedResource(`communes.${provinceCode}`, async () => {
-    const response = await fetchJson<AddressKitCommuneResponse>(
-      `/provinces/${provinceCode}/communes`,
-    );
+    const response = await fetchEsgoo<EsgooResponse>(`/2/${provinceCode}.htm`);
+    
+    if (response.error !== 0) return [];
 
     return sortOptions(
-      (response.communes ?? []).map((commune) => mapCommuneToOption(commune, provinceCode)),
+      (response.data ?? []).map((item) => mapEsgooCommuneToOption(item, provinceCode)),
     );
   });
 }

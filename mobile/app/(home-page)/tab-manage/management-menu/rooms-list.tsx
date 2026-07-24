@@ -4,7 +4,7 @@
  * Điều hướng từ: ManagementMenu > "Quản lý phòng"
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -12,11 +12,19 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { RefreshableScrollView } from "@/components/ui/refreshable-scroll-view";
+import { useAuth } from "@/hooks/use-auth";
+import { safeAsyncStorage } from "@/services/storage/safe-async-storage";
+import { motelService } from "@/services/api/motel.service";
+import { roomService } from "@/services/api/room.service";
+import { RoomResponse2 } from "@/types/room.types";
+import { MotelResponse } from "@/types/motel.types";
 import {
   Colors,
   Spacing,
@@ -26,61 +34,114 @@ import {
   Shadows,
 } from "@/constants/theme";
 
-// ── Interface ──
-interface RoomData {
-  id: string;
-  name: string;
-  price: string;
-  statusEmpty: boolean;
-  statusWaiting: boolean;
-}
-
-// ── Mock Data ──
-const MOCK_ROOMS: RoomData[] = [
-  {
-    id: "1",
-    name: "Phòng 1",
-    price: "3.000.000",
-    statusEmpty: true,
-    statusWaiting: true,
-  },
-  {
-    id: "2",
-    name: "Phòng 2",
-    price: "3.000.000",
-    statusEmpty: true,
-    statusWaiting: true,
-  },
-  {
-    id: "3",
-    name: "Phòng 3",
-    price: "3.000.000",
-    statusEmpty: true,
-    statusWaiting: true,
-  },
-  {
-    id: "4",
-    name: "Phòng 4",
-    price: "3.000.000",
-    statusEmpty: true,
-    statusWaiting: true,
-  },
-  {
-    id: "5",
-    name: "Phòng 5",
-    price: "3.000.000",
-    statusEmpty: true,
-    statusWaiting: true,
-  },
-];
-
-const FLOORS = ["Tầng trệt", "Tầng 1", "Tầng 2"];
-
 // ── Component ──
 export default function RoomsListScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const params = useLocalSearchParams<{ motelId?: string }>();
+  const user = useAuth((state) => state.user);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeMotel, setActiveMotel] = useState<MotelResponse | null>(null);
+  const [rooms, setRooms] = useState<RoomResponse2[]>([]);
   const [activeFloor, setActiveFloor] = useState(0);
+
+  // const resolveCurrentMotel = (motels: MotelResponse[], motelIdParam?: string) => {
+  //   if (motelIdParam) {
+  //     return (
+  //       motels.find((motel) => motel.motelId === motelIdParam) ??
+  //       motels[0] ??
+  //       null
+  //     );
+  //   }
+  //   return motels[0] ?? null;
+  // };
+
+  const loadData = useCallback(async () => {
+    if (!user?.username) {
+      setActiveMotel(null);
+      setRooms([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const motelsResponse = await motelService.getMotelsByAccount(user.username);
+      const list = motelsResponse.result || [];
+
+      // Ưu tiên: 1. Params truyền vào -> 2. Storage đang active -> 3. Motel đầu tiên
+      const storedMotelId = await safeAsyncStorage.getItem("rrms_active_motel_id");
+      const targetMotelId = params.motelId || storedMotelId;
+      
+      const currentMotel = list.find((m) => m.motelId === targetMotelId) ?? list[0] ?? null;
+
+      if (!currentMotel) {
+        setActiveMotel(null);
+        setRooms([]);
+        setIsLoading(false);
+        return;
+      }
+
+      setActiveMotel(currentMotel);
+      // Lưu lại vào storage để đồng bộ
+      await safeAsyncStorage.setItem("rrms_active_motel_id", currentMotel.motelId);
+
+      const roomsResponse = await roomService.getRoomsByMotel(currentMotel.motelId);
+      setRooms(roomsResponse.result || []);
+    } catch (error: any) {
+      console.error("[RoomsList] loadData error:", error);
+      Alert.alert(
+        "Lỗi tải dữ liệu",
+        error?.response?.data?.message || "Không thể kết nối đến máy chủ."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.username, params.motelId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Sinh động danh sách tầng từ dữ liệu phòng thực tế
+  const uniqueFloors = useMemo(() => {
+    if (rooms.length === 0) {
+      return ["Tầng trệt", "Tầng 1", "Tầng 2"];
+    }
+    const groups = rooms.map((r) => r.group?.trim() || "Tầng trệt");
+    const unique = Array.from(new Set(groups));
+    
+    // Sắp xếp tầng thông minh (Trệt -> 1 -> 2 -> ...)
+    return unique.sort((a, b) => {
+      const getOrder = (name: string) => {
+        const lower = name.toLowerCase();
+        if (lower.includes("trệt") || lower.includes("tret")) return 0;
+        const num = parseInt(lower.replace(/\D/g, ""), 10);
+        return isNaN(num) ? 999 : num;
+      };
+      return getOrder(a) - getOrder(b);
+    });
+  }, [rooms]);
+
+  // Lấy tầng đang chọn
+  const activeFloorName = useMemo(() => {
+    return uniqueFloors[activeFloor] || uniqueFloors[0] || "Tầng trệt";
+  }, [uniqueFloors, activeFloor]);
+
+  // Lọc phòng theo tầng đang chọn
+  const filteredRooms = useMemo(() => {
+    return rooms.filter(
+      (room) => (room.group?.trim() || "Tầng trệt") === activeFloorName
+    );
+  }, [rooms, activeFloorName]);
+
+  // Reset tab activeFloor về 0 nếu uniqueFloors thay đổi mà activeFloor vượt quá độ dài
+  useEffect(() => {
+    if (activeFloor >= uniqueFloors.length) {
+      setActiveFloor(0);
+    }
+  }, [uniqueFloors.length, activeFloor]);
 
   return (
     <View style={styles.container}>
@@ -99,7 +160,9 @@ export default function RoomsListScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Danh sách phòng</Text>
+        <Text style={styles.headerTitle}>
+          {activeMotel ? `Danh sách phòng - ${activeMotel.motelName}` : "Danh sách phòng"}
+        </Text>
         <TouchableOpacity
           style={styles.filterButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -117,7 +180,7 @@ export default function RoomsListScreen() {
       <View style={styles.floorTabContainer}>
         <TouchableOpacity style={styles.settingsIcon}>
           <View style={styles.settingsBadge}>
-            <Text style={styles.settingsBadgeText}>0</Text>
+            <Text style={styles.settingsBadgeText}>{rooms.length}</Text>
           </View>
           <Ionicons
             name="settings-outline"
@@ -130,7 +193,7 @@ export default function RoomsListScreen() {
           showsHorizontalScrollIndicator={false}
           style={styles.floorScroll}
         >
-          {FLOORS.map((floor, index) => (
+          {uniqueFloors.map((floor, index) => (
             <TouchableOpacity
               key={floor}
               style={[
@@ -155,21 +218,43 @@ export default function RoomsListScreen() {
       </View>
 
       {/* ── Room Cards List ── */}
-      <RefreshableScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {MOCK_ROOMS.map((room) => (
-          <RoomCard key={room.id} room={room} />
-        ))}
-      </RefreshableScrollView>
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.success} />
+        </View>
+      ) : (
+        <RefreshableScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          onRefreshContent={loadData}
+        >
+          {filteredRooms.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="bed-outline" size={48} color={Colors.textSecondary} />
+              <Text style={styles.emptyText}>Không có phòng nào ở tầng này</Text>
+            </View>
+          ) : (
+            filteredRooms.map((room) => (
+              <RoomCard key={room.roomId} room={room} />
+            ))
+          )}
+        </RefreshableScrollView>
+      )}
 
       {/* ── FAB ── */}
       <TouchableOpacity
         style={styles.fab}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         accessibilityLabel="Thêm phòng mới"
+        onPress={() => {
+          if (activeMotel) {
+            router.push({
+              pathname: "/tab-manage/management-menu/motel-settings/add-room",
+              params: { motelId: activeMotel.motelId }
+            } as any);
+          }
+        }}
       >
         <Ionicons name="add" size={30} color={Colors.white} />
       </TouchableOpacity>
@@ -178,7 +263,11 @@ export default function RoomsListScreen() {
 }
 
 // ── Room Card Sub-Component ──
-function RoomCard({ room }: { room: RoomData }) {
+function RoomCard({ room }: { room: RoomResponse2 }) {
+  // Map trạng thái phòng từ backend
+  const isAvailable = room.status === true || String(room.status).toLowerCase() === 'available';
+  const isOccupied = room.status === false || String(room.status).toLowerCase() === 'occupied';
+
   return (
     <View style={styles.card}>
       {/* Card Header */}
@@ -211,16 +300,24 @@ function RoomCard({ room }: { room: RoomData }) {
           <Text style={styles.statusBoxTitle}>Trạng thái</Text>
         </View>
         <View style={styles.statusList}>
-          {room.statusEmpty && (
+          {isAvailable && (
             <View style={styles.statusBadge}>
               <View style={[styles.dot, { backgroundColor: Colors.warning }]} />
               <Text style={styles.statusText}>Đang trống</Text>
             </View>
           )}
-          {room.statusWaiting && (
+          {isOccupied && (
             <View style={styles.statusBadge}>
               <View style={[styles.dot, { backgroundColor: Colors.success }]} />
               <Text style={styles.statusText}>Chờ kỳ thu tới</Text>
+            </View>
+          )}
+          {!isAvailable && !isOccupied && (
+            <View style={styles.statusBadge}>
+              <View style={[styles.dot, { backgroundColor: Colors.textSecondary }]} />
+              <Text style={styles.statusText}>
+                {String(room.status).toLowerCase() === 'maintenance' ? 'Đang sửa chữa' : 'Đã đặt cọc'}
+              </Text>
             </View>
           )}
         </View>
@@ -238,7 +335,9 @@ function RoomCard({ room }: { room: RoomData }) {
             />
             <Text style={styles.priceLabel}>Giá thuê</Text>
           </View>
-          <Text style={styles.priceValue}>{room.price} đ</Text>
+          <Text style={styles.priceValue}>
+            {Number(room.price || 0).toLocaleString("vi-VN")} đ
+          </Text>
         </View>
         <View style={styles.actionsBox}>
           <TouchableOpacity
@@ -503,5 +602,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     ...Shadows.lg,
+  },
+
+  // Loading/Empty States
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing["3xl"],
+    gap: Spacing.sm,
+  },
+  emptyText: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
   },
 });

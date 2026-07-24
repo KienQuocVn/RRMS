@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#12A04A',
+    backgroundColor: '#20a9e7',
     alignItems: "center",
     justifyContent: "center",
     ...Shadows.lg,

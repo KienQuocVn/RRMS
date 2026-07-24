@@ -4,7 +4,7 @@
  * Click vao icon nha / userInfo => hien danh sach nha dang quan ly
  */
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   Animated,
   Modal,
@@ -14,9 +14,14 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useAuth } from "@/hooks/use-auth";
+import { motelService } from "@/services/api/motel.service";
+import { safeAsyncStorage } from "@/services/storage/safe-async-storage";
+import { MotelResponse } from "@/types/motel.types";
 import {
   BorderRadius,
   Colors,
@@ -25,32 +30,6 @@ import {
   Spacing,
 } from "@/constants/theme";
 
-// --- Mock data danh sach nha ---
-interface BuildingItem {
-  id: string;
-  name: string;
-  address: string;
-  roomCount: number;
-  isActive: boolean;
-}
-
-const MOCK_BUILDINGS: BuildingItem[] = [
-  {
-    id: "1",
-    name: "Nhà Trọ Quoc",
-    address: "Hochiminh, Phường 16, Gò Vấp, Thành phố H...",
-    roomCount: 5,
-    isActive: false,
-  },
-  {
-    id: "2",
-    name: "Nhà Trọ Quoc2",
-    address: "Hochiminh, Phường 02, Phú Nhuận, Thàn...",
-    roomCount: 5,
-    isActive: true,
-  },
-];
-
 interface HomeHeaderProps {
   userName?: string;
   onMenuPress?: () => void;
@@ -58,7 +37,7 @@ interface HomeHeaderProps {
 }
 
 export default function HomeHeader({
-  userName = "Quoc",
+  userName = "Chưa chọn nhà trọ",
   onMenuPress,
   onQRPress,
 }: HomeHeaderProps) {
@@ -70,7 +49,43 @@ export default function HomeHeader({
   const [isBuildingListVisible, setIsBuildingListVisible] = useState(false);
   const buildingSlideAnim = useRef(new Animated.Value(600)).current;
 
+  // Real data state
+  const [motels, setMotels] = useState<MotelResponse[]>([]);
+  const [activeMotel, setActiveMotel] = useState<MotelResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const user = useAuth((state) => state.user);
   const router = useRouter();
+
+  // Fetch motels from API
+  const fetchMotels = async () => {
+    if (!user?.username) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await motelService.getMotelsByAccount(user.username);
+      const list = response.result || [];
+      setMotels(list);
+
+      // Đọc active motel id từ storage để đồng bộ
+      const storedId = await safeAsyncStorage.getItem("rrms_active_motel_id");
+      const current = list.find((m) => m.motelId === storedId) ?? list[0] ?? null;
+      setActiveMotel(current);
+      if (current) {
+        await safeAsyncStorage.setItem("rrms_active_motel_id", current.motelId);
+      }
+    } catch (error) {
+      console.error("[HomeHeader] fetch motels error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMotels();
+  }, [user?.username]);
 
   // --- Hamburger menu ---
   const handleMenuPress = () => {
@@ -102,6 +117,8 @@ export default function HomeHeader({
 
   // --- Building list modal ---
   const handleBuildingListOpen = () => {
+    // Refresh danh sách nhà trọ mỗi khi mở modal để dữ liệu luôn mới nhất
+    fetchMotels();
     setIsBuildingListVisible(true);
     Animated.timing(buildingSlideAnim, {
       toValue: 0,
@@ -121,6 +138,12 @@ export default function HomeHeader({
     });
   };
 
+  const handleSelectMotel = async (motel: MotelResponse) => {
+    setActiveMotel(motel);
+    await safeAsyncStorage.setItem("rrms_active_motel_id", motel.motelId);
+    closeBuildingList();
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.topRow}>
@@ -137,7 +160,9 @@ export default function HomeHeader({
           <View style={styles.userInfo}>
             <Text style={styles.subtitle}>Đang quản lý Nhà trọ</Text>
             <View style={styles.userNameRow}>
-              <Text style={styles.userName}>{userName}</Text>
+              <Text style={styles.userName}>
+                {activeMotel ? activeMotel.motelName : userName}
+              </Text>
               <Ionicons name="chevron-down" size={16} color={Colors.white} />
             </View>
           </View>
@@ -187,83 +212,98 @@ export default function HomeHeader({
                     Danh sách nhà đang quản lý
                   </Text>
                   <Text style={styles.sheetSubtitle}>
-                    Danh sách nhà đang quản lý
+                    Chạm vào một nhà trọ để chuyển đổi quyền quản lý
                   </Text>
                 </View>
               </View>
 
               {/* Building list */}
-              <ScrollView
-                style={styles.buildingList}
-                showsVerticalScrollIndicator={false}
-              >
-                {MOCK_BUILDINGS.map((building) => (
-                  <View key={building.id} style={styles.buildingCard}>
-                    {/* Info row */}
-                    <View style={styles.buildingInfoRow}>
-                      <View style={styles.buildingIconWrap}>
-                        <Ionicons name="home" size={26} color={Colors.primary} />
-                      </View>
-                      <View style={styles.buildingInfo}>
-                        <Text style={styles.buildingName}>{building.name}</Text>
-                        <Text style={styles.buildingAddress} numberOfLines={1}>
-                          {building.address}
-                        </Text>
-                        <Text style={styles.buildingRooms}>
-                          {building.roomCount} phòng cho thuê
-                        </Text>
-                      </View>
-                      {building.isActive && (
-                        <View style={styles.activeBadge}>
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={26}
-                            color={Colors.primary}
-                          />
+              {isLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color={Colors.primary} />
+                </View>
+              ) : (
+                <ScrollView
+                  style={styles.buildingList}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {motels.length === 0 ? (
+                    <View style={styles.emptyContainer}>
+                      <Text style={styles.emptyText}>Không tìm thấy nhà trọ nào</Text>
+                    </View>
+                  ) : (
+                    motels.map((building) => {
+                      const isActive = activeMotel?.motelId === building.motelId;
+                      return (
+                        <View key={building.motelId} style={styles.buildingCard}>
+                          {/* Info row */}
+                          <View style={styles.buildingInfoRow}>
+                            <View style={styles.buildingIconWrap}>
+                              <Ionicons name="home" size={26} color={Colors.primary} />
+                            </View>
+                            <View style={styles.buildingInfo}>
+                              <Text style={styles.buildingName}>{building.motelName}</Text>
+                              <Text style={styles.buildingAddress} numberOfLines={1}>
+                                {building.address || "Chưa cập nhật địa chỉ"}
+                              </Text>
+                              <Text style={styles.buildingRooms}>
+                                Diện tích: {building.area || 0} m²
+                              </Text>
+                            </View>
+                            {isActive && (
+                              <View style={styles.activeBadge}>
+                                <Ionicons
+                                  name="checkmark-circle"
+                                  size={26}
+                                  color={Colors.primary}
+                                />
+                              </View>
+                            )}
+                          </View>
+
+                          {/* Action buttons */}
+                          <View style={styles.buildingActions}>
+                            <TouchableOpacity
+                              style={styles.btnDelete}
+                              activeOpacity={0.8}
+                              onPress={() => {
+                                /* TODO: delete building */
+                              }}
+                            >
+                              <Ionicons
+                                name="trash-outline"
+                                size={16}
+                                color={Colors.white}
+                              />
+                              <Text style={styles.btnDeleteText}>Xóa nhà</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                              style={[styles.btnManage, isActive && { backgroundColor: Colors.success }]}
+                              activeOpacity={0.8}
+                              onPress={() => handleSelectMotel(building)}
+                            >
+                              <Ionicons
+                                name="refresh-outline"
+                                size={16}
+                                color={Colors.white}
+                              />
+                              <Text style={styles.btnManageText}>
+                                {isActive ? "Đang quản lý" : "Quản lý"}
+                              </Text>
+                              <Ionicons
+                                name="chevron-forward"
+                                size={14}
+                                color={Colors.white}
+                              />
+                            </TouchableOpacity>
+                          </View>
                         </View>
-                      )}
-                    </View>
-
-                    {/* Action buttons */}
-                    <View style={styles.buildingActions}>
-                      <TouchableOpacity
-                        style={styles.btnDelete}
-                        activeOpacity={0.8}
-                        onPress={() => {
-                          /* TODO: delete building */
-                        }}
-                      >
-                        <Ionicons
-                          name="trash-outline"
-                          size={16}
-                          color={Colors.white}
-                        />
-                        <Text style={styles.btnDeleteText}>Xóa nhà</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={styles.btnManage}
-                        activeOpacity={0.8}
-                        onPress={() => {
-                          closeBuildingList();
-                        }}
-                      >
-                        <Ionicons
-                          name="refresh-outline"
-                          size={16}
-                          color={Colors.white}
-                        />
-                        <Text style={styles.btnManageText}>Quản lý</Text>
-                        <Ionicons
-                          name="chevron-forward"
-                          size={14}
-                          color={Colors.white}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                ))}
-              </ScrollView>
+                      );
+                    })
+                  )}
+                </ScrollView>
+              )}
             </Pressable>
           </Animated.View>
         </Pressable>
@@ -325,7 +365,7 @@ export default function HomeHeader({
                 </View>
                 <View style={styles.menuItemContent}>
                   <Text style={styles.menuItemTitle}>
-                    {`Chỉnh sửa thông tin "${userName}"`}
+                    {`Chỉnh sửa thông tin nhà trọ`}
                   </Text>
                   <Text style={styles.menuItemDesc}>
                     Chỉnh sửa nhà trọ hiện tại, bao gồm tên, địa chỉ...
@@ -601,5 +641,19 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: Colors.borderLight,
     marginVertical: Spacing.sm,
+  },
+  loadingContainer: {
+    paddingVertical: Spacing.xl,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyContainer: {
+    paddingVertical: Spacing.xl,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
   },
 });

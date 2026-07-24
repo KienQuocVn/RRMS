@@ -156,7 +156,19 @@ async function isApiBaseUrlReachable(baseUrl: string) {
 }
 
 function prioritizeCandidates(storedBaseUrl: string | null) {
-  const nextCandidates = buildApiBaseUrlCandidates();
+  let nextCandidates = buildApiBaseUrlCandidates();
+
+  if (Platform.OS === 'web') {
+    const isWebLocalhost = typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isWebLocalhost) {
+      const localApi = `http://localhost:${DEFAULT_API_PORT}`;
+      return [
+        localApi,
+        ...nextCandidates.filter((c) => c !== localApi)
+      ];
+    }
+  }
 
   if (!storedBaseUrl) {
     return nextCandidates;
