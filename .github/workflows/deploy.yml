@@ -64,7 +64,7 @@ jobs:
 
       # ---------- 3. Copy sản phẩm build lên VPS ----------
       - name: Copy jar, dist, rollback script lên VPS
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1.0.1
         with:
           host: ${{ secrets.VPS_HOST }}
           port: ${{ secrets.VPS_PORT }}
@@ -72,6 +72,7 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           source: "server/${{ steps.jar.outputs.path }},client/dist,scripts/rollback.sh"
           target: /tmp/rrms-deploy
+          debug: true
 
       # ---------- 4. Kích hoạt bản mới trên VPS ----------
       - name: Restart service
