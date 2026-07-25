@@ -64,7 +64,7 @@ jobs:
 
       # ---------- 3. Copy sản phẩm build lên VPS ----------
       - name: Copy jar, dist, rollback script lên VPS
-        uses: appleboy/scp-action@v1.0.1
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           port: ${{ secrets.VPS_PORT }}
