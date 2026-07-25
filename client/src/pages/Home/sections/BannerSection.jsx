@@ -55,7 +55,7 @@ export default function BannerSection() {
           }}>
           <Stack spacing={3.2} sx={{ maxWidth: 620 }}>
             <Chip
-              label="🏠 RRMS v2 - nền tảng quản lý nhà cho thuê"
+              label="RRMS - nền tảng quản lý nhà cho thuê"
               sx={{
                 alignSelf: 'flex-start',
                 fontWeight: 800,

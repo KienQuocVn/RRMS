@@ -30,6 +30,7 @@ import {
   getCommunes,
   getProvinces,
 } from '@/services/address/address.service';
+import MapComponent from '@/components/map-component';
 
 type ActiveModal = 'province' | 'ward' | null;
 
@@ -144,6 +145,7 @@ export default function AddBuildingAddressScreen() {
   const [wardOptions, setWardOptions] = useState<AddressOption[]>([]);
   const [loadingProvince, setLoadingProvince] = useState(true);
   const [loadingWard, setLoadingWard] = useState(false);
+  const [autoGeocodeLoading, setAutoGeocodeLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -230,6 +232,49 @@ export default function AddBuildingAddressScreen() {
       .filter(Boolean)
       .join(', ');
   }, [detail, ward, district, city]);
+
+  const geocodeQuery = useMemo(() => {
+    if (!detail.trim() || !ward || !city) return '';
+    return `${detail.trim()}, ${ward}, ${city}, Việt Nam`;
+  }, [detail, ward, city]);
+
+  useEffect(() => {
+    if (!geocodeQuery) {
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setAutoGeocodeLoading(true);
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geocodeQuery)}&format=json&limit=1&countrycodes=vn`,
+          {
+            headers: {
+              Accept: 'application/json',
+              'Accept-Language': 'vi',
+              'User-Agent': 'RRMS/1.0 (mobile-address-picker)'
+            }
+          }
+        );
+        if (!res.ok) throw new Error('Geocoding failed');
+        const data = await res.json();
+        if (data && data.length > 0) {
+          const newLat = parseFloat(data[0].lat);
+          const newLng = parseFloat(data[0].lon);
+          setLatitude(newLat);
+          setLongitude(newLng);
+          setHasMapPin(true);
+          setMapLabel(`Đã tự động định vị: ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+        }
+      } catch (e) {
+        console.log('Geocode error', e);
+      } finally {
+        setAutoGeocodeLoading(false);
+      }
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [geocodeQuery]);
 
   const isValid = Boolean(provinceCode && wardCode && detail.trim());
 
@@ -419,49 +464,54 @@ export default function AddBuildingAddressScreen() {
         </View>
 
         {hasMapPin && latitude !== null && longitude !== null ? (
-          <View style={styles.mapPanelActive}>
-            {/* Card vị trí hiện tại */}
-            <View style={styles.currentLocationCard}>
-              <View style={styles.mapIllustrationActive}>
-                <View style={styles.mapPinCircleActive}>
-                  <View style={styles.mapPinInnerActive} />
-                </View>
-                <View style={styles.mapPinStemActive} />
-              </View>
-              <Text style={styles.currentLocationTitle}>Vị trí hiện tại</Text>
-              <Text style={styles.currentLocationCoords}>
-                {latitude},{longitude}
+          <View style={[styles.mapPanel, { paddingHorizontal: 0, overflow: 'hidden' }]}>
+            <MapComponent 
+              position={{ latitude, longitude }} 
+              setPosition={(pos) => {
+                setLatitude(pos.latitude);
+                setLongitude(pos.longitude);
+                setHasMapPin(true);
+                setMapLabel(`Đã ghim vị trí tại: ${pos.latitude.toFixed(5)}, ${pos.longitude.toFixed(5)}`);
+              }}
+              style={{ height: 280, borderRadius: 0, borderWidth: 0 }}
+            />
+            <View style={{ padding: Spacing.base }}>
+              <Text style={styles.mapText}>
+                Hệ thống đã tự động lấy vị trí từ địa chỉ của bạn. Bạn có thể kéo marker trên bản đồ để ghim chính xác hơn.
               </Text>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                disabled={!wardCode}
+                onPress={handleOpenMapPicker}
+                style={[styles.mapButton, !wardCode && styles.mapButtonDisabled]}
+              >
+                <Ionicons name="expand" size={22} color={Colors.textPrimary} />
+                <Text style={styles.mapButtonText}>Mở bản đồ lớn</Text>
+              </TouchableOpacity>
             </View>
-
-            <Text style={styles.mapTextActive}>
-              Định vị vị trí nhà cho thuê trên bản đồ giúp cho người tìm trọ tìm thấy bạn. Tăng tỷ lệ
-              tiếp cận khách thuê.
-            </Text>
-
-            <TouchableOpacity
-              activeOpacity={0.85}
-              disabled={!wardCode}
-              onPress={handleOpenMapPicker}
-              style={styles.editMapButton}
-            >
-              <Ionicons name="pencil" size={18} color={Colors.textPrimary} style={{ marginRight: 6 }} />
-              <Text style={styles.editMapButtonText}>Chỉnh sửa vị trí</Text>
-            </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.mapPanel}>
-            <View style={styles.mapIllustration}>
-              <View style={styles.mapPinCircle}>
-                <View style={styles.mapPinInner} />
-              </View>
-              <View style={styles.mapPinStem} />
-            </View>
+            {autoGeocodeLoading ? (
+               <View style={{ alignItems: 'center', marginVertical: Spacing.xl }}>
+                 <ActivityIndicator size="small" color={Colors.primary} />
+                 <Text style={{ marginTop: Spacing.sm, color: Colors.textSecondary }}>Đang tự động định vị...</Text>
+               </View>
+            ) : (
+               <>
+                 <View style={styles.mapIllustration}>
+                   <View style={styles.mapPinCircle}>
+                     <View style={styles.mapPinInner} />
+                   </View>
+                   <View style={styles.mapPinStem} />
+                 </View>
 
-            <Text style={styles.mapText}>
-              Định vị vị trí nhà cho thuê trên bản đồ giúp cho người tìm trọ tìm thấy bạn. Tăng tỷ lệ
-              tiếp cận khách thuê.
-            </Text>
+                 <Text style={styles.mapText}>
+                   Định vị vị trí nhà cho thuê trên bản đồ giúp cho người tìm trọ tìm thấy bạn. Tăng tỷ lệ
+                   tiếp cận khách thuê.
+                 </Text>
+               </>
+            )}
 
             <TouchableOpacity
               activeOpacity={0.85}

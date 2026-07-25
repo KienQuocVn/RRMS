@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
   },
   iconBoxSelected: {
     borderColor: "#20a9e7",
-    backgroundColor: "#E7FAF0",
+    backgroundColor: "#20a9e722",
   },
   unitContainer: {
     flexDirection: "row",
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 0,
     borderTopRightRadius: BorderRadius.lg,
     borderBottomRightRadius: BorderRadius.lg,
-    backgroundColor: "#E7FAF0",
+    backgroundColor: "#20a9e722",
     paddingHorizontal: Spacing.md,
     height: "100%",
     paddingVertical: 14,

@@ -7,7 +7,7 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
 import { Alert, Box, Button, Chip, Snackbar, Stack, Typography } from '@mui/material'
 import axios from 'axios'
 import * as XLSX from 'xlsx'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { env } from '~/configs/environment'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
@@ -44,6 +44,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   const [searchValue, setSearchValue] = useState('')
 
   const navigate = useNavigate()
+  const { motelId } = useParams()
 
   useEffect(() => {
     setIsAdmin(true)
@@ -82,6 +83,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   }
 
   const loadData = async () => {
+    if (!motelId) return
     try {
       const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
 
@@ -90,7 +92,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         return
       }
 
-      const response = await axios.get(`${env.API_URL}/tenant`, {
+      const response = await axios.get(`${env.API_URL}/tenant/motel/${motelId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'ngrok-skip-browser-warning': '69420'

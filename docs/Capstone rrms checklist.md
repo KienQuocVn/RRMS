@@ -1,3 +1,14 @@
+thuong
+#2b7ed7
+
+
+nhat
+#20a9e722
+
+
+dam
+#0a58ca
+
 # Capstone RRMS — Đối chiếu tiến độ với 5 trụ cột bắt buộc
 
 > **Lưu ý nguồn dữ liệu:** Nội dung dưới đây tổng hợp từ toàn văn **Phần K** (Alert Telegram) đã hoàn thành. Các phần A, B, B0, C, D, E, F, G, H, J chỉ được suy ra qua những gì Phần K nhắc lại (bot Telegram tạo ở lab CI/CD, MySQL/Redis, đã bỏ Elasticsearch ở Phần B, dùng `systemd` thay `pm2`...). Mục nào có bằng chứng trực tiếp trong tài liệu được đánh dấu **chắc chắn**; mục nào chỉ suy đoán được đánh dấu **giả định — cần xác nhận**.

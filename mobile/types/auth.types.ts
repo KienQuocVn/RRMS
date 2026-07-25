@@ -39,7 +39,7 @@ export interface AuthState {
 export interface RegisterRequest {
   username: string;
   phone: string;
-  email: string;
+  email?: string;
   password: string;
   userType: UserType;
 }

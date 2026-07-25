@@ -1,358 +1,275 @@
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
-import AddIcon from '@mui/icons-material/Add'
-import AddTenantModal from './TenantManage/AddTenant'
 import { useEffect, useState } from 'react'
-import { getContractByIdMotel } from '~/apis/contractTemplateAPI'
-import axios from 'axios'
-import { env } from '~/configs/environment'
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Box,
+  Typography,
+  IconButton,
+  Chip,
+  Divider,
+  CircularProgress
+} from '@mui/material'
+import PersonIcon from '@mui/icons-material/Person'
+import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
+import AddIcon from '@mui/icons-material/Add'
+import CloseIcon from '@mui/icons-material/Close'
 import Swal from 'sweetalert2'
+import { getContractByIdRoom } from '~/apis/contractTemplateAPI'
+import { deleteTenantById } from '~/apis/tenantAPI'
+import { getTenantsByRoomId } from '~/apis/tenantAPI'
+import AddTenantModal from './TenantManage/AddTenant'
+import EditTenantModal from './EditTenantModal'
 
-function RentRoomModal({ toggleModal, modalOpen, motelId }) {
-  const [tenantOpen, setTenantOpen] = useState(false)
-  const [contract, setContracts] = useState({})
+function RentRoomModal({ toggleModal, modalOpen, roomId: roomIdProp }) {
+  const [contract, setContract] = useState(null)
   const [dataTenant, setDataTenant] = useState([])
-  const [avatar, setAvatar] = useState(true)
-  const [editId, setEditId] = useState()
-  const [roomId, setRoomId] = useState()
-  const openTenant = () => {
-    setTenantOpen(!tenantOpen)
-    setAvatar(true)
-  }
-  const toggleTenant = (tenantId) => {
-    setTenantOpen(!tenantOpen)
-    setEditId(tenantId)
-    setAvatar(!avatar)
-  }
+  const [loading, setLoading] = useState(false)
+  const [roomId, setRoomId] = useState(null)
 
-  const loadDataTenantRoomId = async (targetRoomId = roomId) => {
+  // Add tenant modal
+  const [addOpen, setAddOpen] = useState(false)
+
+  // Edit tenant modal
+  const [editOpen, setEditOpen] = useState(false)
+  const [editTenantId, setEditTenantId] = useState(null)
+
+  const loadTenants = async (targetRoomId) => {
     try {
-      const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
-
-      if (!token) {
-        console.error('No token found')
-        return
-      }
-
-      const response = await axios.get(`${env.API_URL}/tenant/roomId/${targetRoomId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'ngrok-skip-browser-warning': '69420'
-        }
-      })
-
-      if (response.status === 200) {
-        const fetchedData = response.data?.result
-        setDataTenant(fetchedData)
-      }
+      const tenants = await getTenantsByRoomId(targetRoomId)
+      setDataTenant(Array.isArray(tenants) ? tenants : [])
     } catch (error) {
-      console.error('Error fetching data:', error.response?.data || error.message || error)
+      console.error('Error fetching tenants:', error)
+      setDataTenant([])
     }
   }
 
-  const fetchMotelContract = async (id) => {
-    console.log(id)
-
+  const fetchRoomData = async (id) => {
+    setLoading(true)
     try {
-      const response = await getContractByIdMotel(id)
-
+      const response = await getContractByIdRoom(id)
       if (response) {
-        setContracts(response)
-        loadDataTenantRoomId(response[0].room.roomId)
-        setRoomId(response[0].room.roomId)
-        console.log(roomId)
+        setContract(response)
+        setRoomId(id)
+        await loadTenants(id)
       } else {
-        setContracts([])
+        setContract(null)
+        setDataTenant([])
       }
     } catch (error) {
-      console.error('Error fetching motel services:', error)
-      setContracts([])
+      console.error('Error fetching room contract:', error)
+      setContract(null)
+      setDataTenant([])
+    } finally {
+      setLoading(false)
     }
   }
-  const deleteTenant = async (id, e) => {
-    e.preventDefault()
 
-    const token = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).token : null
-    if (!token) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi',
-        text: 'Token is missing, please login again.'
-      })
-      return
-    }
+  const handleDeleteTenant = async (tenantId) => {
+    const confirm = await Swal.fire({
+      icon: 'warning',
+      title: 'Xác nhận xóa',
+      text: 'Bạn có chắc muốn xóa khách thuê này?',
+      showCancelButton: true,
+      confirmButtonText: 'Xóa',
+      cancelButtonText: 'Hủy',
+      confirmButtonColor: '#ef4444'
+    })
+    if (!confirm.isConfirmed) return
 
     try {
-      // eslint-disable-next-line no-unused-vars
-      const response = await axios.delete(`${env.API_URL}/tenant/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': '69420'
-        }
-      })
-      loadDataTenantRoomId(roomId)
-      Swal.fire({ icon: 'success', title: 'Thành công', text: 'Xóa tenant thành công!' })
+      await deleteTenantById(tenantId)
+      Swal.fire({ icon: 'success', title: 'Thành công', text: 'Xóa khách thuê thành công!' })
+      loadTenants(roomId)
     } catch (error) {
       console.error('Error deleting tenant:', error)
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi',
-        text: 'Xóa tenant không thành công!'
-      })
+      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Xóa khách thuê không thành công!' })
     }
+  }
+
+  const handleOpenEdit = (tenantId) => {
+    setEditTenantId(tenantId)
+    setEditOpen(true)
+  }
+
+  const handleCloseEdit = () => {
+    setEditOpen(false)
+    setEditTenantId(null)
+  }
+
+  const handleEditSuccess = () => {
+    loadTenants(roomId)
+    // Reload contract để cập nhật tenant chính
+    fetchRoomData(roomIdProp)
   }
 
   useEffect(() => {
-    if (motelId) {
-      fetchMotelContract(motelId)
+    if (modalOpen && roomIdProp) {
+      fetchRoomData(roomIdProp)
     }
-  }, [motelId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalOpen, roomIdProp])
+
+  const roomName = contract?.room?.name || 'Phòng'
+  const mainTenant = contract?.tenant || null
+
+  // Render 1 tenant card
+  const TenantCard = ({ tenant, isMain }) => (
+    <Box
+      sx={{
+        border: '1px solid #e0e0e0',
+        borderRadius: '10px',
+        p: 2,
+        mb: 1.5,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+      <Box>
+        <Typography sx={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a', mb: 0.5 }}>
+          {/* API trả về fullName (PascalCase) */}
+          {tenant.fullName || tenant.fullname || 'Chưa có tên'}
+        </Typography>
+        <Typography sx={{ fontSize: 13, color: '#666', mb: isMain ? 1 : 0 }}>
+          {tenant.phone || 'Chưa có sdt'}
+        </Typography>
+        {isMain && (
+          <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+            <Chip label="Người liên hệ" size="small" sx={{ bgcolor: '#2b7ed7', color: '#fff', fontSize: 11, fontWeight: 700 }} />
+            <Chip label="đại diện hợp đồng" size="small" sx={{ bgcolor: '#2b7ed7', color: '#fff', fontSize: 11, fontWeight: 700 }} />
+          </Box>
+        )}
+      </Box>
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        <IconButton
+          onClick={() => handleDeleteTenant(tenant.tenantId)}
+          sx={{
+            width: 42, height: 42,
+            bgcolor: '#ef4444',
+            color: '#fff',
+            '&:hover': { bgcolor: '#dc2626' }
+          }}>
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+        <IconButton
+          onClick={() => handleOpenEdit(tenant.tenantId)}
+          sx={{
+            width: 42, height: 42,
+            bgcolor: '#f3f4f6',
+            color: '#333',
+            border: '1px solid #e0e0e0',
+            '&:hover': { bgcolor: '#e5e7eb' }
+          }}>
+          <EditIcon fontSize="small" />
+        </IconButton>
+      </Box>
+    </Box>
+  )
 
   return (
-    <div>
-      <Modal isOpen={modalOpen} toggle={toggleModal}>
-        <ModalHeader toggle={toggleModal}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div
-              style={{
-                backgroundColor: '#5cb85c',
+    <>
+      <Dialog open={modalOpen} onClose={toggleModal} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '12px' } }}>
+        {/* Header */}
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid #f0f0f0',
+            pb: 1.5
+          }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 38, height: 38,
                 borderRadius: '50%',
-                width: '30px',
-                height: '30px',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                color: '#fff',
-                fontSize: '16px'
+                bgcolor: '#20a9e722',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#2b7ed7'
               }}>
-              <i className="fa fa-user" />
-            </div>
-            <h5 style={{ marginLeft: '10px' }}>Danh sách khách thuê - Phòng 2</h5>
-          </div>
-        </ModalHeader>
+              <PersonIcon />
+            </Box>
+            <Typography sx={{ fontSize: 16, fontWeight: 700 }}>
+              Danh sách khách thuê - &quot;{roomName}&quot;
+            </Typography>
+          </Box>
+          <IconButton
+            onClick={toggleModal}
+            size="small"
+            sx={{ border: '2px solid #fdebe5', color: '#555', '&:hover': { bgcolor: '#fff7f4' } }}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
 
-        <ModalBody>
-          {contract && contract[0]?.tenant ? (
-            <div
-              className="row"
-              style={{
-                border: '1px solid #ddd',
-                padding: '10px',
-                borderRadius: '10px'
-              }}>
-              <div style={{ flex: '1' }}>
-                <h6 style={{ marginBottom: '5px' }}>
-                  <p>Họ và tên: {contract[0]?.tenant?.fullname || 'Chưa có tên'}</p>
-                </h6>
-                <h6 style={{ marginBottom: '5px' }}>
-                  <p style={{ marginBottom: '0' }}>Số điện thoại: {contract[0]?.tenant?.phone || 'Chưa có số'}</p>
-                </h6>
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  marginLeft: '10px',
-                  marginTop: '-45px'
-                }}>
-                <button
-                  style={{
-                    marginRight: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '5px',
-                    padding: '5px'
-                  }}
-                  onClick={() => {
-                    toggleTenant()
-                    setEditId(contract[0]?.tenant?.tenantId) // Cập nhật tenantId
-                    setAvatar(false) // Đặt avatar nếu cần
-                    console.log('aa', contract[0].tenant.tenantId) // Kiểm tra console
-                  }}
-                  className="btn btn-outline-primary">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="feather feather-edit">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                  </svg>
-                </button>
-
-                <button
-                  className="btn btn-outline-danger"
-                  style={{
-                    border: '1px solid #ddd',
-                    borderRadius: '5px',
-                    padding: '5px'
-                  }}
-                  onClick={() => {
-                    setEditId(contract[0].tenant.tenantId) // Cập nhật tenantId
-                    setAvatar(false) // Đặt avatar nếu cần
-                    console.log('setEditId called with tenantId:', contract[0].tenant.tenantId) // Kiểm tra console
-                  }}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    className="feather feather-trash-2">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                  </svg>
-                </button>
-              </div>
-
-              <div style={{ marginTop: '10px' }}>
-                <Button
-                  color="primary"
-                  size="sm"
-                  style={{
-                    marginRight: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '5px'
-                  }}
-                  disabled>
-                  Người liên hệ
-                </Button>
-                <Button
-                  color="primary"
-                  size="sm"
-                  style={{
-                    border: '1px solid #ddd',
-                    borderRadius: '5px'
-                  }}
-                  disabled>
-                  Đại diện hợp đồng
-                </Button>
-              </div>
-            </div>
+        {/* Body */}
+        <DialogContent sx={{ p: 2.5, minHeight: 120 }}>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={32} />
+            </Box>
+          ) : (!mainTenant && dataTenant.length === 0) ? (
+            <Typography sx={{ textAlign: 'center', color: '#999', py: 3, fontSize: 14 }}>
+              Chưa có thông tin khách thuê.
+            </Typography>
           ) : (
-            <p>Không có thông tin hợp đồng hoặc khách thuê</p>
-          )}
-          {dataTenant?.length > 0 ? (
             <>
-              {dataTenant.length > 0 ? (
-                dataTenant.map((item, index) => {
-                  // Nếu id là 2, sẽ không render item này
-                  if (item.tenantId === contract[0]?.tenant.tenantId) {
-                    return null // Trả về null để không render item này
-                  }
-
-                  return (
-                    <div
-                      key={index}
-                      className="row"
-                      style={{
-                        border: '1px solid #ddd',
-                        padding: '10px',
-                        borderRadius: '10px'
-                      }}>
-                      <div style={{ flex: '1' }}>
-                        <h6 style={{ marginBottom: '5px' }}>Họ và tên: {item.fullname || 'Chưa có tên'}</h6>
-                        <h6 style={{ marginBottom: '5px' }}>Số điện thoại: {item.phone || 'Chưa có số'}</h6>
-                      </div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'flex-end',
-                          marginLeft: '10px',
-                          marginTop: '-45px'
-                        }}>
-                        <button
-                          style={{
-                            marginRight: '10px',
-                            border: '1px solid #ddd',
-                            borderRadius: '5px',
-                            padding: '5px'
-                          }}
-                          onClick={() => {
-                            if (item?.tenantId) {
-                              toggleTenant()
-                              setEditId(item.tenantId) // Cập nhật tenantId
-                              setAvatar(false) // Đặt avatar nếu cần
-                              console.log('setEditId called with tenantId:', item.tenantId)
-                            } else {
-                              console.error('Invalid tenantId:', item)
-                            }
-                          }}
-                          className="btn btn-outline-primary">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="feather feather-edit">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                          </svg>
-                        </button>
-
-                        <button
-                          className="btn btn-outline-danger"
-                          style={{
-                            border: '1px solid #ddd',
-                            borderRadius: '5px',
-                            padding: '5px'
-                          }}
-                          onClick={(e) => {
-                            deleteTenant(item.tenantId, e) // Xóa tenant với tenantId
-                          }}>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            className="feather feather-trash-2">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            <line x1="10" y1="11" x2="10" y2="17"></line>
-                            <line x1="14" y1="11" x2="14" y2="17"></line>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  )
-                })
-              ) : (
-                <h1>Không có dữ liệu</h1>
+              {/* Khách thuê chính từ hợp đồng */}
+              {mainTenant && (
+                <TenantCard tenant={mainTenant} isMain={true} />
               )}
-            </>
-          ) : (
-            <h1>Không có dữ liệu</h1>
-          )}
-        </ModalBody>
 
-        <ModalFooter>
-          <Button color="secondary" onClick={toggleModal}>
+              {/* Khách thuê thêm vào phòng */}
+              {dataTenant
+                .filter(t => t.tenantId !== mainTenant?.tenantId)
+                .map(tenant => (
+                  <TenantCard key={tenant.tenantId} tenant={tenant} isMain={false} />
+                ))}
+            </>
+          )}
+        </DialogContent>
+
+        <Divider />
+
+        {/* Footer */}
+        <DialogActions sx={{ px: 2.5, py: 1.5, gap: 1 }}>
+          <Button
+            variant="contained"
+            onClick={toggleModal}
+            sx={{ bgcolor: '#6c757d', '&:hover': { bgcolor: '#5a6268' }, px: 2.5 }}>
             Đóng
           </Button>
-          <Button color="primary" onClick={openTenant}>
-            <AddIcon /> Thêm thông tin khách thuê
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setAddOpen(true)}
+            sx={{ bgcolor: '#2b7ed7', '&:hover': { bgcolor: '#4cae4c' }, px: 2.5 }}>
+            Thêm thông tin khách thuê
           </Button>
-        </ModalFooter>
-      </Modal>
-      <AddTenantModal onClose={toggleTenant} open={tenantOpen} editId={editId} avatar={avatar} />
-    </div>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal thêm khách thuê */}
+      <AddTenantModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        avatar={true}
+        reloadData={() => {
+          loadTenants(roomId)
+          fetchRoomData(roomIdProp)
+        }}
+      />
+
+      {/* Modal chỉnh sửa khách thuê (mới) */}
+      <EditTenantModal
+        open={editOpen}
+        onClose={handleCloseEdit}
+        tenantId={editTenantId}
+        onSuccess={handleEditSuccess}
+      />
+    </>
   )
 }
 

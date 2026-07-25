@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Box, Button, FormControl, FormControlLabel, Grid, Radio, RadioGroup, TextField } from '@mui/material'
+import { Box, Button, FormControl, FormControlLabel, Grid, Radio, RadioGroup, TextField, IconButton, InputAdornment } from '@mui/material'
+import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 
 const roleOptionSx = {
@@ -15,6 +17,12 @@ const roleOptionSx = {
 
 const RegisterForm = ({ form, updateField, onSubmit }) => {
   const { t } = useTranslation()
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+  const inputSx = {
+    '& input': { fontWeight: 'bold', py: '15px', px: '10px' }
+  }
 
   return (
     <Box sx={{ borderRadius: 2, boxShadow: '0 5px 8px 0 rgba(0,0,0,.2), 0 9px 26px 0 rgba(0,0,0,.19)', overflow: 'hidden' }}>
@@ -37,7 +45,7 @@ const RegisterForm = ({ form, updateField, onSubmit }) => {
                 placeholder={t('auth.register.usernamePlaceholder')}
                 value={form.username}
                 onChange={updateField('username')}
-                size="small"
+                sx={inputSx}
               />
             </Grid>
 
@@ -49,7 +57,7 @@ const RegisterForm = ({ form, updateField, onSubmit }) => {
                 placeholder={t('auth.register.phonePlaceholder')}
                 value={form.phone}
                 onChange={updateField('phone')}
-                size="small"
+                sx={inputSx}
               />
             </Grid>
 
@@ -57,12 +65,26 @@ const RegisterForm = ({ form, updateField, onSubmit }) => {
               <TextField
                 fullWidth
                 required
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 label={t('auth.register.password')}
                 placeholder={t('auth.register.passwordPlaceholder')}
                 value={form.password}
                 onChange={updateField('password')}
-                size="small"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        edge="end"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        onClick={() => setShowPassword((previous) => !previous)}
+                        onMouseDown={(event) => event.preventDefault()}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+                sx={inputSx}
               />
             </Grid>
 
@@ -70,12 +92,26 @@ const RegisterForm = ({ form, updateField, onSubmit }) => {
               <TextField
                 fullWidth
                 required
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 label={t('auth.register.confirmPassword')}
                 placeholder={t('auth.register.confirmPasswordPlaceholder')}
                 value={form.passwordConfirmation}
                 onChange={updateField('passwordConfirmation')}
-                size="small"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        edge="end"
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                        onClick={() => setShowConfirmPassword((previous) => !previous)}
+                        onMouseDown={(event) => event.preventDefault()}
+                      >
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+                sx={inputSx}
               />
             </Grid>
           </Grid>
@@ -85,7 +121,7 @@ const RegisterForm = ({ form, updateField, onSubmit }) => {
             fullWidth
             variant="contained"
             sx={{
-              mt: 2,
+              mt: 3,
               mb: 1,
               background: 'linear-gradient(to right, #6fceee, #4bcffa)',
               borderRadius: '10px',

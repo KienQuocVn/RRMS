@@ -17,17 +17,12 @@ import com.rrms.rrms.database.seed.OperationSeeder;
 import com.rrms.rrms.database.seed.PropertySeeder;
 import com.rrms.rrms.models.Account;
 import com.rrms.rrms.models.BulletinBoard;
-import com.rrms.rrms.models.Contract;
-import com.rrms.rrms.models.Device;
 import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.models.MotelDevice;
 import com.rrms.rrms.models.MotelService;
 import com.rrms.rrms.models.Room;
-import com.rrms.rrms.models.Service;
-import com.rrms.rrms.models.Tenant;
 import com.rrms.rrms.models.TypeRoom;
 import com.rrms.rrms.repositories.AccountRepository;
-import com.rrms.rrms.repositories.InvoiceRepository;
 import com.rrms.rrms.repositories.MotelDeviceRepository;
 import com.rrms.rrms.repositories.MotelServiceRepository;
 
@@ -60,7 +55,6 @@ public class DB {
     private final AccountRepository accountRepository;
     private final MotelServiceRepository motelServiceRepository;
     private final MotelDeviceRepository motelDeviceRepository;
-    private final InvoiceRepository invoiceRepository;
 
     private final AccountSeeder accountSeeder;
     private final CatalogSeeder catalogSeeder;
@@ -83,17 +77,17 @@ public class DB {
             accountSeeder.seedRolesAndPermissions();
 
             // ── 2. Accounts ────────────────────────────────────────────────────
-            Account admin = accountSeeder.seedAdmin();
+            accountSeeder.seedAdmin();
             Account host = accountSeeder.seedHost();
-            Account host2 = accountSeeder.seedHost2();
+            accountSeeder.seedHost2();
             Account employee = accountSeeder.seedEmployee();
             Account customer = accountSeeder.seedCustomer();
 
             // ── 3. Danh mục tĩnh ──────────────────────────────────────────────
             Map<String, TypeRoom> typeRooms = catalogSeeder.seedTypeRooms();
             catalogSeeder.seedNameMotelServices();
-            Map<String, Service> coreServices = catalogSeeder.seedCoreServices();
-            List<Device> deviceCatalog = catalogSeeder.seedDeviceCatalog();
+            catalogSeeder.seedCoreServices();
+            catalogSeeder.seedDeviceCatalog();
             catalogSeeder.seedPaymentMethods();
 
             // ── 4. Nhà trọ & Phòng ────────────────────────────────────────────
@@ -106,19 +100,12 @@ public class DB {
             List<MotelDevice> allMotelDevices = motelDeviceRepository.findAll();
             List<Room> rooms = propertySeeder.seedRooms(motels, allMotelServices, allMotelDevices, imageIndexRef);
 
-            // ── 5. Hợp đồng & Khách thuê ──────────────────────────────────────
-            List<Tenant> tenants = contractSeeder.seedTenants(10);
+            // ── 5. Hợp đồng template & Môi giới (không seed fake tenant/contract) ─
             contractSeeder.seedContractTemplates(motels);
             contractSeeder.seedBrokers(motels);
-            List<Contract> contracts = contractSeeder.seedContracts(rooms, tenants, host);
-            contractSeeder.seedContractDetails(contracts, tenants, deviceCatalog);
 
             // ── 6. Vận hành ───────────────────────────────────────────────────
-            operationSeeder.seedMeterReadings(contracts, coreServices);
-            operationSeeder.seedInvoices(contracts);
-            operationSeeder.seedTransactions(invoiceRepository.findAll(), host);
             operationSeeder.seedReservations(rooms);
-            operationSeeder.seedCars(contracts);
             operationSeeder.seedSupports(customer, employee);
 
             // ── 7. Thị trường bài đăng ────────────────────────────────────────

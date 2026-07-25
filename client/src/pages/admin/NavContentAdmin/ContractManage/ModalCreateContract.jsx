@@ -21,8 +21,9 @@ import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
 import BookIcon from '@mui/icons-material/Book'
 import PersonIcon from '@mui/icons-material/Person'
-import SettingsIcon from '@mui/icons-material/Settings'
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
+import Inventory2Icon from '@mui/icons-material/Inventory2'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import Swal from 'sweetalert2'
 import {
   getRoomById,
@@ -31,7 +32,6 @@ import {
   DeleteRoomServiceByid,
   createRoomService
 } from '~/apis/roomAPI'
-import { getPhuongXa, getQuanHuyen, getTinhThanh } from '~/apis/addressAPI'
 import { getMotelById } from '~/apis/motelAPI'
 import { getAllMotelDevices, getAllDeviceByRomId, deleteRoomDevice, insertRoomDevice } from '~/apis/deviceAPT'
 import { getContractTemplatesByMotelId, createTenant, createContract } from '~/apis/contractTemplateAPI'
@@ -68,12 +68,6 @@ const formatCurrencyValue = (value) => formatVndInput(value) || '0'
 function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSuccess }) {
   const username = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).username : null
   const [room, setRoom] = useState({})
-  const [provinces, setProvinces] = useState([])
-  const [districts, setDistricts] = useState([])
-  const [wards, setWards] = useState([])
-  const [selectedProvince, setSelectedProvince] = useState('')
-  const [selectedDistrict, setSelectedDistrict] = useState('')
-  const [selectedWard, setSelectedWard] = useState('')
   const [motelServices, setMotelServices] = useState([])
   const [motelDevices, setMotelSDevices] = useState([])
   const [contractTemplates, setcontractTemplates] = useState([])
@@ -119,7 +113,10 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
     signcontract: 'Khách chưa ký',
     language: 'Tieng Viet',
     countTenant: 1,
-    status: 'ACTIVE'
+    status: 'ACTIVE',
+    commissionRate: 0,
+    commissionAmount: 0,
+    invoiceDate: 1
   })
 
   const fetchDataRoom = async (id) => {
@@ -210,56 +207,11 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
     setTenant((prev) => ({ ...prev, [name]: value }))
   }
 
-  const fetchCity = async () => {
-    try {
-      const response = await getTinhThanh()
-      if (response.data.error === 0) {
-        setProvinces(response.data.data)
-      }
-    } catch (error) {
-      console.error('Error fetching provinces:', error)
+  const handlePhotoUpload = (e, type) => {
+    const file = e.target.files[0]
+    if (file) {
+      setTenant(prev => ({ ...prev, [type]: file }))
     }
-  }
-
-  const fetchDistricts = async (provinceId) => {
-    try {
-      const response = await getQuanHuyen(provinceId)
-      if (response.data.error === 0) {
-        setDistricts(response.data.data)
-      }
-    } catch (error) {
-      console.error('Error fetching districts:', error)
-    }
-  }
-
-  const fetchWards = async (districtId) => {
-    try {
-      const response = await getPhuongXa(districtId)
-      if (response.data.error === 0) {
-        setWards(response.data.data)
-      }
-    } catch (error) {
-      console.error('Error fetching wards:', error)
-    }
-  }
-
-  const handleProvinceChange = (e) => {
-    const provinceId = Number(e.target.value)
-    setSelectedProvince(provinceId)
-    setSelectedDistrict('')
-    setSelectedWard('')
-    fetchDistricts(provinceId)
-  }
-
-  const handleDistrictChange = (e) => {
-    const districtId = Number(e.target.value)
-    setSelectedDistrict(districtId)
-    setSelectedWard('')
-    fetchWards(districtId)
-  }
-
-  const handleWardChange = (e) => {
-    setSelectedWard(Number(e.target.value))
   }
 
   const fetchMotelServices = async (id) => {
@@ -331,14 +283,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
   }
 
   const buildTenantAddress = () => {
-    const provinceName = provinces.find((province) => String(province.id) === String(selectedProvince))?.full_name || ''
-    const districtName = districts.find((district) => String(district.id) === String(selectedDistrict))?.full_name || ''
-    const wardName = wards.find((ward) => String(ward.id) === String(selectedWard))?.full_name || ''
-
-    return [tenant.address, wardName, districtName, provinceName]
-      .map((part) => (part ? String(part).trim() : ''))
-      .filter(Boolean)
-      .join(', ')
+    return '' // Removed address as requested
   }
 
   const validateBeforeSubmit = () => {
@@ -421,7 +366,6 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
       fetchMotelServices(motelId)
       fetchMotelDevices(motelId)
       fetchMotelContractTemplate(motelId)
-      fetchCity()
     }
   }, [modalOpen, roomId, motelId]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -457,12 +401,17 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
         <Grid container spacing={3} sx={{ mt: 0.5 }}>
           {/* Section: Thời hạn hợp đồng */}
           <Grid item xs={12}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <SettingsIcon sx={{ mr: 1, color: '#20a9e7' }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+                <CalendarTodayIcon sx={{ color: '#20a9e7' }} fontSize="small" />
+              </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 Thời hạn hợp đồng
               </Typography>
             </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+              Dùng xác định ngày vào ở, văn bản hợp đồng...
+            </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
@@ -492,7 +441,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                 <TextField
                   fullWidth
                   type="date"
-                  label="Ngày vào ở"
+                  label="Ngày vào ở *"
                   name="moveinDate"
                   value={contract.moveinDate}
                   onChange={handleContractChange}
@@ -504,7 +453,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                 <TextField
                   fullWidth
                   type="date"
-                  label="Ngày kết thúc hợp đồng"
+                  label="Ngày đến hạn hợp đồng"
                   name="closeContract"
                   value={contract.closeContract}
                   onChange={handleContractChange}
@@ -521,18 +470,23 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
 
           {/* Section: Thông tin khách thuê */}
           <Grid item xs={12}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <PersonIcon sx={{ mr: 1, color: '#20a9e7' }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+                <PersonIcon sx={{ color: '#20a9e7' }} fontSize="small" />
+              </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 Thông tin khách thuê
               </Typography>
             </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+              Dùng để làm tạm trú, văn bản hợp đồng...
+            </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   type="number"
-                  label="Số lượng thành viên"
+                  label="Số lượng thành viên *"
                   name="countTenant"
                   value={contract.countTenant}
                   onChange={handleContractChange}
@@ -543,23 +497,37 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
               <Grid item xs={6}>
                 <TextField
                   fullWidth
-                  label="Tên người ở"
+                  label="Tên người ở *"
                   name="fullName"
                   value={tenant.fullName}
                   onChange={handleTenantChange}
                   size="small"
-                  required
+                  error={!tenant.fullName?.trim()}
+                  helperText={!tenant.fullName?.trim() ? 'Vui lòng nhập tên người ở' : ''}
                 />
               </Grid>
               <Grid item xs={6}>
                 <TextField
                   fullWidth
-                  label="Số điện thoại"
+                  label="Số điện thoại người ở *"
                   name="phone"
                   value={tenant.phone}
                   onChange={handleTenantChange}
                   size="small"
-                  required
+                  error={!tenant.phone?.trim()}
+                  helperText={!tenant.phone?.trim() ? 'Vui lòng nhập sđt người ở' : 'Nhập sđt ZALO để hỗ trợ gửi hóa đơn tự động'}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={<Checkbox defaultChecked sx={{ color: '#20a9e7', '&.Mui-checked': { color: '#20a9e7' } }} />}
+                  label={
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#20a9e7' }}>Sử dụng APP - Dành cho khách thuê</Typography>
+                      <Typography variant="caption" color="text.secondary">Gửi hóa đơn tự động cho khách, hợp đồng online vv...</Typography>
+                    </Box>
+                  }
+                  sx={{ bgcolor: '#fff3e0', p: 1, borderRadius: 1, width: '100%', ml: 0 }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -575,62 +543,32 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
               <Grid item xs={6}>
                 <TextField
                   fullWidth
-                  select
-                  label="Tỉnh/Thành phố"
-                  value={selectedProvince}
-                  onChange={handleProvinceChange}
-                  size="small">
-                  <MenuItem value="">Chọn Tỉnh/Thành phố</MenuItem>
-                  {provinces.map((p) => (
-                    <MenuItem key={p.id} value={p.id}>
-                      {p.full_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  type="date"
+                  label="Ngày sinh"
+                  name="birthday"
+                  value={tenant.birthday || ''}
+                  onChange={handleTenantChange}
+                  InputLabelProps={{ shrink: true }}
+                  size="small"
+                />
               </Grid>
               <Grid item xs={6}>
                 <TextField
-                  fullWidth
                   select
-                  label="Quận/Huyện"
-                  value={selectedDistrict}
-                  onChange={handleDistrictChange}
-                  size="small"
-                  disabled={!selectedProvince}>
-                  <MenuItem value="">Chọn quận/huyện</MenuItem>
-                  {districts.map((d) => (
-                    <MenuItem key={d.id} value={d.id}>
-                      {d.full_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
                   fullWidth
-                  select
-                  label="Phường/Xã"
-                  value={selectedWard}
-                  onChange={handleWardChange}
-                  size="small"
-                  disabled={!selectedDistrict}>
-                  <MenuItem value="">Chọn Phường/Xã</MenuItem>
-                  {wards.map((w) => (
-                    <MenuItem key={w.id} value={w.id}>
-                      {w.full_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Địa chỉ cụ thể"
-                  name="address"
-                  value={tenant.address}
+                  label="Giới tính *"
+                  name="gender"
+                  value={tenant.gender}
                   onChange={handleTenantChange}
-                  size="small"
-                />
+                  size="small">
+                  <MenuItem value="MALE">Nam</MenuItem>
+                  <MenuItem value="FEMALE">Nữ</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} sx={{ textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ color: '#20a9e7', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}>
+                  Mở rộng thông tin khách thuê
+                </Typography>
               </Grid>
             </Grid>
           </Grid>
@@ -641,14 +579,17 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
 
           {/* Section: Dịch vụ sử dụng */}
           <Grid item xs={12}>
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+                <Inventory2Icon sx={{ color: '#20a9e7' }} fontSize="small" />
+              </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 Dịch vụ sử dụng
               </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Thêm dịch vụ sử dụng như: điện, nước, rác, wifi...
-              </Typography>
             </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+              Thêm dịch vụ sử dụng như: điện, nước, rác, wifi...
+            </Typography>
             <Box sx={{ border: '1px solid #eee', borderRadius: 1, p: 2 }}>
               {motelServices.map((service) => {
                 const isSelected = roomServices.some((s) => s.motelServiceId === service.motelServiceId && s.isSelected)
@@ -724,17 +665,22 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
 
           {/* Section: Giá trị hợp đồng */}
           <Grid item xs={12}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <AttachMoneyIcon sx={{ mr: 1, color: '#20a9e7' }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+                <Inventory2Icon sx={{ color: '#20a9e7' }} fontSize="small" />
+              </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                Giá trị hợp đồng
+                Thông tin giá trị hợp đồng:
               </Typography>
             </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+              Giá tiền phòng và mức tiền cọc sẽ thu
+            </Typography>
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <TextField
                   fullWidth
-                  label="Giá thuê"
+                  label="Giá thuê (đ) *"
                   name="price"
                   value={formatVndInput(contract.price)}
                   onChange={handleContractChange}
@@ -746,7 +692,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
               <Grid item xs={6}>
                 <TextField
                   fullWidth
-                  label="Tiền cọc"
+                  label="Tiền cọc (đ) *"
                   name="deposit"
                   value={formatVndInput(contract.deposit)}
                   onChange={handleContractChange}
@@ -755,21 +701,44 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                   {...getVndInputFieldProps()}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={6}>
                 <TextField
                   select
                   fullWidth
-                  label="Mẫu văn bản hợp đồng"
-                  value={contract.contracttemplateId || ''}
-                  onChange={(e) => setContract((prev) => ({ ...prev, contracttemplateId: e.target.value }))}
+                  label="Chu kỳ thu tiền"
+                  name="collectioncycle"
+                  value={contract.collectioncycle}
+                  onChange={handleContractChange}
                   size="small">
-                  <MenuItem value="">--Chọn mẫu--</MenuItem>
-                  {contractTemplates.map((t) => (
-                    <MenuItem key={t.contractTemplateId} value={t.contractTemplateId}>
-                      {t.templatename}
-                    </MenuItem>
-                  ))}
+                  <MenuItem value="1">1 tháng</MenuItem>
+                  <MenuItem value="2">2 tháng</MenuItem>
+                  <MenuItem value="3">3 tháng</MenuItem>
+                  <MenuItem value="6">6 tháng</MenuItem>
                 </TextField>
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Ngày thu tiền hàng tháng *"
+                  name="invoiceDate"
+                  value={contract.invoiceDate}
+                  onChange={handleContractChange}
+                  size="small"
+                  {...getNonNegativeNumberFieldProps()}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Ghi chú"
+                  name="description"
+                  value={contract.description}
+                  onChange={handleContractChange}
+                  size="small"
+                  multiline
+                  rows={2}
+                />
               </Grid>
             </Grid>
           </Grid>
@@ -780,11 +749,17 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
 
           {/* Section: Tài sản phòng */}
           <Grid item xs={12}>
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+                <Inventory2Icon sx={{ color: '#20a9e7' }} fontSize="small" />
+              </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 Tài sản của phòng
               </Typography>
             </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+              Các tài sản trong quá trình thuê phòng
+            </Typography>
             <Box sx={{ border: '1px solid #eee', borderRadius: 1, p: 2 }}>
               {motelDevices.map((device) => {
                 const isSelected = roomDevices.some((d) => d.motel_device_id === device.motel_device_id && d.isSelected)
@@ -852,6 +827,142 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                 )
               })}
             </Box>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
+
+          {/* Section: Mẫu văn bản hợp đồng */}
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+                <Inventory2Icon sx={{ color: '#20a9e7' }} fontSize="small" />
+              </Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                Chọn mẫu văn bản hợp đồng
+              </Typography>
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+              Bạn có thể cấu hình mẫu của mình, Nếu chưa có hãy tạo mẫu
+            </Typography>
+            <TextField
+              select
+              fullWidth
+              label="Danh sách mẫu văn bản hợp đồng đang có"
+              value={contract.contracttemplateId || ''}
+              onChange={(e) => setContract((prev) => ({ ...prev, contracttemplateId: e.target.value }))}
+              size="small">
+              <MenuItem value="">--Chọn mẫu--</MenuItem>
+              {contractTemplates.map((t) => (
+                <MenuItem key={t.contractTemplateId} value={t.contractTemplateId}>
+                  {t.templatename}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
+
+          {/* Section: Chứng từ */}
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+                <Inventory2Icon sx={{ color: '#20a9e7' }} fontSize="small" />
+              </Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                Chứng từ
+              </Typography>
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+              Hình ảnh chứng từ
+            </Typography>
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{ p: 3, borderStyle: 'dashed', bgcolor: '#e3f2fd', borderColor: '#20a9e7', color: '#20a9e7' }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                <CloudUploadIcon fontSize="large" />
+                <Typography>
+                  {tenant.frontPhoto ? tenant.frontPhoto.name : 'Hình ảnh chứng từ hợp đồng'}
+                </Typography>
+              </Box>
+              <input type="file" hidden accept="image/*" onChange={(e) => handlePhotoUpload(e, 'frontPhoto')} />
+            </Button>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Divider />
+          </Grid>
+
+          {/* Section: Môi giới */}
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+                <Inventory2Icon sx={{ color: '#20a9e7' }} fontSize="small" />
+              </Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                Môi giới
+              </Typography>
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+              Chọn người giới thiệu hợp đồng và phí môi giới
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Danh sách môi giới"
+                  name="brokerId"
+                  value={contract.brokerId || ''}
+                  onChange={handleContractChange}
+                  size="small">
+                  <MenuItem value="">--- Chọn môi giới ---</MenuItem>
+                  <MenuItem value="1">Nguyễn Văn A</MenuItem>
+                  <MenuItem value="2">Trần Thị B</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Mức hoa hồng (%)"
+                  name="commissionRate"
+                  value={contract.commissionRate || 0}
+                  onChange={handleContractChange}
+                  size="small"
+                  type="number"
+                  {...getNonNegativeNumberFieldProps()}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Số tiền nhận (đ)"
+                  name="commissionAmount"
+                  value={formatVndInput(contract.commissionAmount || 0)}
+                  onChange={handleContractChange}
+                  size="small"
+                  InputProps={{ endAdornment: <InputAdornment position="end">đ</InputAdornment> }}
+                  {...getVndInputFieldProps()}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={<Checkbox defaultChecked sx={{ color: '#20a9e7', '&.Mui-checked': { color: '#20a9e7' } }} />}
+                  label={
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Tạo phiếu chi</Typography>
+                      <Typography variant="caption" color="text.secondary">Tạo phiếu chi hoa hồng cho môi giới</Typography>
+                    </Box>
+                  }
+                />
+              </Grid>
+            </Grid>
           </Grid>
         </Grid>
       </DialogContent>

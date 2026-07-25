@@ -85,16 +85,7 @@ export default function LoginScreen() {
 
           <PasswordHints password={password} />
 
-          {showDevNetworkHint ? (
-            <View style={styles.devHintContainer}>
-              <Text style={styles.devHintTitle}>Dev API: {API_BASE_URL}</Text>
-              <Text style={styles.devHintText}>
-                Dia chi nay chi dung duoc khi dien thoai cung Wi-Fi/LAN voi may chay backend.
-                App se tu thu lan luot: {apiCandidates}. Neu status bar hien 4G hoac backend dang
-                o may khac, hay dung npm run start:tunnel hoac khai bao EXPO_PUBLIC_API_URL.
-              </Text>
-            </View>
-          ) : null}
+          
 
           {authError ? (
             <View style={styles.errorContainer}>

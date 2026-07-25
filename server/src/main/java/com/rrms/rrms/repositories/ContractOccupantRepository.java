@@ -15,5 +15,7 @@ public interface ContractOccupantRepository extends JpaRepository<ContractOccupa
 
     List<ContractOccupant> findByContract_Room_RoomId(UUID roomId);
 
+    List<ContractOccupant> findByContract_Room_Motel_MotelId(UUID motelId);
+
     void deleteByContract_Room_RoomId(UUID roomId);
 }

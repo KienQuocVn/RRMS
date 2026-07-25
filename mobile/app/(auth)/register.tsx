@@ -33,18 +33,25 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const [step, setStep] = useState<1 | 2>(1);
   const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [otp, setOtp] = useState('');
-  const [userType, setUserType] = useState<UserType>('CUSTOMER');
+  const [userType, setUserType] = useState<UserType>('HOST');
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(auth)/login');
+    }
+  };
 
   const validateRegisterForm = () => {
-    if (!username.trim() || !phone.trim() || !email.trim() || !password.trim()) {
+    if (!username.trim() || !phone.trim() || !password.trim()) {
       return 'Vui lòng điền đầy đủ thông tin bắt buộc.';
     }
 
@@ -55,10 +62,6 @@ export default function RegisterScreen() {
     const normalizedPhone = phone.replace(/\D/g, '');
     if (normalizedPhone.length < 10 || normalizedPhone.length > 11) {
       return 'Số điện thoại phải từ 10 đến 11 số.';
-    }
-
-    if (!EMAIL_PATTERN.test(email.trim())) {
-      return 'Email không hợp lệ.';
     }
 
     if (password.length < 8) {
@@ -72,67 +75,43 @@ export default function RegisterScreen() {
     return null;
   };
 
-  const requestOtp = async () => {
+  const handleRegister = async () => {
+    setSuccessMessage('');
+    setErrorMessage('');
+
     const validationError = validateRegisterForm();
     if (validationError) {
-      Alert.alert('Thông tin chưa hợp lệ', validationError);
+      setErrorMessage(validationError);
       return;
     }
 
     setLoading(true);
     try {
-      const response = await authService.authenticationRegister(email.trim());
-
-      if (response.code === 200 && response.result) {
-        setStep(2);
-        Alert.alert('Đã gửi mã xác thực', 'OTP đã được gửi tới email của bạn. Mã có hiệu lực trong 5 phút.');
-        return;
-      }
-
-      Alert.alert('Không thể gửi OTP', response.message || 'Yêu cầu xác thực đăng ký thất bại.');
-    } catch (err: any) {
-      Alert.alert('Lỗi kết nối', err?.response?.data?.message || 'Không thể kết nối máy chủ.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCompleteRegister = async () => {
-    if (!otp.trim()) {
-      Alert.alert('Thiếu mã OTP', 'Vui lòng nhập mã xác thực đã gửi qua email.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const verifyResponse = await authService.acceptAuthenticationRegister(email.trim(), otp.trim());
-
-      if (!(verifyResponse.code === 200 && verifyResponse.result)) {
-        Alert.alert('OTP không hợp lệ', verifyResponse.message || 'Mã OTP không đúng hoặc đã hết hạn.');
-        return;
-      }
-
       const registerResponse = await authService.register({
         username: username.trim(),
         phone: phone.replace(/\D/g, ''),
-        email: email.trim(),
         password,
         userType,
       });
 
       if (registerResponse.code === 1000 || registerResponse.result?.status) {
-        Alert.alert('Đăng ký thành công', 'Tài khoản của bạn đã được tạo. Hãy đăng nhập để tiếp tục.', [
-          {
-            text: 'Đăng nhập',
-            onPress: () => router.replace('/(auth)/login'),
-          },
-        ]);
+        setSuccessMessage('Đăng ký thành công! Đang chuyển hướng sang trang đăng nhập...');
+        setTimeout(() => {
+          router.replace('/(auth)/login');
+        }, 1500);
         return;
       }
 
-      Alert.alert('Đăng ký thất bại', registerResponse.message || 'Không thể tạo tài khoản.');
+      const errorMsg = registerResponse.message || 'Không thể tạo tài khoản.';
+      setErrorMessage(`Đăng ký thất bại: ${errorMsg}`);
     } catch (err: any) {
-      Alert.alert('Lỗi kết nối', err?.response?.data?.message || 'Không thể kết nối máy chủ.');
+      const serverErrorMsg = err?.response?.data?.message;
+      if (serverErrorMsg) {
+        setErrorMessage(`Đăng ký thất bại: ${serverErrorMsg}`);
+      } else {
+        const connErrorMsg = err?.message || 'Không thể kết nối máy chủ.';
+        setErrorMessage(`Lỗi kết nối: ${connErrorMsg}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -145,7 +124,7 @@ export default function RegisterScreen() {
     >
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={handleBack}
           style={styles.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
@@ -164,139 +143,81 @@ export default function RegisterScreen() {
         <AuthLogo size="small" />
 
         <View style={styles.form}>
-          {step === 1 ? (
-            <>
+          <AuthInput
+            label="Tên đăng nhập"
+            required
+            placeholder="Nhập tên đăng nhập"
+            value={username}
+            onChangeText={setUsername}
+          />
+
+          <AuthInput
+            label="Số điện thoại"
+            required
+            placeholder="Nhập đúng SĐT của bạn"
+            keyboardType="phone-pad"
+            value={phone}
+            onChangeText={setPhone}
+          />
+
+
+
+          <View style={styles.passwordRow}>
+            <View style={styles.passwordCol}>
               <AuthInput
-                label="Tên đăng nhập"
+                label="Mật khẩu"
                 required
-                placeholder="Nhập tên đăng nhập"
-                value={username}
-                onChangeText={setUsername}
+                placeholder="Nhập mật khẩu"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+                containerStyle={styles.noMarginBottom}
               />
-
+            </View>
+            <View style={styles.passwordColGap} />
+            <View style={styles.passwordCol}>
               <AuthInput
-                label="Số điện thoại"
+                label="Xác nhận mật khẩu"
                 required
-                placeholder="Nhập đúng SĐT của bạn"
-                keyboardType="phone-pad"
-                value={phone}
-                onChangeText={setPhone}
+                placeholder="Nhập lại mật khẩu"
+                secureTextEntry
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                containerStyle={styles.noMarginBottom}
               />
+            </View>
+          </View>
 
-              <AuthInput
-                label="Email xác thực"
-                required
-                placeholder="Nhập email để nhận OTP"
-                keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail}
-              />
+          <PasswordHints password={password} />
 
-              <Text style={styles.label}>
-                Bạn đăng ký với vai trò? <Text style={styles.required}>*</Text>
-              </Text>
-              <View style={styles.radioGroup}>
-                <RoleOption
-                  label="Chủ trọ"
-                  active={userType === 'HOST'}
-                  onPress={() => setUserType('HOST')}
-                />
-                <RoleOption
-                  label="Người tìm trọ"
-                  active={userType === 'CUSTOMER'}
-                  onPress={() => setUserType('CUSTOMER')}
-                />
-                <RoleOption
-                  label="Môi giới"
-                  active={userType === 'BROKER'}
-                  onPress={() => setUserType('BROKER')}
-                />
-              </View>
+          <Text style={styles.terms}>
+            Khi tạo tài khoản là bạn đã chấp nhận{' '}
+            <Text style={styles.termsLink}>Điều khoản dịch vụ</Text>
+            {' '}và{' '}
+            <Text style={styles.termsLink}>Chính sách bảo mật</Text>
+            {' '}của chúng tôi.
+          </Text>
 
-              <View style={styles.passwordRow}>
-                <View style={styles.passwordCol}>
-                  <AuthInput
-                    label="Mật khẩu"
-                    required
-                    placeholder="Nhập mật khẩu"
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword}
-                    containerStyle={styles.noMarginBottom}
-                  />
-                </View>
-                <View style={styles.passwordColGap} />
-                <View style={styles.passwordCol}>
-                  <AuthInput
-                    label="Xác nhận mật khẩu"
-                    required
-                    placeholder="Nhập lại mật khẩu"
-                    secureTextEntry
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    containerStyle={styles.noMarginBottom}
-                  />
-                </View>
-              </View>
+          {errorMessage ? (
+            <WarningBox variant="error" message={errorMessage} />
+          ) : null}
 
-              <PasswordHints password={password} />
+          {successMessage ? (
+            <WarningBox variant="info" message={successMessage} />
+          ) : null}
 
-              <Text style={styles.terms}>
-                Khi tạo tài khoản là bạn đã chấp nhận{' '}
-                <Text style={styles.termsLink}>Điều khoản dịch vụ</Text>
-                {' '}và{' '}
-                <Text style={styles.termsLink}>Chính sách bảo mật</Text>
-                {' '}của chúng tôi.
-              </Text>
+          <AuthButton
+            title="Đăng ký"
+            variant="primary"
+            onPress={handleRegister}
+            loading={loading}
+          />
 
-              <AuthButton
-                title="Nhận mã xác thực"
-                variant="primary"
-                onPress={requestOtp}
-                loading={loading}
-              />
-
-              <AuthButton
-                title="Bạn đã có tài khoản, Đăng nhập?"
-                variant="outline"
-                onPress={() => router.replace('/(auth)/login')}
-              />
-            </>
-          ) : (
-            <>
-              <WarningBox
-                variant="info"
-                message={`Mã OTP đã được gửi tới ${email.trim()}. Hãy nhập mã trong vòng 5 phút để hoàn tất đăng ký.`}
-              />
-
-              <AuthInput
-                label="Mã OTP"
-                required
-                placeholder="Nhập mã xác thực"
-                keyboardType="number-pad"
-                value={otp}
-                onChangeText={setOtp}
-              />
-
-              <AuthButton
-                title="Xác thực và tạo tài khoản"
-                variant="primary"
-                onPress={handleCompleteRegister}
-                loading={loading}
-              />
-
-              <AuthButton
-                title="Gửi lại mã OTP"
-                variant="outline"
-                onPress={requestOtp}
-                disabled={loading}
-              />
-
-              <TouchableOpacity onPress={() => setStep(1)} style={styles.secondaryLink}>
-                <Text style={styles.secondaryLinkText}>Quay lại chỉnh thông tin đăng ký</Text>
-              </TouchableOpacity>
-            </>
-          )}
+          <AuthButton
+            title="Bạn đã có tài khoản, Đăng nhập?"
+            variant="outline"
+            onPress={() => router.replace('/(auth)/login')}
+          />
         </View>
 
         <SupportFooter showSupportDetails />
@@ -305,25 +226,7 @@ export default function RegisterScreen() {
   );
 }
 
-interface RoleOptionProps {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-}
 
-function RoleOption({ label, active, onPress }: RoleOptionProps) {
-  return (
-    <TouchableOpacity
-      style={[styles.radioButton, active && styles.radioButtonActive]}
-      onPress={onPress}
-    >
-      <View style={[styles.radioCircle, active && styles.radioCircleActive]}>
-        {active ? <View style={styles.radioInnerCircle} /> : null}
-      </View>
-      <Text style={[styles.radioLabel, active && styles.radioLabelActive]}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
 
 const styles = StyleSheet.create({
   flex: {
@@ -375,55 +278,7 @@ const styles = StyleSheet.create({
   required: {
     color: Colors.error,
   },
-  radioGroup: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.lg,
-    gap: Spacing.xs,
-  },
-  radioButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    backgroundColor: Colors.white,
-  },
-  radioButtonActive: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primary + '08',
-  },
-  radioCircle: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 2,
-    borderColor: Colors.gray400,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 6,
-  },
-  radioCircleActive: {
-    borderColor: Colors.primary,
-  },
-  radioInnerCircle: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: Colors.primary,
-  },
-  radioLabel: {
-    fontSize: 12,
-    color: Colors.gray600,
-    fontWeight: FontWeights.medium,
-  },
-  radioLabelActive: {
-    color: Colors.primary,
-    fontWeight: FontWeights.bold,
-  },
+
   passwordRow: {
     flexDirection: 'row',
     marginBottom: Spacing.base,

@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StateStorage } from 'zustand/middleware';
 
+import { Platform } from 'react-native';
+
 const memoryStorage = new Map<string, string>();
 
 let hasWarnedStorageFallback = false;
@@ -14,10 +16,15 @@ function warnStorageFallback(error: unknown) {
   console.warn('[Storage] AsyncStorage unavailable, falling back to in-memory storage.', error);
 }
 
+const isServer = Platform.OS === 'web' && typeof window === 'undefined';
+
 async function runWithFallback<T>(
   action: () => Promise<T>,
   fallback: () => T,
 ): Promise<T> {
+  if (isServer) {
+    return fallback();
+  }
   try {
     return await action();
   } catch (error) {

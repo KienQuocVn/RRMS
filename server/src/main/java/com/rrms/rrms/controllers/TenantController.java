@@ -125,4 +125,15 @@ public class TenantController {
                 .result(tenantResponses)
                 .build();
     }
+
+    @Operation(summary = "Get all tenants by motel id")
+    @GetMapping("/motel/{motelId}")
+    public ApiResponse<List<TenantResponse>> getAllTenantsByMotelId(@PathVariable("motelId") UUID motelId) {
+        List<TenantResponse> tenantResponses = tenantService.getAllTenantsByMotelId(motelId);
+        return ApiResponse.<List<TenantResponse>>builder()
+                .message("Lấy danh sách người thuê theo nhà trọ thành công")
+                .code(HttpStatus.OK.value())
+                .result(tenantResponses)
+                .build();
+    }
 }

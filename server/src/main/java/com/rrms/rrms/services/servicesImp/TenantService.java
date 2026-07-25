@@ -177,6 +177,18 @@ public class TenantService implements ITenantService {
     }
 
     @Override
+    public List<TenantResponse> getAllTenantsByMotelId(UUID motelId) {
+        return contractOccupantRepository.findByContract_Room_Motel_MotelId(motelId).stream()
+                .map(occupant -> tenantMapper.toTenantResponse(occupant.getTenant()))
+                // loại bỏ trùng lặp nếu cùng tenant ở nhiều hợp đồng
+                .collect(java.util.stream.Collectors.toMap(
+                        TenantResponse::getTenantId, t -> t, (existing, replacement) -> existing))
+                .values()
+                .stream()
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<TenantSummaryDTO> getTenantSummary() {
         List<Motel> motels = motelRepository.findAll();
         List<TenantSummaryDTO> summaries = new ArrayList<>();

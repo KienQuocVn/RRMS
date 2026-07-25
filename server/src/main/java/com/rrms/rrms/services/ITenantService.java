@@ -22,5 +22,7 @@ public interface ITenantService {
 
     List<TenantResponse> getAllTenantsRoomId(UUID roomId);
 
+    List<TenantResponse> getAllTenantsByMotelId(UUID motelId);
+
     List<TenantSummaryDTO> getTenantSummary();
 }

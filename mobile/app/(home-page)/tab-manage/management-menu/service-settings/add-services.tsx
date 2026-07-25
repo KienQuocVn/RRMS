@@ -592,11 +592,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: BorderRadius.full,
-    backgroundColor: "#F2FAED",
+    backgroundColor: "#20a9e722",
   },
   suggestionChipText: {
     fontSize: FontSizes.sm,
-    color: "#30B45C",
+    color: "#2b7ed7",
     fontWeight: FontWeights.medium,
   },
   meterCard: {
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#E7FAF0",
+    backgroundColor: "#20a9e722",
     alignItems: "center",
     justifyContent: "center",
     marginRight: Spacing.base,
@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   toggleActive: {
-    backgroundColor: "#1DB954",
+    backgroundColor: "#2b7ed7",
   },
   toggleThumb: {
     width: 24,
@@ -722,7 +722,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
-    backgroundColor: "#F2FAED",
+    backgroundColor: "#20a9e722",
   },
   priceSuffixText: {
     fontSize: FontSizes.base,
