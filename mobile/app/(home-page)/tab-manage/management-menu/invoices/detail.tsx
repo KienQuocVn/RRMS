@@ -97,7 +97,7 @@ function ActionCard({
       >
         <Ionicons
           name={icon}
-          size={24}
+          size={19}
           color={filled || destructive ? Colors.white : "#000"}
         />
       </View>
@@ -241,11 +241,11 @@ export default function InvoiceDetailFigmaScreen() {
         ]}
       >
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color="#000" />
+          <Ionicons name="arrow-back" size={19} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Chi tiết hóa đơn</Text>
         <TouchableOpacity style={styles.settingButton}>
-          <Ionicons name="settings" size={24} color="#000" />
+          <Ionicons name="settings" size={19} color="#000" />
         </TouchableOpacity>
       </View>
 
@@ -255,7 +255,7 @@ export default function InvoiceDetailFigmaScreen() {
         </View>
       ) : !invoice ? (
         <View style={styles.center}>
-          <Ionicons name="receipt-outline" size={48} color={Colors.gray300} />
+          <Ionicons name="receipt-outline" size={40} color={Colors.gray300} />
           <Text style={styles.emptyTitle}>Không tìm thấy hóa đơn</Text>
         </View>
       ) : (
@@ -358,7 +358,7 @@ export default function InvoiceDetailFigmaScreen() {
           onPress={() => setManualSent((value) => !value)}
         >
           <View style={[styles.checkbox, manualSent && styles.checkboxActive]}>
-            {manualSent ? <Ionicons name="checkmark" size={22} color={GREEN} /> : null}
+            {manualSent ? <Ionicons name="checkmark" size={17} color={GREEN} /> : null}
           </View>
           <Text style={styles.manualText}>
             Đánh dấu đã gửi hóa đơn nợ thủ công cho khách
@@ -367,14 +367,14 @@ export default function InvoiceDetailFigmaScreen() {
 
         <View style={styles.footerActions}>
           <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
-            <Ionicons name="close" size={22} color="#000" />
+            <Ionicons name="close" size={17} color="#000" />
             <Text style={styles.closeText}>Đóng</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.collectButton}
             onPress={() => setShowCollectSheet(true)}
           >
-            <Ionicons name="cash" size={22} color={Colors.white} />
+            <Ionicons name="cash" size={17} color={Colors.white} />
             <Text style={styles.collectButtonText}>Thu tiền</Text>
           </TouchableOpacity>
         </View>
@@ -441,7 +441,7 @@ function CollectPaymentSheet({
           >
             <View style={styles.sheetHeader}>
               <View style={styles.sheetHeaderIcon}>
-                <Ionicons name="pricetag-outline" size={26} color="#000" />
+                <Ionicons name="pricetag-outline" size={20} color="#000" />
               </View>
               <View>
                 <Text style={styles.sheetTitle}>Thu tiền hóa đơn</Text>
@@ -474,7 +474,7 @@ function CollectPaymentSheet({
                   </Text>
                   <Text style={styles.selectValue}>Chọn giá trị</Text>
                 </View>
-                <Ionicons name="chevron-down" size={22} color="#000" />
+                <Ionicons name="chevron-down" size={17} color="#000" />
               </TouchableOpacity>
 
               <View style={styles.dateField}>
@@ -483,7 +483,7 @@ function CollectPaymentSheet({
                   <Text style={styles.selectValue}>25/07/2026</Text>
                 </View>
                 <TouchableOpacity style={styles.clearDateButton}>
-                  <Ionicons name="close" size={20} color="#000" />
+                  <Ionicons name="close" size={15} color="#000" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -499,15 +499,15 @@ function CollectPaymentSheet({
 
             <Text style={styles.sheetLabel}>Hình ảnh chứng từ</Text>
             <View style={styles.proofBox}>
-              <Ionicons name="document-text-outline" size={48} color={GREEN} />
+              <Ionicons name="document-text-outline" size={38} color={GREEN} />
               <Text style={styles.proofText}>Tối đa thêm được 2 hình ảnh</Text>
               <View style={styles.proofActions}>
                 <TouchableOpacity style={styles.proofAction}>
-                  <Ionicons name="aperture-outline" size={24} color="#000" />
+                  <Ionicons name="aperture-outline" size={18} color="#000" />
                   <Text style={styles.proofActionText}>Chụp ảnh</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.proofAction}>
-                  <Ionicons name="add" size={26} color="#000" />
+                  <Ionicons name="add" size={20} color="#000" />
                   <Text style={styles.proofActionText}>Thêm từ thư viện</Text>
                 </TouchableOpacity>
               </View>
@@ -517,7 +517,7 @@ function CollectPaymentSheet({
           <View style={styles.sheetFooter}>
             <TouchableOpacity style={styles.sendReceiptRow} onPress={onToggleSend}>
               <View style={[styles.sendCheckbox, sendReceipt && styles.sendCheckboxActive]}>
-                {sendReceipt ? <Ionicons name="checkmark" size={18} color={BLUE} /> : null}
+                {sendReceipt ? <Ionicons name="checkmark" size={14} color={BLUE} /> : null}
               </View>
               <View style={styles.sendReceiptTextWrap}>
                 <Text style={styles.sendReceiptTitle}>Gửi ZALO & APP khách thuê</Text>
@@ -531,14 +531,14 @@ function CollectPaymentSheet({
 
             <View style={styles.sheetFooterActions}>
               <TouchableOpacity style={styles.sheetCloseButton} onPress={onClose}>
-                <Ionicons name="close" size={22} color="#000" />
+                <Ionicons name="close" size={17} color="#000" />
                 <Text style={styles.sheetCloseText}>Đóng</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.sheetSubmitButton} onPress={onSubmit} disabled={isSubmitting}>
                 {isSubmitting ? (
                   <ActivityIndicator color={Colors.white} />
                 ) : (
-                  <Ionicons name="cash" size={20} color={Colors.white} />
+                  <Ionicons name="cash" size={16} color={Colors.white} />
                 )}
                 <Text style={styles.sheetSubmitText}>
                   {isSubmitting ? "Đang thu tiền..." : "Thực hiện thu tiền"}
@@ -563,7 +563,7 @@ function CollectSuccessModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.successBackdrop}>
         <View style={styles.successDialog}>
-          <Ionicons name="checkmark-circle-outline" size={76} color={GREEN} />
+          <Ionicons name="checkmark-circle-outline" size={58} color={GREEN} />
           <Text style={styles.successDialogTitle}>Thông báo thành công</Text>
           <Text style={styles.successDialogText}>
             Khách thuê đã thanh toán xong kỳ thu này!
@@ -587,11 +587,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: Colors.white,
     borderColor: BORDER,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     flex: 1,
     gap: 6,
-    minHeight: 96,
+    minHeight: 78,
     justifyContent: "center",
   },
   actionCardDanger: {
@@ -600,16 +600,16 @@ const styles = StyleSheet.create({
   actionGrid: {
     flexDirection: "row",
     gap: Spacing.sm,
-    padding: Spacing.base,
+    padding: Spacing.md,
   },
   actionIcon: {
     alignItems: "center",
     borderColor: "#000",
-    borderRadius: 24,
+    borderRadius: 20,
     borderWidth: 1,
-    height: 48,
+    height: 40,
     justifyContent: "center",
-    width: 48,
+    width: 40,
   },
   actionIconDanger: {
     backgroundColor: ORANGE,
@@ -635,9 +635,9 @@ const styles = StyleSheet.create({
   },
   amountNote: {
     color: "#000",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
-    marginTop: Spacing.sm,
+    marginTop: 5,
   },
   amountRight: {
     alignItems: "flex-end",
@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: Spacing.base,
+    paddingVertical: Spacing.md,
   },
   amountRowLabel: {
     color: "#555",
@@ -656,29 +656,29 @@ const styles = StyleSheet.create({
   },
   amountValue: {
     color: "#000",
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
-    marginTop: Spacing.sm,
+    marginTop: 5,
   },
   backButton: {
     alignItems: "center",
     backgroundColor: Colors.gray50,
     borderColor: Colors.gray300,
-    borderRadius: 20,
+    borderRadius: 17,
     borderWidth: 1,
-    height: 40,
+    height: 34,
     justifyContent: "center",
     marginRight: Spacing.sm,
-    width: 40,
+    width: 34,
   },
   checkbox: {
     alignItems: "center",
     borderColor: "#000",
     borderRadius: 3,
     borderWidth: 2,
-    height: 34,
+    height: 26,
     justifyContent: "center",
-    width: 34,
+    width: 26,
   },
   checkboxActive: {
     borderColor: GREEN,
@@ -686,16 +686,16 @@ const styles = StyleSheet.create({
   closeButton: {
     alignItems: "center",
     backgroundColor: "#EEEEEE",
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     flex: 1,
     flexDirection: "row",
     gap: Spacing.sm,
-    height: 50,
+    height: 42,
     justifyContent: "center",
   },
   closeText: {
     color: "#000",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
   },
   center: {
@@ -708,16 +708,16 @@ const styles = StyleSheet.create({
   collectButton: {
     alignItems: "center",
     backgroundColor: GREEN,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     flex: 1,
     flexDirection: "row",
     gap: Spacing.sm,
-    height: 50,
+    height: 42,
     justifyContent: "center",
   },
   collectButtonText: {
     color: Colors.white,
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
   },
   collectSheet: {
@@ -736,18 +736,18 @@ const styles = StyleSheet.create({
   collectSummary: {
     backgroundColor: "#20a9e722",
     borderColor: "#20a9e722",
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     borderWidth: 1.5,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginHorizontal: Spacing.base,
-    marginTop: Spacing.base,
-    minHeight: 76,
-    padding: Spacing.base,
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.md,
+    minHeight: 62,
+    padding: Spacing.md,
   },
   collectValue: {
     color: "#000",
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
     marginTop: Spacing.sm,
   },
@@ -758,23 +758,23 @@ const styles = StyleSheet.create({
   clearDateButton: {
     alignItems: "center",
     backgroundColor: "#DDDDDD",
-    borderRadius: 18,
-    height: 36,
+    borderRadius: 14,
+    height: 28,
     justifyContent: "center",
-    width: 36,
+    width: 28,
   },
   currencyBox: {
     alignItems: "center",
     backgroundColor: "#F5FBEE",
     borderRadius: BorderRadius.md,
-    height: 48,
+    height: 38,
     justifyContent: "center",
     marginRight: Spacing.sm,
-    width: 48,
+    width: 38,
   },
   currencyText: {
     color: "#000",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
   },
   dateField: {
@@ -785,8 +785,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     justifyContent: "space-between",
-    minHeight: 64,
-    paddingHorizontal: Spacing.md,
+    minHeight: 52,
+    paddingHorizontal: Spacing.sm,
   },
   debtLabel: {
     color: "#000",
@@ -795,7 +795,7 @@ const styles = StyleSheet.create({
   },
   debtValue: {
     color: GREEN,
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
     marginTop: 2,
     textAlign: "right",
@@ -807,7 +807,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: Spacing.base,
+    padding: Spacing.md,
   },
   footer: {
     backgroundColor: Colors.white,
@@ -820,9 +820,9 @@ const styles = StyleSheet.create({
   },
   footerActions: {
     flexDirection: "row",
-    gap: Spacing.md,
-    paddingHorizontal: Spacing.base,
-    paddingTop: Spacing.md,
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.sm,
   },
   dragHandle: {
     alignSelf: "center",
@@ -844,13 +844,13 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.gray100,
     borderBottomWidth: 1,
     flexDirection: "row",
-    paddingBottom: Spacing.md,
-    paddingHorizontal: Spacing.base,
+    paddingBottom: Spacing.sm,
+    paddingHorizontal: Spacing.md,
   },
   headerTitle: {
     color: "#000",
     flex: 1,
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
   },
   infoCell: {
@@ -858,14 +858,14 @@ const styles = StyleSheet.create({
     borderLeftColor: BORDER,
     borderLeftWidth: 1,
     flex: 1,
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
   infoGrid: {
     borderColor: BORDER,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
     flexDirection: "row",
-    marginTop: Spacing.xl,
+    marginTop: Spacing.lg,
     overflow: "hidden",
   },
   infoLabel: {
@@ -874,16 +874,16 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     color: "#000",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     marginTop: 4,
   },
   manualRow: {
     alignItems: "center",
     backgroundColor: "#F2F6F5",
     flexDirection: "row",
-    gap: Spacing.md,
-    minHeight: 66,
-    paddingHorizontal: Spacing.base,
+    gap: Spacing.sm,
+    minHeight: 54,
+    paddingHorizontal: Spacing.md,
   },
   manualText: {
     color: "#000",
@@ -900,19 +900,19 @@ const styles = StyleSheet.create({
   paidSection: {
     backgroundColor: Colors.white,
     borderTopColor: PAGE_BG,
-    borderTopWidth: 18,
-    paddingTop: Spacing.xl,
+    borderTopWidth: 12,
+    paddingTop: Spacing.lg,
   },
   paidTitle: {
     color: "#000",
-    fontSize: FontSizes.md,
-    paddingHorizontal: Spacing.base,
+    fontSize: FontSizes.sm,
+    paddingHorizontal: Spacing.md,
     textAlign: "right",
   },
   moneyInput: {
     color: GREEN,
     flex: 1,
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
     textAlign: "center",
   },
@@ -922,7 +922,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     flexDirection: "row",
-    height: 72,
+    height: 56,
     marginTop: Spacing.sm,
   },
   noteField: {
@@ -930,10 +930,10 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     color: "#000",
-    fontSize: FontSizes.md,
-    height: 56,
+    fontSize: FontSizes.sm,
+    height: 46,
     marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.sm,
   },
   proofAction: {
     alignItems: "center",
@@ -942,34 +942,34 @@ const styles = StyleSheet.create({
   },
   proofActions: {
     flexDirection: "row",
-    gap: Spacing.xl,
+    gap: Spacing.lg,
     justifyContent: "center",
-    marginTop: Spacing.lg,
+    marginTop: Spacing.md,
   },
   proofActionText: {
     color: "#000",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
   },
   proofBox: {
     alignItems: "center",
     borderColor: BORDER,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.xl,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.lg,
   },
   proofText: {
     color: "#000",
-    fontSize: FontSizes.md,
-    marginTop: Spacing.md,
+    fontSize: FontSizes.sm,
+    marginTop: Spacing.sm,
   },
   reasonBlock: {
     alignItems: "flex-start",
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: Spacing.xl,
+    paddingVertical: Spacing.lg,
   },
   reasonLabel: {
     color: "#000",
@@ -977,7 +977,7 @@ const styles = StyleSheet.create({
   },
   reasonValue: {
     color: "#000",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
     marginTop: Spacing.sm,
   },
@@ -999,12 +999,12 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     justifyContent: "space-between",
-    minHeight: 64,
-    paddingHorizontal: Spacing.md,
+    minHeight: 52,
+    paddingHorizontal: Spacing.sm,
   },
   selectValue: {
     color: "#000",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
     marginTop: 4,
   },
@@ -1013,9 +1013,9 @@ const styles = StyleSheet.create({
     borderColor: BLUE,
     borderRadius: 5,
     borderWidth: 2,
-    height: 28,
+    height: 22,
     justifyContent: "center",
-    width: 28,
+    width: 22,
   },
   sendCheckboxActive: {
     backgroundColor: Colors.white,
@@ -1027,7 +1027,7 @@ const styles = StyleSheet.create({
   },
   sendReceiptSub: {
     color: "#000",
-    fontSize: FontSizes.sm,
+    fontSize: FontSizes.xs,
     marginTop: 2,
   },
   sendReceiptTextWrap: {
@@ -1035,16 +1035,16 @@ const styles = StyleSheet.create({
   },
   sendReceiptTitle: {
     color: BLUE,
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
   },
   settingButton: {
     alignItems: "center",
     borderColor: "#000",
-    borderRadius: 20,
+    borderRadius: 17,
     borderWidth: 1,
-    height: 40,
+    height: 34,
     justifyContent: "center",
-    width: 40,
+    width: 34,
   },
   statusDot: {
     backgroundColor: ORANGE,
@@ -1082,52 +1082,52 @@ const styles = StyleSheet.create({
   sheetCloseButton: {
     alignItems: "center",
     backgroundColor: "#EEEEEE",
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     flex: 1,
     flexDirection: "row",
     gap: Spacing.sm,
-    height: 50,
+    height: 42,
     justifyContent: "center",
   },
   sheetCloseText: {
     color: "#000",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
   },
   sheetDivider: {
     backgroundColor: BORDER,
     height: 1,
-    marginHorizontal: -Spacing.base,
-    marginVertical: Spacing.base,
+    marginHorizontal: -Spacing.md,
+    marginVertical: Spacing.md,
   },
   sheetFieldRow: {
     flexDirection: "row",
     gap: Spacing.sm,
-    marginTop: Spacing.md,
+    marginTop: Spacing.sm,
   },
   sheetFooter: {
     borderTopColor: BORDER,
     borderTopWidth: 1,
-    paddingHorizontal: Spacing.base,
-    paddingTop: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.sm,
   },
   sheetFooterActions: {
     flexDirection: "row",
     gap: Spacing.sm,
-    marginTop: Spacing.md,
+    marginTop: Spacing.sm,
   },
   sheetHeader: {
     alignItems: "center",
     flexDirection: "row",
-    gap: Spacing.md,
+    gap: Spacing.sm,
   },
   sheetHeaderIcon: {
     alignItems: "center",
     backgroundColor: "#EEEEEE",
-    borderRadius: 32,
-    height: 64,
+    borderRadius: 24,
+    height: 48,
     justifyContent: "center",
-    width: 64,
+    width: 48,
   },
   sheetLabel: {
     color: "#000",
@@ -1138,27 +1138,27 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   sheetScrollContent: {
-    paddingBottom: Spacing.base,
-    paddingHorizontal: Spacing.base,
+    paddingBottom: Spacing.md,
+    paddingHorizontal: Spacing.md,
   },
   sheetSubmitButton: {
     alignItems: "center",
     backgroundColor: GREEN,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     flex: 2,
     flexDirection: "row",
     gap: Spacing.sm,
-    height: 50,
+    height: 42,
     justifyContent: "center",
   },
   sheetSubmitText: {
     color: Colors.white,
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
   },
   sheetSubtitle: {
     color: "#555",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     marginTop: 3,
   },
   sheetTitle: {
@@ -1176,8 +1176,8 @@ const styles = StyleSheet.create({
   successDialog: {
     alignItems: "center",
     backgroundColor: Colors.white,
-    borderRadius: 18,
-    padding: Spacing.base,
+    borderRadius: 14,
+    padding: Spacing.md,
     width: "100%",
   },
   successDialogButton: {
@@ -1185,42 +1185,42 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
     backgroundColor: "#EEEEEE",
     borderRadius: BorderRadius.md,
-    height: 54,
+    height: 42,
     justifyContent: "center",
-    marginTop: Spacing.xl,
+    marginTop: Spacing.lg,
   },
   successDialogButtonText: {
     color: "#000",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
   },
   successDialogText: {
     color: "#000",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     marginTop: Spacing.sm,
     textAlign: "center",
   },
   successDialogTitle: {
     color: "#000",
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
     marginTop: Spacing.md,
   },
   successWarning: {
     alignSelf: "stretch",
     backgroundColor: "#EEEEEE",
-    borderRadius: BorderRadius.lg,
-    marginTop: Spacing.lg,
-    padding: Spacing.base,
+    borderRadius: BorderRadius.md,
+    marginTop: Spacing.md,
+    padding: Spacing.md,
   },
   successWarningText: {
     color: "#F02D2D",
-    fontSize: FontSizes.md,
-    lineHeight: 20,
+    fontSize: FontSizes.sm,
+    lineHeight: 18,
   },
   tenantName: {
     color: "#444",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
     marginTop: 4,
     textAlign: "center",
@@ -1229,7 +1229,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     borderTopColor: BORDER,
     borderTopWidth: 1,
-    paddingVertical: Spacing.lg,
+    paddingVertical: Spacing.md,
   },
   totalLabel: {
     color: "#000",
@@ -1237,7 +1237,7 @@ const styles = StyleSheet.create({
   },
   totalValue: {
     color: "#000",
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
     marginTop: Spacing.sm,
   },

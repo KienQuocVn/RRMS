@@ -34,7 +34,7 @@ import { safeAsyncStorage } from "@/services/storage/safe-async-storage";
 import { InvoiceResponse } from "@/types/invoice.types";
 import { MotelResponse } from "@/types/motel.types";
 
-const GREEN = "#0EA84F";
+const GREEN = "#2b7ed7";
 const ORANGE = "#FF5A00";
 const RED = "#E92B2B";
 const BLUE = "#2F80ED";
@@ -769,7 +769,7 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
   amountBox: {
-    backgroundColor: "#F6FCF2",
+    backgroundColor: "#20a9e722",
     borderRadius: BorderRadius.md,
     flex: 1,
     minHeight: 50,

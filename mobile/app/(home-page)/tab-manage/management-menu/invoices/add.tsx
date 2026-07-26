@@ -139,7 +139,7 @@ export default function AddInvoiceScreen() {
           onPress={() => router.back()}
           accessibilityLabel="Quay lại"
         >
-          <Ionicons name="arrow-back" size={22} color="#000" />
+          <Ionicons name="arrow-back" size={19} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Lập hóa đơn</Text>
       </View>
@@ -239,7 +239,7 @@ export default function AddInvoiceScreen() {
           <ServiceRow title="Tiền nước" price="18.000 đ/1 Khối" />
         </View>
         <TouchableOpacity style={styles.grayButton}>
-          <Ionicons name="pencil" size={22} color="#000" />
+          <Ionicons name="pencil" size={18} color="#000" />
           <Text style={styles.grayButtonText}>Chốt dịch vụ</Text>
         </TouchableOpacity>
         <SummaryCard
@@ -263,7 +263,7 @@ export default function AddInvoiceScreen() {
           subtitle="Giảm trừ covid, hỗ trợ, sinh nhật, cộng thêm tiền phạt..."
         />
         <TouchableOpacity style={styles.grayButton}>
-          <Ionicons name="add" size={26} color="#000" />
+          <Ionicons name="add" size={20} color="#000" />
           <Text style={styles.grayButtonText}>Thêm mục cộng thêm / giảm trừ</Text>
         </TouchableOpacity>
 
@@ -288,7 +288,7 @@ export default function AddInvoiceScreen() {
           accessibilityLabel="Gửi ZALO và APP khách thuê"
         >
           <View style={[styles.checkbox, sendApp && styles.checkboxChecked]}>
-            {sendApp ? <Ionicons name="checkmark" size={20} color={BLUE} /> : null}
+            {sendApp ? <Ionicons name="checkmark" size={16} color={BLUE} /> : null}
           </View>
           <View style={styles.footerTextWrap}>
             <Text style={styles.sendTitle}>Gửi ZALO & APP khách thuê</Text>
@@ -303,7 +303,7 @@ export default function AddInvoiceScreen() {
           {isCreating ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Ionicons name="document-attach" size={20} color="#FFFFFF" />
+            <Ionicons name="document-attach" size={17} color="#FFFFFF" />
           )}
           <Text style={styles.createButtonText}>
             {isCreating ? "Đang lập hóa đơn..." : "Lập hóa đơn"}
@@ -406,12 +406,12 @@ function InvoiceSuccessSheet({
                 style={styles.successMenuItem}
                 onPress={() => onNavigate(item.path)}
               >
-                <Ionicons name={item.icon} size={24} color="#000" />
+                <Ionicons name={item.icon} size={19} color="#000" />
                 <View style={styles.successMenuText}>
                   <Text style={styles.successMenuTitle}>{item.title}</Text>
                   <Text style={styles.successMenuSubtitle}>{item.subtitle}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={22} color="#777" />
+                <Ionicons name="chevron-forward" size={18} color="#777" />
               </TouchableOpacity>
             ))}
           </View>
@@ -458,7 +458,7 @@ function FieldCard({
     >
       {icon ? (
         <View style={styles.fieldIcon}>
-          <Ionicons name={icon} size={22} color="#000" />
+          <Ionicons name={icon} size={18} color="#000" />
         </View>
       ) : null}
       <View style={styles.fieldText}>
@@ -466,7 +466,7 @@ function FieldCard({
         <Text style={styles.fieldValue}>{value}</Text>
       </View>
       <TouchableOpacity style={styles.clearButton}>
-        <Ionicons name="close" size={20} color="#000" />
+        <Ionicons name="close" size={16} color="#000" />
       </TouchableOpacity>
     </View>
   );
@@ -499,7 +499,7 @@ function SectionHeader({
               <Text style={styles.badgeText}>{badge}</Text>
             </View>
           ) : null}
-          <Ionicons name={rightIcon} size={22} color="#000" />
+          <Ionicons name={rightIcon} size={18} color="#000" />
         </View>
       ) : null}
     </View>
@@ -555,8 +555,8 @@ const styles = StyleSheet.create({
   amountInput: {
     color: "#000",
     flex: 1,
-    fontSize: FontSizes.md,
-    paddingHorizontal: Spacing.md,
+    fontSize: FontSizes.sm,
+    paddingHorizontal: Spacing.sm,
   },
   amountInputWrap: {
     alignItems: "center",
@@ -564,20 +564,20 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     flexDirection: "row",
-    height: 50,
-    marginHorizontal: Spacing.base,
-    marginTop: Spacing.md,
+    height: 42,
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.sm,
     overflow: "hidden",
   },
   backButton: {
     alignItems: "center",
     backgroundColor: Colors.gray50,
     borderColor: Colors.gray300,
-    borderRadius: 20,
+    borderRadius: 17,
     borderWidth: 1,
-    height: 40,
+    height: 34,
     justifyContent: "center",
-    width: 40,
+    width: 34,
   },
   badge: {
     alignItems: "center",
@@ -585,17 +585,17 @@ const styles = StyleSheet.create({
     borderColor: "#FFFFFF",
     borderRadius: 14,
     borderWidth: 2,
-    height: 28,
+    height: 22,
     justifyContent: "center",
     position: "absolute",
-    right: 24,
-    top: -16,
-    width: 28,
+    right: 20,
+    top: -12,
+    width: 22,
     zIndex: 2,
   },
   badgeText: {
     color: "#FFFFFF",
-    fontSize: FontSizes.sm,
+    fontSize: FontSizes.xs,
     fontWeight: "700",
   },
   checkbox: {
@@ -603,9 +603,9 @@ const styles = StyleSheet.create({
     borderColor: BLUE,
     borderRadius: 5,
     borderWidth: 2,
-    height: 34,
+    height: 26,
     justifyContent: "center",
-    width: 34,
+    width: 26,
   },
   checkboxChecked: {
     backgroundColor: "#FFFFFF",
@@ -613,16 +613,16 @@ const styles = StyleSheet.create({
   checkboxRow: {
     alignItems: "flex-start",
     flexDirection: "row",
-    flex: 1,
+    paddingRight: 120,
     gap: 8,
   },
   clearButton: {
     alignItems: "center",
     backgroundColor: "#DDDDDD",
-    borderRadius: 16,
-    height: 32,
+    borderRadius: 13,
+    height: 26,
     justifyContent: "center",
-    width: 32,
+    width: 26,
   },
   container: {
     backgroundColor: "#FFFFFF",
@@ -632,39 +632,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: GREEN,
     borderRadius: BorderRadius.lg,
-    bottom: Spacing.base,
     flexDirection: "row",
-    gap: 10,
-    height: 50,
+    gap: 7,
+    height: 42,
     justifyContent: "center",
-    left: Spacing.base,
-    position: "absolute",
-    right: Spacing.base,
+    marginTop: Spacing.sm,
   },
   createButtonText: {
     color: "#FFFFFF",
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
   },
   dateRow: {
     flexDirection: "row",
-    gap: Spacing.md,
-    paddingHorizontal: Spacing.base,
-    paddingTop: Spacing.md,
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.sm,
   },
   divider: {
     backgroundColor: SOFT_BG,
-    height: 14,
-    marginTop: Spacing.md,
+    height: 10,
+    marginTop: Spacing.sm,
   },
   fieldCard: {
     alignItems: "center",
     borderColor: BORDER,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     flexDirection: "row",
     gap: Spacing.sm,
-    minHeight: 64,
+    minHeight: 54,
     padding: Spacing.sm,
   },
   fieldCardActive: {
@@ -673,17 +670,17 @@ const styles = StyleSheet.create({
   },
   fieldCompact: {
     flex: 1,
-    minHeight: 64,
+    minHeight: 54,
   },
   fieldIcon: {
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderColor: BORDER,
-    borderRadius: 20,
+    borderRadius: 17,
     borderWidth: 1,
-    height: 40,
+    height: 34,
     justifyContent: "center",
-    width: 40,
+    width: 34,
   },
   fieldLabel: {
     color: "#222222",
@@ -694,7 +691,7 @@ const styles = StyleSheet.create({
   },
   fieldValue: {
     color: "#000",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
     marginTop: 4,
   },
@@ -704,9 +701,9 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     bottom: 0,
     left: 0,
-    minHeight: 116,
-    paddingHorizontal: Spacing.base,
-    paddingTop: Spacing.base,
+    minHeight: 112,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
     position: "absolute",
     right: 0,
   },
@@ -714,36 +711,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   formArea: {
-    gap: Spacing.md,
-    padding: Spacing.base,
+    gap: Spacing.sm,
+    padding: Spacing.md,
   },
   grayButton: {
     alignItems: "center",
     backgroundColor: "#EEEEEE",
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     flexDirection: "row",
-    gap: 12,
-    height: 50,
+    gap: 8,
+    height: 42,
     justifyContent: "center",
-    marginHorizontal: Spacing.base,
-    marginTop: Spacing.md,
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.sm,
   },
   grayButtonText: {
     color: "#000",
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
   },
   hashBox: {
     alignItems: "center",
     backgroundColor: GREEN,
-    borderRadius: BorderRadius.lg,
-    height: 48,
+    borderRadius: BorderRadius.md,
+    height: 38,
     justifyContent: "center",
-    width: 48,
+    width: 38,
   },
   hashText: {
     color: "#FFFFFF",
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: "400",
   },
   header: {
@@ -753,37 +750,37 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     flexDirection: "row",
     gap: Spacing.sm,
-    paddingBottom: Spacing.md,
-    paddingHorizontal: Spacing.base,
+    paddingBottom: Spacing.sm,
+    paddingHorizontal: Spacing.md,
   },
   headerAction: {
     alignItems: "center",
     borderColor: "#000",
-    borderRadius: 20,
+    borderRadius: 17,
     borderWidth: 1.5,
-    height: 40,
+    height: 34,
     justifyContent: "center",
-    width: 40,
+    width: 34,
   },
   headerTitle: {
     color: "#000",
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
   },
   monthBlock: {
     alignItems: "center",
     borderBottomColor: BORDER,
     borderBottomWidth: 1,
-    paddingBottom: Spacing.base,
-    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.md,
+    paddingTop: Spacing.lg,
   },
   monthLabel: {
     color: "#111111",
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
   },
   monthValue: {
     color: "#2b7ed7",
-    fontSize: FontSizes.xl,
+    fontSize: FontSizes.lg,
     marginTop: 4,
   },
   muted: {
@@ -792,10 +789,10 @@ const styles = StyleSheet.create({
   noImage: {
     alignItems: "center",
     backgroundColor: "#EEEEEE",
-    borderRadius: BorderRadius.lg,
-    height: 60,
+    borderRadius: BorderRadius.md,
+    height: 48,
     justifyContent: "center",
-    width: 56,
+    width: 46,
   },
   noImageText: {
     color: "#222222",
@@ -804,13 +801,13 @@ const styles = StyleSheet.create({
   },
   noteInput: {
     borderColor: BORDER,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     color: "#000",
-    fontSize: FontSizes.md,
-    height: 120,
-    margin: Spacing.base,
-    padding: Spacing.base,
+    fontSize: FontSizes.sm,
+    height: 96,
+    margin: Spacing.md,
+    padding: Spacing.md,
     textAlignVertical: "top",
   },
   orangeBold: {
@@ -831,18 +828,18 @@ const styles = StyleSheet.create({
     borderLeftColor: "#E1E8DD",
     borderLeftWidth: 1,
     flexDirection: "row",
-    gap: 10,
+    gap: 7,
     justifyContent: "center",
-    paddingHorizontal: Spacing.base,
+    paddingHorizontal: Spacing.md,
   },
   sampleIcon: {
     color: GREEN,
-    fontSize: FontSizes.xl,
+    fontSize: FontSizes.lg,
     fontWeight: "700",
   },
   sampleText: {
     color: "#000",
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
     textDecorationLine: "underline",
   },
@@ -858,9 +855,9 @@ const styles = StyleSheet.create({
     borderBottomColor: BORDER,
     borderBottomWidth: 1,
     flexDirection: "row",
-    gap: Spacing.md,
-    minHeight: 76,
-    paddingHorizontal: Spacing.base,
+    gap: Spacing.sm,
+    minHeight: 62,
+    paddingHorizontal: Spacing.md,
   },
   sectionSubtitle: {
     color: MUTED,
@@ -872,7 +869,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: "#000",
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
   },
   sendSubtitle: {
@@ -882,19 +879,19 @@ const styles = StyleSheet.create({
   },
   sendTitle: {
     color: BLUE,
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
   },
   serviceBox: {
     borderColor: BORDER,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    marginHorizontal: Spacing.base,
-    marginTop: Spacing.md,
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.sm,
     overflow: "hidden",
   },
   serviceName: {
     color: "#000",
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
   },
   serviceNumber: {
     color: "#111111",
@@ -902,7 +899,7 @@ const styles = StyleSheet.create({
   },
   servicePrice: {
     color: "#000",
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
     marginTop: 8,
   },
@@ -912,8 +909,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     flexDirection: "row",
     gap: 10,
-    minHeight: 82,
-    paddingHorizontal: Spacing.base,
+    minHeight: 66,
+    paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
   },
   serviceStatus: {
@@ -945,25 +942,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: PALE_GREEN,
     borderColor: "#20a9e722",
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     borderWidth: 1.5,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginHorizontal: Spacing.base,
-    marginTop: Spacing.md,
-    minHeight: 72,
-    paddingHorizontal: Spacing.base,
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.sm,
+    minHeight: 58,
+    paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
   },
   summaryMoney: {
     color: "#000",
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
-    marginTop: 8,
+    marginTop: 5,
   },
   summaryOrange: {
     color: ORANGE,
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
     marginTop: 6,
   },
@@ -972,22 +969,22 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     color: "#111111",
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
   },
   summaryTotal: {
     color: "#000",
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    marginTop: 8,
+    marginTop: 5,
   },
   totalLabel: {
     color: "#000",
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
     textAlign: "right",
   },
   totalValue: {
     color: GREEN,
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
     marginTop: 4,
     textAlign: "right",
@@ -995,17 +992,17 @@ const styles = StyleSheet.create({
   totalWrap: {
     alignItems: "flex-end",
     position: "absolute",
-    right: 16,
-    top: 12,
+    right: Spacing.md,
+    top: Spacing.md,
   },
   successAmount: {
     color: "#000",
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
   },
   successAmountLine: {
     color: "#222",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     marginTop: Spacing.sm,
   },
   successBackdrop: {
@@ -1016,35 +1013,35 @@ const styles = StyleSheet.create({
   successCloseButton: {
     alignItems: "center",
     backgroundColor: ORANGE,
-    borderRadius: BorderRadius.lg,
-    height: 50,
+    borderRadius: BorderRadius.md,
+    height: 42,
     justifyContent: "center",
     marginTop: Spacing.base,
   },
   successCloseText: {
     color: Colors.white,
-    fontSize: FontSizes.base,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
   },
   successDot: {
     backgroundColor: "#2b7ed7",
-    borderRadius: 10,
-    height: 20,
-    width: 20,
+    borderRadius: 8,
+    height: 16,
+    width: 16,
   },
   successGlow: {
     alignItems: "center",
     alignSelf: "center",
     backgroundColor: "#20a9e722",
-    borderRadius: 18,
-    height: 36,
+    borderRadius: 15,
+    height: 30,
     justifyContent: "center",
-    marginBottom: 56,
-    width: 36,
+    marginBottom: 36,
+    width: 30,
   },
   successMenu: {
     borderColor: BORDER,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     marginTop: Spacing.base,
     overflow: "hidden",
@@ -1054,9 +1051,9 @@ const styles = StyleSheet.create({
     borderBottomColor: BORDER,
     borderBottomWidth: 1,
     flexDirection: "row",
-    gap: Spacing.base,
-    minHeight: 66,
-    paddingHorizontal: Spacing.md,
+    gap: Spacing.sm,
+    minHeight: 54,
+    paddingHorizontal: Spacing.sm,
   },
   successMenuSubtitle: {
     color: MUTED,
@@ -1068,7 +1065,7 @@ const styles = StyleSheet.create({
   },
   successMenuTitle: {
     color: "#000",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.bold,
   },
   successScroll: {
@@ -1082,24 +1079,24 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
     maxHeight: SUCCESS_SHEET_MAX_HEIGHT,
-    paddingHorizontal: Spacing.base,
-    paddingTop: 56,
+    paddingHorizontal: Spacing.md,
+    paddingTop: 40,
   },
   successTitle: {
     color: "#2b7ed7",
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.sm,
     fontWeight: FontWeights.medium,
   },
   warningBox: {
     backgroundColor: "#EEEEEE",
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.md,
     gap: Spacing.sm,
-    marginTop: Spacing.lg,
-    padding: Spacing.base,
+    marginTop: Spacing.md,
+    padding: Spacing.md,
   },
   warningBullet: {
     color: "#F02D2D",
-    fontSize: FontSizes.md,
-    lineHeight: 20,
+    fontSize: FontSizes.sm,
+    lineHeight: 18,
   },
 });

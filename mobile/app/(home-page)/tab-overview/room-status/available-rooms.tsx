@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   roomIconBox: {
     width: 36,
     height: 36,
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
