@@ -18,7 +18,7 @@ import {
 
 /** Map menu id → route path */
 const MENU_ROUTES: Record<string, string> = {
-  rooms: "/tab-manage/management-menu/rooms-list",
+  rooms: "/tab-manage/management-menu/rooms/rooms-list",
   invoices: "/tab-manage/management-menu/invoices",
   services: "/tab-manage/management-menu/service-settings/services",
   contracts: "/tab-manage/management-menu/contracts",

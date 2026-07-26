@@ -220,7 +220,7 @@ const AddVehicleModal = ({ open, onClose, rooms, onSuccess }) => {
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Box sx={{ bgcolor: '#e8f5e9', p: 1, borderRadius: '50%', mr: 1, display: 'flex' }}>
+          <Box sx={{ bgcolor: '#20a9e722', p: 1, borderRadius: '50%', mr: 1, display: 'flex' }}>
             <AddIcon sx={{ color: Colors.info }} fontSize="small" />
           </Box>
           <Typography variant="h6" fontWeight="bold">
@@ -366,14 +366,7 @@ const AddVehicleModal = ({ open, onClose, rooms, onSuccess }) => {
                 Chọn tối đa {MAX_IMAGES} ảnh từ máy tính
               </Typography>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                hidden
-                onChange={handleImageSelect}
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={handleImageSelect} />
 
               <Box
                 sx={{

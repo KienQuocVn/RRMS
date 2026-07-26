@@ -20,7 +20,7 @@ export const contractService = {
   /**
    * Lấy danh sách hợp đồng theo nhà trọ
    */
-  getContractsByMotel: async (motelId: string): Promise<ContractResponse[]> => {
+  getContractsByMotel: async (motelId: string): Promise<any> => {
     return apiClient.get(API_ENDPOINTS.CONTRACTS.GET_BY_MOTEL(motelId));
   },
 

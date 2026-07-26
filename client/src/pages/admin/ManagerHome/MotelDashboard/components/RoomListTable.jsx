@@ -292,11 +292,12 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
                         sx={{
                           width: 24,
                           height: 24,
-                          bgcolor: room.latestContract?.status === 'ACTIVE'
-                            ? Colors.success
-                            : isReserveAPlaceStatus(room.reserveAPlace?.status)
-                              ? '#ff9800'
-                              : '#bdbdbd'
+                          bgcolor:
+                            room.latestContract?.status === 'ACTIVE'
+                              ? Colors.success
+                              : isReserveAPlaceStatus(room.reserveAPlace?.status)
+                                ? '#ff9800'
+                                : '#bdbdbd'
                         }}>
                         <HouseIcon sx={{ fontSize: 16 }} />
                       </Avatar>
@@ -414,7 +415,7 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
                       <Chip
                         label={room.finance === 'wait' || !room.debt ? 'Chờ kỳ thu mới' : 'Nợ tiền'}
                         sx={{
-                          bgcolor: room.debt > 0 ? '#ffcdd2' : '#e8f5e9',
+                          bgcolor: room.debt > 0 ? '#ffcdd2' : '#20a9e722',
                           color: room.debt > 0 ? '#c62828' : '#2e7d32',
                           height: 18,
                           fontSize: '0.6rem',

@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "node ./scripts/start-lan.js",
     "start:tunnel": "node ./scripts/start-with-api-tunnel.js",
     "start:tunnell": "npm run start:tunnel",
     "reset-project": "node ./scripts/reset-project.js",

@@ -1,6 +1,6 @@
 import type { TabOwnedScreen } from "../../types";
 
-export { default as RoomsListScreen } from "@/app/(home-page)/tab-manage/management-menu/rooms-list";
+export { default as RoomsListScreen } from "@/app/(home-page)/tab-manage/management-menu/rooms/rooms-list";
 export { default as ContractsListScreen } from "@/app/(home-page)/tab-manage/management-menu/contracts";
 export { default as InvoicesListScreen } from "@/app/(home-page)/tab-manage/management-menu/invoices";
 export { default as TenantsListScreen } from "@/app/(home-page)/tab-manage/management-menu/tenants";
@@ -30,8 +30,8 @@ export const homeManagementScreens: TabOwnedScreen[] = [
     tab: "home",
     section: "management",
     label: "Quan ly phong",
-    route: "/tab-manage/management-menu/rooms-list",
-    source: "app/(home-page)/tab-manage/management-menu/rooms-list.tsx",
+    route: "/tab-manage/management-menu/rooms/rooms-list",
+    source: "app/(home-page)/tab-manage/management-menu/rooms/rooms-list.tsx",
   },
   {
     id: "contracts",

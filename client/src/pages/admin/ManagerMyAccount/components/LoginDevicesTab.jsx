@@ -6,9 +6,25 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import {
-  Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Chip, IconButton, Tooltip, CircularProgress,
-  Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions,
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+  IconButton,
+  Tooltip,
+  CircularProgress,
+  Alert,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Skeleton
 } from '@mui/material'
 import DesktopWindowsOutlinedIcon from '@mui/icons-material/DesktopWindowsOutlined'
@@ -57,7 +73,7 @@ const DeviceIcon = ({ deviceType }) => {
 
   if (type === 'MOBILE') {
     return (
-      <Box sx={{ bgcolor: '#e8f5e9', color: '#388e3c', p: 1.2, borderRadius: '50%', display: 'flex' }}>
+      <Box sx={{ bgcolor: '#20a9e722', color: '#388e3c', p: 1.2, borderRadius: '50%', display: 'flex' }}>
         <SmartphoneOutlinedIcon {...iconProps} />
       </Box>
     )
@@ -83,7 +99,7 @@ const DeviceTypeBadge = ({ deviceType }) => {
   const config = {
     MOBILE: { label: 'Mobile', color: 'success' },
     TABLET: { label: 'Tablet', color: 'warning' },
-    WEB:    { label: 'Web', color: 'info' },
+    WEB: { label: 'Web', color: 'info' }
   }
   const { label, color } = config[type] || config.WEB
   return <Chip label={label} color={color} size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: 11 }} />
@@ -92,7 +108,12 @@ const DeviceTypeBadge = ({ deviceType }) => {
 // ── Confirm Delete Dialog ─────────────────────────────────────────────────────
 
 const ConfirmDeleteDialog = ({ open, onClose, onConfirm, loading, deviceName }) => (
-  <Dialog open={open} onClose={loading ? undefined : onClose} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+  <Dialog
+    open={open}
+    onClose={loading ? undefined : onClose}
+    maxWidth="xs"
+    fullWidth
+    PaperProps={{ sx: { borderRadius: 3 } }}>
     <DialogTitle sx={{ pb: 1 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <Box sx={{ bgcolor: '#ffebee', color: '#c62828', p: 1, borderRadius: '50%', display: 'flex' }}>
@@ -113,7 +134,12 @@ const ConfirmDeleteDialog = ({ open, onClose, onConfirm, loading, deviceName }) 
       </Alert>
     </DialogContent>
     <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
-      <Button onClick={onClose} disabled={loading} variant="outlined" color="inherit" sx={{ borderRadius: 20, textTransform: 'none' }}>
+      <Button
+        onClick={onClose}
+        disabled={loading}
+        variant="outlined"
+        color="inherit"
+        sx={{ borderRadius: 20, textTransform: 'none' }}>
         Hủy
       </Button>
       <Button
@@ -122,8 +148,7 @@ const ConfirmDeleteDialog = ({ open, onClose, onConfirm, loading, deviceName }) 
         variant="contained"
         color="error"
         startIcon={loading ? <CircularProgress size={14} color="inherit" /> : <DeleteOutlineIcon />}
-        sx={{ borderRadius: 20, textTransform: 'none' }}
-      >
+        sx={{ borderRadius: 20, textTransform: 'none' }}>
         {loading ? 'Đang xóa...' : 'Xác nhận xóa'}
       </Button>
     </DialogActions>
@@ -195,18 +220,30 @@ const LoginDevicesTab = ({ username }) => {
       {/* Header card */}
       <Paper
         elevation={0}
-        sx={{ p: 3, borderRadius: 3, mb: 3, border: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-      >
+        sx={{
+          p: 3,
+          borderRadius: 3,
+          mb: 3,
+          border: '1px solid #f0f0f0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box sx={{ bgcolor: '#f3e5f5', color: '#9c27b0', p: 1.5, borderRadius: '50%', display: 'flex' }}>
             <DesktopWindowsOutlinedIcon />
           </Box>
           <Box>
-            <Typography variant="h6" fontWeight="bold">Thiết bị đăng nhập</Typography>
+            <Typography variant="h6" fontWeight="bold">
+              Thiết bị đăng nhập
+            </Typography>
             <Typography variant="body2" color="text.secondary">
               Danh sách các thiết bị đã đăng nhập vào tài khoản của bạn.
               {!loading && histories.length > 0 && (
-                <Typography component="span" fontWeight="600" color="primary.main"> ({histories.length} phiên)</Typography>
+                <Typography component="span" fontWeight="600" color="primary.main">
+                  {' '}
+                  ({histories.length} phiên)
+                </Typography>
               )}
             </Typography>
           </Box>
@@ -216,8 +253,7 @@ const LoginDevicesTab = ({ username }) => {
             <IconButton
               onClick={fetchHistories}
               disabled={loading}
-              sx={{ bgcolor: '#f5f5f5', '&:hover': { bgcolor: '#e3f2fd', color: '#1976d2' } }}
-            >
+              sx={{ bgcolor: '#f5f5f5', '&:hover': { bgcolor: '#e3f2fd', color: '#1976d2' } }}>
               {loading ? <CircularProgress size={18} /> : <RefreshOutlinedIcon />}
             </IconButton>
           </span>
@@ -243,7 +279,9 @@ const LoginDevicesTab = ({ username }) => {
               <TableCell sx={{ fontWeight: 700 }}>Trình duyệt</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Địa chỉ IP</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Thời gian đăng nhập</TableCell>
-              <TableCell sx={{ fontWeight: 700, width: 60 }} align="center">Xóa</TableCell>
+              <TableCell sx={{ fontWeight: 700, width: 60 }} align="center">
+                Xóa
+              </TableCell>
             </TableRow>
           </TableHead>
 
@@ -255,9 +293,18 @@ const LoginDevicesTab = ({ username }) => {
               // Empty state
               <TableRow>
                 <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, color: 'text.secondary' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 1.5,
+                      color: 'text.secondary'
+                    }}>
                     <CheckCircleOutlineIcon sx={{ fontSize: 48, opacity: 0.3 }} />
-                    <Typography variant="body1" fontWeight={500}>Chưa có lịch sử đăng nhập</Typography>
+                    <Typography variant="body1" fontWeight={500}>
+                      Chưa có lịch sử đăng nhập
+                    </Typography>
                     <Typography variant="body2" color="text.disabled">
                       Các phiên đăng nhập sẽ xuất hiện tại đây sau khi bạn đăng nhập.
                     </Typography>
@@ -273,8 +320,7 @@ const LoginDevicesTab = ({ username }) => {
                     // Hàng đầu tiên (mới nhất) highlight nhẹ
                     bgcolor: index === 0 ? '#fafffe' : 'inherit',
                     '&:hover': { bgcolor: '#f9f9f9' }
-                  }}
-                >
+                  }}>
                   {/* Icon thiết bị */}
                   <TableCell>
                     <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -290,7 +336,7 @@ const LoginDevicesTab = ({ username }) => {
                         <Chip
                           label="Mới nhất"
                           size="small"
-                          sx={{ bgcolor: '#e8f5e9', color: '#2e7d32', fontWeight: 600, fontSize: 10 }}
+                          sx={{ bgcolor: '#20a9e722', color: '#2e7d32', fontWeight: 600, fontSize: 10 }}
                         />
                       )}
                     </Box>
@@ -298,7 +344,10 @@ const LoginDevicesTab = ({ username }) => {
 
                   {/* Tên thiết bị */}
                   <TableCell>
-                    <Typography variant="body2" fontWeight={500} sx={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <Typography
+                      variant="body2"
+                      fontWeight={500}
+                      sx={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {history.deviceName || '---'}
                     </Typography>
                   </TableCell>
@@ -308,7 +357,10 @@ const LoginDevicesTab = ({ username }) => {
                     <Typography variant="body2">
                       {history.osName || '---'}
                       {history.osVersion && (
-                        <Typography component="span" variant="caption" color="text.secondary"> {history.osVersion}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary">
+                          {' '}
+                          {history.osVersion}
+                        </Typography>
                       )}
                     </Typography>
                   </TableCell>
@@ -318,7 +370,10 @@ const LoginDevicesTab = ({ username }) => {
                     <Typography variant="body2">
                       {history.browserName || '---'}
                       {history.browserVersion && (
-                        <Typography component="span" variant="caption" color="text.secondary"> v{history.browserVersion}</Typography>
+                        <Typography component="span" variant="caption" color="text.secondary">
+                          {' '}
+                          v{history.browserVersion}
+                        </Typography>
                       )}
                     </Typography>
                   </TableCell>
@@ -351,8 +406,7 @@ const LoginDevicesTab = ({ username }) => {
                         size="small"
                         color="error"
                         onClick={() => handleOpenDelete(history.id, history.deviceName)}
-                        sx={{ '&:hover': { bgcolor: '#ffebee' } }}
-                      >
+                        sx={{ '&:hover': { bgcolor: '#ffebee' } }}>
                         <DeleteOutlineIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>

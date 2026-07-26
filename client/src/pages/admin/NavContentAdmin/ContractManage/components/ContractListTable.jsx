@@ -102,7 +102,7 @@ const getSignatureChip = (signContract) => {
       label={signContract || 'Chua ky'}
       size="small"
       sx={{
-        bgcolor: isSigned ? '#e8f5e9' : '#f5f5f5',
+        bgcolor: isSigned ? '#20a9e722' : '#f5f5f5',
         color: isSigned ? '#2e7d32' : '#616161',
         border: `1px solid ${isSigned ? '#a5d6a7' : '#e0e0e0'}`,
         fontWeight: 700
@@ -189,17 +189,34 @@ const ContractListTable = ({ contracts, onActionClick }) => {
               <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 180, minWidth: 160 }}>
                 Người đại diện
               </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 110 }}>Giá thuê</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 110 }}>Tiền cọc</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 110 }}>
+                Giá thuê
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 110 }}>
+                Tiền cọc
+              </TableCell>
               <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 90 }}>Chu kỳ</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 130 }}>Mẫu HĐ</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 95 }}>Ngày lập</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 95 }}>Ngày vào ở</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 100 }}>Thời hạn HĐ</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 95 }}>Chứng từ</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 130 }}>
+                Mẫu HĐ
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 95 }}>
+                Ngày lập
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 95 }}>
+                Ngày vào ở
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 100 }}>
+                Thời hạn HĐ
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 95 }}>
+                Chứng từ
+              </TableCell>
               <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 110 }}>Ký HĐ</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 80 }}>Ngôn ngữ</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', textAlign: 'center', width: 140 }}>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', width: 80 }}>
+                Ngôn ngữ
+              </TableCell>
+              <TableCell
+                sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff', textAlign: 'center', width: 140 }}>
                 Tình trạng
               </TableCell>
               <TableCell sx={{ bgcolor: '#fff', width: 48 }}></TableCell>
@@ -257,7 +274,12 @@ const ContractListTable = ({ contracts, onActionClick }) => {
                           <Typography
                             variant="caption"
                             color="text.secondary"
-                            sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.65rem' }}>
+                            sx={{
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              fontSize: '0.65rem'
+                            }}>
                             {resolveTenantName(contract)}
                           </Typography>
                         </Box>
@@ -294,13 +316,19 @@ const ContractListTable = ({ contracts, onActionClick }) => {
                     </Typography>
                   </TableCell>
                   <TableCell sx={{ borderRight: '1px solid #eeeeee' }}>
-                    <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>{formatDate(contract.createdate)}</Typography>
+                    <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>
+                      {formatDate(contract.createdate)}
+                    </Typography>
                   </TableCell>
                   <TableCell sx={{ borderRight: '1px solid #eeeeee' }}>
-                    <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>{formatDate(contract.moveinDate)}</Typography>
+                    <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>
+                      {formatDate(contract.moveinDate)}
+                    </Typography>
                   </TableCell>
                   <TableCell sx={{ borderRight: '1px solid #eeeeee' }}>
-                    <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>{formatDate(contract.closeContract)}</Typography>
+                    <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>
+                      {formatDate(contract.closeContract)}
+                    </Typography>
                   </TableCell>
                   <TableCell sx={{ borderRight: '1px solid #eeeeee' }}>
                     <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
@@ -311,7 +339,9 @@ const ContractListTable = ({ contracts, onActionClick }) => {
                     {getSignatureChip(contract.signcontract)}
                   </TableCell>
                   <TableCell sx={{ borderRight: '1px solid #eeeeee' }}>
-                    <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>{contract.language || '—'}</Typography>
+                    <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>
+                      {contract.language || '—'}
+                    </Typography>
                   </TableCell>
                   <TableCell align="center" sx={{ borderRight: '1px solid #eeeeee' }}>
                     {getStatusChip(contract.status)}

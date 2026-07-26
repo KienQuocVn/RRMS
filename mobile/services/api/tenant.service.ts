@@ -9,6 +9,10 @@ export const tenantService = {
     return apiClient.get('/tenant');
   },
 
+  getTenantsByMotel: async (motelId: string): Promise<ApiResponse<any[]>> => {
+    return apiClient.get(`/tenant/motel/${motelId}`);
+  },
+
   /**
    * Lấy khách thuê theo ID
    */

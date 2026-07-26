@@ -18,6 +18,13 @@ export const financeService = {
   },
 
   /**
+   * Lấy chi tiết hóa đơn theo ID
+   */
+  getInvoiceById: async (invoiceId: string): Promise<any> => {
+    return apiClient.get(`${API_ENDPOINTS.INVOICES.BASE}/${invoiceId}`);
+  },
+
+  /**
    * Cập nhật hóa đơn
    */
   updateInvoice: async (invoiceId: string, data: any): Promise<any> => {

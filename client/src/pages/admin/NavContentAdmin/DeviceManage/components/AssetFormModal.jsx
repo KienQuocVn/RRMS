@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react'
 import {
-  Box, Typography, Dialog, DialogContent, DialogActions,
-  TextField, FormControl, InputLabel, Select, MenuItem, Button, IconButton
+  Box,
+  Typography,
+  Dialog,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Button,
+  IconButton
 } from '@mui/material'
 import CardGiftcardOutlined from '@mui/icons-material/CardGiftcardOutlined'
 import CloseIcon from '@mui/icons-material/Close'
@@ -49,7 +59,7 @@ const AssetFormModal = ({ open, onClose, onSubmit, initialData = null, mode = 'a
       Swal.fire({
         title: 'Vui lòng điền đủ thông tin bắt buộc (*)',
         icon: 'error',
-        ...SWAL_ON_TOP,
+        ...SWAL_ON_TOP
       })
       return
     }
@@ -59,7 +69,7 @@ const AssetFormModal = ({ open, onClose, onSubmit, initialData = null, mode = 'a
         title: 'Không thể cập nhật',
         text: `Tổng số lượng không được nhỏ hơn số lượng đang sử dụng (${initialData?.totalUsing || 0}).`,
         icon: 'error',
-        ...SWAL_ON_TOP,
+        ...SWAL_ON_TOP
       })
       return
     }
@@ -83,15 +93,20 @@ const AssetFormModal = ({ open, onClose, onSubmit, initialData = null, mode = 'a
       fullWidth
       PaperProps={{
         sx: { borderRadius: '12px', overflow: 'hidden' }
-      }}
-    >
+      }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, pt: 2.5, pb: 1.5 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{
-            width: 40, height: 40, borderRadius: '50%',
-            backgroundColor: '#e8f5e9', display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              backgroundColor: '#20a9e722',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
             <CardGiftcardOutlined sx={{ color: PRIMARY_COLOR, fontSize: '1.4rem' }} />
           </Box>
           <Typography variant="h6" sx={{ fontWeight: 700, color: '#333', fontSize: '1.1rem' }}>
@@ -123,28 +138,32 @@ const AssetFormModal = ({ open, onClose, onSubmit, initialData = null, mode = 'a
               Chọn icon đại diện cho tài sản
             </Typography>
           </Box>
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: '8px',
-            border: '1px solid #e0e0e0',
-            borderRadius: '10px',
-            p: 1.5,
-          }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: '8px',
+              border: '1px solid #e0e0e0',
+              borderRadius: '10px',
+              p: 1.5
+            }}>
             {ASSET_ICONS.map(({ id, Icon, label }) => (
               <Box
                 key={id}
                 onClick={() => setSelectedIcon(id)}
                 title={label}
                 sx={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  p: 1.2, borderRadius: '8px', cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  p: 1.2,
+                  borderRadius: '8px',
+                  cursor: 'pointer',
                   border: selectedIcon === id ? `2px solid ${PRIMARY_COLOR}` : '1px solid #e8e8e8',
                   backgroundColor: selectedIcon === id ? '#e3f2fd' : 'transparent',
                   transition: 'all 0.15s',
-                  '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#bbb' },
-                }}
-              >
+                  '&:hover': { backgroundColor: '#f5f5f5', borderColor: '#bbb' }
+                }}>
                 <Icon sx={{ fontSize: 28, color: selectedIcon === id ? PRIMARY_COLOR : '#666' }} />
               </Box>
             ))}
@@ -191,11 +210,7 @@ const AssetFormModal = ({ open, onClose, onSubmit, initialData = null, mode = 'a
           />
           <FormControl fullWidth size="small">
             <InputLabel>Đơn vị (chiếc/cái)</InputLabel>
-            <Select
-              value={unit}
-              label="Đơn vị (chiếc/cái)"
-              onChange={(e) => setUnit(e.target.value)}
-            >
+            <Select value={unit} label="Đơn vị (chiếc/cái)" onChange={(e) => setUnit(e.target.value)}>
               <MenuItem value="cai">Cái</MenuItem>
               <MenuItem value="chiec">Chiếc</MenuItem>
               <MenuItem value="bo">Bộ</MenuItem>
@@ -223,22 +238,27 @@ const AssetFormModal = ({ open, onClose, onSubmit, initialData = null, mode = 'a
           onClick={onClose}
           variant="outlined"
           sx={{
-            color: '#666', borderColor: '#ccc', textTransform: 'none', fontWeight: 600,
-            borderRadius: '8px', px: 3,
+            color: '#666',
+            borderColor: '#ccc',
+            textTransform: 'none',
+            fontWeight: 600,
+            borderRadius: '8px',
+            px: 3,
             '&:hover': { borderColor: '#999', backgroundColor: '#f5f5f5' }
-          }}
-        >
+          }}>
           Đóng
         </Button>
         <Button
           onClick={handleSubmit}
           variant="contained"
           sx={{
-            backgroundColor: PRIMARY_COLOR, textTransform: 'none', fontWeight: 600,
-            borderRadius: '8px', px: 3,
+            backgroundColor: PRIMARY_COLOR,
+            textTransform: 'none',
+            fontWeight: 600,
+            borderRadius: '8px',
+            px: 3,
             '&:hover': { backgroundColor: '#2b7ed7' }
-          }}
-        >
+          }}>
           {isEditMode ? 'Lưu thay đổi' : 'Thêm tài sản'}
         </Button>
       </DialogActions>

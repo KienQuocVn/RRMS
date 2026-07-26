@@ -127,13 +127,6 @@ export default function TabsLayout() {
         }}
       />
 
-      {/* Hidden: rooms (không hiện trên tab bar, truy cập từ home) */}
-      <Tabs.Screen
-        name="rooms"
-        options={{
-          href: null,
-        }}
-      />
     </Tabs>
   );
 }

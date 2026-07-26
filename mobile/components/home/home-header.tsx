@@ -76,8 +76,12 @@ export default function HomeHeader({
       if (current) {
         await safeAsyncStorage.setItem("rrms_active_motel_id", current.motelId);
       }
-    } catch (error) {
-      console.error("[HomeHeader] fetch motels error:", error);
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        console.warn("[HomeHeader] fetch motels skipped: unauthorized session");
+      } else {
+        console.error("[HomeHeader] fetch motels error:", error);
+      }
     } finally {
       setIsLoading(false);
     }

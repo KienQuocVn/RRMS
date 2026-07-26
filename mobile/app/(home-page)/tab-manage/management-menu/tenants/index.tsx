@@ -1,103 +1,227 @@
-/**
- * TenantsListScreen - Danh sách khách thuê
- * Gọi API: GET /tenant/roomId/{roomId} sau khi chọn phòng
- */
-
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-  FlatList,
   ActivityIndicator,
   Alert,
+  Animated,
+  FlatList,
+  Linking,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import {
+  BorderRadius,
   Colors,
-  Spacing,
   FontSizes,
   FontWeights,
-  BorderRadius,
   Shadows,
+  Spacing,
 } from "@/constants/theme";
 import { useAuth } from "@/hooks/use-auth";
 import { motelService } from "@/services/api/motel.service";
 import { roomService } from "@/services/api/room.service";
-import { tenantService } from "@/services/api/tenant.service";
 import { safeAsyncStorage } from "@/services/storage/safe-async-storage";
+import { tenantService } from "@/services/api/tenant.service";
 import { TenantResponse } from "@/types/tenant.types";
 
-// ── Component ──
+const GREEN = "#2b7ed7";
+const CALL_GREEN = "#2b7ed7";
+const BLUE = "#217DE2";
+const ORANGE = "#FF5A00";
+const PAGE_BG = "#EEF3F2";
+
+type RoomOption = {
+  roomId: string;
+  name?: string;
+};
+
+type TenantListItem = TenantResponse & {
+  fullname?: string;
+  roomId?: string;
+  roomName?: string;
+  nameRoom?: string;
+  room?: {
+    roomId?: string;
+    id?: string;
+    name?: string;
+    roomName?: string;
+  };
+};
+
+function extractItems<T>(response: any): T[] {
+  const candidates = [
+    response,
+    response?.data,
+    response?.result,
+    response?.data?.result,
+    response?.items,
+    response?.content,
+    response?.result?.items,
+    response?.result?.content,
+    response?.data?.result?.items,
+    response?.data?.result?.content,
+  ];
+
+  return candidates.find(Array.isArray) ?? [];
+}
+
+function getRoomName(room?: RoomOption | null) {
+  return room?.name ? `Phòng ${room.name}` : "Phòng 1";
+}
+
+function getTenantRoomId(tenant: TenantListItem) {
+  return tenant.roomId ?? tenant.room?.roomId ?? tenant.room?.id ?? "";
+}
+
+function getTenantRoomName(tenant: TenantListItem, fallback = "Chưa phân phòng") {
+  const roomName = tenant.room?.name ?? tenant.room?.roomName ?? tenant.roomName ?? tenant.nameRoom;
+  return roomName ? `Phòng ${roomName}` : fallback;
+}
+
 export default function TenantsListScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const user = useAuth((s) => s.user);
+  const user = useAuth((state) => state.user);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [rooms, setRooms] = useState<any[]>([]);
-  const [selectedRoom, setSelectedRoom] = useState<any>(null);
-  const [showRoomPicker, setShowRoomPicker] = useState(false);
-  const [tenants, setTenants] = useState<TenantResponse[]>([]);
+  const [rooms, setRooms] = useState<RoomOption[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<RoomOption | null>(null);
+  const [showRoomModal, setShowRoomModal] = useState(false);
+  const [tenants, setTenants] = useState<TenantListItem[]>([]);
   const [searchText, setSearchText] = useState("");
+  const [selectedActionTenant, setSelectedActionTenant] = useState<TenantListItem | null>(null);
 
-  const loadRooms = useCallback(async () => {
-    if (!user?.username) return;
-    setIsLoading(true);
+  const loadTenantsByMotel = useCallback(async (motelId: string) => {
     try {
-      const motelsRes = await motelService.getMotelsByAccount(user.username);
-      const list = motelsRes.result || [];
-      const storedId = await safeAsyncStorage.getItem("rrms_active_motel_id");
-      const motel =
-        list.find((m: any) => m.motelId === storedId) ?? list[0] ?? null;
-      if (!motel) {
-        setIsLoading(false);
-        return;
-      }
-      const roomsRes = await roomService.getRoomsByMotel(motel.motelId);
-      const roomList = roomsRes.result || [];
-      setRooms(roomList);
-      if (roomList.length > 0) {
-        setSelectedRoom(roomList[0]);
-        await loadTenants(roomList[0].roomId);
-      }
-    } catch (err: any) {
-      Alert.alert("Lỗi", "Không thể tải danh sách phòng.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.username]);
-
-  const loadTenants = async (roomId: string) => {
-    try {
-      const res = await tenantService.getTenantsByRoom(roomId);
-      setTenants(Array.isArray(res?.result) ? res.result : []);
+      const response = await tenantService.getTenantsByMotel(motelId);
+      setTenants(extractItems<TenantListItem>(response));
     } catch {
       setTenants([]);
     }
-  };
+  }, []);
+
+  const loadData = useCallback(async () => {
+    if (!user?.username) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const motelsRes = await motelService.getMotelsByAccount(user.username);
+      const motels = motelsRes.result || [];
+      const storedId = await safeAsyncStorage.getItem("rrms_active_motel_id");
+      const motel =
+        motels.find((item: any) => item.motelId === storedId) ?? motels[0] ?? null;
+
+      if (!motel) {
+        setRooms([]);
+        setTenants([]);
+        setSelectedRoom(null);
+        return;
+      }
+
+      const roomsResponse = await roomService.getRoomsByMotel(motel.motelId);
+      const roomList = extractItems<RoomOption>(roomsResponse);
+      setRooms(roomList);
+
+      const nextRoom =
+        roomList.find((room) => room.roomId === selectedRoom?.roomId) ?? null;
+      setSelectedRoom(nextRoom);
+      await loadTenantsByMotel(motel.motelId);
+    } catch (err: any) {
+      Alert.alert(
+        "Lỗi",
+        err?.response?.data?.message || "Không thể tải danh sách khách thuê.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loadTenantsByMotel, selectedRoom?.roomId, user?.username]);
 
   useEffect(() => {
-    loadRooms();
-  }, [loadRooms]);
+    void loadData();
+  }, [loadData]);
 
-  const handleSelectRoom = async (room: any) => {
+  const filteredTenants = useMemo(() => {
+    const keyword = searchText.trim().toLowerCase();
+
+    return tenants.filter((tenant) => {
+      const matchesRoom =
+        !selectedRoom?.roomId || getTenantRoomId(tenant) === selectedRoom.roomId;
+
+      if (!matchesRoom) {
+        return false;
+      }
+
+      if (!keyword) {
+        return true;
+      }
+
+      const searchableText = [
+        tenant.fullName,
+        tenant.fullname,
+        tenant.phone,
+        tenant.cccd,
+        tenant.address,
+        tenant.job,
+        tenant.relationship,
+        getTenantRoomName(tenant, ""),
+      ]
+        .join(" ")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+      return (
+        searchableText.includes(keyword.normalize("NFD").replace(/[\u0300-\u036f]/g, "")) ||
+        tenant.phone?.includes(keyword)
+      );
+    });
+  }, [searchText, selectedRoom, tenants]);
+
+  const tenantsByRoom = useMemo(() => {
+    return filteredTenants.reduce<Record<string, TenantListItem[]>>((result, tenant) => {
+      const roomName = getTenantRoomName(tenant);
+      result[roomName] = result[roomName] || [];
+      result[roomName].push(tenant);
+      return result;
+    }, {});
+  }, [filteredTenants]);
+
+  const handleSelectRoom = (room: RoomOption | null) => {
     setSelectedRoom(room);
-    setShowRoomPicker(false);
-    setIsLoading(true);
-    await loadTenants(room.roomId);
-    setIsLoading(false);
+    setShowRoomModal(false);
   };
 
-  const handleDeleteTenant = (tenant: TenantResponse) => {
+  const handleCallTenant = (phone?: string) => {
+    if (!phone) {
+      Alert.alert("Thông báo", "Khách thuê chưa có số điện thoại.");
+      return;
+    }
+    void Linking.openURL(`tel:${phone}`);
+  };
+
+  const openTenantDetail = (tenantId: string) => {
+    router.push({
+      pathname: "/tab-manage/management-menu/tenants/[id]",
+      params: { id: tenantId },
+    } as any);
+  };
+
+  const handleDeleteTenant = (tenant: TenantListItem) => {
     Alert.alert(
-      "Xác nhận xóa",
-      `Xóa khách thuê "${tenant.fullName}" khỏi hệ thống?`,
+      "Xóa khách thuê",
+      `Bạn có chắc muốn xóa ${tenant.fullName || tenant.fullname || "khách thuê"}?`,
       [
         { text: "Hủy", style: "cancel" },
         {
@@ -106,9 +230,8 @@ export default function TenantsListScreen() {
           onPress: async () => {
             try {
               await tenantService.deleteTenant(tenant.tenantId);
-              setTenants((prev) =>
-                prev.filter((t) => t.tenantId !== tenant.tenantId),
-              );
+              setTenants((prev) => prev.filter((item) => item.tenantId !== tenant.tenantId));
+              setSelectedActionTenant(null);
             } catch (err: any) {
               Alert.alert(
                 "Lỗi",
@@ -121,436 +244,832 @@ export default function TenantsListScreen() {
     );
   };
 
-  const filtered = tenants.filter(
-    (t) =>
-      !searchText ||
-      t.fullName?.toLowerCase().includes(searchText.toLowerCase()) ||
-      t.phone?.includes(searchText),
-  );
+  const renderTenant = ({ item }: { item: TenantListItem }) => (
+    <View style={styles.tenantRow}>
+      <View style={styles.avatar}>
+        <Ionicons name="person" size={34} color="#F05A1A" />
+      </View>
 
-  const renderItem = ({ item }: { item: TenantResponse }) => (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {item.fullName?.charAt(0)?.toUpperCase() ?? "?"}
-          </Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.tenantName}>{item.fullName}</Text>
-          <Text style={styles.tenantPhone}>{item.phone ?? "—"}</Text>
-        </View>
-        <View style={styles.roleTag}>
-          <Text style={styles.roleTagText}>{item.role ? "Chính" : "Phụ"}</Text>
+      <View style={styles.tenantInfo}>
+        <Text style={styles.tenantName} numberOfLines={1}>
+          {item.fullName || item.fullname || "Khách thuê"}
+        </Text>
+        <Text style={styles.tenantPhone}>SĐT: {item.phone || "---"}</Text>
+        <View style={styles.warningRow}>
+          <Ionicons name="information-circle-outline" size={13} color={ORANGE} />
+          <Text style={styles.warningText}>Chưa sử dụng APP</Text>
         </View>
       </View>
-      <View style={styles.divider} />
-      <View style={styles.infoGrid}>
-        <InfoItem icon="card-outline" value={item.cccd ?? "—"} />
-        <InfoItem icon="mail-outline" value={item.email ?? "—"} />
-      </View>
-      <View style={styles.cardActions}>
-        <TouchableOpacity
-          style={styles.editBtn}
-          onPress={() =>
-            router.push({
-              pathname: "/tab-manage/management-menu/tenants/[id]",
-              params: { id: item.tenantId },
-            } as any)
-          }
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          accessibilityLabel={`Sửa khách thuê ${item.fullName}`}
-        >
-          <Ionicons name="create-outline" size={16} color="#20a9e7" />
-          <Text style={styles.editBtnText}>Sửa</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.deleteItemBtn}
-          onPress={() => handleDeleteTenant(item)}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          accessibilityLabel={`Xóa khách thuê ${item.fullName}`}
-        >
-          <Ionicons name="trash-outline" size={16} color={Colors.error} />
-          <Text style={styles.deleteBtnText}>Xóa</Text>
-        </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.callButton}
+        activeOpacity={0.82}
+        onPress={() => handleCallTenant(item.phone)}
+        accessibilityLabel={`Gọi ${item.fullName || item.fullname || "khách thuê"}`}
+      >
+        <Ionicons name="call" size={20} color={Colors.white} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.moreButton}
+        activeOpacity={0.82}
+        onPress={() => setSelectedActionTenant(item)}
+        accessibilityLabel="Mở tuỳ chọn khách thuê"
+      >
+        <Ionicons name="ellipsis-vertical" size={21} color="#000" />
+      </TouchableOpacity>
+
+      <View style={styles.tenantStatusRow}>
+        <StatusPill label="Chưa đăng ký tạm trú" />
+        <StatusPill label="Chưa đầy đủ giấy tờ" />
       </View>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      {/* ── Header ── */}
       <View
         style={[
           styles.header,
-          { paddingTop: Platform.OS === "ios" ? insets.top : Spacing.xl },
+          { paddingTop: Platform.OS === "ios" ? insets.top + 12 : 28 },
         ]}
       >
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel="Quay lại"
         >
-          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
+          <Ionicons name="arrow-back" size={23} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Danh sách khách thuê</Text>
-        <TouchableOpacity
-          style={styles.addBtn}
-          onPress={() =>
-            router.push({
-              pathname: "/tab-manage/management-menu/tenants/add",
-              params: selectedRoom
-                ? { roomId: selectedRoom.roomId, roomName: selectedRoom.name }
-                : {},
-            } as any)
-          }
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          accessibilityLabel="Thêm khách thuê"
-        >
-          <Ionicons name="add" size={22} color={Colors.white} />
+      </View>
+
+      <View style={styles.topActions}>
+        <TouchableOpacity style={[styles.quickAction, styles.excelButton]} activeOpacity={0.85}>
+          <Ionicons name="calculator-outline" size={20} color={Colors.white} />
+          <Text style={styles.quickActionText}>Chia sẻ excel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.quickAction, styles.oldTenantButton]} activeOpacity={0.85}>
+          <Ionicons name="person-circle" size={25} color={Colors.white} />
+          <Text style={styles.quickActionText}>Quản lý khách cũ</Text>
+          <Ionicons name="chevron-forward" size={21} color={Colors.white} />
         </TouchableOpacity>
       </View>
 
-      {/* ── Chọn phòng ── */}
-      <View style={styles.filterSection}>
-        <TouchableOpacity
-          style={styles.roomPicker}
-          onPress={() => setShowRoomPicker(!showRoomPicker)}
-          accessibilityLabel="Chọn phòng"
-        >
-          <Ionicons
-            name="bed-outline"
-            size={16}
-            color={Colors.textSecondary}
-            style={{ marginRight: 6 }}
-          />
-          <Text
-            style={selectedRoom ? styles.pickerText : styles.pickerPlaceholder}
-          >
-            {selectedRoom ? selectedRoom.name : "Chọn phòng..."}
-          </Text>
-          <Ionicons
-            name={showRoomPicker ? "chevron-up" : "chevron-down"}
-            size={16}
-            color={Colors.textSecondary}
-          />
-        </TouchableOpacity>
-
-        {showRoomPicker && (
-          <View style={styles.dropList}>
-            {rooms.map((room) => (
-              <TouchableOpacity
-                key={room.roomId}
-                style={[
-                  styles.dropItem,
-                  selectedRoom?.roomId === room.roomId &&
-                    styles.dropItemSelected,
-                ]}
-                onPress={() => handleSelectRoom(room)}
-                accessibilityLabel={room.name}
-              >
-                <Text
-                  style={[
-                    styles.dropItemText,
-                    selectedRoom?.roomId === room.roomId &&
-                      styles.dropItemTextSelected,
-                  ]}
-                >
-                  {room.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
+      <View style={styles.filterRow}>
+        <TouchableOpacity style={styles.roomFilter} onPress={() => setShowRoomModal(true)}>
+          <View>
+            <Text style={styles.filterLabel}>Chọn phòng</Text>
+            <Text style={styles.filterValue}>
+              {selectedRoom?.roomId ? getRoomName(selectedRoom) : "Tất cả phòng"}
+            </Text>
           </View>
-        )}
-
-        {/* Search */}
-        <View style={styles.searchWrap}>
-          <Ionicons
-            name="search"
-            size={18}
-            color={Colors.textSecondary}
-            style={styles.searchIcon}
-          />
+          <Ionicons name="chevron-down" size={20} color="#000" />
+        </TouchableOpacity>
+        <View style={styles.searchBox}>
           <TextInput
-            style={styles.searchInput}
             value={searchText}
             onChangeText={setSearchText}
-            placeholder="Nhập tên hoặc SĐT..."
-            placeholderTextColor={Colors.placeholder}
-            accessibilityLabel="Tìm kiếm khách thuê"
+            style={styles.searchInput}
+            placeholder="Nhập SĐT/tên tìm kiếm..."
+            placeholderTextColor={Colors.gray500}
           />
+          <Ionicons name="search" size={25} color="#000" />
         </View>
       </View>
 
-      {/* ── Count ── */}
-      {selectedRoom && (
-        <View style={styles.countBar}>
-          <Text style={styles.countText}>
-            {filtered.length} khách thuê trong phòng {selectedRoom.name}
-          </Text>
-        </View>
-      )}
+      <Text style={styles.countTitle}>Tổng Có ({filteredTenants.length}) khách</Text>
 
-      {/* ── List ── */}
       {isLoading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.success} />
+          <ActivityIndicator size="large" color={GREEN} />
         </View>
-      ) : filtered.length === 0 ? (
+      ) : filteredTenants.length === 0 ? (
         <View style={styles.center}>
-          <Ionicons name="people-outline" size={64} color={Colors.gray300} />
+          <Ionicons name="people-outline" size={48} color={Colors.gray300} />
           <Text style={styles.emptyTitle}>Chưa có khách thuê</Text>
-          <Text style={styles.emptyDesc}>Nhấn + để thêm khách thuê</Text>
+          <Text style={styles.emptyDesc}>Thử đổi phòng hoặc nhập từ khóa khác.</Text>
         </View>
       ) : (
         <FlatList
-          data={filtered}
-          keyExtractor={(i) => i.tenantId}
-          renderItem={renderItem}
+          data={Object.entries(tenantsByRoom)}
+          keyExtractor={([roomName]) => roomName}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          renderItem={({ item: [roomName, roomTenants] }) => (
+            <View style={styles.roomCard}>
+              <View style={styles.roomCardHeader}>
+                <View style={styles.roomIcon}>
+                  <Ionicons name="list" size={18} color={Colors.white} />
+                </View>
+                <Text style={styles.roomTitle}>{roomName}</Text>
+                <View style={styles.roomHeaderSpacer} />
+                <TouchableOpacity style={styles.chatAction} activeOpacity={0.8}>
+                  <View style={styles.outlineIconButton}>
+                    <Ionicons name="chatbox" size={18} color={BLUE} />
+                  </View>
+                  <Text style={styles.roomActionText}>Chat</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.addAction}
+                  activeOpacity={0.8}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/tab-manage/management-menu/tenants/add",
+                      params: selectedRoom
+                        ? { roomId: selectedRoom.roomId, roomName: selectedRoom.name }
+                        : {},
+                    } as any)
+                  }
+                >
+                  <View style={styles.outlineIconButton}>
+                    <Ionicons name="add" size={23} color="#000" />
+                  </View>
+                  <Text style={styles.roomActionText}>Thêm</Text>
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                data={roomTenants}
+                keyExtractor={(tenant) => tenant.tenantId}
+                renderItem={renderTenant}
+                scrollEnabled={false}
+              />
+            </View>
+          )}
         />
       )}
 
-      {/* ── FAB ── */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() =>
-          router.push({
-            pathname: "/tab-manage/management-menu/tenants/add",
-            params: selectedRoom
-              ? { roomId: selectedRoom.roomId, roomName: selectedRoom.name }
-              : {},
-          } as any)
-        }
-        accessibilityLabel="Thêm khách thuê"
-      >
-        <Ionicons name="add" size={30} color={Colors.white} />
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-function InfoItem({ icon, value }: { icon: any; value: string }) {
-  return (
-    <View style={styles.infoItem}>
-      <Ionicons
-        name={icon}
-        size={14}
-        color={Colors.textSecondary}
-        style={{ marginRight: 4 }}
+      <RoomModal
+        rooms={rooms}
+        selectedRoom={selectedRoom}
+        visible={showRoomModal}
+        onClose={() => setShowRoomModal(false)}
+        onSelect={handleSelectRoom}
       />
-      <Text style={styles.infoItemText} numberOfLines={1}>
-        {value}
-      </Text>
+
+      <TenantActionSheet
+        selected={selectedActionTenant}
+        onClose={() => setSelectedActionTenant(null)}
+        onOpenDetail={(tenantId) => {
+          setSelectedActionTenant(null);
+          openTenantDetail(tenantId);
+        }}
+        onDelete={handleDeleteTenant}
+      />
     </View>
   );
 }
 
-// ── Styles ──
+function StatusPill({ label }: { label: string }) {
+  return (
+    <View style={styles.statusPill}>
+      <View style={styles.statusDot} />
+      <Text style={styles.statusText}>{label}</Text>
+    </View>
+  );
+}
+
+function TenantActionSheet({
+  onClose,
+  onDelete,
+  onOpenDetail,
+  selected,
+}: {
+  onClose: () => void;
+  onDelete: (tenant: TenantListItem) => void;
+  onOpenDetail: (tenantId: string) => void;
+  selected: TenantListItem | null;
+}) {
+  const slideY = useRef(new Animated.Value(620)).current;
+
+  useEffect(() => {
+    if (selected) {
+      slideY.setValue(620);
+      Animated.timing(slideY, {
+        toValue: 0,
+        duration: 260,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [selected, slideY]);
+
+  return (
+    <Modal
+      visible={Boolean(selected)}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View style={styles.actionSheetBackdrop}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={styles.actionSheetDim}
+          onPress={onClose}
+        />
+        <Animated.View
+          style={[
+            styles.actionSheetAnimatedWrap,
+            { transform: [{ translateY: slideY }] },
+          ]}
+        >
+          <View style={styles.actionSheetHandle} />
+          <View style={styles.actionSheet}>
+            <View style={styles.actionWarningBox}>
+              <Ionicons name="warning-outline" size={22} color={ORANGE} />
+              <Text style={styles.actionWarningText}>Chưa sử dụng APP khách</Text>
+            </View>
+
+            <ScrollView style={styles.actionMenuScroll} showsVerticalScrollIndicator={false}>
+              <View style={styles.actionMenu}>
+                <ActionSheetItem
+                  icon="phone-portrait-outline"
+                  label="Cho phép sử dụng APP - Khách thuê"
+                  description="Gửi hóa đơn tự động cho khách, thanh toán hóa đơn online..."
+                  labelColor="#2b7ed7"
+                  pro
+                  onPress={onClose}
+                />
+                <ActionSheetItem
+                  icon="lock-closed-outline"
+                  label="Cấp quyền khóa thông minh"
+                  description="Có thể ra vào phòng bằng khóa thông minh"
+                  labelColor="#2b7ed7"
+                  pro
+                  onPress={onClose}
+                />
+                <ActionSheetItem
+                  icon="person-outline"
+                  label="Xem chi tiết khách thuê"
+                  onPress={() => selected?.tenantId && onOpenDetail(selected.tenantId)}
+                />
+                <ActionSheetItem
+                  icon="create-outline"
+                  label="Chỉnh sửa khách thuê"
+                  onPress={() => selected?.tenantId && onOpenDetail(selected.tenantId)}
+                />
+                <ActionSheetItem
+                  icon="document-outline"
+                  label="Xem văn bản tờ khai tạm trú"
+                  onPress={onClose}
+                />
+                <ActionSheetItem
+                  icon="print-outline"
+                  label="In tờ khai tạm trú"
+                  onPress={onClose}
+                />
+                <ActionSheetItem
+                  icon="print-outline"
+                  label="In tờ khai gia hạn tạm trú"
+                  onPress={onClose}
+                />
+                <ActionSheetItem
+                  icon="print-outline"
+                  label="In tờ khai hủy tạm trú"
+                  onPress={onClose}
+                />
+                <ActionSheetItem
+                  icon="backspace-outline"
+                  label="Xóa khách thuê"
+                  labelColor="#F2363C"
+                  onPress={() => selected && onDelete(selected)}
+                />
+              </View>
+            </ScrollView>
+
+            <TouchableOpacity style={styles.actionCloseButton} onPress={onClose} activeOpacity={0.85}>
+              <Text style={styles.actionCloseText}>Đóng</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
+
+function ActionSheetItem({
+  description,
+  icon,
+  label,
+  labelColor = "#000",
+  onPress,
+  pro,
+}: {
+  description?: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  labelColor?: string;
+  onPress: () => void;
+  pro?: boolean;
+}) {
+  return (
+    <TouchableOpacity style={styles.actionItem} activeOpacity={0.75} onPress={onPress}>
+      <Ionicons name={icon} size={21} color="#000" style={styles.actionItemIcon} />
+      <View style={styles.actionItemTextWrap}>
+        <View style={styles.actionItemTitleRow}>
+          <Text style={[styles.actionItemLabel, { color: labelColor }]}>{label}</Text>
+          {pro ? (
+            <View style={styles.proBadge}>
+              <Text style={styles.proBadgeText}>PRO</Text>
+            </View>
+          ) : null}
+        </View>
+        {description ? (
+          <Text style={styles.actionItemDescription}>{description}</Text>
+        ) : null}
+      </View>
+      <Ionicons name="chevron-forward" size={20} color={Colors.gray600} />
+    </TouchableOpacity>
+  );
+}
+
+function RoomModal({
+  onClose,
+  onSelect,
+  rooms,
+  selectedRoom,
+  visible,
+}: {
+  onClose: () => void;
+  onSelect: (room: RoomOption | null) => void;
+  rooms: RoomOption[];
+  selectedRoom: RoomOption | null;
+  visible: boolean;
+}) {
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.modalBackdrop}>
+        <View style={styles.modalCard}>
+          <Text style={styles.modalTitle}>Chọn phòng</Text>
+          <TouchableOpacity
+            style={styles.roomOption}
+            onPress={() => {
+              onSelect(null);
+              onClose();
+            }}
+          >
+            <Text style={[styles.roomOptionText, !selectedRoom?.roomId && styles.roomOptionTextActive]}>
+              Tất cả phòng
+            </Text>
+          </TouchableOpacity>
+          {rooms.map((room) => {
+            const active = selectedRoom?.roomId === room.roomId;
+            return (
+              <TouchableOpacity
+                key={room.roomId}
+                style={styles.roomOption}
+                onPress={() => onSelect(room)}
+              >
+                <Text style={[styles.roomOptionText, active && styles.roomOptionTextActive]}>
+                  {getRoomName(room)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Text style={styles.closeButtonText}>Đóng</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F3F4F6" },
-  header: {
-    flexDirection: "row",
+  actionCloseButton: {
     alignItems: "center",
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.base,
-    paddingBottom: Spacing.md,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: Spacing.md,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: FontSizes.base,
-    fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
-  },
-  addBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#20a9e7",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  filterSection: {
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-    gap: Spacing.sm,
-  },
-  roomPicker: {
-    height: 44,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
+    backgroundColor: Colors.gray200,
     borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.md,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  pickerText: { flex: 1, fontSize: FontSizes.md, color: Colors.textPrimary },
-  pickerPlaceholder: {
-    flex: 1,
-    fontSize: FontSizes.md,
-    color: Colors.placeholder,
-  },
-  dropList: {
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    borderRadius: BorderRadius.md,
-    overflow: "hidden",
-  },
-  dropItem: {
-    padding: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  dropItemSelected: { backgroundColor: "#E0F7FA" },
-  dropItemText: { fontSize: FontSizes.md, color: Colors.textPrimary },
-  dropItemTextSelected: { color: "#20a9e7", fontWeight: FontWeights.bold },
-  searchWrap: {
-    height: 44,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    borderRadius: BorderRadius.md,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: Spacing.md,
-  },
-  searchIcon: { marginRight: 6 },
-  searchInput: { flex: 1, fontSize: FontSizes.md, color: Colors.textPrimary },
-  countBar: {
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.gray50,
-  },
-  countText: { fontSize: FontSizes.sm, color: Colors.textSecondary },
-  listContent: { padding: Spacing.base, paddingBottom: 100, gap: Spacing.md },
-  card: {
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.lg,
-    borderLeftWidth: 4,
-    borderLeftColor: "#20a9e7",
-    padding: Spacing.base,
-    ...Shadows.sm,
-  },
-  cardHeader: { flexDirection: "row", alignItems: "center", gap: Spacing.md },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#E0F7FA",
-    alignItems: "center",
     justifyContent: "center",
+    marginTop: 9,
+    minHeight: 44,
   },
-  avatarText: {
-    fontSize: FontSizes.lg,
-    fontWeight: FontWeights.bold,
-    color: "#20a9e7",
-  },
-  tenantName: {
-    fontSize: FontSizes.base,
-    fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
-  },
-  tenantPhone: {
+  actionCloseText: {
+    color: "#000",
     fontSize: FontSizes.sm,
+    fontWeight: FontWeights.bold,
+  },
+  actionItem: {
+    alignItems: "center",
+    borderBottomColor: Colors.gray300,
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    minHeight: 48,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  actionItemDescription: {
     color: Colors.textSecondary,
+    fontSize: 11,
+    lineHeight: 15,
     marginTop: 2,
   },
-  roleTag: {
-    backgroundColor: "#E0F7FA",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
+  actionItemIcon: {
+    marginRight: 12,
+    width: 25,
   },
-  roleTagText: {
-    fontSize: FontSizes.xs,
-    fontWeight: FontWeights.bold,
-    color: "#20a9e7",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.borderLight,
-    marginVertical: Spacing.sm,
-  },
-  infoGrid: { flexDirection: "row", gap: Spacing.md, flexWrap: "wrap" },
-  infoItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-    minWidth: "45%",
-  },
-  infoItemText: {
+  actionItemLabel: {
+    color: "#000",
+    flexShrink: 1,
     fontSize: FontSizes.sm,
-    color: Colors.textSecondary,
+    fontWeight: FontWeights.bold,
+  },
+  actionItemTextWrap: {
+    flex: 1,
+    paddingRight: 8,
+  },
+  actionItemTitleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  actionMenu: {
+    backgroundColor: Colors.white,
+    borderColor: Colors.gray300,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  actionMenuScroll: {
     flex: 1,
   },
-  cardActions: {
-    flexDirection: "row",
-    gap: Spacing.sm,
-    marginTop: Spacing.sm,
+  actionSheet: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
+    flex: 1,
+    padding: 8,
+    width: "100%",
+  },
+  actionSheetAnimatedWrap: {
+    height: "75%",
+    width: "100%",
+  },
+  actionSheetBackdrop: {
+    backgroundColor: "rgba(0,0,0,0.56)",
+    flex: 1,
     justifyContent: "flex-end",
   },
-  editBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 6,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: "#20a9e7",
-  },
-  editBtnText: { fontSize: FontSizes.sm, color: "#20a9e7" },
-  deleteItemBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 6,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.error,
-  },
-  deleteBtnText: { fontSize: FontSizes.sm, color: Colors.error },
-  center: {
+  actionSheetDim: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: Spacing.md,
   },
-  emptyTitle: {
-    fontSize: FontSizes.lg,
+  actionSheetHandle: {
+    alignSelf: "center",
+    backgroundColor: Colors.white,
+    borderRadius: 4,
+    height: 7,
+    marginBottom: 8,
+    width: 48,
+  },
+  actionWarningBox: {
+    alignItems: "center",
+    backgroundColor: "#FFF9F6",
+    borderColor: ORANGE,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 9,
+    minHeight: 46,
+    paddingHorizontal: 12,
+  },
+  actionWarningText: {
+    color: "#000",
+    flex: 1,
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.medium,
+  },
+  addAction: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 5,
+  },
+  avatar: {
+    alignItems: "center",
+    backgroundColor: "#5BC3E6",
+    borderColor: Colors.gray300,
+    borderRadius: 23,
+    borderWidth: 1,
+    height: 46,
+    justifyContent: "center",
+    width: 46,
+  },
+  backButton: {
+    alignItems: "center",
+    backgroundColor: Colors.gray50,
+    borderColor: Colors.gray300,
+    borderRadius: 24,
+    borderWidth: 1,
+    height: 48,
+    justifyContent: "center",
+    marginRight: 12,
+    width: 48,
+  },
+  callButton: {
+    alignItems: "center",
+    backgroundColor: CALL_GREEN,
+    borderRadius: 22,
+    height: 44,
+    justifyContent: "center",
+    width: 44,
+  },
+  center: {
+    alignItems: "center",
+    flex: 1,
+    gap: Spacing.sm,
+    justifyContent: "center",
+    paddingHorizontal: Spacing.xl,
+  },
+  chatAction: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 5,
+  },
+  closeButton: {
+    alignItems: "center",
+    backgroundColor: Colors.gray100,
+    borderRadius: BorderRadius.md,
+    justifyContent: "center",
+    marginTop: Spacing.md,
+    minHeight: 48,
+  },
+  closeButtonText: {
+    color: "#000",
+    fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
-    color: Colors.textPrimary,
+  },
+  container: {
+    backgroundColor: PAGE_BG,
+    flex: 1,
+  },
+  countTitle: {
+    color: "#000",
+    fontSize: FontSizes.base,
+    fontWeight: FontWeights.bold,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
   },
   emptyDesc: {
-    fontSize: FontSizes.md,
     color: Colors.textSecondary,
+    fontSize: FontSizes.sm,
     textAlign: "center",
   },
-  fab: {
-    position: "absolute",
-    bottom: 24,
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#20a9e7",
+  emptyTitle: {
+    color: Colors.textPrimary,
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.bold,
+  },
+  excelButton: {
+    backgroundColor: "#2b7ed7",
+    flex: 0.96,
+  },
+  filterLabel: {
+    color: "#000",
+    fontSize: FontSizes.sm,
+  },
+  filterRow: {
+    backgroundColor: PAGE_BG,
+    flexDirection: "row",
+    paddingHorizontal: 8,
+  },
+  filterValue: {
+    color: "#000",
+    fontSize: FontSizes.base,
+    fontWeight: FontWeights.bold,
+    marginTop: 3,
+  },
+  header: {
     alignItems: "center",
+    backgroundColor: Colors.white,
+    borderBottomColor: Colors.gray100,
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    minHeight: 94,
+    paddingBottom: 12,
+    paddingHorizontal: 12,
+  },
+  headerTitle: {
+    color: Colors.textPrimary,
+    fontSize: FontSizes.lg,
+    fontWeight: FontWeights.bold,
+  },
+  listContent: {
+    paddingBottom: 18,
+  },
+  modalBackdrop: {
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.55)",
+    flex: 1,
     justifyContent: "center",
-    ...Shadows.lg,
+    paddingHorizontal: 24,
+  },
+  modalCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    padding: Spacing.lg,
+    width: "100%",
+  },
+  modalTitle: {
+    color: "#000",
+    fontSize: FontSizes.base,
+    fontWeight: FontWeights.bold,
+    marginBottom: Spacing.sm,
+  },
+  moreButton: {
+    alignItems: "center",
+    backgroundColor: "#F0F0F0",
+    borderRadius: 22,
+    height: 44,
+    justifyContent: "center",
+    width: 44,
+  },
+  oldTenantButton: {
+    backgroundColor: "#000",
+    flex: 1.93,
+  },
+  proBadge: {
+    alignItems: "center",
+    backgroundColor: ORANGE,
+    borderRadius: BorderRadius.full,
+    justifyContent: "center",
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+  },
+  proBadgeText: {
+    color: Colors.white,
+    fontSize: 11,
+    fontWeight: FontWeights.bold,
+  },
+  outlineIconButton: {
+    alignItems: "center",
+    backgroundColor: Colors.white,
+    borderColor: "#000",
+    borderRadius: 18,
+    borderWidth: 1,
+    height: 36,
+    justifyContent: "center",
+    width: 36,
+  },
+  quickAction: {
+    alignItems: "center",
+    borderRadius: BorderRadius.md,
+    flexDirection: "row",
+    gap: 7,
+    justifyContent: "center",
+    minHeight: 48,
+    paddingHorizontal: 8,
+    ...Shadows.sm,
+  },
+  quickActionText: {
+    color: Colors.white,
+    flexShrink: 1,
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.bold,
+  },
+  roomActionText: {
+    color: "#000",
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.bold,
+  },
+  roomCard: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.lg,
+    marginBottom: 8,
+    marginHorizontal: 8,
+    overflow: "hidden",
+    ...Shadows.sm,
+  },
+  roomCardHeader: {
+    alignItems: "center",
+    borderBottomColor: Colors.gray300,
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    gap: 7,
+    minHeight: 54,
+    paddingHorizontal: 10,
+  },
+  roomFilter: {
+    alignItems: "center",
+    backgroundColor: Colors.white,
+    borderColor: Colors.gray300,
+    borderTopLeftRadius: BorderRadius.lg,
+    borderWidth: 1,
+    flex: 1.05,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 54,
+    paddingHorizontal: 12,
+  },
+  roomHeaderSpacer: {
+    flex: 1,
+  },
+  roomIcon: {
+    alignItems: "center",
+    backgroundColor: GREEN,
+    borderRadius: 18,
+    height: 36,
+    justifyContent: "center",
+    width: 36,
+  },
+  roomOption: {
+    borderBottomColor: Colors.gray200,
+    borderBottomWidth: 1,
+    justifyContent: "center",
+    minHeight: 48,
+  },
+  roomOptionText: {
+    color: "#000",
+    fontSize: FontSizes.sm,
+  },
+  roomOptionTextActive: {
+    color: GREEN,
+    fontWeight: FontWeights.bold,
+  },
+  roomTitle: {
+    color: "#000",
+    fontSize: FontSizes.base,
+    fontWeight: FontWeights.bold,
+    textDecorationLine: "underline",
+  },
+  searchBox: {
+    alignItems: "center",
+    backgroundColor: Colors.white,
+    borderBottomRightRadius: BorderRadius.lg,
+    borderColor: Colors.gray300,
+    borderLeftWidth: 0,
+    borderTopRightRadius: BorderRadius.lg,
+    borderWidth: 1,
+    flex: 1.63,
+    flexDirection: "row",
+    minHeight: 54,
+    paddingHorizontal: 14,
+  },
+  searchInput: {
+    color: "#000",
+    flex: 1,
+    fontSize: FontSizes.sm,
+    paddingVertical: 8,
+  },
+  statusDot: {
+    backgroundColor: ORANGE,
+    borderRadius: 6,
+    height: 8,
+    width: 8,
+  },
+  statusPill: {
+    alignItems: "center",
+    backgroundColor: "#F0F0F0",
+    borderRadius: BorderRadius.full,
+    flexDirection: "row",
+    gap: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+  statusText: {
+    color: "#000",
+    fontSize: 11,
+    fontWeight: FontWeights.medium,
+  },
+  tenantInfo: {
+    flex: 1,
+    minWidth: 96,
+  },
+  tenantName: {
+    color: "#000",
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.bold,
+  },
+  tenantPhone: {
+    color: "#000",
+    fontSize: FontSizes.sm,
+    marginTop: 2,
+  },
+  tenantRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 9,
+    paddingHorizontal: 10,
+    paddingVertical: 14,
+  },
+  tenantStatusRow: {
+    flexBasis: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingLeft: 55,
+  },
+  topActions: {
+    flexDirection: "row",
+    gap: 8,
+    padding: 8,
+  },
+  warningRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 4,
+    marginTop: 6,
+  },
+  warningText: {
+    color: ORANGE,
+    fontSize: FontSizes.sm,
   },
 });

@@ -96,6 +96,16 @@ public class InvoiceController {
                 .build();
     }
 
+    @Operation(summary = "Get invoice by ID")
+    @GetMapping("/{invoiceId}")
+    public ApiResponse<InvoiceResponse> getInvoiceById(@PathVariable UUID invoiceId) {
+        Invoice invoice = invoiceService.findInvoiceById(invoiceId);
+        return ApiResponse.<InvoiceResponse>builder()
+                .message("HÃ³a Ä‘Æ¡n Ä‘Ã£ Ä‘Æ°á»£c truy xuáº¥t thÃ nh cÃ´ng")
+                .result(invoiceService.mapToResponse(invoice))
+                .build();
+    }
+
     @Operation(summary = "Collect payment for an invoice")
     @PatchMapping("/{invoiceId}/collect-payment")
     public ApiResponse<InvoiceResponse> collectPayment(

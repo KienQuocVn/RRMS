@@ -18,19 +18,16 @@ import {
 } from '@/components/auth';
 import { Colors, Spacing, FontSizes, FontWeights } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
-import {
-  API_BASE_URL,
-  API_BASE_URL_DIAGNOSTICS,
-  getApiBaseUrlCandidates,
-} from '@/services/api/client';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login, isLoading, error: authError } = useAuth();
+  const visibleAuthError =
+    authError === 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+      ? null
+      : authError;
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const showDevNetworkHint = __DEV__ && API_BASE_URL_DIAGNOSTICS.isLanOnlyHost;
-  const apiCandidates = getApiBaseUrlCandidates().join(' | ');
 
   const handleLogin = async () => {
     const trimmedPhone = phone.trim();
@@ -87,9 +84,9 @@ export default function LoginScreen() {
 
           
 
-          {authError ? (
+          {visibleAuthError ? (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{authError}</Text>
+              <Text style={styles.errorText}>{visibleAuthError}</Text>
             </View>
           ) : null}
 

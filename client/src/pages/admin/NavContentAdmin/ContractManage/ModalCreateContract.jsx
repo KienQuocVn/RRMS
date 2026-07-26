@@ -210,7 +210,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
   const handlePhotoUpload = (e, type) => {
     const file = e.target.files[0]
     if (file) {
-      setTenant(prev => ({ ...prev, [type]: file }))
+      setTenant((prev) => ({ ...prev, [type]: file }))
     }
   }
 
@@ -402,14 +402,17 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
           {/* Section: Thời hạn hợp đồng */}
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+              <Box sx={{ bgcolor: '#20a9e722', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
                 <CalendarTodayIcon sx={{ color: '#20a9e7' }} fontSize="small" />
               </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 Thời hạn hợp đồng
               </Typography>
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
               Dùng xác định ngày vào ở, văn bản hợp đồng...
             </Typography>
             <Grid container spacing={2}>
@@ -471,14 +474,17 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
           {/* Section: Thông tin khách thuê */}
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+              <Box sx={{ bgcolor: '#20a9e722', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
                 <PersonIcon sx={{ color: '#20a9e7' }} fontSize="small" />
               </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 Thông tin khách thuê
               </Typography>
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
               Dùng để làm tạm trú, văn bản hợp đồng...
             </Typography>
             <Grid container spacing={2}>
@@ -515,7 +521,9 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                   onChange={handleTenantChange}
                   size="small"
                   error={!tenant.phone?.trim()}
-                  helperText={!tenant.phone?.trim() ? 'Vui lòng nhập sđt người ở' : 'Nhập sđt ZALO để hỗ trợ gửi hóa đơn tự động'}
+                  helperText={
+                    !tenant.phone?.trim() ? 'Vui lòng nhập sđt người ở' : 'Nhập sđt ZALO để hỗ trợ gửi hóa đơn tự động'
+                  }
                 />
               </Grid>
               <Grid item xs={12}>
@@ -523,8 +531,12 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                   control={<Checkbox defaultChecked sx={{ color: '#20a9e7', '&.Mui-checked': { color: '#20a9e7' } }} />}
                   label={
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#20a9e7' }}>Sử dụng APP - Dành cho khách thuê</Typography>
-                      <Typography variant="caption" color="text.secondary">Gửi hóa đơn tự động cho khách, hợp đồng online vv...</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#20a9e7' }}>
+                        Sử dụng APP - Dành cho khách thuê
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Gửi hóa đơn tự động cho khách, hợp đồng online vv...
+                      </Typography>
                     </Box>
                   }
                   sx={{ bgcolor: '#fff3e0', p: 1, borderRadius: 1, width: '100%', ml: 0 }}
@@ -566,7 +578,9 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                 </TextField>
               </Grid>
               <Grid item xs={12} sx={{ textAlign: 'center' }}>
-                <Typography variant="body2" sx={{ color: '#20a9e7', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}>
+                <Typography
+                  variant="body2"
+                  sx={{ color: '#20a9e7', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}>
                   Mở rộng thông tin khách thuê
                 </Typography>
               </Grid>
@@ -580,14 +594,17 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
           {/* Section: Dịch vụ sử dụng */}
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+              <Box sx={{ bgcolor: '#20a9e722', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
                 <Inventory2Icon sx={{ color: '#20a9e7' }} fontSize="small" />
               </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 Dịch vụ sử dụng
               </Typography>
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
               Thêm dịch vụ sử dụng như: điện, nước, rác, wifi...
             </Typography>
             <Box sx={{ border: '1px solid #eee', borderRadius: 1, p: 2 }}>
@@ -666,14 +683,17 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
           {/* Section: Giá trị hợp đồng */}
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+              <Box sx={{ bgcolor: '#20a9e722', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
                 <Inventory2Icon sx={{ color: '#20a9e7' }} fontSize="small" />
               </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 Thông tin giá trị hợp đồng:
               </Typography>
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
               Giá tiền phòng và mức tiền cọc sẽ thu
             </Typography>
             <Grid container spacing={2}>
@@ -750,14 +770,17 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
           {/* Section: Tài sản phòng */}
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+              <Box sx={{ bgcolor: '#20a9e722', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
                 <Inventory2Icon sx={{ color: '#20a9e7' }} fontSize="small" />
               </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 Tài sản của phòng
               </Typography>
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
               Các tài sản trong quá trình thuê phòng
             </Typography>
             <Box sx={{ border: '1px solid #eee', borderRadius: 1, p: 2 }}>
@@ -836,14 +859,17 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
           {/* Section: Mẫu văn bản hợp đồng */}
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+              <Box sx={{ bgcolor: '#20a9e722', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
                 <Inventory2Icon sx={{ color: '#20a9e7' }} fontSize="small" />
               </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 Chọn mẫu văn bản hợp đồng
               </Typography>
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
               Bạn có thể cấu hình mẫu của mình, Nếu chưa có hãy tạo mẫu
             </Typography>
             <TextField
@@ -869,27 +895,27 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
           {/* Section: Chứng từ */}
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+              <Box sx={{ bgcolor: '#20a9e722', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
                 <Inventory2Icon sx={{ color: '#20a9e7' }} fontSize="small" />
               </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 Chứng từ
               </Typography>
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
               Hình ảnh chứng từ
             </Typography>
             <Button
               variant="outlined"
               component="label"
               fullWidth
-              sx={{ p: 3, borderStyle: 'dashed', bgcolor: '#e3f2fd', borderColor: '#20a9e7', color: '#20a9e7' }}
-            >
+              sx={{ p: 3, borderStyle: 'dashed', bgcolor: '#e3f2fd', borderColor: '#20a9e7', color: '#20a9e7' }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                 <CloudUploadIcon fontSize="large" />
-                <Typography>
-                  {tenant.frontPhoto ? tenant.frontPhoto.name : 'Hình ảnh chứng từ hợp đồng'}
-                </Typography>
+                <Typography>{tenant.frontPhoto ? tenant.frontPhoto.name : 'Hình ảnh chứng từ hợp đồng'}</Typography>
               </Box>
               <input type="file" hidden accept="image/*" onChange={(e) => handlePhotoUpload(e, 'frontPhoto')} />
             </Button>
@@ -902,14 +928,17 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
           {/* Section: Môi giới */}
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-              <Box sx={{ bgcolor: '#e8f5e9', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
+              <Box sx={{ bgcolor: '#20a9e722', p: 0.5, borderRadius: 1, mr: 1, display: 'flex' }}>
                 <Inventory2Icon sx={{ color: '#20a9e7' }} fontSize="small" />
               </Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 Môi giới
               </Typography>
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ ml: 4, display: 'block', mb: 2, fontStyle: 'italic' }}>
               Chọn người giới thiệu hợp đồng và phí môi giới
             </Typography>
             <Grid container spacing={2}>
@@ -956,8 +985,12 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                   control={<Checkbox defaultChecked sx={{ color: '#20a9e7', '&.Mui-checked': { color: '#20a9e7' } }} />}
                   label={
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Tạo phiếu chi</Typography>
-                      <Typography variant="caption" color="text.secondary">Tạo phiếu chi hoa hồng cho môi giới</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                        Tạo phiếu chi
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Tạo phiếu chi hoa hồng cho môi giới
+                      </Typography>
                     </Box>
                   }
                 />
@@ -985,4 +1018,3 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
 }
 
 export default ModalCreateContract
-

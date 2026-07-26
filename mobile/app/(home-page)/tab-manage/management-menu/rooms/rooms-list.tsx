@@ -14,6 +14,8 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  Modal,
+  Animated,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -45,6 +47,30 @@ export default function RoomsListScreen() {
   const [activeMotel, setActiveMotel] = useState<MotelResponse | null>(null);
   const [rooms, setRooms] = useState<RoomResponse2[]>([]);
   const [activeFloor, setActiveFloor] = useState(0);
+  const [selectedRoom, setSelectedRoom] = useState<RoomResponse2 | null>(null);
+  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
+  const slideAnim = React.useRef(new Animated.Value(600)).current;
+
+  const handleOpenBottomSheet = (room: RoomResponse2) => {
+    setSelectedRoom(room);
+    setIsBottomSheetVisible(true);
+    slideAnim.setValue(600);
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleCloseBottomSheet = () => {
+    Animated.timing(slideAnim, {
+      toValue: 600,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setIsBottomSheetVisible(false);
+    });
+  };
 
   // const resolveCurrentMotel = (motels: MotelResponse[], motelIdParam?: string) => {
   //   if (motelIdParam) {
@@ -236,7 +262,11 @@ export default function RoomsListScreen() {
             </View>
           ) : (
             filteredRooms.map((room) => (
-              <RoomCard key={room.roomId} room={room} />
+              <RoomCard 
+                key={room.roomId} 
+                room={room} 
+                onPressMenu={() => handleOpenBottomSheet(room)}
+              />
             ))
           )}
         </RefreshableScrollView>
@@ -258,12 +288,137 @@ export default function RoomsListScreen() {
       >
         <Ionicons name="add" size={30} color={Colors.white} />
       </TouchableOpacity>
+
+      {/* ── Bottom Sheet Modal ── */}
+      <Modal
+        visible={isBottomSheetVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseBottomSheet}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={handleCloseBottomSheet}
+        >
+          <Animated.View 
+            style={[
+              styles.bottomSheetContent,
+              { transform: [{ translateY: slideAnim }] }
+            ]}
+          >
+            <TouchableOpacity activeOpacity={1} style={{ width: "100%" }}>
+              <View style={styles.dragHandle} />
+              
+              {selectedRoom && (
+                (() => {
+                  const isAvailable = selectedRoom.status === true || String(selectedRoom.status).toLowerCase() === 'available';
+                  const isOccupied = selectedRoom.status === false || String(selectedRoom.status).toLowerCase() === 'occupied';
+                  
+                  if (isOccupied) {
+                    return (
+                      <View style={styles.bannerOccupied}>
+                        <Ionicons name="information-circle-outline" size={20} color="#2b7ed7" style={{ marginRight: Spacing.sm }} />
+                        <Text style={styles.bannerOccupiedText}>
+                          Phòng {selectedRoom.name}: Trạng thái &quot;Đang ở&quot;
+                        </Text>
+                      </View>
+                    );
+                  } else if (isAvailable) {
+                    return (
+                      <View style={styles.bannerAvailable}>
+                        <Ionicons name="warning-outline" size={20} color="#FF9800" style={{ marginRight: Spacing.sm }} />
+                        <Text style={styles.bannerAvailableText}>
+                          Phòng {selectedRoom.name}: Trạng thái &quot;Đang trống&quot;
+                        </Text>
+                      </View>
+                    );
+                  } else {
+                    return (
+                      <View style={styles.bannerOther}>
+                        <Ionicons name="information-circle-outline" size={20} color={Colors.textSecondary} style={{ marginRight: Spacing.sm }} />
+                        <Text style={styles.bannerOtherText}>
+                          Phòng {selectedRoom.name}: Trạng thái &quot;{String(selectedRoom.status).toLowerCase() === 'maintenance' ? 'Đang sửa chữa' : 'Đã đặt cọc'}&quot;
+                        </Text>
+                      </View>
+                    );
+                  }
+                })()
+              )}
+
+              <ScrollView showsVerticalScrollIndicator={false} style={styles.optionsContainer}>
+                {selectedRoom && (
+                  (() => {
+                    const isOccupied = selectedRoom.status === false || String(selectedRoom.status).toLowerCase() === 'occupied';
+                    
+                    const renderMenuItem = (
+                      icon: keyof typeof Ionicons.glyphMap, 
+                      title: string, 
+                      subtext?: string, 
+                      onPress?: () => void
+                    ) => (
+                      <TouchableOpacity key={title} style={styles.menuItem} onPress={onPress}>
+                        <View style={styles.menuItemLeft}>
+                          <Ionicons name={icon} size={20} color={Colors.textPrimary} style={{ marginRight: Spacing.md }} />
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.menuItemTitle}>{title}</Text>
+                            {subtext ? <Text style={styles.menuItemSubtext}>{subtext}</Text> : null}
+                          </View>
+                        </View>
+                        <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
+                      </TouchableOpacity>
+                    );
+
+                    const handleFeatureNotImplemented = (featureName: string) => {
+                      handleCloseBottomSheet();
+                      Alert.alert("Chức năng đang phát triển", `Tính năng "${featureName}" đang được hoàn thiện.`);
+                    };
+
+                    const navigateTo = (path: string, params?: any) => {
+                      handleCloseBottomSheet();
+                      router.push({ pathname: path, params } as any);
+                    };
+
+                    if (isOccupied) {
+                      return [
+                        renderMenuItem("eye-outline", "Xem chi tiết phòng", undefined, () => navigateTo(`/rooms/[id]`, { id: selectedRoom.roomId })),
+                        renderMenuItem("create-outline", "Chỉnh sửa thông tin cơ bản", undefined, () => handleFeatureNotImplemented("Chỉnh sửa thông tin cơ bản")),
+                        renderMenuItem("settings-outline", "Thiết lập dịch vụ", "Dịch vụ điện, nước... của phòng", () => navigateTo("/tab-manage/management-menu/service-settings/services")),
+                        renderMenuItem("cash-outline", "Lập hóa đơn", undefined, () => navigateTo("/tab-manage/management-menu/invoices/add", {
+                          motelId: activeMotel?.motelId,
+                          roomId: selectedRoom.roomId,
+                          roomName: selectedRoom.name,
+                          roomPrice: String(selectedRoom.price ?? 0),
+                        })),
+                        renderMenuItem("people-outline", "Danh sách khách thuê", undefined, () => navigateTo("/tab-manage/management-menu/tenants")),
+                        renderMenuItem("person-add-outline", "Thêm khách thuê (thành viên)", undefined, () => navigateTo("/tab-manage/management-menu/tenants/add")),
+                        renderMenuItem("repeat-outline", "Chuyển phòng", undefined, () => handleFeatureNotImplemented("Chuyển phòng")),
+                        renderMenuItem("eye-outline", "Xem thông tin hợp đồng", undefined, () => navigateTo("/tab-manage/management-menu/contracts")),
+                        renderMenuItem("create-outline", "Chỉnh sửa hợp đồng", undefined, () => navigateTo("/tab-manage/management-menu/contracts")),
+                        renderMenuItem("log-out-outline", "Kết thúc hợp đồng", undefined, () => navigateTo("/tab-manage/management-menu/contracts")),
+                      ];
+                    } else {
+                      return [
+                        renderMenuItem("eye-outline", "Xem chi tiết phòng", undefined, () => navigateTo(`/rooms/[id]`, { id: selectedRoom.roomId })),
+                        renderMenuItem("create-outline", "Chỉnh sửa thông tin cơ bản", undefined, () => handleFeatureNotImplemented("Chỉnh sửa thông tin cơ bản")),
+                        renderMenuItem("document-text-outline", "Lập hợp đồng mới", undefined, () => navigateTo("/tab-manage/management-menu/contracts/add")),
+                        renderMenuItem("bookmark-outline", "Cọc giữ chỗ", undefined, () => navigateTo("/tab-manage/quick-actions/deposit")),
+                        renderMenuItem("settings-outline", "Thiết lập dịch vụ", "Dịch vụ điện, nước... của phòng", () => navigateTo("/tab-manage/management-menu/service-settings/services")),
+                      ];
+                    }
+                  })()
+                )}
+              </ScrollView>
+            </TouchableOpacity>
+          </Animated.View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
 
 // ── Room Card Sub-Component ──
-function RoomCard({ room }: { room: RoomResponse2 }) {
+function RoomCard({ room, onPressMenu }: { room: RoomResponse2; onPressMenu: () => void }) {
   // Map trạng thái phòng từ backend
   const isAvailable = room.status === true || String(room.status).toLowerCase() === 'available';
   const isOccupied = room.status === false || String(room.status).toLowerCase() === 'occupied';
@@ -279,6 +434,7 @@ function RoomCard({ room }: { room: RoomResponse2 }) {
         <TouchableOpacity
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel={`Menu ${room.name}`}
+          onPress={onPressMenu}
         >
           <Ionicons
             name="ellipsis-vertical"
@@ -619,5 +775,107 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: FontSizes.sm,
     color: Colors.textSecondary,
+  },
+
+  // Bottom Sheet Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  bottomSheetContainer: {
+    width: "100%",
+  },
+  bottomSheetContent: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Platform.OS === "ios" ? Spacing["4xl"] : Spacing["2xl"],
+    paddingTop: Spacing.sm,
+    maxHeight: "85%",
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: Colors.gray300,
+    borderRadius: 2,
+    alignSelf: "center",
+    marginBottom: Spacing.lg,
+  },
+  bannerOccupied: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#20a9e722",
+    borderColor: "#2b7ed7",
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  bannerOccupiedText: {
+    color: "#2b7ed7",
+    fontWeight: FontWeights.bold,
+    fontSize: FontSizes.sm,
+    flex: 1,
+  },
+  bannerAvailable: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF9F3",
+    borderColor: "#FF9800",
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  bannerAvailableText: {
+    color: "#FF9800",
+    fontWeight: FontWeights.bold,
+    fontSize: FontSizes.sm,
+    flex: 1,
+  },
+  bannerOther: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.gray50,
+    borderColor: Colors.border,
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  bannerOtherText: {
+    color: Colors.textSecondary,
+    fontWeight: FontWeights.bold,
+    fontSize: FontSizes.sm,
+    flex: 1,
+  },
+  optionsContainer: {
+    width: "100%",
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
+  },
+  menuItemLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    paddingRight: Spacing.sm,
+  },
+  menuItemTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: FontWeights.semiBold,
+    color: Colors.textPrimary,
+  },
+  menuItemSubtext: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
 });

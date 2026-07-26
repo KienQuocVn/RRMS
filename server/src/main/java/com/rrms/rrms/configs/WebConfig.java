@@ -13,6 +13,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${cors.allowed-origins}")
     private String[] allowedOrigins;
 
+    @Value("${cors.allowed-origin-patterns:}")
+    private String[] allowedOriginPatterns;
+
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
@@ -22,6 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins(allowedOrigins)
+                .allowedOriginPatterns(allowedOriginPatterns)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")
                 .allowCredentials(true);

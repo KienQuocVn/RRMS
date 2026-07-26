@@ -103,10 +103,17 @@ export const useAuth = create<AuthState>()(
 
           return true;
         } catch (err: any) {
-          console.error('Login error:', err);
+          if (err?.response?.status === 401) {
+            console.warn('Login failed: invalid phone or password');
+          } else {
+            console.error('Login error:', err);
+          }
 
           set({
-            error: err?.response?.data?.message || buildNetworkErrorMessage(err),
+            error:
+              err?.response?.status === 401
+                ? 'Số điện thoại hoặc mật khẩu không đúng'
+                : err?.response?.data?.message || buildNetworkErrorMessage(err),
             isLoading: false,
           });
 

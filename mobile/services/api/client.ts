@@ -158,6 +158,10 @@ async function isApiBaseUrlReachable(baseUrl: string) {
 function prioritizeCandidates(storedBaseUrl: string | null) {
   let nextCandidates = buildApiBaseUrlCandidates();
 
+  if (configuredApiUrl?.trim()) {
+    return nextCandidates;
+  }
+
   if (Platform.OS === 'web') {
     const isWebLocalhost = typeof window !== 'undefined' && 
       (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
