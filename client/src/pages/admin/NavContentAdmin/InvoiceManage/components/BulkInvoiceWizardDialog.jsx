@@ -157,7 +157,7 @@ function StepRoomCard({ room, selected, onToggle }) {
             borderRadius: 1.5,
             textTransform: 'none',
             fontWeight: 700,
-            backgroundColor: selected ? '#15803d' : '#43a047',
+            backgroundColor: selected ? '#15803d' : '#0a58ca',
             '&:hover': {
               backgroundColor: selected ? '#166534' : '#2e7d32'
             }
@@ -340,7 +340,7 @@ function BulkInvoiceWizardDialog({ open, onClose, rooms = [], selectedMonth, sel
               >
                 {selectedRooms.length ? (
                   <Box sx={{ width: '100%', textAlign: 'center' }}>
-                    <CheckCircleOutlineRoundedIcon sx={{ fontSize: 56, color: '#43a047' }} />
+                    <CheckCircleOutlineRoundedIcon sx={{ fontSize: 56, color: '#0a58ca' }} />
                     <Typography sx={{ mt: 1.2, fontSize: 30, fontWeight: 800, color: '#20a9e7' }}>
                       Đã chọn {selectedRooms.length} phòng
                     </Typography>
@@ -384,7 +384,7 @@ function BulkInvoiceWizardDialog({ open, onClose, rooms = [], selectedMonth, sel
                 }}
               >
                 <Box sx={{ textAlign: 'center', maxWidth: 420 }}>
-                  <CheckCircleOutlineRoundedIcon sx={{ fontSize: 64, color: '#43a047' }} />
+                  <CheckCircleOutlineRoundedIcon sx={{ fontSize: 64, color: '#0a58ca' }} />
                   <Typography sx={{ mt: 1.4, fontSize: 22, fontWeight: 800, color: '#20a9e7' }}>
                     Đã chốt {selectedRoomIds.length} phòng
                   </Typography>
@@ -504,7 +504,7 @@ function BulkInvoiceWizardDialog({ open, onClose, rooms = [], selectedMonth, sel
                       width: 22,
                       height: 22,
                       borderRadius: '50%',
-                      backgroundColor: '#43a047',
+                      backgroundColor: '#0a58ca',
                       color: '#fff',
                       display: 'flex',
                       alignItems: 'center',
@@ -692,7 +692,7 @@ function BulkInvoiceWizardDialog({ open, onClose, rooms = [], selectedMonth, sel
               onClick={step === 1 ? handleNext : handleSubmit}
               disabled={step === 1 && selectedRoomIds.length === 0}
               sx={{
-                backgroundColor: '#43a047',
+                backgroundColor: '#0a58ca',
                 textTransform: 'none',
                 fontWeight: 700,
                 '&:hover': { backgroundColor: '#2e7d32' },

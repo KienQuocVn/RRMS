@@ -16,7 +16,6 @@ import {
 import SearchIcon from '@mui/icons-material/Search'
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined'
 import HomeIcon from '@mui/icons-material/Home'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import AddIcon from '@mui/icons-material/Add'
 import ViewColumnIcon from '@mui/icons-material/ViewColumn'
 import DescriptionIcon from '@mui/icons-material/Description'
@@ -87,10 +86,7 @@ const RoomFilterBar = ({
 
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          <IconButton
-            sx={{ bgcolor: '#f44336', color: 'white', '&:hover': { bgcolor: '#d32f2f' }, width: 36, height: 36 }}>
-            <PlayArrowIcon />
-          </IconButton>
+          
 
           <IconButton
             onClick={onAddRoom}

@@ -255,7 +255,7 @@ export const normalizeContractPayload = (contract = {}) => {
     collectionCycle: trimToNull(contract.collectionCycle ?? contract.collectioncycle) ?? '1',
     createDate: contract.createDate ?? contract.createdate ?? new Date().toISOString().slice(0, 10),
     signContract: trimToNull(contract.signContract ?? contract.signcontract) ?? 'Khach chua ky',
-    language: trimToNull(contract.language) ?? 'Tieng Viet',
+    language: trimToNull(contract.language) ?? 'Tiếng Việt',
     countTenant: toNumberOrUndefined(contract.countTenant) ?? 1,
     status: toBackendContractStatus(contract.status ?? 'ACTIVE'),
     reportCloseContract: contract.reportCloseContract ?? contract.reportCloseDate ?? null

@@ -74,15 +74,17 @@ const VehicleRow = ({ vehicle, onRefresh, onEdit }) => {
 
   return (
     <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 }, bgcolor: '#fff' }}>
-      <TableCell sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #f0f0f0' }}>
-        <Avatar sx={{ bgcolor: Colors.error, width: 32, height: 32, mr: 2 }}>
-          <DirectionsCarIcon fontSize="small" />
-        </Avatar>
-        <Typography variant="body2">{vehicle.tenantName || 'Không có tên'}</Typography>
+      <TableCell sx={{ width: '25%', borderBottom: '1px solid #f0f0f0' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Avatar sx={{ bgcolor: Colors.error, width: 32, height: 32, mr: 2 }}>
+            <DirectionsCarIcon fontSize="small" />
+          </Avatar>
+          <Typography variant="body2">{vehicle.tenantName || 'Không có tên'}</Typography>
+        </Box>
       </TableCell>
-      <TableCell sx={{ borderBottom: '1px solid #f0f0f0' }}>{vehicle.name}</TableCell>
-      <TableCell sx={{ borderBottom: '1px solid #f0f0f0' }}>{vehicle.number}</TableCell>
-      <TableCell sx={{ borderBottom: '1px solid #f0f0f0' }}>
+      <TableCell sx={{ width: '20%', borderBottom: '1px solid #f0f0f0' }}>{vehicle.name}</TableCell>
+      <TableCell sx={{ width: '20%', borderBottom: '1px solid #f0f0f0' }}>{vehicle.number}</TableCell>
+      <TableCell sx={{ width: '15%', borderBottom: '1px solid #f0f0f0' }}>
         {displayImage ? (
           <img src={displayImage} alt="xe" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }} />
         ) : (
@@ -91,8 +93,8 @@ const VehicleRow = ({ vehicle, onRefresh, onEdit }) => {
           </Typography>
         )}
       </TableCell>
-      <TableCell sx={{ borderBottom: '1px solid #f0f0f0' }}>Xe máy</TableCell> {/* Có thể điều chỉnh dựa vào data */}
-      <TableCell align="right" sx={{ borderBottom: '1px solid #f0f0f0' }}>
+      <TableCell sx={{ width: '15%', borderBottom: '1px solid #f0f0f0' }}>Xe máy</TableCell>
+      <TableCell align="right" sx={{ width: '5%', borderBottom: '1px solid #f0f0f0' }}>
         <IconButton size="small" onClick={handleMenuClick}>
           <MoreVertIcon fontSize="small" />
         </IconButton>
@@ -135,7 +137,7 @@ const RoomGroup = ({ room, vehicles, onRefresh, onEdit }) => {
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0, border: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <Table size="small">
+            <Table size="small" sx={{ tableLayout: 'fixed', width: '100%' }}>
               <TableBody>
                 {vehicles.map((vehicle) => (
                   <VehicleRow key={vehicle.carId} vehicle={vehicle} onRefresh={onRefresh} onEdit={onEdit} />
@@ -163,7 +165,7 @@ const VehicleListTable = ({ vehicles, rooms, onRefresh, onEdit }) => {
 
   return (
     <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-      <Table size="small">
+      <Table size="small" sx={{ tableLayout: 'fixed', width: '100%' }}>
         <TableHead sx={{ bgcolor: '#f8f9fa' }}>
           <TableRow>
             <TableCell sx={{ fontWeight: 'bold', width: '25%', py: 2 }}>Tên khách thuê</TableCell>
@@ -210,5 +212,6 @@ const VehicleListTable = ({ vehicles, rooms, onRefresh, onEdit }) => {
     </TableContainer>
   )
 }
+
 
 export default VehicleListTable

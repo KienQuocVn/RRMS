@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as XLSX from 'xlsx';
 import { Box, Typography } from '@mui/material';
 import FilterBar from './FilterBar';
 import BillSummaryCards from './BillSummaryCards';
@@ -90,8 +91,51 @@ const MonthlyBills = () => {
   const hasData = cardBills.length > 0 || compactBills.length > 0;
 
   const handleExportExcel = () => {
-    // Demo xuất file
-    alert('Đang chuẩn bị xuất báo cáo hóa đơn năm ' + year + ' dưới dạng file Excel...');
+    const { cardBills, compactBills } = getFilteredData();
+    const allBillsData = [];
+
+    // Map dữ liệu từ cardBills
+    cardBills.forEach(bill => {
+      allBillsData.push({
+        'Tháng': bill.month,
+        'Trạng thái': bill.status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán',
+        'Ngày thanh toán / Hạn thanh toán': bill.paymentDate || bill.dueDate || 'N/A',
+        'Phương thức': bill.paymentMethod === 'bank' ? 'Chuyển khoản ngân hàng' : bill.paymentMethod === 'momo' ? 'Momo' : 'N/A',
+        'Tổng tiền': bill.totalAmount
+      });
+    });
+
+    // Map dữ liệu từ compactBills
+    compactBills.forEach(bill => {
+      allBillsData.push({
+        'Tháng': bill.monthCompact,
+        'Trạng thái': bill.status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán',
+        'Ngày thanh toán / Hạn thanh toán': bill.payDate || 'N/A',
+        'Phương thức': 'N/A',
+        'Tổng tiền': bill.totalAmount
+      });
+    });
+
+    if (allBillsData.length === 0) {
+      alert('Không có dữ liệu hóa đơn để xuất Excel cho năm ' + year);
+      return;
+    }
+
+    const ws = XLSX.utils.json_to_sheet(allBillsData);
+
+    // Tự động căn chỉnh độ rộng cột
+    const colWidths = Object.keys(allBillsData[0]).map(key => {
+      const maxLength = Math.max(
+        key.length,
+        ...allBillsData.map(row => String(row[key] || '').length)
+      )
+      return { wch: maxLength + 2 };
+    });
+    ws['!cols'] = colWidths;
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Hóa đơn');
+    XLSX.writeFile(wb, `Bao_cao_hoa_don_nam_${year}.xlsx`);
   };
 
   const handleViewBillDetails = (bill) => {

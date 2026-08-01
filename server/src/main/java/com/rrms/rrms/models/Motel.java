@@ -83,5 +83,9 @@ public class Motel extends BaseEntity {
     @JsonManagedReference(value = "motel-ContractTemplate") // Đặt tên cho tham chiếu quản lý
     private List<ContractTemplate> contractTemplates;
 
+    @OneToMany(mappedBy = "motel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference(value = "motel-ResidenceTemplate")
+    private List<ResidenceTemplate> residenceTemplates;
+
     public Motel(UUID motelId, String motelName, String motelAddress) {}
 }

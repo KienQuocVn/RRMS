@@ -138,8 +138,16 @@ function RentRoomModal({ toggleModal, modalOpen, roomId: roomIdProp }) {
         </Typography>
         {isMain && (
           <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
-            <Chip label="Người liên hệ" size="small" sx={{ bgcolor: '#2b7ed7', color: '#fff', fontSize: 11, fontWeight: 700 }} />
-            <Chip label="đại diện hợp đồng" size="small" sx={{ bgcolor: '#2b7ed7', color: '#fff', fontSize: 11, fontWeight: 700 }} />
+            <Chip
+              label="Người liên hệ"
+              size="small"
+              sx={{ bgcolor: '#2b7ed7', color: '#fff', fontSize: 11, fontWeight: 700 }}
+            />
+            <Chip
+              label="đại diện hợp đồng"
+              size="small"
+              sx={{ bgcolor: '#2b7ed7', color: '#fff', fontSize: 11, fontWeight: 700 }}
+            />
           </Box>
         )}
       </Box>
@@ -147,7 +155,8 @@ function RentRoomModal({ toggleModal, modalOpen, roomId: roomIdProp }) {
         <IconButton
           onClick={() => handleDeleteTenant(tenant.tenantId)}
           sx={{
-            width: 42, height: 42,
+            width: 42,
+            height: 42,
             bgcolor: '#ef4444',
             color: '#fff',
             '&:hover': { bgcolor: '#dc2626' }
@@ -157,7 +166,8 @@ function RentRoomModal({ toggleModal, modalOpen, roomId: roomIdProp }) {
         <IconButton
           onClick={() => handleOpenEdit(tenant.tenantId)}
           sx={{
-            width: 42, height: 42,
+            width: 42,
+            height: 42,
             bgcolor: '#f3f4f6',
             color: '#333',
             border: '1px solid #e0e0e0',
@@ -171,7 +181,12 @@ function RentRoomModal({ toggleModal, modalOpen, roomId: roomIdProp }) {
 
   return (
     <>
-      <Dialog open={modalOpen} onClose={toggleModal} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '12px' } }}>
+      <Dialog
+        open={modalOpen}
+        onClose={toggleModal}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '12px' } }}>
         {/* Header */}
         <DialogTitle
           sx={{
@@ -184,10 +199,13 @@ function RentRoomModal({ toggleModal, modalOpen, roomId: roomIdProp }) {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Box
               sx={{
-                width: 38, height: 38,
+                width: 38,
+                height: 38,
                 borderRadius: '50%',
                 bgcolor: '#20a9e722',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 color: '#2b7ed7'
               }}>
               <PersonIcon />
@@ -210,21 +228,19 @@ function RentRoomModal({ toggleModal, modalOpen, roomId: roomIdProp }) {
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
               <CircularProgress size={32} />
             </Box>
-          ) : (!mainTenant && dataTenant.length === 0) ? (
+          ) : !mainTenant && dataTenant.length === 0 ? (
             <Typography sx={{ textAlign: 'center', color: '#999', py: 3, fontSize: 14 }}>
               Chưa có thông tin khách thuê.
             </Typography>
           ) : (
             <>
               {/* Khách thuê chính từ hợp đồng */}
-              {mainTenant && (
-                <TenantCard tenant={mainTenant} isMain={true} />
-              )}
+              {mainTenant && <TenantCard tenant={mainTenant} isMain={true} />}
 
               {/* Khách thuê thêm vào phòng */}
               {dataTenant
-                .filter(t => t.tenantId !== mainTenant?.tenantId)
-                .map(tenant => (
+                .filter((t) => t.tenantId !== mainTenant?.tenantId)
+                .map((tenant) => (
                   <TenantCard key={tenant.tenantId} tenant={tenant} isMain={false} />
                 ))}
             </>
@@ -245,7 +261,7 @@ function RentRoomModal({ toggleModal, modalOpen, roomId: roomIdProp }) {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setAddOpen(true)}
-            sx={{ bgcolor: '#2b7ed7', '&:hover': { bgcolor: '#4cae4c' }, px: 2.5 }}>
+            sx={{ bgcolor: '#2b7ed7', '&:hover': { bgcolor: '#0a58ca' }, px: 2.5 }}>
             Thêm thông tin khách thuê
           </Button>
         </DialogActions>

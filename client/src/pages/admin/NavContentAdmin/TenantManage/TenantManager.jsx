@@ -75,11 +75,11 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   }
 
   const handleClickDoc = (tenantId) => {
-    navigate(`/ResidenceForm/${tenantId}`)
+    window.open(`${window.location.origin}/ResidenceForm/${tenantId}`, '_blank')
   }
 
   const handlePrintResidence = (tenantId) => {
-    window.open(`${window.location.origin}/ResidenceForm/${tenantId}`, '_blank', 'noopener,noreferrer')
+    window.open(`${window.location.origin}/ResidenceForm/${tenantId}`, '_blank')
   }
 
   const loadData = async () => {
@@ -256,9 +256,37 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
   }
 
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredRows)
-    const workbook = XLSX.utils.book_new()
+    if (!filteredRows || filteredRows.length === 0) {
+      showSnackbar('Không có dữ liệu khách thuê để xuất!')
+      return
+    }
 
+    const dataToExport = filteredRows.map((item) => ({
+      'Họ và tên': item.fullname || item.fullName || 'N/A',
+      'Số điện thoại': item.phone || 'N/A',
+      'Số CCCD / Hộ chiếu': item.cccd || 'N/A',
+      'Giới tính': item.gender === 'MALE' ? 'Nam' : item.gender === 'FEMALE' ? 'Nữ' : 'Khác',
+      'Ngày sinh': item.birthday ? new Date(item.birthday).toLocaleDateString('vi-VN') : 'N/A',
+      'Công việc': item.job || 'N/A',
+      'Địa chỉ': item.address || 'N/A',
+      'Người liên hệ phòng': item.type_of_tenant ? 'Đúng' : 'Không',
+      'Đã đăng ký tạm trú': item.temporaryResidence ? 'Đã đăng ký' : 'Chưa đăng ký',
+      'Thông tin đã xác minh': item.informationVerify ? 'Đã xác minh' : 'Chưa xác minh'
+    }))
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport)
+
+    // Tự động điều chỉnh độ rộng cột
+    const colWidths = Object.keys(dataToExport[0]).map(key => {
+      const maxLength = Math.max(
+        key.length,
+        ...dataToExport.map(row => String(row[key] || '').length)
+      )
+      return { wch: maxLength + 2 }
+    })
+    worksheet['!cols'] = colWidths
+
+    const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, 'KhachThue')
     XLSX.writeFile(workbook, 'DanhSachKhachThue.xlsx')
     showSnackbar('Xuất Excel thành công!')
@@ -403,7 +431,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
               <Button
                 variant="contained"
                 startIcon={<DescriptionOutlinedIcon />}
-                onClick={() => showComingSoon('Thiết lập mẫu tạm trú')}
+                onClick={() => navigate(`/cai-dat/${motelId}#tam-tru`)}
                 sx={{
                   px: 2.25,
                   minHeight: 40,

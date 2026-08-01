@@ -30,7 +30,9 @@ function AppShell() {
     return activeLanguage.startsWith('vi') ? 'vi' : 'en'
   })
   const authRoutesWithoutChrome = ['/login', '/register', '/forgot-password']
-  const shouldHidePublicChrome = authRoutesWithoutChrome.includes(location.pathname)
+  const shouldHidePublicChrome =
+    authRoutesWithoutChrome.includes(location.pathname) ||
+    location.pathname.toLowerCase().startsWith('/residenceform')
 
   const fetchMotelsByUsername = useCallback(async (targetUsername) => {
     getMotelByUsername(targetUsername).then((res) => {

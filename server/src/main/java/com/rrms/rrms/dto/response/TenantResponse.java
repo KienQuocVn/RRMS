@@ -37,4 +37,8 @@ public class TenantResponse implements Serializable {
     Boolean typeOfTenant;
     Boolean temporaryResidence;
     Boolean informationVerify;
+    String roomName;
+    String motelAddress;
+    String hostName;
+    String hostCccd;
 }

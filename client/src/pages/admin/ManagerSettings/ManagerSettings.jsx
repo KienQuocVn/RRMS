@@ -3,9 +3,12 @@ import { useParams } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import ModelDeposit from './ModelDeposit'
+import ModelResidenceTemplate from './ModelResidenceTemplate'
 
 import { CreateTRC, getTRCByMotelId, updateTRCById } from '~/apis/TRCAPI'
-import { deleteContractTemplate, getContractTemplatesByMotelId } from '~/apis/contractTemplateAPI'
+import { deleteContractTemplate, getContractTemplatesByMotelId, createContractTemplate } from '~/apis/contractTemplateAPI'
+import { deleteResidenceTemplate, getResidenceTemplatesByMotelId, createResidenceTemplate } from '~/apis/residenceTemplateAPI'
+import { getDefaultContractContent, DEFAULT_CONTRACT_NAME, getDefaultResidenceContent, DEFAULT_RESIDENCE_TEMPLATE_NAME } from '~/utils/templateDefaults'
 import { getMotelById } from '~/apis/motelAPI'
 import { getProfileByUsername } from '~/apis/accountAPI'
 
@@ -18,15 +21,36 @@ import ResidenceTemplateTab from './components/ResidenceTemplateTab'
 const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
   const { motelId } = useParams()
   const username = sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).username : null
-  
-  const [activeTab, setActiveTab] = useState(0)
-  
+
+  const [activeTab, setActiveTab] = useState(() => {
+    if (window.location.hash === '#hop-dong') return 1
+    if (window.location.hash === '#tam-tru') return 2
+    return 0
+  })
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#hop-dong') {
+        setActiveTab(1)
+      } else if (window.location.hash === '#tam-tru') {
+        setActiveTab(2)
+      } else {
+        setActiveTab(0)
+      }
+    }
+
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
   const [isExistingData, setIsExistingData] = useState(false)
   const [TRCID, setTRCID] = useState('')
   const [templatecontracts, setTemplatecontracts] = useState([])
+  const [residenceTemplates, setResidenceTemplates] = useState([])
   const [motel, setmotel] = useState()
   const [selectedTemplateId, setSelectedTemplateId] = useState(null)
-  
+  const [selectedResidenceTemplateId, setSelectedResidenceTemplateId] = useState(null)
+
   const [formData, setFormData] = useState({
     householdhead: 'ktlhp',
     representativename: '',
@@ -44,6 +68,7 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
   useEffect(() => {
     fetchDataTrc()
     fetchDataTemlateContract()
+    fetchDataResidenceTemplates()
     fetchDataMotel()
     setIsAdmin(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -54,7 +79,7 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
       try {
         const response = await getTRCByMotelId(motelId)
         const temporaryContract = response?.data?.result
-        
+
         let profile = null
         if (username) {
           try {
@@ -105,8 +130,95 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
   const fetchDataTemlateContract = async () => {
     if (username && motelId) {
       try {
-        const dataContactTemplate = await getContractTemplatesByMotelId(motelId)
-        setTemplatecontracts(dataContactTemplate)
+        const data = await getContractTemplatesByMotelId(motelId)
+        if (Array.isArray(data)) {
+          if (data.length === 0) {
+            // Auto-tạo mẫu hợp đồng mặc định
+            await createContractTemplate({
+              motelId: motelId,
+              namecontract: DEFAULT_CONTRACT_NAME,
+              templatename: 'Mẫu hợp đồng mặc định',
+              sortOrder: 1,
+              content: getDefaultContractContent(DEFAULT_CONTRACT_NAME)
+            })
+            const updated = await getContractTemplatesByMotelId(motelId)
+            setTemplatecontracts(Array.isArray(updated) ? updated : [])
+          } else {
+            // Nếu có mẫu nào bị trống hoặc chứa text mặc định của seeder cũ, ta tự động update thành mẫu đầy đủ
+            let hasUpdated = false
+            for (const item of data) {
+              const contentCleaned = (item.content || '').replace(/<[^>]*>/g, '').trim()
+              if (contentCleaned === 'Nội dung hợp đồng mẫu...' || contentCleaned === 'Mẫu mặc định' || !contentCleaned || contentCleaned.length < 50) {
+                try {
+                  await updateContractTemplate(item.contractTemplateId, {
+                    motelId: motelId,
+                    namecontract: DEFAULT_CONTRACT_NAME,
+                    templatename: item.templatename || 'Mẫu hợp đồng mặc định',
+                    sortOrder: item.sortOrder || 1,
+                    content: getDefaultContractContent(DEFAULT_CONTRACT_NAME)
+                  })
+                  hasUpdated = true
+                } catch (e) {
+                  console.error('Lỗi khi tự động nâng cấp mẫu hợp đồng mặc định:', e)
+                }
+              }
+            }
+            if (hasUpdated) {
+              const updated = await getContractTemplatesByMotelId(motelId)
+              setTemplatecontracts(Array.isArray(updated) ? updated : [])
+            } else {
+              setTemplatecontracts(data)
+            }
+          }
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  }
+
+  const fetchDataResidenceTemplates = async () => {
+    if (username && motelId) {
+      try {
+        const data = await getResidenceTemplatesByMotelId(motelId)
+        if (Array.isArray(data)) {
+          if (data.length === 0) {
+            // Auto-tạo mẫu tờ khai tạm trú mặc định
+            await createResidenceTemplate({
+              motelId: motelId,
+              templatename: DEFAULT_RESIDENCE_TEMPLATE_NAME,
+              sortOrder: 1,
+              content: getDefaultResidenceContent()
+            })
+            const updated = await getResidenceTemplatesByMotelId(motelId)
+            setResidenceTemplates(Array.isArray(updated) ? updated : [])
+          } else {
+            // Nếu mẫu bị trống hoặc text sơ sài, auto update
+            let hasUpdated = false
+            for (const item of data) {
+              const contentCleaned = (item.content || '').replace(/<[^>]*>/g, '').trim()
+              if (contentCleaned === 'Mẫu mặc định' || !contentCleaned || contentCleaned.length < 50) {
+                try {
+                  await updateResidenceTemplate(item.residenceTemplateId, {
+                    motelId: motelId,
+                    templatename: item.templatename || DEFAULT_RESIDENCE_TEMPLATE_NAME,
+                    sortOrder: item.sortOrder || 1,
+                    content: getDefaultResidenceContent()
+                  })
+                  hasUpdated = true
+                } catch (e) {
+                  console.error('Lỗi khi tự động nâng cấp mẫu tạm trú mặc định:', e)
+                }
+              }
+            }
+            if (hasUpdated) {
+              const updated = await getResidenceTemplatesByMotelId(motelId)
+              setResidenceTemplates(Array.isArray(updated) ? updated : [])
+            } else {
+              setResidenceTemplates(data)
+            }
+          }
+        }
       } catch (error) {
         console.log(error)
       }
@@ -133,7 +245,7 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
       })
       return
     }
-    
+
     try {
       let response
       if (isExistingData && TRCID) {
@@ -174,7 +286,8 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
     }))
   }
 
-  const handleDelete = async (templateId) => {
+  // Xóa mẫu hợp đồng
+  const handleDeleteContractTemplate = async (templateId) => {
     const result = await Swal.fire({
       title: 'Bạn có chắc muốn xóa không?',
       text: 'Bạn sẽ không thể hoàn tác hành động này!',
@@ -197,10 +310,34 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
     }
   }
 
+  // Xóa mẫu tờ khai tạm trú
+  const handleDeleteResidenceTemplate = async (templateId) => {
+    const result = await Swal.fire({
+      title: 'Bạn có chắc muốn xóa không?',
+      text: 'Bạn sẽ không thể hoàn tác hành động này!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Xóa'
+    })
+
+    if (result.isConfirmed) {
+      try {
+        await deleteResidenceTemplate(templateId)
+        Swal.fire('Đã xóa!', 'Mẫu tờ khai tạm trú đã được xóa.', 'success')
+        fetchDataResidenceTemplates()
+      } catch (error) {
+        console.error('Lỗi khi xóa mẫu tờ khai tạm trú:', error)
+        Swal.fire('Lỗi', 'Không thể xóa mẫu tờ khai tạm trú.', 'error')
+      }
+    }
+  }
+
   return (
     <Box sx={{ bgcolor: '#eff3f6', minHeight: '100vh', pb: 5 }}>
       <NavAdmin setIsAdmin={setIsAdmin} setmotels={setmotels} motels={motels} />
-      
+
       <Container maxWidth="xl" sx={{ mt: 4 }}>
         <Box sx={{ mb: 3, borderLeft: '3px solid #20a9e7', pl: 2 }}>
           <Typography variant="h5" fontWeight="bold">Cài đặt</Typography>
@@ -217,30 +354,36 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
           <Grid item xs={12} md={9}>
             <Paper elevation={0} sx={{ p: 3, borderRadius: 2, minHeight: '600px' }}>
               {activeTab === 0 && (
-                <GeneralInfoTab 
-                  formData={formData} 
-                  handleInputChange={handleInputChange} 
-                  handleDateChange={handleDateChange} 
-                  handleSave={handleSave} 
-                  isExistingData={isExistingData} 
+                <GeneralInfoTab
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  handleDateChange={handleDateChange}
+                  handleSave={handleSave}
+                  isExistingData={isExistingData}
                 />
               )}
               {activeTab === 1 && (
-                <ContractTemplateTab 
-                  templatecontracts={templatecontracts} 
-                  motel={motel} 
-                  setSelectedTemplateId={setSelectedTemplateId} 
-                  handleDelete={handleDelete} 
+                <ContractTemplateTab
+                  templatecontracts={templatecontracts}
+                  motel={motel}
+                  setSelectedTemplateId={setSelectedTemplateId}
+                  handleDelete={handleDeleteContractTemplate}
                 />
               )}
               {activeTab === 2 && (
-                <ResidenceTemplateTab motel={motel} />
+                <ResidenceTemplateTab
+                  templates={residenceTemplates}
+                  motel={motel}
+                  setSelectedTemplateId={setSelectedResidenceTemplateId}
+                  handleDelete={handleDeleteResidenceTemplate}
+                />
               )}
             </Paper>
           </Grid>
         </Grid>
       </Container>
 
+      {/* Modal mẫu hợp đồng */}
       {selectedTemplateId && (
         <ModelDeposit
           motel={motel}
@@ -248,6 +391,17 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
           templatecontractRouteId={selectedTemplateId}
           fetchDataTemlateContract={fetchDataTemlateContract}
           onClose={() => setSelectedTemplateId(null)}
+        />
+      )}
+
+      {/* Modal mẫu tờ khai tạm trú */}
+      {selectedResidenceTemplateId && (
+        <ModelResidenceTemplate
+          motel={motel}
+          username={username}
+          templateId={selectedResidenceTemplateId}
+          fetchData={fetchDataResidenceTemplates}
+          onClose={() => setSelectedResidenceTemplateId(null)}
         />
       )}
     </Box>

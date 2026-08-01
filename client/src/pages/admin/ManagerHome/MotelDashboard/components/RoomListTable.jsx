@@ -230,7 +230,7 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
                 <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Tên phòng</TableCell>
               )}
               {isVisible('group') && (
-                <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Nhóm</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Tầng</TableCell>
               )}
               {isVisible('price') && (
                 <TableCell sx={{ fontWeight: 'bold', fontSize: '0.75rem', bgcolor: '#fff' }}>Giá thuê</TableCell>

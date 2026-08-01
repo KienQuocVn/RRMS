@@ -268,8 +268,16 @@ const LoginDevicesTab = ({ username }) => {
       )}
 
       {/* Table */}
-      <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #f0f0f0', borderRadius: 2 }}>
-        <Table>
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{
+          border: '1px solid #f0f0f0',
+          borderRadius: 2,
+          maxHeight: 56 + 5 * 72,
+          overflowY: 'auto'
+        }}>
+        <Table stickyHeader>
           <TableHead sx={{ bgcolor: '#fafafa' }}>
             <TableRow>
               <TableCell sx={{ fontWeight: 700, width: 60 }}></TableCell>

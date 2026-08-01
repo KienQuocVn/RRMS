@@ -45,6 +45,8 @@ public class MotelService implements IMotelService {
 
     private final RoomReservationRepository roomReservationRepository;
 
+    private final ResidenceTemplateRepository residenceTemplateRepository;
+
     @Override
     public Optional<Integer> getTotalRooms(UUID motelId, String username) {
         Optional<Motel> motel = motelRepository.findByMotelNameAndUsername(motelId, username);
@@ -60,13 +62,23 @@ public class MotelService implements IMotelService {
         // Tạo ContractTemplate mặc định với ID của Motel vừa lưu
         ContractTemplate contractTemplate = new ContractTemplate();
         contractTemplate.setMotel(savedMotel); // Sử dụng ID từ entity đã lưu
-        contractTemplate.setTemplatename("Mẫu mặc định");
-        contractTemplate.setNamecontract("Mẫu mặc định");
+        contractTemplate.setTemplatename("Mẫu hợp đồng " + savedMotel.getMotelName());
+        contractTemplate.setNamecontract("HỢP ĐỒNG CHO THUÊ PHÒNG TRỌ");
         contractTemplate.setSortorder(1);
-        contractTemplate.setContent("Mẫu mặc định");
+        contractTemplate.setContent(com.rrms.rrms.constants.TemplateConstants.DEFAULT_CONTRACT_CONTENT);
 
         // Lưu contract template
         contractTemplateRepository.save(contractTemplate);
+
+        // Tạo ResidenceTemplate mặc định cho tờ khai tạm trú
+        ResidenceTemplate residenceTemplate = new ResidenceTemplate();
+        residenceTemplate.setMotel(savedMotel);
+        residenceTemplate.setTemplatename("Mẫu CT01 – Tờ khai thay đổi thông tin cư trú");
+        residenceTemplate.setSortorder(1);
+        residenceTemplate.setContent(com.rrms.rrms.constants.TemplateConstants.DEFAULT_RESIDENCE_CONTENT);
+
+        // Lưu residence template
+        residenceTemplateRepository.save(residenceTemplate);
 
         // Trả về response
         return motelMapper.motelToMotelResponse(savedMotel);

@@ -111,7 +111,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
     collectioncycle: '1',
     createdate: new Date().toISOString().slice(0, 10),
     signcontract: 'Khách chưa ký',
-    language: 'Tieng Viet',
+    language: 'VN',
     countTenant: 1,
     status: 'ACTIVE',
     commissionRate: 0,
@@ -333,7 +333,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
         ...rest,
         tenantId: createdTenantId,
         contractTemplateId: contracttemplateId,
-        language: contract.language || 'Tieng Viet'
+        language: contract.language || 'Tiếng Việt'
       }
       const createdContract = await createContract(updatedContract)
       if (typeof onSuccess === 'function') {

@@ -125,6 +125,47 @@ public class TenantService implements ITenantService {
                 .findById(id)
                 .map(tenant -> {
                     TenantResponse response = tenantMapper.toTenantResponse(tenant);
+
+                    // Tìm phòng trọ, địa chỉ nhà trọ và chủ hộ (đại diện liên hệ của phòng)
+                    if (tenant.getContractOccupants() != null) {
+                        tenant.getContractOccupants().stream()
+                                .filter(co -> co.getIsActive() != null && co.getIsActive())
+                                .findFirst()
+                                .ifPresent(co -> {
+                                    Contract contract = co.getContract();
+                                    if (contract != null) {
+                                        Room room = contract.getRoom();
+                                        if (room != null) {
+                                            response.setRoomName(room.getName());
+                                            Motel motel = room.getMotel();
+                                            if (motel != null) {
+                                                response.setMotelAddress(motel.getAddress());
+                                            }
+                                        }
+                                        Tenant primaryTenant = contract.getTenant();
+                                        if (primaryTenant != null) {
+                                            response.setHostName(primaryTenant.getFullName());
+                                            response.setHostCccd(primaryTenant.getCccd());
+                                        }
+                                    }
+                                });
+                    }
+
+                    if (response.getRoomName() == null && tenant.getContracts() != null) {
+                        tenant.getContracts().stream().findFirst().ifPresent(contract -> {
+                            Room room = contract.getRoom();
+                            if (room != null) {
+                                response.setRoomName(room.getName());
+                                Motel motel = room.getMotel();
+                                if (motel != null) {
+                                    response.setMotelAddress(motel.getAddress());
+                                }
+                            }
+                            response.setHostName(tenant.getFullName());
+                            response.setHostCccd(tenant.getCccd());
+                        });
+                    }
+
                     return response;
                 })
                 .orElseThrow(() -> new IllegalArgumentException("Tenant not found"));

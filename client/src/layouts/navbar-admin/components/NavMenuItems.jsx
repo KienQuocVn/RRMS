@@ -16,6 +16,7 @@ const MENU_ITEMS = [
   {
     key: 'phong',
     path: (id) => `/quanlytro/${id}`,
+    activeWhen: (pathname, id) => pathname === `/quanlytro/${id}` || pathname.startsWith(`/quanlytro/${id}/Chi-tiet-phong/`),
     label: 'Quản lý phòng',
     icon: <MeetingRoomOutlinedIcon sx={{ fontSize: 40, color: '#20a9e7' }} />,
   },
@@ -40,6 +41,9 @@ const MENU_ITEMS = [
   {
     key: 'hop-dong',
     path: (id) => `/quanlytro/${id}/tat-ca-hop-dong`,
+    activeWhen: (pathname, id) => {
+      return pathname === `/quanlytro/${id}/tat-ca-hop-dong` || pathname.startsWith(`/quanlytro/${id}/Contract-Preview/`)
+    },
     label: 'Hợp đồng',
     icon: <HistoryEduOutlinedIcon sx={{ fontSize: 40, color: '#20a9e7' }} />,
   },
@@ -120,9 +124,9 @@ const NavMenuItems = ({ motelId }) => {
         '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(0,0,0,.3)', borderRadius: 3 },
       }}
     >
-      {MENU_ITEMS.map(({ key, path, label, icon }) => {
+      {MENU_ITEMS.map(({ key, path, activeWhen, label, icon }) => {
         const to = motelId ? path(motelId) : '#'
-        const isActive = location.pathname === to
+        const isActive = motelId && activeWhen ? activeWhen(location.pathname, motelId) : location.pathname === to
 
         return (
           <Box

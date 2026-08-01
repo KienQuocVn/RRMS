@@ -3,7 +3,6 @@ import { Box, Button } from '@mui/material'
 import PieChartIcon from '@mui/icons-material/PieChart'
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
-import NavWData from '~/layouts/navbar-admin/NavWData'
 import RentalStatusTab from './components/RentalStatusTab'
 import FinancialReportTab from './components/FinancialReportTab'
 
@@ -13,6 +12,7 @@ const RentalStatus = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmotels
 
   useEffect(() => {
     setIsAdmin(true)
+    setIsNavAdmin(true)
     const userData = JSON.parse(sessionStorage.getItem('user'))
     const user = userData?.username || ''
     setUsername(user)
@@ -29,10 +29,6 @@ const RentalStatus = ({ setIsAdmin, setIsNavAdmin, isNavAdmin, motels, setmotels
         isNavAdmin={isNavAdmin}
       />
 
-      {/* Thêm navbar thứ 2 cho trang báo cáo */}
-      <Box sx={{ bgcolor: '#eef2f6', borderBottom: '1px solid #e0e0e0' }}>
-        <NavWData motels={motels} />
-      </Box>
       {/* Custom Tabs */}
       <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
         <Box sx={{ border: '1px solid #e0e0e0', borderRadius: '50px', p: '4px', display: 'flex', gap: 1 }}>

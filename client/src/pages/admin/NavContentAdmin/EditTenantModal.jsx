@@ -112,7 +112,7 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
   const [backProgress, setBackProgress] = useState(0)
   const [phoneError, setPhoneError] = useState('')
 
-  const updateField = (field, value) => setTenant(prev => ({ ...prev, [field]: value }))
+  const updateField = (field, value) => setTenant((prev) => ({ ...prev, [field]: value }))
 
   useEffect(() => {
     if (!open || !tenantId) return
@@ -120,7 +120,7 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
     setPhoneError('')
 
     getByIdTenant(tenantId)
-      .then(res => {
+      .then((res) => {
         const data = res?.result || {}
         setTenant({
           ...initialData,
@@ -134,7 +134,7 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
           licenseDate: data.licenseDate || ''
         })
       })
-      .catch(err => console.error('Error loading tenant:', err))
+      .catch((err) => console.error('Error loading tenant:', err))
   }, [open, tenantId])
 
   const uploadImage = (file, field, setProgress) => {
@@ -142,9 +142,9 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
     const uploadTask = uploadBytesResumable(storageRef, file)
     uploadTask.on(
       'state_changed',
-      snap => setProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)),
-      err => console.error('Upload error:', err),
-      () => getDownloadURL(uploadTask.snapshot.ref).then(url => updateField(field, url))
+      (snap) => setProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)),
+      (err) => console.error('Upload error:', err),
+      () => getDownloadURL(uploadTask.snapshot.ref).then((url) => updateField(field, url))
     )
   }
 
@@ -248,7 +248,7 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
               label="Tên khách thuê *"
               size="small"
               value={tenant.fullname}
-              onChange={e => updateField('fullname', e.target.value)}
+              onChange={(e) => updateField('fullname', e.target.value)}
               sx={fieldSx}
               fullWidth
             />
@@ -256,7 +256,7 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
               label="Số điện thoại khách thuê"
               size="small"
               value={tenant.phone}
-              onChange={e => validatePhone(e.target.value)}
+              onChange={(e) => validatePhone(e.target.value)}
               error={Boolean(phoneError)}
               helperText={phoneError}
               sx={fieldSx}
@@ -265,28 +265,52 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
           </Box>
 
           {/* Sử dụng APP */}
-          <Box sx={{ px: 1.5, py: 1, bgcolor: '#fff4e6', borderRadius: '8px', display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+          <Box
+            sx={{
+              px: 1.5,
+              py: 1,
+              bgcolor: '#fff4e6',
+              borderRadius: '8px',
+              display: 'flex',
+              gap: 1,
+              alignItems: 'flex-start'
+            }}>
             <Checkbox size="small" sx={{ p: 0.25, mt: 0.25 }} />
             <Box>
-              <Typography sx={{ color: '#64b5f6', fontSize: 13, fontWeight: 700 }}>Sử dụng APP - Dành cho khách thuê</Typography>
-              <Typography sx={{ color: '#777', fontSize: 12 }}>Gửi hóa đơn tự động cho khách, hợp đồng online vv...</Typography>
+              <Typography sx={{ color: '#64b5f6', fontSize: 13, fontWeight: 700 }}>
+                Sử dụng APP - Dành cho khách thuê
+              </Typography>
+              <Typography sx={{ color: '#777', fontSize: 12 }}>
+                Gửi hóa đơn tự động cho khách, hợp đồng online vv...
+              </Typography>
             </Box>
           </Box>
 
           {/* ID Type */}
-          <RadioGroup
-            row
-            value={tenant.idType}
-            onChange={e => updateField('idType', e.target.value)}>
+          <RadioGroup row value={tenant.idType} onChange={(e) => updateField('idType', e.target.value)}>
             <FormControlLabel value="CCCD" control={<Radio size="small" />} label="Định dạng CCCD" />
             <FormControlLabel value="Passport" control={<Radio size="small" />} label="Định dạng Passport/Visa" />
           </RadioGroup>
 
           {/* CCCD */}
-          <TextField label="CMND/CCCD" size="small" value={tenant.cccd} onChange={e => updateField('cccd', e.target.value)} sx={fieldSx} fullWidth />
+          <TextField
+            label="CMND/CCCD"
+            size="small"
+            value={tenant.cccd}
+            onChange={(e) => updateField('cccd', e.target.value)}
+            sx={fieldSx}
+            fullWidth
+          />
 
           {/* Zalo */}
-          <TextField label="Zalo của khách" size="small" value={tenant.zalo || ''} onChange={e => updateField('zalo', e.target.value)} sx={fieldSx} fullWidth />
+          <TextField
+            label="Zalo của khách"
+            size="small"
+            value={tenant.zalo || ''}
+            onChange={(e) => updateField('zalo', e.target.value)}
+            sx={fieldSx}
+            fullWidth
+          />
 
           {/* Birthday + Gender */}
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
@@ -295,16 +319,13 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
               type="date"
               size="small"
               value={tenant.birthday || ''}
-              onChange={e => updateField('birthday', e.target.value)}
+              onChange={(e) => updateField('birthday', e.target.value)}
               InputLabelProps={{ shrink: true }}
               sx={fieldSx}
             />
             <FormControl size="small" sx={fieldSx} fullWidth>
               <InputLabel>Giới tính *</InputLabel>
-              <Select
-                value={tenant.gender}
-                label="Giới tính *"
-                onChange={e => updateField('gender', e.target.value)}>
+              <Select value={tenant.gender} label="Giới tính *" onChange={(e) => updateField('gender', e.target.value)}>
                 <MenuItem value="MALE">Nam</MenuItem>
                 <MenuItem value="FEMALE">Nữ</MenuItem>
                 <MenuItem value="OTHER">Khác</MenuItem>
@@ -313,8 +334,22 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
           </Box>
 
           {/* Địa chỉ, Công việc */}
-          <TextField label="Địa chỉ" size="small" value={tenant.address || ''} onChange={e => updateField('address', e.target.value)} sx={fieldSx} fullWidth />
-          <TextField label="Nhập công việc" size="small" value={tenant.job || ''} onChange={e => updateField('job', e.target.value)} sx={fieldSx} fullWidth />
+          <TextField
+            label="Địa chỉ"
+            size="small"
+            value={tenant.address || ''}
+            onChange={(e) => updateField('address', e.target.value)}
+            sx={fieldSx}
+            fullWidth
+          />
+          <TextField
+            label="Nhập công việc"
+            size="small"
+            value={tenant.job || ''}
+            onChange={(e) => updateField('job', e.target.value)}
+            sx={fieldSx}
+            fullWidth
+          />
 
           {/* License */}
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
@@ -323,7 +358,7 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
               type="date"
               size="small"
               value={tenant.licenseDate || ''}
-              onChange={e => updateField('licenseDate', e.target.value)}
+              onChange={(e) => updateField('licenseDate', e.target.value)}
               InputLabelProps={{ shrink: true }}
               sx={fieldSx}
             />
@@ -331,7 +366,7 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
               label="Nơi cấp CMND/CCCD"
               size="small"
               value={tenant.placeOfLicense || ''}
-              onChange={e => updateField('placeOfLicense', e.target.value)}
+              onChange={(e) => updateField('placeOfLicense', e.target.value)}
               sx={fieldSx}
             />
           </Box>
@@ -342,13 +377,13 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
               label="Ảnh mặt trước CMND/CCCD"
               value={tenant.frontPhoto}
               progress={frontProgress}
-              onChange={e => e.target.files?.[0] && uploadImage(e.target.files[0], 'frontPhoto', setFrontProgress)}
+              onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], 'frontPhoto', setFrontProgress)}
             />
             <UploadBox
               label="Ảnh mặt sau CMND/CCCD"
               value={tenant.backPhoto}
               progress={backProgress}
-              onChange={e => e.target.files?.[0] && uploadImage(e.target.files[0], 'backPhoto', setBackProgress)}
+              onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], 'backPhoto', setBackProgress)}
             />
           </Box>
 
@@ -360,14 +395,16 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
             control={
               <Switch
                 checked={Boolean(tenant.type_of_tenant)}
-                onChange={e => updateField('type_of_tenant', e.target.checked)}
+                onChange={(e) => updateField('type_of_tenant', e.target.checked)}
                 color="success"
               />
             }
             label={
               <Box>
                 <Typography sx={{ fontWeight: 700, fontSize: 13 }}>Là người liên hệ của phòng</Typography>
-                <Typography sx={{ fontSize: 12, color: '#555' }}>Là người chịu trách nhiệm nhận hóa đơn, báo cáo các vấn đề của phòng</Typography>
+                <Typography sx={{ fontSize: 12, color: '#555' }}>
+                  Là người chịu trách nhiệm nhận hóa đơn, báo cáo các vấn đề của phòng
+                </Typography>
               </Box>
             }
           />
@@ -375,7 +412,7 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
             control={
               <Switch
                 checked={Boolean(tenant.temporaryResidence)}
-                onChange={e => updateField('temporaryResidence', e.target.checked)}
+                onChange={(e) => updateField('temporaryResidence', e.target.checked)}
                 color="success"
               />
             }
@@ -390,14 +427,16 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
             control={
               <Switch
                 checked={Boolean(tenant.informationVerify)}
-                onChange={e => updateField('informationVerify', e.target.checked)}
+                onChange={(e) => updateField('informationVerify', e.target.checked)}
                 color="success"
               />
             }
             label={
               <Box>
                 <Typography sx={{ fontWeight: 700, fontSize: 13 }}>Thông tin đã được xác minh</Typography>
-                <Typography sx={{ fontSize: 12, color: '#555' }}>Tình trạng cung cấp thông tin hoặc giấy tờ để làm tạm trú</Typography>
+                <Typography sx={{ fontSize: 12, color: '#555' }}>
+                  Tình trạng cung cấp thông tin hoặc giấy tờ để làm tạm trú
+                </Typography>
               </Box>
             }
           />
@@ -424,7 +463,7 @@ function EditTenantModal({ open, onClose, tenantId, onSuccess }) {
           <Button
             variant="contained"
             onClick={handleSave}
-            sx={{ bgcolor: '#2b7ed7', '&:hover': { bgcolor: '#4cae4c' }, px: 3 }}>
+            sx={{ bgcolor: '#2b7ed7', '&:hover': { bgcolor: '#0a58ca' }, px: 3 }}>
             Chỉnh sửa khách thuê
           </Button>
         </Box>

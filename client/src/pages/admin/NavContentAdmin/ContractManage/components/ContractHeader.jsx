@@ -1,8 +1,19 @@
 import { Box, Typography, Button, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import { useNavigate } from 'react-router-dom';
 
-const ContractHeader = ({ onAddContract }) => {
+const ContractHeader = ({ onAddContract, motelId }) => {
+  const navigate = useNavigate();
+
+  const handleSetupContract = () => {
+    if (motelId) {
+      navigate(`/cai-dat/${motelId}#hop-dong`);
+    } else {
+      navigate('/cai-dat#hop-dong');
+    }
+  };
+
   return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
       <Box sx={{ borderLeft: '4px solid #20a9e7', pl: 2 }}>
@@ -32,6 +43,7 @@ const ContractHeader = ({ onAddContract }) => {
           <Button
             variant="contained"
             startIcon={<DescriptionOutlinedIcon />}
+            onClick={handleSetupContract}
             sx={{
               bgcolor: '#ffc107',
               color: '#000',

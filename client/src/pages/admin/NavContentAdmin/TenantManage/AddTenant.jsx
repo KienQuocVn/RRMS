@@ -552,18 +552,8 @@ const AddTenantModalV2 = ({ open, onClose, reloadData, avatar, editId }) => {
 
                 <SectionHeading title="Thông tin quản lý" description="Tình trạng giấy tờ và tình trạng tạm trú" />
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
-                  <TextField
-                    label="Ngày đăng ký tạm trú"
-                    type="date"
-                    InputLabelProps={{ shrink: true }}
-                    sx={fieldSx}
-                  />
-                  <TextField
-                    label="Ngày hết hạn tạm trú"
-                    type="date"
-                    InputLabelProps={{ shrink: true }}
-                    sx={fieldSx}
-                  />
+                  <TextField label="Ngày đăng ký tạm trú" type="date" InputLabelProps={{ shrink: true }} sx={fieldSx} />
+                  <TextField label="Ngày hết hạn tạm trú" type="date" InputLabelProps={{ shrink: true }} sx={fieldSx} />
                 </Box>
 
                 <SectionHeading title="Thông tin xe" description="Thông tin xe của khách thuê" />
@@ -669,7 +659,7 @@ const AddTenantModalV2 = ({ open, onClose, reloadData, avatar, editId }) => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={avatar ? undefined : handleUpdateClick}
-            sx={{ bgcolor: Colors.success, '&:hover': { bgcolor: '#43a047' } }}>
+            sx={{ bgcolor: Colors.success, '&:hover': { bgcolor: '#0a58ca' } }}>
             {avatar ? 'Thêm thông tin khách thuê' : 'Lưu'}
           </Button>
         </Box>

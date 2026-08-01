@@ -104,7 +104,7 @@ const getInitialContract = (username) => ({
   collectionCycle: '1',
   createDate: new Date().toISOString().slice(0, 10),
   signContract: 'Khach chua ky',
-  language: 'Tieng Viet',
+  language: 'VN',
   countTenant: 1,
   status: 'ACTIVE'
 })

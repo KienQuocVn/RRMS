@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -9,7 +8,7 @@ const ContractTemplateTab = ({ templatecontracts, motel, setSelectedTemplateId, 
     <Box sx={{ p: 1 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
-          <Typography variant="h5" fontWeight="bold">Danh sách các mẫu hợp đồng đang có</Typography>
+          <Typography variant="h5" fontWeight="bold">Danh sách các mẫu hợp đồng</Typography>
           <Typography variant="body2" color="text.secondary">Mẫu hợp đồng được sử dụng khi in dựa trên những thông tin bạn nhập</Typography>
         </Box>
         <Button

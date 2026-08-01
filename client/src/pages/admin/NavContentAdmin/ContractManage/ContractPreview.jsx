@@ -20,6 +20,7 @@ import { getAllDeviceByRomId } from '~/apis/deviceAPT';
 import { getTRCByusername } from '~/apis/TRCAPI';
 import { getMotelById } from '~/apis/motelAPI';
 import { getProfileByUsername } from '~/apis/accountAPI';
+import { getDefaultContractContent, DEFAULT_CONTRACT_NAME } from '~/utils/templateDefaults';
 
 
 const getUnitLabel = (unit) => {
@@ -42,6 +43,37 @@ const getServiceUnitLabel = (chargeType, nameService = '') => {
   if (normalized.includes('phong') || normalized.includes('phòng')) return 'phòng';
   if (normalized.includes('thang') || normalized.includes('tháng')) return 'tháng';
   return chargeType;
+};
+
+const formatCurrency = (value) => {
+  if (value === null || value === undefined || value === '') return '...............................';
+  return `${Number(value).toLocaleString('vi-VN')}đ`;
+};
+
+const replaceContractMergeTags = ({ html, contract, motel, trc, profile, formatDate }) => {
+  let template = html || '';
+  const contentCleaned = template.replace(/<[^>]*>/g, '').trim();
+  if (contentCleaned === 'Nội dung hợp đồng mẫu...' || contentCleaned === 'Mẫu mặc định' || !contentCleaned || contentCleaned.length < 50) {
+    template = getDefaultContractContent(contract?.contractTemplate?.namecontract || contract?.contracttemplate?.namecontract || DEFAULT_CONTRACT_NAME);
+  }
+
+  const values = {
+    tenHopDong: contract?.contractTemplate?.namecontract || contract?.contracttemplate?.namecontract || DEFAULT_CONTRACT_NAME,
+    tenNhaTro: motel?.motelName || contract?.room?.motel?.motelName || '...............................',
+    diaChiNhaTro: motel?.address || contract?.room?.motel?.address || '...............................',
+    benChoThue: trc?.representativename || profile?.fullName || '...............................',
+    sdtBenChoThue: trc?.phone || profile?.phone || '...............................',
+    benThue: contract?.tenant?.fullname || contract?.tenant?.fullName || '...............................',
+    cccdBenThue: contract?.tenant?.cccd || '...............................',
+    phongThue: contract?.room?.name || contract?.room?.roomName || '...............................',
+    giaThue: formatCurrency(contract?.price),
+    tienCoc: formatCurrency(contract?.deposit),
+    ngayLap: formatDate(contract?.createdate || contract?.createdAt)
+  };
+
+  return Object.entries(values).reduce((content, [key, value]) => {
+    return content.replaceAll(`{{${key}}}`, value);
+  }, template);
 };
 
 const ContractPreview = ({ setIsAdmin }) => {
@@ -172,6 +204,11 @@ const ContractPreview = ({ setIsAdmin }) => {
     fetchMotel(motelId);
   }, [contractId, motelId]);
 
+  const contractTemplateContent = contract?.contractTemplate?.content || contract?.contracttemplate?.content || '';
+  const renderedTemplateContent = contractTemplateContent
+    ? replaceContractMergeTags({ html: contractTemplateContent, contract, motel, trc: TRC, profile, formatDate })
+    : '';
+
   return (
     <Box sx={{ bgcolor: '#eee', minHeight: '100vh', py: 5 }}>
       {/* Sticky Header Notice */}
@@ -204,6 +241,20 @@ const ContractPreview = ({ setIsAdmin }) => {
           minHeight: '29.7cm',
           boxSizing: 'border-box'
         }}>
+          {renderedTemplateContent ? (
+            <Box
+              sx={{
+                fontFamily: '"Times New Roman", serif',
+                fontSize: 16,
+                lineHeight: 1.65,
+                color: '#111',
+                '& table': { borderCollapse: 'collapse' },
+                '& td, & th': { minWidth: 80 }
+              }}
+              dangerouslySetInnerHTML={{ __html: renderedTemplateContent }}
+            />
+          ) : (
+          <>
           {/* Header Section */}
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
@@ -378,6 +429,8 @@ const ContractPreview = ({ setIsAdmin }) => {
               <Typography>{contract.tenant?.fullname || ''}</Typography>
             </Box>
           </Box>
+          </>
+          )}
         </Paper>
       </Container>
     </Box>

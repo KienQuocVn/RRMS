@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { Box, CircularProgress } from '@mui/material'
 import Swal from 'sweetalert2'
+import * as XLSX from 'xlsx'
 
 import MotelStatsCards from './components/MotelStatsCards'
 import RoomFilterBar from './components/RoomFilterBar'
@@ -359,6 +360,58 @@ const MotelDashboard = ({ Motel }) => {
     }
   }
 
+  const handleExportExcel = () => {
+    if (!rooms || rooms.length === 0) {
+      Swal.fire('Thông báo', 'Không có dữ liệu phòng để xuất.', 'info')
+      return
+    }
+
+    const dataToExport = rooms.map((room) => {
+      const statusText = room.latestContract?.status === 'ACTIVE'
+        ? 'Đang ở'
+        : room.latestContract?.status === 'IATExpire'
+          ? 'Sắp kết thúc HĐ'
+          : room.latestContract?.status === 'ReportEnd'
+            ? 'Đang báo KT'
+            : isReserveAPlaceStatus(room.reserveAPlace?.status)
+              ? 'Đang cọc giữ chỗ'
+              : 'Đang trống'
+
+      return {
+        'Tên phòng': room.name || 'N/A',
+        'Tầng/Nhóm': formatRoomGroupLabel(room.group) || 'Chưa phân nhóm',
+        'Giá thuê (đ)': room.price || 0,
+        'Tiền cọc (đ)': room.deposit || room.latestContract?.deposit || 0,
+        'Tiền nợ (đ)': room.debt || 0,
+        'Mức ưu tiên': room.prioritize || 'Tất cả',
+        'Ngày lập hóa đơn hàng tháng': room.invoiceDate ? `Ngày ${room.invoiceDate}` : 'Ngày 1',
+        'Chu kỳ thu tiền (tháng)': room.paymentCircle || 1,
+        'Ngày vào ở': room.latestContract?.moveinDate ? new Date(room.latestContract.moveinDate).toLocaleDateString('vi-VN') : 'N/A',
+        'Thời hạn hợp đồng (tháng)': room.latestContract?.duration || 'N/A',
+        'Tình trạng': statusText,
+        'Tài chính': room.debt > 0 ? 'Nợ tiền' : 'Chờ kỳ thu mới'
+      }
+    })
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport)
+
+    // Tự động căn chỉnh độ rộng cột
+    const colWidths = Object.keys(dataToExport[0]).map(key => {
+      const maxLength = Math.max(
+        key.length,
+        ...dataToExport.map(row => String(row[key] || '').length)
+      )
+      return { wch: maxLength + 2 }
+    })
+    ws['!cols'] = colWidths
+
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Danh sách phòng')
+    XLSX.writeFile(wb, `Danh_sach_phong_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '_')}.xlsx`)
+    
+    Swal.fire('Thành công', 'Đã xuất file excel danh sách phòng thành công!', 'success')
+  }
+
   // Calculate Counts
   const counts = {
     active: rooms.filter((r) => r.latestContract?.status === 'ACTIVE').length,
@@ -402,7 +455,7 @@ const MotelDashboard = ({ Motel }) => {
         filters={filters}
         setFilters={setFilters}
         onSearchChange={setSearchTerm}
-        onExportExcel={() => alert('Export Excel requires original ExportToExcel component')}
+        onExportExcel={handleExportExcel}
         onAddRoom={() => toggleModal('addRoom')}
         counts={counts}
         columns={columns}

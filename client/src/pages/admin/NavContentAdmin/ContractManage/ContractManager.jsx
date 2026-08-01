@@ -348,7 +348,7 @@ const ContractManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       />
 
       <div style={{ padding: '20px 20px 12px 20px', backgroundColor: '#f8f9fa', borderRadius: '10px 10px 0 0', margin: '0 10px 0 10px' }}>
-        <ContractHeader onAddContract={handleShow} />
+        <ContractHeader onAddContract={handleShow} motelId={motelId || motels?.[0]?.motelId} />
       </div>
 
       <div style={{ padding: '10px 20px', backgroundColor: '#ffffff', border: '1px solid #e8e8e8', margin: '0 10px 10px 10px', borderRadius: '0 0 10px 10px' }}>

@@ -55,7 +55,6 @@ const GeneralInfoTab = ({ formData, handleInputChange, handleDateChange, handleS
             variant="outlined"
             size="medium"
           >
-            <MenuItem value="ktlhp">Khách thuê lập hộ mới</MenuItem>
             <MenuItem value="cnlđch">Chủ nhà là đại diện chủ hộ</MenuItem>
           </TextField>
         </Box>

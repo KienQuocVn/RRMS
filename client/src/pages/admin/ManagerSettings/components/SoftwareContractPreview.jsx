@@ -9,9 +9,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   Box,
-  Typography,
   Paper,
-  Divider,
   Container,
   Link,
   CircularProgress
@@ -87,6 +85,104 @@ const SoftwareContractPreview = ({ setIsAdmin }) => {
   const motelAddress = motel?.address || '...................................................'
   const city = getCityFromAddress(motelAddress)
 
+  // ── HTML content của mẫu hợp đồng thuê phòng trọ mới ───────────────────────
+  const getContractHtml = () => {
+    return `
+      <div style="font-family:'Times New Roman',serif;font-size:14px;line-height:1.75;color:#111827;">
+        <h3 style="text-align:center;margin:0;font-weight:700;font-size:16px;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
+        <p style="text-align:center;margin:4px 0 20px;font-weight:bold;">Độc lập – Tự do – Hạnh phúc</p>
+        <h2 style="text-align:center;text-transform:uppercase;margin-bottom:24px;font-weight:bold;font-size:20px;">HỢP ĐỒNG CHO THUÊ PHÒNG TRỌ</h2>
+        
+        <p>Hôm nay, ngày.........tháng …..năm 20…., tại căn nhà số..................Chúng tôi ký tên dưới đây gồm có:</p>
+        
+        <p><strong>BÊN CHO THUÊ PHÒNG TRỌ (gọi tắt là Bên A):</strong></p>
+        <p>Ông/bà (tên chủ hợp đồng): <b>${landlordName}</b></p>
+        <p>CMND/CCCD số: <b>${landlordCCCD}</b> &nbsp;&nbsp;&nbsp;&nbsp; cấp ngày: <b>${landlordDateOfIssue}</b> &nbsp;&nbsp;&nbsp;&nbsp; nơi cấp: <b>${landlordPlaceOfIssue}</b></p>
+        <p>Thường trú tại: <b>${landlordAddress}</b></p>
+        
+        <p><strong>BÊN THUÊ PHÒNG TRỌ (gọi tắt là Bên B):</strong></p>
+        <p>Ông/bà: <i>(Điền khi ký hợp đồng)</i></p>
+        <p>CMND/CCCD số: ................................ cấp ngày: .......................... nơi cấp: ................................</p>
+        <p>Thường trú tại: .................................................................................................</p>
+        
+        <p>Sau khi thỏa thuận, hai bên thống nhất như sau:</p>
+        
+        <p><strong>1. Nội dung thuê phòng trọ</strong></p>
+        <p>Bên A cho Bên B thuê 01 phòng trọ số: ................ tại <b>${motel?.motelName || 'Nhà trọ'}</b>. Với thời hạn là:................ tháng, giá thuê: ................ đồng (Bằng chữ: ......................................). Chưa bao gồm chi phí: điện sinh hoạt, nước.</p>
+        
+        <p><strong>2. Trách nhiệm Bên A</strong></p>
+        <ul>
+          <li style="margin-bottom:4px;">Đảm bảo căn nhà cho thuê không có tranh chấp, khiếu kiện.</li>
+          <li style="margin-bottom:4px;">Đăng ký với chính quyền địa phương về thủ tục cho thuê phòng trọ.</li>
+        </ul>
+        
+        <p><strong>3. Trách nhiệm Bên B</strong></p>
+        <ul>
+          <li style="margin-bottom:4px;">Đặt cọc với số tiền là: ................ đồng (Bằng chữ: ......................................), thanh toán tiền thuê phòng hàng tháng vào ngày ……. + tiền điện + nước.</li>
+          <li style="margin-bottom:4px;">Đảm bảo các thiết bị và sửa chữa các hư hỏng trong phòng trong khi sử dụng. Nếu không sửa chữa thì khi trả phòng, bên A sẽ trừ vào tiền đặt cọc, giá trị cụ thể được tính theo giá thị trường.</li>
+          <li style="margin-bottom:4px;">Chỉ sử dụng phòng trọ vào mục đích ở, với số lượng tối đa không quá 04 người (kể cả trẻ em); không chứa các thiết bị gây cháy nổ, hàng cấm... cung cấp giấy tờ tùy thân để đăng ký tạm trú theo quy định, giữ gìn an ninh trật tự, nếp sống văn hóa đô thị; không tụ tập nhậu nhẹt, cờ bạc và các hành vi vi phạm pháp luật khác.</li>
+          <li style="margin-bottom:4px;">Không được tự ý cải tạo kiến trúc phòng hoặc trang trí ảnh hưởng tới tường, cột, nền... Nếu có nhu cầu trên phải trao đổi với bên A để được thống nhất.</li>
+        </ul>
+        
+        <p><strong>4. Điều khoản thực hiện</strong></p>
+        <ul>
+          <li style="margin-bottom:4px;">Hai bên nghiêm túc thực hiện những quy định trên trong thời hạn cho thuê, nếu bên A lấy phòng phải báo cho bên B ít nhất 01 tháng, hoặc ngược lại.</li>
+          <li style="margin-bottom:4px;">Sau thời hạn cho thuê ….. tháng nếu bên B có nhu cầu hai bên tiếp tục thương lượng giá thuê để gia hạn hợp đồng bằng miệng hoặc thực hiện như sau.</li>
+        </ul>
+        
+        <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+          <thead>
+            <tr style="background-color:#f2f2f2;">
+              <th style="border:1px solid #111;padding:8px;text-align:center;font-weight:bold;">Số lần gia hạn</th>
+              <th style="border:1px solid #111;padding:8px;text-align:center;font-weight:bold;">Thời gian gia hạn (tháng)</th>
+              <th style="border:1px solid #111;padding:8px;text-align:center;font-weight:bold;">Từ ngày</th>
+              <th style="border:1px solid #111;padding:8px;text-align:center;font-weight:bold;">Đến ngày</th>
+              <th style="border:1px solid #111;padding:8px;text-align:center;font-weight:bold;">Giá thuê/ tháng (triệu đồng)</th>
+              <th style="border:1px solid #111;padding:8px;text-align:center;font-weight:bold;">Ký tên</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border:1px solid #111;padding:8px;text-align:center;">1</td>
+              <td style="border:1px solid #111;padding:8px;"></td>
+              <td style="border:1px solid #111;padding:8px;"></td>
+              <td style="border:1px solid #111;padding:8px;"></td>
+              <td style="border:1px solid #111;padding:8px;"></td>
+              <td style="border:1px solid #111;padding:8px;"></td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #111;padding:8px;text-align:center;">2</td>
+              <td style="border:1px solid #111;padding:8px;"></td>
+              <td style="border:1px solid #111;padding:8px;"></td>
+              <td style="border:1px solid #111;padding:8px;"></td>
+              <td style="border:1px solid #111;padding:8px;"></td>
+              <td style="border:1px solid #111;padding:8px;"></td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <p style="text-align:right;margin-top:20px;font-style:italic;">${city}, ${todayStr}</p>
+        <table style="width:100%;border-collapse:collapse;margin-top:24px;">
+          <tbody>
+            <tr>
+              <td style="width:50%;text-align:center;border:none;vertical-align:top;">
+                <strong>Bên B</strong><br/>
+                <span style="font-style:italic;font-size:13px;color:#555;">(Ký, ghi rõ họ tên)</span><br/><br/><br/><br/>
+                <span style="color:#888;font-style:italic;">(Ký khi có khách thuê)</span>
+              </td>
+              <td style="width:50%;text-align:center;border:none;vertical-align:top;">
+                <strong>Bên A</strong><br/>
+                <span style="font-style:italic;font-size:13px;color:#555;">(Ký, ghi rõ họ tên)</span><br/><br/><br/><br/>
+                <strong>${landlordName}</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="text-align:center;margin-top:30px;font-style:italic;color:#666;">(Hợp đồng này chỉ mang tính chất tham khảo)</p>
+      </div>
+    `
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────────
 
   if (loading) {
@@ -132,220 +228,7 @@ const SoftwareContractPreview = ({ setIsAdmin }) => {
           fontSize: '14px',
           lineHeight: 1.8
         }}>
-          {/* ── Quốc hiệu ─────────────────────────────────────────────────── */}
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Typography sx={{ fontWeight: 'bold', fontSize: '15px' }}>
-              CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
-            </Typography>
-            <Typography sx={{ fontWeight: 'bold', textDecoration: 'underline', fontSize: '15px' }}>
-              Độc lập - Tự do - Hạnh phúc
-            </Typography>
-            <Typography sx={{ mt: 1, fontStyle: 'italic', fontSize: '13px' }}>
-              --------o0o--------
-            </Typography>
-            <Typography sx={{ mt: 3, fontWeight: 'bold', fontSize: '18px', textTransform: 'uppercase', letterSpacing: 1 }}>
-              Hợp đồng cho thuê phòng trọ
-            </Typography>
-            <Typography sx={{ fontStyle: 'italic', fontSize: '13px', mt: 0.5 }}>
-              (Số: ............/HĐTPT)
-            </Typography>
-          </Box>
-
-          {/* ── Căn cứ pháp lý ─────────────────────────────────────────────── */}
-          <Box sx={{ mb: 3 }}>
-            <Typography sx={{ fontStyle: 'italic', fontSize: '13px' }}>
-              Căn cứ Bộ luật Dân sự năm 2015 và các quy định pháp luật hiện hành;<br />
-              Căn cứ nhu cầu của các bên;
-            </Typography>
-            <Typography sx={{ mt: 1 }}>
-              Hôm nay, {todayStr}, tại {motelAddress}, chúng tôi gồm:
-            </Typography>
-          </Box>
-
-          <Divider sx={{ my: 2, borderStyle: 'dashed' }} />
-
-          {/* ── Bên A ─────────────────────────────────────────────────────── */}
-          <Box sx={{ mb: 3 }}>
-            <Typography sx={{ fontWeight: 'bold', mb: 1 }}>
-              BÊN A: BÊN CHO THUÊ (PHÒNG TRỌ)
-            </Typography>
-            <Box sx={{ pl: 2 }}>
-              <Typography>
-                Họ và tên: <b>{landlordName}</b>
-              </Typography>
-              <Typography>
-                Năm sinh: {landlordBirth}
-              </Typography>
-              <Typography>
-                CMND/CCCD: {landlordCCCD}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 6 }}>
-                <Typography>Ngày cấp: {landlordDateOfIssue}</Typography>
-                <Typography>Nơi cấp: {landlordPlaceOfIssue}</Typography>
-              </Box>
-              <Typography>
-                Số điện thoại: {landlordPhone}
-              </Typography>
-              <Typography>
-                Địa chỉ thường trú: {landlordAddress}
-              </Typography>
-              <Typography>
-                Địa chỉ cho thuê: {motelAddress}
-              </Typography>
-            </Box>
-          </Box>
-
-          <Divider sx={{ my: 2, borderStyle: 'dashed' }} />
-
-          {/* ── Bên B ─────────────────────────────────────────────────────── */}
-          <Box sx={{ mb: 3 }}>
-            <Typography sx={{ fontWeight: 'bold', mb: 1 }}>
-              BÊN B: BÊN THUÊ (PHÒNG TRỌ)
-            </Typography>
-            <Box sx={{ pl: 2 }}>
-              <Typography>Họ và tên: <i>(Điền khi ký hợp đồng)</i></Typography>
-              <Typography>Năm sinh: .........................................................................................</Typography>
-              <Typography>CMND/CCCD: .........................................................................................</Typography>
-              <Box sx={{ display: 'flex', gap: 6 }}>
-                <Typography>Ngày cấp: ..............................</Typography>
-                <Typography>Nơi cấp: ...........................................................................</Typography>
-              </Box>
-              <Typography>Số điện thoại: .........................................................................................</Typography>
-              <Typography>Địa chỉ thường trú: .........................................................................................</Typography>
-            </Box>
-          </Box>
-
-          <Divider sx={{ my: 2, borderStyle: 'dashed' }} />
-
-          <Typography sx={{ mb: 2 }}>
-            Hai bên cùng thỏa thuận và đồng ý với nội dung sau:
-          </Typography>
-
-          {/* ── Điều 1 ────────────────────────────────────────────────────── */}
-          <Box sx={{ mb: 2 }}>
-            <Typography sx={{ fontWeight: 'bold' }}>Điều 1: Đối tượng hợp đồng</Typography>
-            <Box component="ul" sx={{ pl: 2, mt: 0.5 }}>
-              <li style={{ marginBottom: '6px' }}>
-                Bên A đồng ý cho bên B thuê một phòng trọ thuộc địa chỉ:{' '}
-                <b>{motelAddress}</b>
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Tên phòng: .............................................&emsp;
-                Diện tích: ............. m²
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Thời hạn thuê: ............. tháng, kể từ ngày ....... / ....... / .........
-                đến ngày ....... / ....... / .........
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Dịch vụ sử dụng (điện, nước, internet,...): theo thỏa thuận tại thời điểm ký hợp đồng.
-              </li>
-            </Box>
-          </Box>
-
-          {/* ── Điều 2 ────────────────────────────────────────────────────── */}
-          <Box sx={{ mb: 2 }}>
-            <Typography sx={{ fontWeight: 'bold' }}>Điều 2: Giá thuê và phương thức thanh toán</Typography>
-            <Box component="ul" sx={{ pl: 2, mt: 0.5 }}>
-              <li style={{ marginBottom: '6px' }}>
-                Giá tiền thuê phòng trọ: ............................................đ/tháng
-                (Bằng chữ: ..............................................................................)
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Tiền thuê phòng trọ bên B thanh toán cho bên A từ ngày ......... dương lịch hàng tháng.
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Bên B đặt tiền thế chân trước: ............................................đ
-                (Bằng chữ: ..............................................................................)
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Bên B ngưng hợp đồng trước thời hạn thì phải chịu mất tiền thế chân.
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Bên A ngưng hợp đồng (lấy lại phòng trọ) trước thời hạn thì bồi thường gấp đôi số tiền bên B đã thế chân.
-              </li>
-            </Box>
-          </Box>
-
-          {/* ── Điều 3 ────────────────────────────────────────────────────── */}
-          <Box sx={{ mb: 2 }}>
-            <Typography sx={{ fontWeight: 'bold' }}>Điều 3: Trách nhiệm bên A</Typography>
-            <Box component="ul" sx={{ pl: 2, mt: 0.5 }}>
-              <li style={{ marginBottom: '6px' }}>
-                Giao phòng trọ, trang thiết bị trong phòng trọ cho bên B đúng ngày ký hợp đồng.
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Hướng dẫn bên B chấp hành đúng các quy định của địa phương, hoàn tất mọi thủ tục giấy tờ đăng ký tạm trú cho bên B.
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Không được tự ý vào phòng của bên B khi chưa có sự đồng ý.
-              </li>
-            </Box>
-          </Box>
-
-          {/* ── Điều 4 ────────────────────────────────────────────────────── */}
-          <Box sx={{ mb: 2 }}>
-            <Typography sx={{ fontWeight: 'bold' }}>Điều 4: Trách nhiệm bên B</Typography>
-            <Box component="ul" sx={{ pl: 2, mt: 0.5 }}>
-              <li style={{ marginBottom: '6px' }}>
-                Trả tiền thuê phòng trọ hàng tháng theo hợp đồng.
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Sử dụng đúng mục đích thuê nhà, khi cần sửa chữa, cải tạo theo yêu cầu sử dụng riêng phải được sự đồng ý của bên A.
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Đồ đạc, trang thiết bị trong phòng trọ phải có trách nhiệm bảo quản cẩn thận, không làm hư hỏng mất mát.
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Không được tự ý cho người khác ở cùng khi chưa có sự đồng ý của bên A.
-              </li>
-            </Box>
-          </Box>
-
-          {/* ── Điều 5 ────────────────────────────────────────────────────── */}
-          <Box sx={{ mb: 2 }}>
-            <Typography sx={{ fontWeight: 'bold' }}>Điều 5: Điều khoản chung</Typography>
-            <Box component="ul" sx={{ pl: 2, mt: 0.5 }}>
-              <li style={{ marginBottom: '6px' }}>
-                Bên A và bên B thực hiện đúng các điều khoản ghi trong hợp đồng.
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Trường hợp có tranh chấp hoặc một bên vi phạm hợp đồng thì hai bên cùng nhau bàn bạc giải quyết. Nếu không giải quyết được thì nhờ cơ quan có thẩm quyền giải quyết theo quy định pháp luật.
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Hợp đồng được lập thành 02 bản có giá trị ngang nhau, mỗi bên giữ 01 bản.
-              </li>
-              <li style={{ marginBottom: '6px' }}>
-                Hợp đồng có hiệu lực kể từ ngày ký.
-              </li>
-            </Box>
-          </Box>
-
-          {/* ── Ngày ký & Chữ ký ──────────────────────────────────────────── */}
-          <Box sx={{ textAlign: 'right', mt: 4, mb: 1 }}>
-            <Typography sx={{ fontStyle: 'italic' }}>
-              {city}, {todayStr}
-            </Typography>
-          </Box>
-
-          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', textAlign: 'center' }}>
-            <Box sx={{ width: '45%' }}>
-              <Typography sx={{ fontWeight: 'bold' }}>BÊN A (Bên cho thuê)</Typography>
-              <Typography sx={{ fontStyle: 'italic', fontSize: '13px', mb: 8, color: 'text.secondary' }}>
-                Ký và ghi rõ họ tên
-              </Typography>
-              <Divider sx={{ mb: 1, borderColor: '#333' }} />
-              <Typography sx={{ fontWeight: 'bold' }}>{landlordName}</Typography>
-            </Box>
-            <Box sx={{ width: '45%' }}>
-              <Typography sx={{ fontWeight: 'bold' }}>BÊN B (Bên thuê)</Typography>
-              <Typography sx={{ fontStyle: 'italic', fontSize: '13px', mb: 8, color: 'text.secondary' }}>
-                Ký và ghi rõ họ tên
-              </Typography>
-              <Divider sx={{ mb: 1, borderColor: '#333' }} />
-              <Typography sx={{ color: 'text.disabled', fontStyle: 'italic' }}>(Ký khi có khách thuê)</Typography>
-            </Box>
-          </Box>
+          <div dangerouslySetInnerHTML={{ __html: getContractHtml() }} />
         </Paper>
       </Container>
     </Box>
