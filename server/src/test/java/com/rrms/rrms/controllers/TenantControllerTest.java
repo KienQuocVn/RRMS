@@ -201,44 +201,46 @@ public class TenantControllerTest {
 
         // Giả lập danh sách tenants trả về từ service
         List<TenantResponse> tenantList = Arrays.asList(
-                new TenantResponse(
-                        UUID.randomUUID(),
-                        "Tenant1",
-                        "description",
-                        "address",
-                        "phone",
-                        LocalDate.now(),
-                        Gender.MALE,
-                        "email",
-                        "status",
-                        LocalDate.now(),
-                        "idCard",
-                        "type",
-                        "roomId",
-                        true,
-                        "remarks",
-                        false,
-                        false,
-                        false),
-                new TenantResponse(
-                        UUID.randomUUID(),
-                        "Tenant2",
-                        "description",
-                        "address",
-                        "phone",
-                        LocalDate.now(),
-                        Gender.FEMALE,
-                        "email",
-                        "status",
-                        LocalDate.now(),
-                        "idCard",
-                        "type",
-                        "roomId",
-                        true,
-                        "remarks",
-                        false,
-                        false,
-                        false));
+                TenantResponse.builder()
+                        .tenantId(UUID.randomUUID())
+                        .fullName("Tenant1")
+                        .phone("phone")
+                        .cccd("idCard")
+                        .email("email")
+                        .birthday(LocalDate.now())
+                        .gender(Gender.MALE)
+                        .address("address")
+                        .job("status")
+                        .licenseDate(LocalDate.now())
+                        .placeOfLicense("placeOfLicense")
+                        .frontPhoto("type")
+                        .backPhoto("roomId")
+                        .role(true)
+                        .relationship("remarks")
+                        .typeOfTenant(false)
+                        .temporaryResidence(false)
+                        .informationVerify(false)
+                        .build(),
+                TenantResponse.builder()
+                        .tenantId(UUID.randomUUID())
+                        .fullName("Tenant2")
+                        .phone("phone")
+                        .cccd("idCard")
+                        .email("email")
+                        .birthday(LocalDate.now())
+                        .gender(Gender.FEMALE)
+                        .address("address")
+                        .job("status")
+                        .licenseDate(LocalDate.now())
+                        .placeOfLicense("placeOfLicense")
+                        .frontPhoto("type")
+                        .backPhoto("roomId")
+                        .role(true)
+                        .relationship("remarks")
+                        .typeOfTenant(false)
+                        .temporaryResidence(false)
+                        .informationVerify(false)
+                        .build());
         when(tenantService.getAllTenantsRoomId(roomId)).thenReturn(tenantList);
 
         // Thực hiện yêu cầu GET

@@ -1,5 +1,6 @@
 package com.rrms.rrms.mapper;
 
+import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -10,6 +11,7 @@ import com.rrms.rrms.models.Contract;
 
 @Mapper(
         componentModel = "spring",
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         uses = {RoomMapper.class, TenantMapper.class, AccountMapper.class, ContractTemplateMapper.class})
 public interface ContractMapper {

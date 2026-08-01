@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.rrms.rrms.dto.request.TemporaryContractRequest;
 import com.rrms.rrms.dto.response.TemporaryContractResponse;
-import com.rrms.rrms.mapper.TemporaryContractMapper;
 import com.rrms.rrms.models.Account;
 import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.models.TemporaryR_contract;
@@ -27,7 +26,6 @@ public class TemporaryContractService implements ITemporaryContractService {
     private final TemporaryR_contractRepository temporaryR_contractRepository;
     private final MotelRepository motelRepository;
     private final AccountRepository accountRepository;
-    private final TemporaryContractMapper temporaryContractMapper;
 
     @Override
     public TemporaryContractResponse insert(TemporaryContractRequest request) {

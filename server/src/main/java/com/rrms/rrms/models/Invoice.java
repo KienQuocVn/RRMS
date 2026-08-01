@@ -67,6 +67,7 @@ public class Invoice extends BaseEntity {
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference(value = "Invoice-Transaction")
+    @Builder.Default
     private List<Transaction> transactions = new ArrayList<>();
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -75,9 +76,11 @@ public class Invoice extends BaseEntity {
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference(value = "invoiceAdditon-Invoice") // Quản lý liên kết tới Invoice
+    @Builder.Default
     private List<InvoiceAdditionItem> additionItems = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(10)", nullable = false)
+    @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 }

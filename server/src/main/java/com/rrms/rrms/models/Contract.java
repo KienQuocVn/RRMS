@@ -82,6 +82,7 @@ public class Contract extends BaseEntity {
 
     // gia tien
     @Column(columnDefinition = "DECIMAL(10, 2)")
+    @Builder.Default
     private Double price = 0.0;
 
     // gia thuc te (sau thuong luong/giam gia)

@@ -40,5 +40,7 @@ public class InvoiceResponse {
     private List<InvoiceAdditionItemResponse> additionItems;
     private Double totalAmount;
     private PaymentStatus paymentStatus;
+
+    @Builder.Default
     private List<TransactionResponse> transactions = new ArrayList<>();
 }

@@ -1,5 +1,6 @@
 package com.rrms.rrms.mapper;
 
+import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -13,6 +14,7 @@ import com.rrms.rrms.models.BulletinBoard;
 
 @Mapper(
         componentModel = "spring",
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         uses = {MotelMapper.class, RoomMapper.class})
 public interface BulletinBoardMapper {
