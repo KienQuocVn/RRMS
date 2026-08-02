@@ -31,6 +31,7 @@ function Search({ setIsAdmin }) {
 
     return {
       query: searchKeyWord || keywordFromQuery || '',
+      province: searchParams.get('province') || '',
       district: searchParams.get('district') || '',
       minPrice: parseNumberParam(searchParams.get('minPrice')),
       maxPrice: parseNumberParam(searchParams.get('maxPrice')),

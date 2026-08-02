@@ -25,13 +25,16 @@ function NotificationPreferencesSection() {
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: 2
-            }}
-          >
+            }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
               <EmailOutlinedIcon sx={{ color: '#155eef' }} />
               <Box>
-                <Typography sx={{ fontWeight: 700, color: '#101828' }}>{t('profile.notifications.emailTitle')}</Typography>
-                <Typography sx={{ fontSize: 13, color: '#667085' }}>{t('profile.notifications.emailDescription')}</Typography>
+                <Typography sx={{ fontWeight: 700, color: '#101828' }}>
+                  {t('profile.notifications.emailTitle')}
+                </Typography>
+                <Typography sx={{ fontSize: 13, color: '#667085' }}>
+                  {t('profile.notifications.emailDescription')}
+                </Typography>
               </Box>
             </Box>
             <FormControlLabel
@@ -51,13 +54,16 @@ function NotificationPreferencesSection() {
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: 2
-            }}
-          >
+            }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-              <NotificationsOutlinedIcon sx={{ color: '#16a34a' }} />
+              <NotificationsOutlinedIcon sx={{ color: '#2b7ed7' }} />
               <Box>
-                <Typography sx={{ fontWeight: 700, color: '#101828' }}>{t('profile.notifications.systemTitle')}</Typography>
-                <Typography sx={{ fontSize: 13, color: '#667085' }}>{t('profile.notifications.systemDescription')}</Typography>
+                <Typography sx={{ fontWeight: 700, color: '#101828' }}>
+                  {t('profile.notifications.systemTitle')}
+                </Typography>
+                <Typography sx={{ fontSize: 13, color: '#667085' }}>
+                  {t('profile.notifications.systemDescription')}
+                </Typography>
               </Box>
             </Box>
             <FormControlLabel

@@ -2,7 +2,18 @@ import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlin
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined'
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined'
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Grid2 as Grid, Stack, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid2 as Grid,
+  Stack,
+  Typography
+} from '@mui/material'
 
 const DetailField = ({ label, value, valueStyles }) => {
   return (
@@ -17,7 +28,7 @@ const DetailField = ({ label, value, valueStyles }) => {
         {label}
       </Typography>
       <Typography sx={{ color: '#101828', fontWeight: 600, ...valueStyles }}>{value || '--'}</Typography>
-      </Box>
+    </Box>
   )
 }
 
@@ -43,7 +54,7 @@ const ZaloHistoryDetailModal = ({ open, historyItem, onClose, onOpenReceipt, onO
                 label={isSuccess ? 'Gửi thành công' : 'Gửi thất bại'}
                 sx={{
                   fontWeight: 700,
-                  backgroundColor: isSuccess ? '#16a34a' : '#ef4444',
+                  backgroundColor: isSuccess ? '#2b7ed7' : '#ef4444',
                   color: '#fff'
                 }}
               />
@@ -89,7 +100,11 @@ const ZaloHistoryDetailModal = ({ open, historyItem, onClose, onOpenReceipt, onO
               </Grid>
               {historyItem.detail ? (
                 <Grid size={{ xs: 12 }}>
-                  <DetailField label="Chi tiết lỗi" value={historyItem.detail} valueStyles={{ color: '#ef4444', fontStyle: 'italic' }} />
+                  <DetailField
+                    label="Chi tiết lỗi"
+                    value={historyItem.detail}
+                    valueStyles={{ color: '#ef4444', fontStyle: 'italic' }}
+                  />
                 </Grid>
               ) : null}
             </Grid>
@@ -118,7 +133,7 @@ const ZaloHistoryDetailModal = ({ open, historyItem, onClose, onOpenReceipt, onO
             startIcon={<ReceiptLongOutlinedIcon />}
             onClick={() => onOpenReceipt(historyItem)}
             sx={{
-              backgroundColor: '#16a34a',
+              backgroundColor: '#2b7ed7',
               '&:hover': { backgroundColor: '#15803d' }
             }}>
             Thêm phiếu thu

@@ -13,8 +13,8 @@ import SearchSurfaceCard from './sections/SearchSurfaceCard'
 const CONTROL_HEIGHT = 50
 
 const PRICE_OPTIONS = [
-  { value: 'default', label: '' },
-  { value: 'all', label: 'Giá' },
+  { value: 'default', label: 'Tất cả mức giá' },
+  { value: 'all', label: 'Tất cả mức giá' },
   { value: 'below-3', label: 'Dưới 3 triệu' },
   { value: '3-5', label: '3 - 5 triệu' },
   { value: '5-10', label: '5 - 10 triệu' },
@@ -23,8 +23,8 @@ const PRICE_OPTIONS = [
 ]
 
 const AREA_OPTIONS = [
-  { value: 'default', label: '' },
-  { value: 'all', label: 'Diện tích' },
+  { value: 'default', label: 'Tất cả diện tích' },
+  { value: 'all', label: 'Tất cả diện tích' },
   { value: 'below-20', label: 'Dưới 20 m²' },
   { value: '20-30', label: '20 - 30 m²' },
   { value: '30-50', label: '30 - 50 m²' },
@@ -191,6 +191,12 @@ function FilterSearch({ setSearchData, setKeyword, keyword, setTotalRooms, initi
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedKeyword, districtValue])
+
+  // Trigger search khi người dùng thay đổi bộ lọc giá hoặc diện tích
+  useEffect(() => {
+    runSearch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range, area])
 
   const handleSearchSubmit = () => {
     runSearch()

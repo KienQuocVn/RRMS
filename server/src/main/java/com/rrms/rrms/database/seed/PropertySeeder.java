@@ -63,7 +63,7 @@ public class PropertySeeder {
 
     public static final List<MotelSeedSpec> MOTEL_SEED_SPECS = List.of(
             new MotelSeedSpec(
-                    "Nhà nghỉ Sài Gòn Central",
+                    "Nhà trọ Sài Gòn Central",
                     "12 Tô Hiến Thành, 27283, 79",
                     10.772198,
                     106.665802,
@@ -73,7 +73,7 @@ public class PropertySeeder {
                     "Tự động",
                     "Không gian sạch sẽ, hợp người đi làm và sinh viên cần di chuyển nhanh trong trung tâm."),
             new MotelSeedSpec(
-                    "Nhà nghỉ Thành Thái Garden",
+                    "Chung cư Thành Thái Garden",
                     "88 Thành Thái, 27283, 79",
                     10.773772,
                     106.667839,
@@ -83,7 +83,7 @@ public class PropertySeeder {
                     "Thủ công",
                     "Khu vực sầm uất, thuận tiện tới trường học, bệnh viện và các tuyến xe buýt lớn."),
             new MotelSeedSpec(
-                    "Nhà nghỉ Bình Thạnh Riverside",
+                    "Căn hộ dịch vụ Bình Thạnh Riverside",
                     "25 Nguyễn Gia Trí, 26965, 79",
                     10.801157,
                     106.714318,
@@ -93,7 +93,7 @@ public class PropertySeeder {
                     "Tự động",
                     "Phù hợp người đi làm gần Điện Biên Phủ, Landmark 81 và tuyến metro tương lai."),
             new MotelSeedSpec(
-                    "Nhà nghỉ Cầu Giấy Hub",
+                    "Ký túc xá Cầu Giấy Hub",
                     "45 Trần Thái Tông, 00160, 01",
                     21.033326,
                     105.789662,
@@ -103,7 +103,7 @@ public class PropertySeeder {
                     "Thủ công",
                     "Thuận tiện đi làm khu Duy Tân, Keangnam và các trường đại học phía Tây Hà Nội."),
             new MotelSeedSpec(
-                    "Nhà nghỉ Hà Đông Comfort",
+                    "Nhà trọ Hà Đông Comfort",
                     "102 Quang Trung, 00658, 01",
                     20.969674,
                     105.775654,
@@ -113,7 +113,7 @@ public class PropertySeeder {
                     "Tự động",
                     "Phòng yên tĩnh, gần tàu điện Cát Linh - Hà Đông và các khu đô thị mới."),
             new MotelSeedSpec(
-                    "Nhà nghỉ Ninh Kiều View",
+                    "Chung cư Ninh Kiều View",
                     "17 Mậu Thân, 31117, 92",
                     10.035065,
                     105.779875,
@@ -123,7 +123,7 @@ public class PropertySeeder {
                     "Thủ công",
                     "Dễ dàng di chuyển tới bến Ninh Kiều, chợ đêm và các trường đại học trung tâm."),
             new MotelSeedSpec(
-                    "Nhà nghỉ Thuận An Smart Stay",
+                    "Căn hộ dịch vụ Thuận An Smart Stay",
                     "66 Nguyễn Văn Tiết, 25747, 74",
                     10.933801,
                     106.711574,
@@ -133,7 +133,7 @@ public class PropertySeeder {
                     "Tự động",
                     "Phù hợp công nhân và chuyên gia cần ở gần VSIP, Aeon Mall và quốc lộ 13."),
             new MotelSeedSpec(
-                    "Nhà nghỉ Dĩ An Transit",
+                    "Ký túc xá Dĩ An Transit",
                     "9 ĐT743A, 25762, 74",
                     10.906626,
                     106.769986,
@@ -143,7 +143,7 @@ public class PropertySeeder {
                     "Thủ công",
                     "Kết nối nhanh tới khu công nghiệp Sóng Thần, Đại học Quốc gia và bến xe miền Đông mới."),
             new MotelSeedSpec(
-                    "Nhà nghỉ Hải Châu Breeze",
+                    "Nhà trọ Hải Châu Breeze",
                     "21 Hoàng Diệu, 20194, 48",
                     16.061511,
                     108.220770,
@@ -153,7 +153,7 @@ public class PropertySeeder {
                     "Tự động",
                     "Không gian sáng, gần trung tâm hành chính, sông Hàn và cầu Rồng."),
             new MotelSeedSpec(
-                    "Nhà nghỉ Biển Xanh",
+                    "Chung cư Biển Xanh",
                     "5 Trần Phú, 22363, 56",
                     12.247668,
                     109.194928,
@@ -165,10 +165,15 @@ public class PropertySeeder {
 
     // ── Motels ────────────────────────────────────────────────────────────────
 
-    public List<Motel> seedMotels(Account host, TypeRoom typeRoom) {
-        log.info("[PropertySeeder] Seeding Motels...");
+    public List<Motel> seedMotels(Account host, java.util.Map<String, TypeRoom> typeRooms) {
+        log.info("[PropertySeeder] Seeding Motels with multiple TypeRooms...");
         List<Motel> motels = new ArrayList<>();
+        String[] typeKeys = {"Phòng trọ, nhà trọ", "Chung cư", "Căn hộ dịch vụ", "Ký túc xá"};
+        int index = 0;
         for (MotelSeedSpec spec : MOTEL_SEED_SPECS) {
+            String typeKey = typeKeys[index % typeKeys.length];
+            TypeRoom typeRoom = typeRooms.get(typeKey);
+            index++;
             motels.add(motelRepository.save(Motel.builder()
                     .account(host)
                     .motelName(spec.motelName())
@@ -224,23 +229,41 @@ public class PropertySeeder {
 
     // ── Rooms ─────────────────────────────────────────────────────────────────
 
+    /**
+     * Trạng thái phòng theo index % 7:
+     * 0 → AVAILABLE (Đang trống)
+     * 1 → OCCUPIED  (Đang ở - ACTIVE)
+     * 2 → OCCUPIED  (Đang báo KT - ReportEnd)
+     * 3 → OCCUPIED  (Sắp hết hạn - IATExpire)
+     * 4 → OCCUPIED  (Quá hạn hợp đồng - EXPIRING/ENDED)
+     * 5 → RESERVED  (Đang cọc giữ chỗ)
+     * 6 → OCCUPIED  (Đang nợ tiền - ACTIVE + debt)
+     */
     public List<Room> seedRooms(
             List<Motel> motels, List<MotelService> mServices, List<MotelDevice> mDevices, int[] imageIndexRef) {
         log.info("[PropertySeeder] Seeding Rooms...");
         List<Room> rooms = new ArrayList<>();
+        String[] prioritizes = {"Ban công", "Cửa sổ lớn", "Hướng Đông", "Hướng Tây", "View đẹp", "Góc", "Cuối dãy"};
         for (Motel m : motels) {
-            for (int i = 1; i <= 5; i++) {
-                double basePrice = m.getAveragePrice() + ((i - 3) * 180000L);
+            for (int i = 1; i <= 7; i++) {
+                double basePrice = m.getAveragePrice() + ((i - 4) * 180000L);
                 int area = 18 + (i * 3) + SEEDED_RANDOM.nextInt(4);
+                // i%7==0 → AVAILABLE, i%7==5 → RESERVED, còn lại → OCCUPIED
+                RoomStatus status =
+                        switch (i % 7) {
+                            case 1, 2, 3, 4, 6 -> RoomStatus.OCCUPIED;
+                            case 5 -> RoomStatus.RESERVED;
+                            default -> RoomStatus.AVAILABLE;
+                        };
                 Room r = roomRepository.save(Room.builder()
                         .motel(m)
-                        .name(String.format("Phòng %s-%02d", m.getMotelName().replace("Nhà nghỉ ", ""), i))
+                        .name(String.format("Phòng %s-%02d", m.getMotelName().replace("Nhà trọ ", ""), i))
                         .price(basePrice)
                         .deposit(basePrice)
                         .area(area)
-                        .group("Tầng " + (i <= 2 ? 1 : i <= 4 ? 2 : 3))
-                        .status(i % 5 == 0 ? RoomStatus.RESERVED : RoomStatus.AVAILABLE)
-                        .prioritize(i % 2 == 0 ? "Ban công" : "Cửa sổ lớn")
+                        .group("Tầng " + (i <= 2 ? 1 : i <= 4 ? 2 : i <= 6 ? 3 : 4))
+                        .status(status)
+                        .prioritize(prioritizes[i - 1])
                         .finance("Thanh toán đầu tháng")
                         .description("Phòng riêng đầy đủ tiện nghi, sạch sẽ và đã được kiểm tra trước khi đăng.")
                         .build());

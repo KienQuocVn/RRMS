@@ -107,7 +107,8 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
               <TableCell>Giá phòng</TableCell>
               <TableCell>Diện tích</TableCell>
               <TableCell>Tình trạng</TableCell>
-              <TableCell>Trạng thái</TableCell>
+              <TableCell>Trạng thái duyệt</TableCell>
+              <TableCell>Trạng thái tin đăng</TableCell>
               <TableCell>Lý do từ chối</TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
@@ -148,13 +149,14 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
                   <TableCell>
                     <Chip
                       sx={{ 
-                        bgcolor: 'black', 
-                        color: 'white', 
-                        fontWeight: '500', 
+                        bgcolor: row.roomStatus === 'OCCUPIED' ? '#fff3e0' : '#e8f5e9', 
+                        color: row.roomStatus === 'OCCUPIED' ? '#ef6c00' : '#2e7d32', 
+                        fontWeight: '600', 
                         fontSize: '0.75rem',
-                        borderRadius: '6px'
+                        borderRadius: '6px',
+                        border: row.roomStatus === 'OCCUPIED' ? '1px solid #ffe0b2' : '1px solid #c8e6c9'
                       }}
-                      label={row.available ? 'Đang cho thuê' : 'Đã cho thuê'}
+                      label={row.roomStatus === 'OCCUPIED' ? 'Đang cho thuê' : 'Đang trống'}
                     />
                   </TableCell>
                   <TableCell>
@@ -171,6 +173,45 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
                           ? 'Đã ẩn'
                           : row.isActive
                             ? 'Đã phê duyệt'
+                            : row.rejectionReason
+                              ? 'Từ chối'
+                              : 'Chờ phê duyệt'
+                      }
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      sx={{ 
+                        bgcolor: (row.isHidden || row.roomStatus === 'OCCUPIED') 
+                          ? '#ffebee' 
+                          : row.isActive
+                            ? '#e8f5e9'
+                            : row.rejectionReason
+                              ? '#fff3e0'
+                              : '#efebe9',
+                        color: (row.isHidden || row.roomStatus === 'OCCUPIED') 
+                          ? '#c62828' 
+                          : row.isActive
+                            ? '#2e7d32'
+                            : row.rejectionReason
+                              ? '#ef6c00'
+                              : '#4e342e',
+                        fontWeight: '600', 
+                        fontSize: '0.75rem',
+                        borderRadius: '6px',
+                        border: (row.isHidden || row.roomStatus === 'OCCUPIED')
+                          ? '1px solid #ffcdd2'
+                          : row.isActive
+                            ? '1px solid #c8e6c9'
+                            : row.rejectionReason
+                              ? '1px solid #ffe0b2'
+                              : '1px solid #d7ccc8'
+                      }}
+                      label={
+                        (row.isHidden || row.roomStatus === 'OCCUPIED')
+                          ? 'Đang ẩn'
+                          : row.isActive
+                            ? 'Đang đăng'
                             : row.rejectionReason
                               ? 'Từ chối'
                               : 'Chờ phê duyệt'
@@ -248,7 +289,7 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
             )}
             {emptyRows > 0 && (
               <TableRow key="empty-rows" style={{ height: 53 * emptyRows }}>
-                <TableCell colSpan={10} />
+                <TableCell colSpan={11} />
               </TableRow>
             )}
           </TableBody>
@@ -256,7 +297,7 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
             <TableRow>
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-                colSpan={3}
+                colSpan={4}
                 count={rows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}

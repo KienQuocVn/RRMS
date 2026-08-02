@@ -35,7 +35,7 @@ function Profile({ setIsAdmin, username }) {
 
   const metricItems = [
     { label: t('profile.metrics.monthsRented'), value: 0, color: '#0f172a' },
-    { label: t('profile.metrics.monthsPaid'), value: 0, color: '#16a34a' },
+    { label: t('profile.metrics.monthsPaid'), value: 0, color: '#2b7ed7' },
     { label: t('profile.metrics.monthsUnpaid'), value: 0, color: '#ef4444' }
   ]
 
@@ -124,8 +124,7 @@ function Profile({ setIsAdmin, username }) {
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', lg: '320px minmax(0, 1fr)' },
               gap: 3
-            }}
-          >
+            }}>
             <Skeleton variant="rounded" height={420} sx={{ borderRadius: 4 }} />
             <Skeleton variant="rounded" height={520} sx={{ borderRadius: 4 }} />
           </Box>
@@ -141,8 +140,7 @@ function Profile({ setIsAdmin, username }) {
         minHeight: '100vh',
         py: { xs: 3, md: 4 },
         background: 'linear-gradient(180deg, #f5f9ff 0%, #eef6ff 42%, #ffffff 100%)'
-      }}
-    >
+      }}>
       <Container maxWidth="xl">
         <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
           <ProfilePageHeader profile={profile} username={effectiveUsername} />
@@ -154,8 +152,7 @@ function Profile({ setIsAdmin, username }) {
               gridTemplateColumns: { xs: '1fr', lg: '320px minmax(0, 1fr)' },
               gap: 3,
               alignItems: 'start'
-            }}
-          >
+            }}>
             <ProfileSidebarCard
               profile={profile}
               avatarPreview={previewUrl || profile.avatar}
@@ -174,16 +171,14 @@ function Profile({ setIsAdmin, username }) {
                 boxShadow: '0 24px 60px rgba(15, 23, 42, 0.06)',
                 backgroundColor: 'rgba(255,255,255,0.96)',
                 backdropFilter: 'blur(10px)'
-              }}
-            >
+              }}>
               <TabContext value={tabIndex}>
                 <Box
                   sx={{
                     px: { xs: 1.5, md: 2.5 },
                     pt: { xs: 1.5, md: 2 },
                     borderBottom: '1px solid rgba(148, 163, 184, 0.16)'
-                  }}
-                >
+                  }}>
                   <TabList
                     onChange={handleChange}
                     variant="scrollable"
@@ -208,8 +203,7 @@ function Profile({ setIsAdmin, username }) {
                       '& .MuiTabs-indicator': {
                         display: 'none'
                       }
-                    }}
-                  >
+                    }}>
                     {tabs.map((tab) => (
                       <Tab key={tab.value} icon={tab.icon} iconPosition="start" label={tab.label} value={tab.value} />
                     ))}

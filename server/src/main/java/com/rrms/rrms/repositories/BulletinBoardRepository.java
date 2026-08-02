@@ -159,4 +159,6 @@ public interface BulletinBoardRepository extends JpaRepository<BulletinBoard, UU
             })
     @Query("SELECT r FROM BulletinBoard r WHERE r.isActive = :isActive ORDER BY r.createdAt ASC")
     List<BulletinBoard> findAllByIsActiveAsc(@Param("isActive") Boolean isActive);
+
+    List<BulletinBoard> findByRoom_RoomId(UUID roomId);
 }

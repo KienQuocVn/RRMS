@@ -31,6 +31,7 @@ public interface BulletinBoardMapper {
     @Mapping(target = "room", ignore = true)
     BulletinBoard toBulletinBoard(BulletinBoardRequest bulletinBoardRequest);
 
+    @Mapping(source = "room.status", target = "roomStatus")
     BulletinBoardTableResponse toBulletinBoardTableResponse(BulletinBoard bulletinBoard);
 
     BulletinBoardSearchResponse toBulletinBoardSearchResponse(BulletinBoard bulletinBoard);

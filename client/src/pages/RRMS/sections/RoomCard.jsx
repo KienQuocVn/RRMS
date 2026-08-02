@@ -9,6 +9,7 @@ import { alpha } from '@mui/material/styles'
 import { Link } from 'react-router-dom'
 import { formatterAmount } from '~/utils/formatterAmount'
 import { getEffectivePrice, getMoveInLabel, getPromotionPercent, hasPromotionalPrice } from './rrmsData'
+import { useAddressResolver } from '~/utils/addressResolver'
 
 const cardShellSx = {
   height: '100%',
@@ -42,11 +43,12 @@ export const NowRoomCard = ({ item }) => {
   const room = item
   const effectivePrice = getEffectivePrice(room)
   const hasPromotion = hasPromotionalPrice(room)
+  const resolvedAddress = useAddressResolver(room?.address)
 
   return (
     <Card component={Link} to={`/detail/${room?.bulletinBoardId}`} elevation={0} sx={cardShellSx}>
       <Box sx={{ position: 'relative' }}>
-        <CardMedia component="img" image={getPrimaryImage(room)} alt={room?.title || room?.address} sx={{ height: 240 }} />
+        <CardMedia component="img" image={getPrimaryImage(room)} alt={room?.title || resolvedAddress} sx={{ height: 240 }} />
 
         <Stack direction="row" spacing={1} sx={{ position: 'absolute', top: 16, left: 16, right: 16, justifyContent: 'space-between' }}>
           <Chip
@@ -75,7 +77,7 @@ export const NowRoomCard = ({ item }) => {
 
       <CardContent sx={{ p: 2.5 }}>
         <Typography sx={{ minHeight: 56, fontSize: 21, fontWeight: 800, lineHeight: 1.32, color: '#0f172a' }}>
-          {room?.title || room?.address}
+          {room?.title || resolvedAddress}
         </Typography>
 
         <Typography sx={{ mt: 1, minHeight: 52, color: '#475569', lineHeight: 1.7 }}>{getShortDescription(room)}</Typography>
@@ -118,7 +120,7 @@ export const NowRoomCard = ({ item }) => {
                 {getOwnerName(room)}
               </Typography>
               <Typography sx={{ color: '#64748b', fontSize: 13 }} noWrap>
-                {room?.address}
+                {resolvedAddress}
               </Typography>
             </Box>
           </Stack>
@@ -131,10 +133,11 @@ export const NowRoomCard = ({ item }) => {
 export const LatestRoomCard = ({ room }) => {
   const effectivePrice = getEffectivePrice(room)
   const hasPromotion = hasPromotionalPrice(room)
+  const resolvedAddress = useAddressResolver(room?.address)
 
   return (
     <Card elevation={0} sx={cardShellSx}>
-      <CardMedia component="img" image={getPrimaryImage(room)} alt={room?.title || room?.address} sx={{ height: 220 }} />
+      <CardMedia component="img" image={getPrimaryImage(room)} alt={room?.title || resolvedAddress} sx={{ height: 220 }} />
 
       <CardContent sx={{ p: 2.5 }}>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.25 }} useFlexGap flexWrap="wrap">
@@ -161,11 +164,11 @@ export const LatestRoomCard = ({ room }) => {
         </Stack>
 
         <Typography sx={{ minHeight: 54, fontSize: 20, fontWeight: 800, lineHeight: 1.35, color: '#0f172a' }}>
-          {room?.title || room?.address}
+          {room?.title || resolvedAddress}
         </Typography>
 
         <Stack spacing={1.1} sx={{ mt: 1.4 }}>
-          <RoomMeta icon={<LocationOnRoundedIcon sx={{ fontSize: 17, color: '#0f766e' }} />} text={room?.address || 'Địa chỉ đang cập nhật'} />
+          <RoomMeta icon={<LocationOnRoundedIcon sx={{ fontSize: 17, color: '#0f766e' }} />} text={resolvedAddress || 'Địa chỉ đang cập nhật'} />
           <RoomMeta icon={<SquareFootRoundedIcon sx={{ fontSize: 17, color: '#2563eb' }} />} text={`${room?.area || 0} m²`} />
           <RoomMeta icon={<AccessTimeRoundedIcon sx={{ fontSize: 17, color: '#f97316' }} />} text={getMoveInLabel(room)} />
         </Stack>

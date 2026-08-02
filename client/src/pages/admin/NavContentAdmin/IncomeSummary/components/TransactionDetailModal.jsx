@@ -1,6 +1,17 @@
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined'
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Grid2 as Grid, Stack, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid2 as Grid,
+  Stack,
+  Typography
+} from '@mui/material'
 
 const getPaymentName = (transaction) => transaction?.payment?.paymentName || transaction?.paymentName || '--'
 
@@ -54,13 +65,13 @@ const TransactionDetailModal = ({ open, onClose, transaction, formatCurrency, on
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                <PaymentsOutlinedIcon sx={{ color: isReceipt ? '#16a34a' : '#ef4444' }} />
+                <PaymentsOutlinedIcon sx={{ color: isReceipt ? '#2b7ed7' : '#ef4444' }} />
               </Box>
               <Chip
                 label={isReceipt ? 'Khoản thu' : 'Khoản chi'}
                 sx={{
                   fontWeight: 700,
-                  backgroundColor: isReceipt ? '#16a34a' : '#ef4444',
+                  backgroundColor: isReceipt ? '#2b7ed7' : '#ef4444',
                   color: '#fff'
                 }}
               />

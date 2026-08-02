@@ -12,7 +12,9 @@ function SearchInsightsSection({ popularAreaColumns, postingSteps, searchStats }
       <SearchSurfaceCard sx={{ p: { xs: 2, md: 2.5 } }}>
         <Stack spacing={2}>
           <Box>
-            <Typography sx={{ fontSize: 22, fontWeight: 900, color: '#101828' }}>{t('searchPage.insights.popularTitle')}</Typography>
+            <Typography sx={{ fontSize: 22, fontWeight: 900, color: '#101828' }}>
+              {t('searchPage.insights.popularTitle')}
+            </Typography>
             <Typography sx={{ mt: 0.6, fontSize: 14.5, lineHeight: 1.7, color: '#667085' }}>
               {t('searchPage.insights.popularDescription')}
             </Typography>
@@ -37,8 +39,12 @@ function SearchInsightsSection({ popularAreaColumns, postingSteps, searchStats }
       <SearchSurfaceCard sx={{ p: { xs: 2, md: 2.5 } }}>
         <Stack spacing={2}>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography sx={{ fontSize: 22, fontWeight: 900, color: '#101828' }}>{t('searchPage.insights.postTitle')}</Typography>
-            <Typography sx={{ mt: 0.6, fontSize: 14.5, color: '#667085' }}>{t('searchPage.insights.postDescription')}</Typography>
+            <Typography sx={{ fontSize: 22, fontWeight: 900, color: '#101828' }}>
+              {t('searchPage.insights.postTitle')}
+            </Typography>
+            <Typography sx={{ mt: 0.6, fontSize: 14.5, color: '#667085' }}>
+              {t('searchPage.insights.postDescription')}
+            </Typography>
           </Box>
 
           <Box
@@ -46,8 +52,7 @@ function SearchInsightsSection({ popularAreaColumns, postingSteps, searchStats }
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
               gap: 2
-            }}
-          >
+            }}>
             {postingSteps.map((step, index) => {
               const accentColors = ['#34d399', '#60a5fa', '#fbbf24']
               return (
@@ -58,8 +63,7 @@ function SearchInsightsSection({ popularAreaColumns, postingSteps, searchStats }
                     borderRadius: 3,
                     backgroundColor: `${accentColors[index]}16`,
                     border: `1px solid ${accentColors[index]}33`
-                  }}
-                >
+                  }}>
                   <Box
                     sx={{
                       width: 42,
@@ -70,12 +74,15 @@ function SearchInsightsSection({ popularAreaColumns, postingSteps, searchStats }
                       fontWeight: 900,
                       color: '#fff',
                       backgroundColor: accentColors[index]
-                    }}
-                  >
+                    }}>
                     {step.step}
                   </Box>
-                  <Typography sx={{ mt: 1.25, fontSize: 17, fontWeight: 800, color: '#101828' }}>{t(step.titleKey)}</Typography>
-                  <Typography sx={{ mt: 0.6, fontSize: 14, lineHeight: 1.7, color: '#475467' }}>{t(step.descriptionKey)}</Typography>
+                  <Typography sx={{ mt: 1.25, fontSize: 17, fontWeight: 800, color: '#101828' }}>
+                    {t(step.titleKey)}
+                  </Typography>
+                  <Typography sx={{ mt: 0.6, fontSize: 14, lineHeight: 1.7, color: '#475467' }}>
+                    {t(step.descriptionKey)}
+                  </Typography>
                 </Box>
               )
             })}
@@ -88,8 +95,7 @@ function SearchInsightsSection({ popularAreaColumns, postingSteps, searchStats }
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
           gap: 2
-        }}
-      >
+        }}>
         {searchStats.map((stat) => (
           <SearchSurfaceCard key={stat.labelKey} sx={{ p: 2, textAlign: 'center' }}>
             <Box
@@ -101,9 +107,8 @@ function SearchInsightsSection({ popularAreaColumns, postingSteps, searchStats }
                 display: 'grid',
                 placeItems: 'center',
                 backgroundColor: '#ecfdf3',
-                color: '#16a34a'
-              }}
-            >
+                color: '#2b7ed7'
+              }}>
               {stat.labelKey === 'luot-truy-cap' ? <InsightsRoundedIcon /> : <TrendingUpRoundedIcon />}
             </Box>
             <Typography sx={{ mt: 1.25, fontSize: 26, fontWeight: 900, color: '#101828' }}>{stat.value}</Typography>

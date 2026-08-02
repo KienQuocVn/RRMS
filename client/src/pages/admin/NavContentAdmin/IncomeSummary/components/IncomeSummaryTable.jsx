@@ -57,7 +57,7 @@ const renderTypeChip = (transactionType) => {
       sx={{
         height: 22,
         fontWeight: 700,
-        backgroundColor: isReceipt ? '#16a34a' : '#ef4444',
+        backgroundColor: isReceipt ? '#2b7ed7' : '#ef4444',
         color: '#fff'
       }}
     />
@@ -65,7 +65,9 @@ const renderTypeChip = (transactionType) => {
 }
 
 const getGroupKey = (transaction, reportView) => {
-  return reportView === 'month' ? formatMonthLabel(transaction?.transactionDate) : formatDateDisplay(transaction?.transactionDate)
+  return reportView === 'month'
+    ? formatMonthLabel(transaction?.transactionDate)
+    : formatDateDisplay(transaction?.transactionDate)
 }
 
 const buildGroupedTransactions = (transactions, reportView) => {
@@ -192,12 +194,14 @@ const IncomeSummaryTable = ({ transactions, reportView, formatCurrency, onOpenDe
                             alignItems: 'center',
                             justifyContent: 'center'
                           }}>
-                          <PaymentsOutlinedIcon sx={{ color: isReceipt ? '#16a34a' : '#ef4444' }} />
+                          <PaymentsOutlinedIcon sx={{ color: isReceipt ? '#2b7ed7' : '#ef4444' }} />
                         </Box>
                       </TableCell>
 
                       <TableCell sx={bodyCellStyles}>
-                        <Typography sx={{ fontWeight: 700, color: '#101828', mb: 0.75 }}>{transaction.category || '--'}</Typography>
+                        <Typography sx={{ fontWeight: 700, color: '#101828', mb: 0.75 }}>
+                          {transaction.category || '--'}
+                        </Typography>
                         <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
                           {renderTypeChip(transaction.transactionType)}
                           <Chip
@@ -222,7 +226,9 @@ const IncomeSummaryTable = ({ transactions, reportView, formatCurrency, onOpenDe
                       </TableCell>
 
                       <TableCell sx={bodyCellStyles}>
-                        <Typography sx={{ fontWeight: 800, color: '#101828' }}>{formatCurrency(transaction.amount)}</Typography>
+                        <Typography sx={{ fontWeight: 800, color: '#101828' }}>
+                          {formatCurrency(transaction.amount)}
+                        </Typography>
                       </TableCell>
 
                       <TableCell sx={bodyCellStyles}>
@@ -241,7 +247,9 @@ const IncomeSummaryTable = ({ transactions, reportView, formatCurrency, onOpenDe
                       <TableCell sx={bodyCellStyles}>{formatDateDisplay(transaction.transactionDate)}</TableCell>
 
                       <TableCell sx={bodyCellStyles}>
-                        <Typography sx={{ color: '#2563eb', fontWeight: 600 }}>{getSourceLabel(transaction)}</Typography>
+                        <Typography sx={{ color: '#2563eb', fontWeight: 600 }}>
+                          {getSourceLabel(transaction)}
+                        </Typography>
                       </TableCell>
 
                       <TableCell sx={bodyCellStyles}>

@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { formatterAmount } from '~/utils/formatterAmount'
 import SectionHeading from './SectionHeading'
 import { getEffectivePrice, getMoveInLabel, getPromotionPercent, hasPromotionalPrice } from './rrmsData'
+import { useAddressResolver } from '~/utils/addressResolver'
 
 const SummaryMetric = ({ value, label, color }) => (
   <Paper
@@ -28,6 +29,7 @@ function PromotionSection({ room, stats, onExplorePromotions }) {
 
   const effectivePrice = getEffectivePrice(room)
   const promotionPercent = getPromotionPercent(room)
+  const resolvedAddress = useAddressResolver(room?.address)
 
   return (
     <Box id="promotion-section" sx={{ mt: 7 }}>
@@ -54,7 +56,7 @@ function PromotionSection({ room, stats, onExplorePromotions }) {
             }}>
             <Grid container>
               <Grid item xs={12} md={6}>
-                <CardMedia component="img" image={room?.bulletinBoardImages?.[0]?.imageLink || '/banner1.png'} alt={room?.title || room?.address} sx={{ height: '100%', minHeight: 300 }} />
+                <CardMedia component="img" image={room?.bulletinBoardImages?.[0]?.imageLink || '/banner1.png'} alt={room?.title || resolvedAddress} sx={{ height: '100%', minHeight: 300 }} />
               </Grid>
               <Grid item xs={12} md={6}>
                 <CardContent sx={{ height: '100%', p: 3 }}>
@@ -77,7 +79,7 @@ function PromotionSection({ room, stats, onExplorePromotions }) {
                   </Stack>
 
                   <Typography sx={{ mt: 2, fontSize: 28, fontWeight: 900, lineHeight: 1.18, color: '#0f172a' }}>
-                    {room?.title || room?.address}
+                    {room?.title || resolvedAddress}
                   </Typography>
 
                   <Typography sx={{ mt: 1.5, color: '#475569', lineHeight: 1.8 }}>
@@ -85,7 +87,7 @@ function PromotionSection({ room, stats, onExplorePromotions }) {
                   </Typography>
 
                   <Stack spacing={1.1} sx={{ mt: 2.5 }}>
-                    <Typography sx={{ color: '#0f766e', fontWeight: 700 }}>{room?.address}</Typography>
+                    <Typography sx={{ color: '#0f766e', fontWeight: 700 }}>{resolvedAddress}</Typography>
                     <Typography sx={{ color: '#2563eb', fontWeight: 700 }}>{getMoveInLabel(room)}</Typography>
                   </Stack>
 

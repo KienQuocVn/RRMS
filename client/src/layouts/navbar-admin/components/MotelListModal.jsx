@@ -68,7 +68,7 @@ const MotelListModal = ({ open, onClose, motels, currentMotel, onDelete, onEdit 
               }}
             >
               <Box flex={1}>
-                <Typography fontWeight="bold">Nhà trọ {item.motelName}</Typography>
+                <Typography fontWeight="bold">{item.motelName}</Typography>
                 <Typography variant="body2">{item.address}</Typography>
               </Box>
 

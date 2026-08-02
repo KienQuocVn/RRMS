@@ -42,10 +42,18 @@ public class CatalogSeeder {
     public Map<String, TypeRoom> seedTypeRooms() {
         log.info("[CatalogSeeder] Seeding TypeRooms...");
         Map<String, TypeRoom> map = new HashMap<>();
-        String[] types = {"Trọ", "Chung cư mini", "Ký túc xá", "Căn hộ dịch vụ"};
+        // 4 loại nhà theo frontend: PROPERTY_TYPE_OPTIONS
+        String[] types = {
+            "Phòng trọ, nhà trọ", // phong-tro-nha-tro
+            "Chung cư", // chung-cu
+            "Căn hộ dịch vụ", // can-ho-chung-cu
+            "Ký túc xá" // ky-tuc-xa
+        };
         for (String t : types) {
             map.put(t, typeRoomRepository.save(TypeRoom.builder().name(t).build()));
         }
+        // Alias "Trọ" trỏ vào "Phòng trọ, nhà trọ" để tương thích DB.java
+        map.put("Trọ", map.get("Phòng trọ, nhà trọ"));
         return map;
     }
 

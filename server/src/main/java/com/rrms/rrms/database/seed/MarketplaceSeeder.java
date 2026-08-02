@@ -90,12 +90,38 @@ public class MarketplaceSeeder {
             BigDecimal promotionalPrice =
                     i % 3 == 0 ? null : rentPrice.subtract(BigDecimal.valueOf(150000L + (i % 3) * 50000L));
 
+            String rentalCategory;
+            String roomName = room.getName();
+            int roomNum = 7;
+            try {
+                roomNum = Integer.parseInt(roomName.substring(roomName.length() - 2));
+            } catch (Exception e) {
+                // fallback
+            }
+
+            if (roomNum == 1) {
+                // Room 1 (Đang ở) -> Test chuyên mục Ở ghép / Pass phòng
+                if (i % 2 == 0) {
+                    rentalCategory = "Ở ghép";
+                } else {
+                    rentalCategory = "Pass phòng";
+                }
+            } else {
+                // Các phòng còn lại 2, 3, 4, 5, 6, 7 (báo kết thúc, sắp hết hạn, quá hạn, cọc, nợ, trống) -> Gán loại
+                // nhà bình thường
+                rentalCategory = switch (i % 4) {
+                    case 0 -> "Phòng trọ, nhà trọ";
+                    case 1 -> "Chung cư";
+                    case 2 -> "Căn hộ dịch vụ";
+                    default -> "Ký túc xá";};
+            }
+
             BulletinBoard bb = BulletinBoard.builder()
                     .account(host)
                     .motel(motel)
                     .room(room)
                     .title(room.getName() + " - " + motel.getMotelName())
-                    .rentalCategory("Nhà nghỉ")
+                    .rentalCategory(rentalCategory)
                     .description(buildDescription(seedSpec, room))
                     .address(motel.getAddress())
                     .build();

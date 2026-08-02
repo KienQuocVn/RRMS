@@ -24,7 +24,7 @@ import { formatterAmount } from '~/utils/formatterAmount';
 const overviewItems = (detail) => [
   {
     icon: <HomeWorkRoundedIcon color="primary" />,
-    label: 'Nhà nghỉ',
+    label: 'Tòa nhà',
     value: detail.motel?.motelName || 'Đang cập nhật',
   },
   {
@@ -40,7 +40,7 @@ const overviewItems = (detail) => [
   {
     icon: <CheckCircleRoundedIcon color={detail.status ? 'success' : 'error'} />,
     label: 'Tình trạng',
-    value: detail.status ? 'Đang cho thuê' : 'Đã có người thuê',
+    value: detail.status ? 'Đang trống' : 'Đã có người thuê',
   },
   {
     icon: <CalendarMonthRoundedIcon color="primary" />,
@@ -115,7 +115,7 @@ const DetailSummarySection = ({ detail, rating }) => {
 
             {detail.motel?.address && detail.motel.address !== detail.address ? (
               <Typography variant="body2" color="text.secondary">
-                Thuộc nhà nghỉ tại: {detail.motel.address}
+                Thuộc tòa nhà tại: {detail.motel.address}
               </Typography>
             ) : null}
 

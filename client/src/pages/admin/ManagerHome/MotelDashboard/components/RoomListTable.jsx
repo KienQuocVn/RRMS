@@ -53,6 +53,15 @@ const formatDate = (dateString) => {
   return d.toLocaleDateString('vi-VN')
 }
 
+const formatLeaseTerm = (leaseTerm) => {
+  if (!leaseTerm) return 'Chưa có'
+  const termStr = String(leaseTerm).trim()
+  if (termStr.toLowerCase().includes('tháng') || termStr.toLowerCase().includes('năm')) {
+    return termStr
+  }
+  return `${termStr} tháng`
+}
+
 // Status Chips
 const getStatusChip = (room) => {
   const status = room.latestContract?.status
@@ -77,6 +86,13 @@ const getStatusChip = (room) => {
       <Chip
         label="Đang báo KT"
         sx={{ bgcolor: '#ff9800', color: 'white', height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
+      />
+    )
+  if (status === 'ENDED')
+    return (
+      <Chip
+        label="Đã quá hạn hợp đồng"
+        sx={{ bgcolor: '#d32f2f', color: 'white', height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
       />
     )
   if (isReserveAPlaceStatus(reserveStatus))
@@ -397,7 +413,7 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
                   {isVisible('duration') && (
                     <TableCell sx={{ borderRight: '1px solid #eeeeee' }}>
                       <Typography variant="caption" color={room.latestContract ? 'text.primary' : 'text.secondary'}>
-                        {room.latestContract ? `${room.latestContract.duration} tháng` : 'Chưa có'}
+                        {formatLeaseTerm(room.latestContract?.leaseTerm)}
                       </Typography>
                     </TableCell>
                   )}

@@ -9,9 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.rrms.rrms.dto.response.BulletinBoardSearchResponse;
 import com.rrms.rrms.enums.ErrorCode;
+import com.rrms.rrms.enums.RoomStatus;
 import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.BulletinBoardMapper;
 import com.rrms.rrms.models.BulletinBoard;
+import com.rrms.rrms.models.Room;
 import com.rrms.rrms.repositories.BulletinBoardRepository;
 import com.rrms.rrms.services.ISearchService;
 
@@ -27,6 +29,27 @@ public class SearchService implements ISearchService {
     BulletinBoardMapper bulletinBoardMapper;
     BulletinBoardRepository bulletinBoardRepository;
 
+    private boolean shouldLoadBulletinBoard(BulletinBoard b) {
+        Room r = b.getRoom();
+        if (r == null) {
+            return true;
+        }
+        if (r.getStatus() == RoomStatus.AVAILABLE) {
+            return true;
+        }
+        if (r.getStatus() == RoomStatus.OCCUPIED) {
+            String category = b.getRentalCategory();
+            if (category == null) {
+                return false;
+            }
+            String lowerCategory = category.trim().toLowerCase();
+            return lowerCategory.contains("ở ghép")
+                    || lowerCategory.contains("pass phòng")
+                    || lowerCategory.contains("o-ghep-pass-phong");
+        }
+        return false;
+    }
+
     @Override
     public List<BulletinBoardSearchResponse> listRoomByAddress(String address) {
         List<BulletinBoard> bulletinBoards = bulletinBoardRepository.findByAddress(address);
@@ -35,6 +58,7 @@ public class SearchService implements ISearchService {
             throw new AppException(ErrorCode.SEARCH_NOT_FOUND);
         }
         return bulletinBoards.stream()
+                .filter(this::shouldLoadBulletinBoard)
                 .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
                 .collect(Collectors.toList());
     }
@@ -43,6 +67,7 @@ public class SearchService implements ISearchService {
     public List<BulletinBoardSearchResponse> getRooms() {
         List<BulletinBoard> bulletinBoards = bulletinBoardRepository.findAllByIsActive(true);
         return bulletinBoards.stream()
+                .filter(this::shouldLoadBulletinBoard)
                 .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
                 .toList();
     }
@@ -60,6 +85,7 @@ public class SearchService implements ISearchService {
                 normalizeKeyword(query), normalizeKeyword(district), minPrice, maxPrice, minArea, maxArea);
 
         return bulletinBoards.stream()
+                .filter(this::shouldLoadBulletinBoard)
                 .filter(bulletinBoard -> matchesRentalCategory(bulletinBoard, rentalCategory))
                 .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
                 .toList();
@@ -69,6 +95,7 @@ public class SearchService implements ISearchService {
     public List<BulletinBoardSearchResponse> getRoomsSortedByPriceASC() {
         List<BulletinBoard> bulletinBoards = bulletinBoardRepository.findAllActiveOrderByPriceAsc();
         return bulletinBoards.stream()
+                .filter(this::shouldLoadBulletinBoard)
                 .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
                 .toList();
     }
@@ -77,6 +104,7 @@ public class SearchService implements ISearchService {
     public List<BulletinBoardSearchResponse> getRoomsSortedByPriceDESC() {
         List<BulletinBoard> bulletinBoards = bulletinBoardRepository.findAllActiveOrderByPriceDesc();
         return bulletinBoards.stream()
+                .filter(this::shouldLoadBulletinBoard)
                 .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
                 .toList();
     }
@@ -85,6 +113,7 @@ public class SearchService implements ISearchService {
     public List<BulletinBoardSearchResponse> findAllByDatenew() {
         List<BulletinBoard> bulletinBoards = bulletinBoardRepository.findAllByDatenew(true);
         return bulletinBoards.stream()
+                .filter(this::shouldLoadBulletinBoard)
                 .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
                 .toList();
     }
@@ -92,6 +121,7 @@ public class SearchService implements ISearchService {
     @Override
     public List<BulletinBoardSearchResponse> findAllByIsActive() {
         return bulletinBoardRepository.findAllByIsActiveAsc(true).stream()
+                .filter(this::shouldLoadBulletinBoard)
                 .map(bulletinBoardMapper::toBulletinBoardSearchResponse)
                 .collect(Collectors.toList());
     }

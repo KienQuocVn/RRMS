@@ -120,7 +120,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [motelId])
 
   const reloadData = () => {
     loadData()

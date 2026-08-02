@@ -62,6 +62,8 @@ public class ContractService implements IContractService {
 
     private final RoomReservationRepository roomReservationRepository;
 
+    private final BulletinBoardRepository bulletinBoardRepository;
+
     @Override
     public Integer getTotalActiveContractsByLandlord(Account usernameLandlord) {
         return contractRepository.countActiveContractsByLandlord(usernameLandlord);
@@ -130,6 +132,16 @@ public class ContractService implements IContractService {
 
         room.setStatus(RoomStatus.OCCUPIED);
         roomRepository.save(room);
+
+        // Auto-hide any bulletin boards for this room since it is now occupied
+        List<BulletinBoard> roomBbs = bulletinBoardRepository.findByRoom_RoomId(room.getRoomId());
+        if (roomBbs != null) {
+            for (BulletinBoard bb : roomBbs) {
+                bb.setIsHidden(true);
+                bb.setStatus(false);
+                bulletinBoardRepository.save(bb);
+            }
+        }
 
         // Save the contract
         contract = contractRepository.save(contract);
@@ -358,6 +370,16 @@ public class ContractService implements IContractService {
         newRoom.setStatus(RoomStatus.OCCUPIED);
         roomRepository.save(oldRoom);
         roomRepository.save(newRoom);
+
+        // Auto-hide any bulletin boards for the new room since it is now occupied
+        List<BulletinBoard> newRoomBbs = bulletinBoardRepository.findByRoom_RoomId(newRoom.getRoomId());
+        if (newRoomBbs != null) {
+            for (BulletinBoard bb : newRoomBbs) {
+                bb.setIsHidden(true);
+                bb.setStatus(false);
+                bulletinBoardRepository.save(bb);
+            }
+        }
     }
 
     private void validateTargetRoomForTransfer(Room newRoom) {

@@ -16,6 +16,7 @@ import { buildFixedProvinceGroups, buildRrmsDashboard, RRMS_SPECIAL_HASHTAGS } f
 const LATEST_PER_PAGE = 6
 const DEFAULT_SEARCH_FILTERS = {
   query: '',
+  province: '',
   district: '',
   minPrice: null,
   maxPrice: null,
@@ -154,6 +155,7 @@ function RRMS({ setIsAdmin }) {
     const normalizedQuery = value?.query?.trim()
 
     if (normalizedQuery) params.set('query', normalizedQuery)
+    if (value?.province) params.set('province', value.province)
     if (value?.district) params.set('district', value.district)
     if (typeof value?.minPrice === 'number') params.set('minPrice', String(value.minPrice))
     if (typeof value?.maxPrice === 'number') params.set('maxPrice', String(value.maxPrice))

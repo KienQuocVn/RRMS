@@ -69,7 +69,7 @@ const MotelManagerCard = ({ motel, motelCount, onOpenManager, onOpenAdd, setSele
             fontWeight: 'bold',
           }}
         >
-          Nhà trọ {motel?.motelName ?? 'Chưa có dữ liệu'}
+          {motel?.motelName ?? 'Chưa có dữ liệu'}
         </Box>
       </Box>
     </Box>

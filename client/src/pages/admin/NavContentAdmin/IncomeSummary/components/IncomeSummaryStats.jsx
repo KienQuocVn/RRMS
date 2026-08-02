@@ -10,7 +10,7 @@ const SUMMARY_ITEMS = [
     valueKey: 'totalIncome',
     color: '#137c57',
     background: '#edf8f2',
-    icon: <TrendingUpRoundedIcon sx={{ color: '#16a34a', fontSize: 28 }} />
+    icon: <TrendingUpRoundedIcon sx={{ color: '#2b7ed7', fontSize: 28 }} />
   },
   {
     key: 'expense',

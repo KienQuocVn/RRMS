@@ -172,28 +172,6 @@ public class TenantControllerTest {
         verify(tenantService, times(1)).delete(tenantId);
     }
 
-    // @Test
-    // void testDeleteTenant_Failure() throws Exception {
-    // // Giả lập một UUID cho tenant
-    // UUID tenantId = UUID.randomUUID();
-    //
-    // // Giả lập rằng phương thức delete sẽ ném ra một ngoại lệ
-    // doThrow(new RuntimeException("Delete
-    // failed")).when(tenantService).delete(tenantId);
-    //
-    // // Thực hiện yêu cầu DELETE
-    // mockMvc.perform(delete("/tenant/{id}", tenantId))
-    // .andExpect(status().isBadRequest()) // Kiểm tra mã trạng thái trả về là 400
-    // (Bad Request)
-    // .andExpect(jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value())) // Kiểm
-    // tra mã code trả về
-    // là 400
-    // .andExpect(jsonPath("$.message").value("error")) // Kiểm tra thông báo lỗi
-    // .andExpect(jsonPath("$.result").value(false)); // Kiểm tra kết quả là false
-    //
-    // // Kiểm tra rằng phương thức delete của tenantService đã được gọi một lần
-    // verify(tenantService, times(1)).delete(tenantId);
-    // }
     @Test
     void testGetAllTenantsRoomId_Success() throws Exception {
         // Giả lập UUID cho roomId

@@ -122,16 +122,23 @@ public class OperationSeeder {
     // ── Reservations ──────────────────────────────────────────────────────────
 
     public void seedReservations(List<Room> rooms) {
-        log.info("[OperationSeeder] Seeding Reservations...");
-        roomReservationRepository.save(Reserve_a_place.builder()
-                .room(rooms.get(10))
-                .nametenant("Khách Đặt Cọc")
-                .phonetenant("0977111222")
-                .deposit(1000000.0)
-                .status(ContractStatus.DEPOSITED)
-                .createdate(java.sql.Date.valueOf(LocalDate.now()))
-                .moveinDate(java.sql.Date.valueOf(LocalDate.now().plusDays(7)))
-                .build());
+        log.info("[OperationSeeder] Seeding Reservations for RESERVED rooms...");
+        // Seed reservation cho tất cả phòng RESERVED (index % 7 == 4, tức i==5 → pattern index 4 trong 7)
+        for (int idx = 0; idx < rooms.size(); idx++) {
+            Room room = rooms.get(idx);
+            // Phòng RESERVED có i%7==5 → roomIdx%7 == 4 (vì i bắt đầu từ 1)
+            if (idx % 7 == 4) {
+                roomReservationRepository.save(Reserve_a_place.builder()
+                        .room(room)
+                        .nametenant("Khách Đặt Cọc " + (idx / 7 + 1))
+                        .phonetenant("097711122" + (idx / 7 % 10))
+                        .deposit(room.getDeposit() != null ? room.getDeposit() * 0.5 : 1000000.0)
+                        .status(ContractStatus.DEPOSITED)
+                        .createdate(java.sql.Date.valueOf(LocalDate.now().minusDays(3)))
+                        .moveinDate(java.sql.Date.valueOf(LocalDate.now().plusDays(7 + idx % 14)))
+                        .build());
+            }
+        }
     }
 
     // ── Cars ──────────────────────────────────────────────────────────────────

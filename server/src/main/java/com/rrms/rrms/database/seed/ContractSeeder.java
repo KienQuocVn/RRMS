@@ -120,38 +120,107 @@ public class ContractSeeder {
     // ── Contracts ─────────────────────────────────────────────────────────────
 
     /**
-     * Seed 10 hợp đồng, mỗi motel lấy phòng đầu tiên (index = i * 5).
+     * Seed hợp đồng cho các phòng có trạng thái OCCUPIED.
+     * Mỗi motel có 7 phòng, pattern i%7:
+     *   0 → AVAILABLE (không cần contract)
+     *   1 → ACTIVE (Đang ở)
+     *   2 → ReportEnd (Đang báo kết thúc) - dùng reportcloseContract
+     *   3 → IATExpire (Sắp hết hạn) - closeContract gần hết
+     *   4 → EXPIRING (Đã quá hạn)
+     *   5 → RESERVED (cọc giữ chỗ - handled by OperationSeeder)
+     *   6 → ACTIVE + debt (Đang nợ tiền)
      */
     public List<Contract> seedContracts(List<Room> rooms, List<Tenant> tenants, Account host) {
-        log.info("[ContractSeeder] Seeding Contracts...");
+        log.info("[ContractSeeder] Seeding Contracts with diverse statuses...");
         List<ContractTemplate> templates = contractTemplateRepository.findAll();
         List<Broker> brokers = brokerRepository.findAll();
         List<Contract> contracts = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
-            Room r = rooms.get(i * 5); // Phòng đầu tiên của motel thứ i
-            Tenant t = tenants.get(i);
-            Contract c = contractRepository.save(Contract.builder()
+        int tenantIdx = 0;
+        for (int roomIdx = 0; roomIdx < rooms.size(); roomIdx++) {
+            Room r = rooms.get(roomIdx);
+            int roomPattern = (roomIdx % 7) + 1; // i từ 1..7 trong seed
+            // Phòng AVAILABLE (pattern 0, tức roomIdx % 7 == 6 -> i==7%7==0) và RESERVED (pattern 5 -> i==5) không có
+            // contract
+            if (roomPattern % 7 == 0 || roomPattern == 5) {
+                continue;
+            }
+
+            Tenant t = tenants.get(tenantIdx % tenants.size());
+            tenantIdx++;
+
+            LocalDate moveIn;
+            LocalDate close;
+            ContractStatus contractStatus;
+            String leaseTerm;
+            Double debt = null;
+            java.sql.Date reportCloseDate = null;
+
+            switch (roomPattern) {
+                case 1 -> { // ACTIVE - Đang ở bình thường
+                    moveIn = LocalDate.now().minusMonths(6);
+                    close = LocalDate.now().plusMonths(6);
+                    contractStatus = ContractStatus.ACTIVE;
+                    leaseTerm = "12 tháng";
+                }
+                case 2 -> { // ReportEnd - Đang báo kết thúc (có reportcloseContract)
+                    moveIn = LocalDate.now().minusMonths(10);
+                    close = LocalDate.now().plusMonths(2);
+                    contractStatus = ContractStatus.TERMINATED;
+                    leaseTerm = "12 tháng";
+                    reportCloseDate = java.sql.Date.valueOf(LocalDate.now().plusMonths(2));
+                }
+                case 3 -> { // IATExpire - Sắp hết hạn HĐ (còn < 30 ngày)
+                    moveIn = LocalDate.now().minusMonths(11);
+                    close = LocalDate.now().plusDays(20);
+                    contractStatus = ContractStatus.EXPIRING;
+                    leaseTerm = "12 tháng";
+                }
+                case 4 -> { // Quá hạn hợp đồng - ENDED
+                    moveIn = LocalDate.now().minusMonths(13);
+                    close = LocalDate.now().minusMonths(1);
+                    contractStatus = ContractStatus.ENDED;
+                    leaseTerm = "12 tháng";
+                }
+                case 6 -> { // ACTIVE + debt - Đang nợ tiền
+                    moveIn = LocalDate.now().minusMonths(3);
+                    close = LocalDate.now().plusMonths(9);
+                    contractStatus = ContractStatus.ACTIVE;
+                    leaseTerm = "12 tháng";
+                    debt = r.getPrice() != null ? r.getPrice() * 1.5 : 1500000.0;
+                }
+                default -> {
+                    moveIn = LocalDate.now().minusMonths(6);
+                    close = LocalDate.now().plusMonths(6);
+                    contractStatus = ContractStatus.ACTIVE;
+                    leaseTerm = "12 tháng";
+                }
+            }
+
+            Contract.ContractBuilder builder = Contract.builder()
                     .room(r)
                     .tenant(t)
                     .account(host)
-                    .contractTemplate(templates.get(i % templates.size()))
-                    .broker(brokers.isEmpty() ? null : brokers.get(i % brokers.size()))
+                    .contractTemplate(templates.isEmpty() ? null : templates.get(tenantIdx % templates.size()))
+                    .broker(brokers.isEmpty() ? null : brokers.get(tenantIdx % brokers.size()))
                     .price(r.getPrice())
                     .actualPrice(r.getPrice())
                     .deposit(r.getDeposit())
-                    .moveinDate(java.sql.Date.valueOf(LocalDate.now()))
-                    .closeContract(java.sql.Date.valueOf(LocalDate.now().plusYears(1)))
-                    .leaseTerm("12 tháng")
+                    .moveinDate(java.sql.Date.valueOf(moveIn))
+                    .closeContract(java.sql.Date.valueOf(close))
+                    .leaseTerm(leaseTerm)
                     .collectioncycle("Hàng tháng")
-                    .status(ContractStatus.ACTIVE)
-                    .createdate(LocalDate.now())
+                    .status(contractStatus)
+                    .createdate(moveIn)
                     .signcontract("da_ky")
                     .language("VN")
-                    .countTenant(1)
-                    .build());
+                    .countTenant(1);
+
+            if (debt != null) builder.debt(debt);
+            if (reportCloseDate != null) builder.reportcloseContract(reportCloseDate);
+
+            Contract c = contractRepository.save(builder.build());
             contracts.add(c);
-            r.setStatus(com.rrms.rrms.enums.RoomStatus.OCCUPIED);
         }
         return contracts;
     }

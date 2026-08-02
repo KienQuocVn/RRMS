@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.rrms.rrms.dto.request.TenantRequest;
 import com.rrms.rrms.dto.response.TenantResponse;
@@ -218,9 +219,21 @@ public class TenantService implements ITenantService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TenantResponse> getAllTenantsByMotelId(UUID motelId) {
         return contractOccupantRepository.findByContract_Room_Motel_MotelId(motelId).stream()
-                .map(occupant -> tenantMapper.toTenantResponse(occupant.getTenant()))
+                .map(occupant -> {
+                    TenantResponse response = tenantMapper.toTenantResponse(occupant.getTenant());
+                    // Set roomName từ contract để frontend nhóm được theo phòng
+                    if (occupant.getContract() != null && occupant.getContract().getRoom() != null) {
+                        response.setRoomName(occupant.getContract().getRoom().getName());
+                        if (occupant.getContract().getRoom().getMotel() != null) {
+                            response.setMotelAddress(
+                                    occupant.getContract().getRoom().getMotel().getAddress());
+                        }
+                    }
+                    return response;
+                })
                 // loại bỏ trùng lặp nếu cùng tenant ở nhiều hợp đồng
                 .collect(java.util.stream.Collectors.toMap(
                         TenantResponse::getTenantId, t -> t, (existing, replacement) -> existing))

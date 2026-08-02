@@ -140,7 +140,7 @@ const TenantListTable = ({
                 <TableCell colSpan={15} align="center" sx={{ py: 8 }}>
                   <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
                     <img
-                      src="https://firebasestorage.googleapis.com/v0/b/rrms-b7c18.appspot.com/o/images%2Fempty-box-4085812-3385481.webp?alt=media&token=eaf37b59-00e3-4d16-8463-5441f54fb60e"
+                      src="/client/public/empty-box.webp"
                       alt="Không có dữ liệu"
                       style={{ maxWidth: '260px', width: '100%', opacity: 0.72, marginBottom: '16px' }}
                     />

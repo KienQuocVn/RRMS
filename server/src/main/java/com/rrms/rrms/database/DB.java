@@ -17,10 +17,12 @@ import com.rrms.rrms.database.seed.OperationSeeder;
 import com.rrms.rrms.database.seed.PropertySeeder;
 import com.rrms.rrms.models.Account;
 import com.rrms.rrms.models.BulletinBoard;
+import com.rrms.rrms.models.Contract;
 import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.models.MotelDevice;
 import com.rrms.rrms.models.MotelService;
 import com.rrms.rrms.models.Room;
+import com.rrms.rrms.models.Tenant;
 import com.rrms.rrms.models.TypeRoom;
 import com.rrms.rrms.repositories.AccountRepository;
 import com.rrms.rrms.repositories.MotelDeviceRepository;
@@ -91,7 +93,7 @@ public class DB {
             catalogSeeder.seedPaymentMethods();
 
             // ── 4. Nhà trọ & Phòng ────────────────────────────────────────────
-            List<Motel> motels = propertySeeder.seedMotels(host, typeRooms.get("Trọ"));
+            List<Motel> motels = propertySeeder.seedMotels(host, typeRooms);
             propertySeeder.seedMotelExtras(motels);
 
             // imageIndex được chia sẻ giữa PropertySeeder và MarketplaceSeeder
@@ -100,15 +102,21 @@ public class DB {
             List<MotelDevice> allMotelDevices = motelDeviceRepository.findAll();
             List<Room> rooms = propertySeeder.seedRooms(motels, allMotelServices, allMotelDevices, imageIndexRef);
 
-            // ── 5. Hợp đồng template & Môi giới (không seed fake tenant/contract) ─
+            // ── 5. Hợp đồng template & Môi giới ──────────────────────────────
             contractSeeder.seedContractTemplates(motels);
             contractSeeder.seedBrokers(motels);
 
-            // ── 6. Vận hành ───────────────────────────────────────────────────
+            // ── 6. Tenants & Contracts với đầy đủ trạng thái ─────────────────
+            // Số lượng phòng OCCUPIED = rooms có i%7 ∈ {1,2,3,4,6} = 5 phòng/motel × 10 motel = 50
+            int tenantCount = Math.max(10, (rooms.size() / 7) * 5 + 5);
+            List<Tenant> tenants = contractSeeder.seedTenants(tenantCount);
+            List<Contract> contracts = contractSeeder.seedContracts(rooms, tenants, host);
+
+            // ── 7. Vận hành ───────────────────────────────────────────────────
             operationSeeder.seedReservations(rooms);
             operationSeeder.seedSupports(customer, employee);
 
-            // ── 7. Thị trường bài đăng ────────────────────────────────────────
+            // ── 8. Thị trường bài đăng ────────────────────────────────────────
             List<BulletinBoard> bulletinBoards = marketplaceSeeder.seedBulletinBoards(
                     rooms, host, customer, PropertySeeder.MOTEL_SEED_SPECS, imageIndexRef);
             marketplaceSeeder.seedViolationReports(bulletinBoards, host, customer, employee);

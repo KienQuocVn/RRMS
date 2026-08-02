@@ -34,7 +34,7 @@ const contactCards = [
     labelKey: 'contactPage.channels.phone',
     value: '0373395604',
     Icon: PhoneInTalkRoundedIcon,
-    color: '#16a34a'
+    color: '#2b7ed7'
   },
   {
     key: 'email',
@@ -51,7 +51,7 @@ const postingSteps = [
     step: '1',
     titleKey: 'introduce.postSteps.items.0.title',
     descriptionKey: 'introduce.postSteps.items.0.description',
-    color: '#16a34a'
+    color: '#2b7ed7'
   },
   {
     step: '2',
@@ -88,8 +88,7 @@ const Contact = ({ setIsAdmin }) => {
       sx={{
         py: { xs: 4, md: 6 },
         background: 'linear-gradient(180deg, #f7fbff 0%, #ffffff 100%)'
-      }}
-    >
+      }}>
       <Container maxWidth="lg">
         <Stack spacing={4}>
           <Box textAlign="center">
@@ -99,7 +98,16 @@ const Contact = ({ setIsAdmin }) => {
             <Typography sx={{ mt: 1, fontSize: { xs: 16, md: 20 }, color: '#475467' }}>
               {t('contactPage.subtitle')}
             </Typography>
-            <Box sx={{ width: 120, height: 4, mx: 'auto', mt: 2, borderRadius: 999, background: 'linear-gradient(90deg, #38bdf8, #22c55e)' }} />
+            <Box
+              sx={{
+                width: 120,
+                height: 4,
+                mx: 'auto',
+                mt: 2,
+                borderRadius: 999,
+                background: 'linear-gradient(90deg, #38bdf8, #22c55e)'
+              }}
+            />
           </Box>
 
           <Box
@@ -107,8 +115,7 @@ const Contact = ({ setIsAdmin }) => {
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' },
               gap: 2
-            }}
-          >
+            }}>
             {contactCards.map((card) => {
               const Icon = card.Icon
               return (
@@ -130,8 +137,7 @@ const Contact = ({ setIsAdmin }) => {
                       transform: 'translateY(-4px)',
                       boxShadow: '0 24px 50px rgba(15, 23, 42, 0.12)'
                     }
-                  }}
-                >
+                  }}>
                   <Stack spacing={1.5} alignItems="center" textAlign="center">
                     <Box
                       sx={{
@@ -142,8 +148,7 @@ const Contact = ({ setIsAdmin }) => {
                         placeItems: 'center',
                         backgroundColor: `${card.color}15`,
                         color: card.color
-                      }}
-                    >
+                      }}>
                       <Icon sx={{ fontSize: 32 }} />
                     </Box>
                     <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#344054' }}>{t(card.labelKey)}</Typography>
@@ -159,8 +164,7 @@ const Contact = ({ setIsAdmin }) => {
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
               gap: 2
-            }}
-          >
+            }}>
             <Paper
               component="a"
               href="#"
@@ -169,9 +173,13 @@ const Contact = ({ setIsAdmin }) => {
                 borderRadius: 3,
                 display: 'block',
                 boxShadow: '0 18px 40px rgba(15, 23, 42, 0.06)'
-              }}
-            >
-              <Box component="img" src="/banner1.png" alt={t('contactPage.banners.brokerAlt')} sx={{ width: '100%', display: 'block' }} />
+              }}>
+              <Box
+                component="img"
+                src="/banner1.png"
+                alt={t('contactPage.banners.brokerAlt')}
+                sx={{ width: '100%', display: 'block' }}
+              />
             </Paper>
             <Paper
               component="a"
@@ -181,9 +189,13 @@ const Contact = ({ setIsAdmin }) => {
                 borderRadius: 3,
                 display: 'block',
                 boxShadow: '0 18px 40px rgba(15, 23, 42, 0.06)'
-              }}
-            >
-              <Box component="img" src="/banner2.png" alt={t('contactPage.banners.promotionAlt')} sx={{ width: '100%', display: 'block' }} />
+              }}>
+              <Box
+                component="img"
+                src="/banner2.png"
+                alt={t('contactPage.banners.promotionAlt')}
+                sx={{ width: '100%', display: 'block' }}
+              />
             </Paper>
           </Box>
 
@@ -201,8 +213,7 @@ const Contact = ({ setIsAdmin }) => {
                 display: 'grid',
                 gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
                 gap: 2
-              }}
-            >
+              }}>
               {postingSteps.map((item) => (
                 <Paper
                   key={item.step}
@@ -212,8 +223,7 @@ const Contact = ({ setIsAdmin }) => {
                     borderRadius: 3,
                     borderColor: `${item.color}55`,
                     background: `linear-gradient(180deg, ${item.color}10 0%, #ffffff 100%)`
-                  }}
-                >
+                  }}>
                   <Stack spacing={1.25}>
                     <Box
                       sx={{
@@ -225,8 +235,7 @@ const Contact = ({ setIsAdmin }) => {
                         backgroundColor: item.color,
                         color: '#fff',
                         fontWeight: 900
-                      }}
-                    >
+                      }}>
                       {item.step}
                     </Box>
                     <Typography sx={{ fontSize: 18, fontWeight: 800, color: '#101828' }}>{t(item.titleKey)}</Typography>
@@ -252,8 +261,7 @@ const Contact = ({ setIsAdmin }) => {
                 display: 'grid',
                 gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
                 gap: 2
-              }}
-            >
+              }}>
               {stats.map((item) => {
                 const Icon = item.Icon
                 return (
@@ -266,20 +274,27 @@ const Contact = ({ setIsAdmin }) => {
                       textAlign: 'center',
                       borderColor: 'rgba(34, 197, 94, 0.18)',
                       background: 'linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%)'
-                    }}
-                  >
-                    <Icon sx={{ fontSize: 42, color: '#16a34a' }} />
-                    <Typography sx={{ mt: 1.25, fontSize: 24, fontWeight: 900, color: '#101828' }}>{item.value}</Typography>
+                    }}>
+                    <Icon sx={{ fontSize: 42, color: '#2b7ed7' }} />
+                    <Typography sx={{ mt: 1.25, fontSize: 24, fontWeight: 900, color: '#101828' }}>
+                      {item.value}
+                    </Typography>
                     <Typography sx={{ mt: 0.5, color: '#475467' }}>{t(item.labelKey)}</Typography>
                   </Paper>
                 )
               })}
             </Box>
 
-            <Typography sx={{ mt: 3, textAlign: 'center', color: '#475467', lineHeight: 1.9 }}>{t('contactPage.summary')}</Typography>
+            <Typography sx={{ mt: 3, textAlign: 'center', color: '#475467', lineHeight: 1.9 }}>
+              {t('contactPage.summary')}
+            </Typography>
 
             <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Button component={RouterLink} to="/register" variant="contained" sx={{ borderRadius: 999, px: 3, py: 1.2, fontWeight: 700 }}>
+              <Button
+                component={RouterLink}
+                to="/register"
+                variant="contained"
+                sx={{ borderRadius: 999, px: 3, py: 1.2, fontWeight: 700 }}>
                 {t('auth.register.submit')}
               </Button>
             </Box>

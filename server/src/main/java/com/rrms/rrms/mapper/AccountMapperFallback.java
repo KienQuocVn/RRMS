@@ -13,9 +13,13 @@ import com.rrms.rrms.dto.response.BrokerResponse;
 import com.rrms.rrms.models.Account;
 import com.rrms.rrms.models.Permission;
 
+/**
+ * Fallback implementation for AccountMapper.
+ * Được dùng khi MapStruct không thể tạo implementation tự động.
+ */
 @Component
 @ConditionalOnMissingBean(name = "accountMapperImpl")
-public class AccountMapperFallback implements AccountMapper {
+public class AccountMapperFallback extends AccountMapper {
 
     @Override
     public Account toAccount(AccountRequest request) {
@@ -48,7 +52,7 @@ public class AccountMapperFallback implements AccountMapper {
 
         AccountResponse response = new AccountResponse();
         response.setUsername(account.getUsername());
-        response.setPassword(account.getPassword());
+        // password được ignore theo mapping
         response.setFullName(account.getFullName());
         response.setPhone(account.getPhone());
         response.setEmail(account.getEmail());
@@ -62,7 +66,7 @@ public class AccountMapperFallback implements AccountMapper {
         response.setAvatar(account.getAvatar());
         response.setCreatedAt(account.getCreatedAt());
         response.setRole(mapRole(account));
-        response.setPermissions(mapAccountPermissions(account));
+        response.setPermissions(mapPermissions(account));
         return response;
     }
 

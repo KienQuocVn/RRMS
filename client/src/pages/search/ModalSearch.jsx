@@ -1,257 +1,294 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import { useEffect, useState } from 'react'
+import KeyboardArrowLeftRoundedIcon from '@mui/icons-material/KeyboardArrowLeftRounded'
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import {
   Box,
   Button,
   FormControl,
   Grid,
-  InputLabel,
-  MenuItem,
+  InputAdornment,
   Modal,
   Paper,
-  Select,
+  TextField,
   Typography,
   useMediaQuery,
   useTheme
 } from '@mui/material'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import LoadingPage from '~/components/LoadingPage/LoadingPage'
+import { VIETNAM_PROVINCES } from '~/configs/vietnamProvinces'
 
 const ModalSearch = ({ filterSearch, open, handleClose }) => {
-  const [keyword, setKeyword] = useState('')
   const [quanHuyen, setQuanHuyen] = useState('')
   const { t } = useTranslation()
-  const [propertyType, setPropertyType] = useState('phong-tro')
-  const [occupation, setOccupation] = useState('nganh-nghe-khac')
-  const [provinces, setProvinces] = useState([])
-  const [selectedProvince, setSelectedProvince] = useState('')
-  const [districts, setDistricts] = useState([])
-  const [selectedDistrict, setSelectedDistrict] = useState('')
+  const [propertyType, setPropertyType] = useState('')
+  const [selectedProvince, setSelectedProvince] = useState(null) // object province
+  const [step, setStep] = useState('province') // 'province' | 'ward'
+  const [searchText, setSearchText] = useState('')
 
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
-  const handleFilter = (provinceName, districtName) => {
-    filterSearch(provinceName, districtName)
+  const propertyTypes = [
+    { value: 'phong-tro', label: 'Phòng trọ, nhà trọ' },
+    { value: 'nha-cho-thue', label: 'Chung cư' },
+    { value: 'can-ho', label: 'Căn hộ dịch vụ' },
+    { value: 'ky-tuc-xa', label: 'Ký túc xá' },
+    { value: 'pass-phong', label: 'Ở ghép & pass phòng' }
+  ]
+
+  const filteredProvinces = useMemo(() => {
+    if (!searchText.trim()) return VIETNAM_PROVINCES
+    const lower = searchText.toLowerCase()
+    return VIETNAM_PROVINCES.filter((p) => p.name.toLowerCase().includes(lower))
+  }, [searchText])
+
+  const filteredWards = useMemo(() => {
+    if (!selectedProvince) return []
+    if (!searchText.trim()) return selectedProvince.wards
+    const lower = searchText.toLowerCase()
+    return selectedProvince.wards.filter((w) => w.toLowerCase().includes(lower))
+  }, [selectedProvince, searchText])
+
+  const handleSelectProvince = (province) => {
+    setSelectedProvince(province)
+    setStep('ward')
+    setSearchText('')
+    setQuanHuyen('')
   }
 
-  const fetchProvinces = async () => {
-    try {
-      const response = await fetch('https://esgoo.net/api-tinhthanh/1/0.htm')
-      const data = await response.json()
-      setProvinces(data.data)
-    } catch (error) {
-      console.error('Load provinces failed:', error)
-    }
+  const handleSelectWard = (ward) => {
+    setQuanHuyen(ward)
   }
 
-  const fetchDistricts = async (provinceId) => {
-    try {
-      const response = await fetch(`https://esgoo.net/api-tinhthanh/2/${provinceId}.htm`)
-      const data = await response.json()
-      setDistricts(data.data)
-    } catch (error) {
-      console.error('Load districts failed:', error)
-    }
+  const handleBack = () => {
+    setStep('province')
+    setSelectedProvince(null)
+    setQuanHuyen('')
+    setSearchText('')
   }
 
-  useEffect(() => {
-    fetchProvinces()
-  }, [])
-
-  const handleProvinceChange = (event) => {
-    const provinceId = event.target.value
-    setSelectedProvince(provinceId)
-
-    const selectedProvinceObject = provinces.find((province) => province.id === provinceId)
-
-    if (selectedProvinceObject) {
-      setKeyword(selectedProvinceObject.full_name)
-    } else {
-      setKeyword('')
-    }
-
-    fetchDistricts(provinceId)
+  const handleApply = () => {
+    const provinceName = selectedProvince?.name || ''
+    filterSearch(provinceName, quanHuyen)
+    handleCloseModal()
   }
 
-  const handleDistrictChange = (event) => {
-    const selectedValue = event.target.value
-    setSelectedDistrict(selectedValue)
-
-    const selectedDistrictObject = districts.find((district) => district.id === selectedValue)
-    if (selectedDistrictObject) {
-      setQuanHuyen(selectedDistrictObject.full_name)
-    } else {
-      setQuanHuyen('')
-    }
-  }
-
-  const propertyTypes = ['phong-tro', 'nha-cho-thue', 'van-phong', 'can-ho', 'kho', 'ky-tuc-xa', 'pass-phong']
-  const occupations = ['sinh-vien', 'nhan-vien-van-phong', 'nhan-vien-xi-nghiep', 'nganh-nghe-khac']
-
-  if (!provinces.length) {
-    return <LoadingPage />
+  const handleCloseModal = () => {
+    setStep('province')
+    setSelectedProvince(null)
+    setQuanHuyen('')
+    setSearchText('')
+    handleClose()
   }
 
   return (
-    <Modal open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+    <Modal
+      open={open}
+      onClose={handleCloseModal}
+      aria-labelledby="modal-modal-title"
+      aria-describedby="modal-modal-description">
       <Box
         sx={{
           position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: isMobile ? '95%' : 800,
+          width: isMobile ? '95%' : 820,
+          maxHeight: '90vh',
+          overflowY: 'auto',
           bgcolor: 'background.paper',
           border: 'none',
           boxShadow: 24,
-          borderRadius: 2,
-          p: isMobile ? 2 : 4
-        }}
-      >
-        <Paper elevation={3} sx={{ maxWidth: '100%', padding: isMobile ? 2 : 3, borderRadius: 2 }}>
-          <Typography
-            variant="h6"
-            fontWeight="bold"
+          borderRadius: 3,
+          p: isMobile ? 2 : 3
+        }}>
+        <Paper elevation={0} sx={{ maxWidth: '100%', borderRadius: 2 }}>
+          {/* Header */}
+          <Box
             sx={{
-              backgroundColor: '#1e90ff',
-              color: 'white',
-              padding: 1,
-              textAlign: 'center',
-              borderRadius: 1
-            }}
-          >
-            {t('tieu-chi-tim-kiem')}
-          </Typography>
-
-          <Box sx={{ mt: 3, mb: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              {t('khu-vuc-tim-kiem')}
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              mb: 2,
+              pb: 2,
+              borderBottom: '1px solid #f1f5f9'
+            }}>
+            {step === 'ward' && (
+              <Button
+                size="small"
+                startIcon={<KeyboardArrowLeftRoundedIcon />}
+                onClick={handleBack}
+                sx={{ textTransform: 'none', color: '#64748b', minWidth: 0, pr: 1 }}>
+                Quay lại
+              </Button>
+            )}
+            <Typography variant="h6" fontWeight="bold">
+              {step === 'province' ? 'Chọn tỉnh / thành phố' : `${selectedProvince?.name} — Chọn phường / xã`}
             </Typography>
-            <FormControl fullWidth>
-              <Grid container justifyContent="center" spacing={isMobile ? 1 : 2}>
-                <Grid item xs={12} sm={6} md={6}>
-                  <FormControl fullWidth size={isMobile ? 'small' : 'medium'}>
-                    <InputLabel id="province-label">{t('tinh-thanhpho')}</InputLabel>
-                    <Select labelId="province-label" id="province" value={selectedProvince} onChange={handleProvinceChange} label={t('tinh-thanhpho')}>
-                      <MenuItem value="">
-                        <em>{t('tinh-thanhpho')}</em>
-                      </MenuItem>
-                      {provinces.map((province) => (
-                        <MenuItem key={province.id} value={province.id}>
-                          {province.full_name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12} sm={6} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel id="district-label">{t('quan-huyen')}</InputLabel>
-                    <Select
-                      labelId="district-label"
-                      id="district"
-                      value={selectedDistrict}
-                      onChange={handleDistrictChange}
-                      size={isMobile ? 'small' : 'medium'}
-                      label={t('quan-huyen')}
-                    >
-                      <MenuItem value="">
-                        <em>{t('quan-huyen')}</em>
-                      </MenuItem>
-                      {districts.map((district) => (
-                        <MenuItem key={district.id} value={district.id}>
-                          {district.full_name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-            </FormControl>
           </Box>
 
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" gutterBottom>
+          {/* Search input */}
+          <TextField
+            fullWidth
+            size="small"
+            placeholder={step === 'province' ? 'Tìm tỉnh / thành phố...' : 'Tìm phường / xã...'}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchRoundedIcon sx={{ color: '#94a3b8', fontSize: 18 }} />
+                </InputAdornment>
+              )
+            }}
+            sx={{
+              mb: 2,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                bgcolor: '#f8fafc'
+              }
+            }}
+          />
+
+          {/* Danh sách tỉnh */}
+          {step === 'province' && (
+            <Grid container spacing={1}>
+              {filteredProvinces.map((province) => (
+                <Grid item xs={12} sm={6} key={province.id}>
+                  <Button
+                    fullWidth
+                    variant={selectedProvince?.id === province.id ? 'contained' : 'outlined'}
+                    onClick={() => handleSelectProvince(province)}
+                    sx={{
+                      textTransform: 'none',
+                      justifyContent: 'flex-start',
+                      borderRadius: 2,
+                      py: 1,
+                      bgcolor: selectedProvince?.id === province.id ? '#1e90ff' : 'white',
+                      color: selectedProvince?.id === province.id ? 'white' : '#0f172a',
+                      borderColor: selectedProvince?.id === province.id ? '#1e90ff' : '#e2e8f0',
+                      fontSize: isMobile ? '0.8rem' : '0.9rem',
+                      fontWeight: 700
+                    }}>
+                    {province.name}
+                  </Button>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+
+          {/* Danh sách phường/xã */}
+          {step === 'ward' && selectedProvince && (
+            <Grid container spacing={1}>
+              {/* Chọn toàn tỉnh */}
+              <Grid item xs={12}>
+                <Button
+                  fullWidth
+                  variant={!quanHuyen ? 'contained' : 'outlined'}
+                  startIcon={!quanHuyen ? <CheckCircleIcon sx={{ color: '#ffffff' }} /> : null}
+                  onClick={() => setQuanHuyen('')}
+                  sx={{
+                    textTransform: 'none',
+                    justifyContent: 'flex-start',
+                    borderRadius: 2,
+                    py: 1,
+                    mb: 0.5,
+                    bgcolor: !quanHuyen ? '#1e90ff' : 'white',
+                    color: !quanHuyen ? 'white' : '#0f172a',
+                    borderColor: !quanHuyen ? '#1e90ff' : '#e2e8f0',
+                    fontWeight: 700
+                  }}>
+                  Toàn {selectedProvince.name}
+                </Button>
+              </Grid>
+
+              {filteredWards.map((ward) => (
+                <Grid item xs={12} sm={6} key={ward}>
+                  <Button
+                    fullWidth
+                    variant={quanHuyen === ward ? 'contained' : 'outlined'}
+                    startIcon={quanHuyen === ward ? <CheckCircleIcon sx={{ color: '#ffffff', ml: -1 }} /> : null}
+                    onClick={() => handleSelectWard(ward)}
+                    sx={{
+                      textTransform: 'none',
+                      justifyContent: 'flex-start',
+                      borderRadius: 2,
+                      py: 1,
+                      bgcolor: quanHuyen === ward ? '#1e90ff' : 'white',
+                      color: quanHuyen === ward ? 'white' : '#0f172a',
+                      borderColor: quanHuyen === ward ? '#1e90ff' : '#e2e8f0',
+                      fontSize: isMobile ? '0.75rem' : '0.875rem',
+                      fontWeight: 600
+                    }}>
+                    {ward}
+                  </Button>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+
+          {/* Phần Loại hình */}
+          <Box sx={{ mt: 3, mb: 2, pt: 2, borderTop: '1px solid #f1f5f9' }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               {t('loai-hinh')}
             </Typography>
             <Grid container spacing={isMobile ? 0.5 : 1}>
               {propertyTypes.map((type) => (
-                <Grid item xs={6} key={type}>
+                <Grid item xs={6} key={type.value}>
                   <Button
-                    variant={propertyType === type ? 'contained' : 'outlined'}
-                    onClick={() => setPropertyType(type)}
-                    startIcon={propertyType === type ? <CheckCircleIcon sx={{ color: '#ffffff', ml: -1 }} /> : null}
+                    variant={propertyType === type.value ? 'contained' : 'outlined'}
+                    onClick={() => setPropertyType(propertyType === type.value ? '' : type.value)}
+                    startIcon={propertyType === type.value ? <CheckCircleIcon sx={{ color: '#ffffff', ml: -1 }} /> : null}
                     sx={{
                       width: '100%',
                       textTransform: 'none',
                       justifyContent: 'flex-start',
-                      backgroundColor: propertyType === type ? '#1e90ff' : 'white',
-                      color: propertyType === type ? 'white' : 'black',
-                      fontSize: isMobile ? '0.75rem' : '1rem'
-                    }}
-                  >
-                    {t(type)}
+                      borderRadius: 2,
+                      backgroundColor: propertyType === type.value ? '#1e90ff' : 'white',
+                      color: propertyType === type.value ? 'white' : 'black',
+                      fontSize: isMobile ? '0.75rem' : '0.875rem',
+                      fontWeight: 600
+                    }}>
+                    {type.label}
                   </Button>
                 </Grid>
               ))}
             </Grid>
           </Box>
 
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              {t('hien-tai-ban-dang-lam-gi')}
-            </Typography>
-            <Grid container spacing={isMobile ? 0.5 : 1}>
-              {occupations.map((occ) => (
-                <Grid item xs={6} key={occ}>
-                  <Button
-                    variant={occupation === occ ? 'contained' : 'outlined'}
-                    onClick={() => setOccupation(occ)}
-                    startIcon={occupation === occ ? <CheckCircleIcon sx={{ color: '#ffffff', ml: -1 }} /> : null}
-                    sx={{
-                      width: '100%',
-                      textTransform: 'none',
-                      justifyContent: 'flex-start',
-                      backgroundColor: occupation === occ ? '#1e90ff' : 'white',
-                      color: occupation === occ ? 'white' : 'black',
-                      fontSize: isMobile ? '0.75rem' : '1rem'
-                    }}
-                  >
-                    {t(occ)}
-                  </Button>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-
-          <Box display="flex" flexDirection={isMobile ? 'column' : 'row'} justifyContent="space-between">
-            <Button
-              variant="outlined"
-              onClick={handleClose}
-              sx={{
-                width: isMobile ? '100%' : '48%',
-                textTransform: 'none',
-                marginBottom: isMobile ? 1 : 0,
-                backgroundColor: '#1e90ff',
-                border: '1px solid gray',
-                color: '#ffffff'
-              }}
-            >
-              {t('dong-bo-loc')}
-            </Button>
-            <Button
-              variant="contained"
-              sx={{ width: isMobile ? '100%' : '48%', textTransform: 'none', backgroundColor: '#1e90ff' }}
-              onClick={() => {
-                handleFilter(keyword, quanHuyen)
-                handleClose()
-              }}
-            >
-              {t('tim-kiem-ngay')}
-            </Button>
-          </Box>
+          {/* Nút action */}
+          <FormControl fullWidth>
+            <Box display="flex" flexDirection={isMobile ? 'column' : 'row'} gap={1.5}>
+              <Button
+                variant="outlined"
+                onClick={handleCloseModal}
+                fullWidth
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  fontWeight: 700,
+                  color: '#374151',
+                  borderColor: '#d1d5db',
+                  '&:hover': { bgcolor: '#f9fafb' }
+                }}>
+                {t('dong-bo-loc')}
+              </Button>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleApply}
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  fontWeight: 700,
+                  bgcolor: '#1e90ff',
+                  '&:hover': { bgcolor: '#1a7fe0' }
+                }}>
+                {t('tim-kiem-ngay')}
+              </Button>
+            </Box>
+          </FormControl>
         </Paper>
       </Box>
     </Modal>

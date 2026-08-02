@@ -4,10 +4,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
 import com.rrms.rrms.dto.request.AccountRequest;
@@ -16,69 +18,58 @@ import com.rrms.rrms.dto.response.BrokerResponse;
 import com.rrms.rrms.models.Account;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface AccountMapper {
+public abstract class AccountMapper {
 
     // Nhận một AccountRequest và trả về đối tượng Account
     @Mapping(target = "authorities", ignore = true)
     @Mapping(target = "commissionRate", ignore = true)
     @Mapping(target = "contracts", ignore = true)
     @Mapping(target = "motels", ignore = true)
-    Account toAccount(AccountRequest request);
+    @Mapping(target = "favoriteBulletinBoards", ignore = true)
+    public abstract Account toAccount(AccountRequest request);
 
     // Chuyển đổi từ Account sang AccountResponse
-    @Mapping(target = "role", source = "account", qualifiedByName = "mapRole") // Thiết lập rằng trường "role" trong
-    // AccountResponse sẽ được lấy từ
-    // phương thức mapRole
-    @Mapping(target = "permissions", source = "account", qualifiedByName = "mapPermissions")
+    @Mapping(target = "role", expression = "java(mapRole(account))")
+    @Mapping(target = "permissions", expression = "java(mapPermissions(account))")
     @Mapping(target = "password", ignore = true)
-    AccountResponse toAccountResponse(
-            Account account); // Phương thức nhận một Account và trả về đối tượng AccountResponse
+    public abstract AccountResponse toAccountResponse(Account account);
 
-    // Phương thức để cập nhật thông tin của tài khoản người dùng mà không thay đổi
-    // mật khẩu
+    // Phương thức để cập nhật thông tin của tài khoản người dùng mà không thay đổi mật khẩu
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "authorities", ignore = true)
     @Mapping(target = "commissionRate", ignore = true)
     @Mapping(target = "contracts", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "motels", ignore = true)
     @Mapping(target = "password", ignore = true)
-    @Mapping(target = "roles", ignore = true)
-    // Bỏ qua trường "password" trong quá trình cập nhật
-    void updateAccount(@MappingTarget Account user, AccountRequest request); // Cập nhật user dựa trên thông tin từ
-    // AccountRequest
-
-    // Phương thức để ánh xạ vai trò từ đối tượng Account
-    @Named("mapRole") // Đánh dấu phương thức này với tên "mapRole" để có thể sử dụng trong các ánh xạ
-    // khác
-    default List<String> mapRole(Account account) {
-        // Kiểm tra xem account có chứa authorities không
-        if (account.getAuthorities() != null && !account.getAuthorities().isEmpty()) {
-            return account.getAuthorities().stream() // Chuyển đổi các authority thành danh sách tên vai trò
-                    .map(auth -> auth.getRole().getRoleName().name())
-                    .collect(Collectors.toList()); // Thu thập kết quả vào danh sách
-        }
-        return null; // Nếu không có authorities, trả về null
-    }
-
-    // Phương thức mới để ánh xạ quyền từ các vai trò
-    @Named("mapPermissions") // Đánh dấu phương thức này với tên "mapPermissions" để có thể sử dụng trong các
-    // ánh xạ
-    // khác
-    default List<String> mapPermissions(Account account) {
-        // Kiểm tra xem account có chứa authorities không
-        if (account.getAuthorities() != null && !account.getAuthorities().isEmpty()) {
-            return account.getAuthorities().stream() // Chuyển đổi các authority thành danh sách quyền
-                    .flatMap(auth -> auth.getRole().getPermissions().stream()) // Lấy tất cả các
-                    // quyền từ các vai
-                    // trò
-                    .map(permission -> permission.getName()) // Chỉ lấy tên của các quyền
-                    .distinct() // Đảm bảo không có quyền trùng lặp
-                    .collect(Collectors.toList()); // Thu thập kết quả vào danh sách
-        }
-        return Collections.emptyList(); // Nếu không có authorities, trả về danh sách rỗng
-    }
+    @Mapping(target = "favoriteBulletinBoards", ignore = true)
+    public abstract void updateAccount(@MappingTarget Account user, AccountRequest request);
 
     @Mapping(target = "name", source = "fullName")
     @Mapping(target = "status", ignore = true)
-    BrokerResponse toBrokerResponse(Account account);
+    public abstract BrokerResponse toBrokerResponse(Account account);
+
+    // Phương thức để ánh xạ vai trò từ đối tượng Account
+    @Named("mapRole")
+    public List<String> mapRole(Account account) {
+        if (account.getAuthorities() != null && !account.getAuthorities().isEmpty()) {
+            return account.getAuthorities().stream()
+                    .map(auth -> auth.getRole().getRoleName().name())
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+    // Phương thức để ánh xạ quyền từ các vai trò
+    @Named("mapPermissions")
+    public List<String> mapPermissions(Account account) {
+        if (account.getAuthorities() != null && !account.getAuthorities().isEmpty()) {
+            return account.getAuthorities().stream()
+                    .flatMap(auth -> auth.getRole().getPermissions().stream())
+                    .map(permission -> permission.getName())
+                    .distinct()
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
 }

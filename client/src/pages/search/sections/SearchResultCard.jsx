@@ -8,6 +8,7 @@ import { Avatar, Box, Button, Chip, Divider, IconButton, Stack, Typography } fro
 import { useTranslation } from 'react-i18next'
 import { formatterAmount } from '~/utils/formatterAmount'
 import SearchSurfaceCard from './SearchSurfaceCard'
+import { useAddressResolver } from '~/utils/addressResolver'
 
 function SearchResultCard({
   item,
@@ -21,6 +22,7 @@ function SearchResultCard({
   onAlreadyFavorite
 }) {
   const { t } = useTranslation()
+  const resolvedAddress = useAddressResolver(item?.address)
 
   return (
     <SearchSurfaceCard sx={{ p: { xs: 1.5, md: 2 } }}>
@@ -29,8 +31,7 @@ function SearchResultCard({
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: '240px minmax(0, 1fr) 150px' },
           gap: 2
-        }}
-      >
+        }}>
         <Box
           component="img"
           src={item?.bulletinBoardImages?.[0]?.imageLink || 'https://picsum.photos/800/600?random=12'}
@@ -64,8 +65,7 @@ function SearchResultCard({
                   '&:hover': {
                     color: '#155eef'
                   }
-                }}
-              >
+                }}>
                 {item?.title}
               </Typography>
 
@@ -83,15 +83,14 @@ function SearchResultCard({
                 '&:hover': {
                   backgroundColor: isFavorite ? '#ffe4e6' : '#eef2f6'
                 }
-              }}
-            >
+              }}>
               <FavoriteRoundedIcon />
             </IconButton>
           </Box>
 
           <Stack direction="row" spacing={0.8} alignItems="center">
             <LocationOnOutlinedIcon sx={{ fontSize: 18, color: '#667085' }} />
-            <Typography sx={{ fontSize: 14, color: '#475467' }}>{item?.address}</Typography>
+            <Typography sx={{ fontSize: 14, color: '#475467' }}>{resolvedAddress}</Typography>
           </Stack>
 
           <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
@@ -100,8 +99,18 @@ function SearchResultCard({
               sx={{ fontWeight: 800, color: '#b42318', backgroundColor: '#fff1f3' }}
             />
             <Chip label={`${item?.area || 0} m²`} variant="outlined" />
-            {item?.waterPrice ? <Chip label={`${formatterAmount(item?.waterPrice)} / ${t('searchPage.units.block')}`} variant="outlined" /> : null}
-            {item?.electricityPrice ? <Chip label={`${formatterAmount(item?.electricityPrice)} / ${t('searchPage.units.kw')}`} variant="outlined" /> : null}
+            {item?.waterPrice ? (
+              <Chip
+                label={`${formatterAmount(item?.waterPrice)} / ${t('searchPage.units.block')}`}
+                variant="outlined"
+              />
+            ) : null}
+            {item?.electricityPrice ? (
+              <Chip
+                label={`${formatterAmount(item?.electricityPrice)} / ${t('searchPage.units.kw')}`}
+                variant="outlined"
+              />
+            ) : null}
           </Stack>
 
           <Divider />
@@ -113,7 +122,7 @@ function SearchResultCard({
                 {item?.account?.fullName || item?.account?.username || t('searchPage.card.unknownUser')}
               </Typography>
               <Stack direction="row" spacing={0.5} alignItems="center">
-                <VerifiedRoundedIcon sx={{ fontSize: 16, color: '#16a34a' }} />
+                <VerifiedRoundedIcon sx={{ fontSize: 16, color: '#2b7ed7' }} />
                 <Typography sx={{ fontSize: 12.5, color: '#667085' }}>{t('searchPage.card.updated')}</Typography>
               </Stack>
             </Box>
@@ -129,8 +138,7 @@ function SearchResultCard({
               height: 46,
               borderRadius: 2.5,
               fontWeight: 800
-            }}
-          >
+            }}>
             {t('searchPage.card.copyLink')}
           </Button>
 
@@ -142,8 +150,7 @@ function SearchResultCard({
               height: 46,
               borderRadius: 2.5,
               fontWeight: 800
-            }}
-          >
+            }}>
             {phoneVisible ? phoneNumber : t('searchPage.card.viewPhone')}
           </Button>
 
@@ -155,8 +162,7 @@ function SearchResultCard({
               justifyContent: 'flex-start',
               px: 0,
               fontWeight: 700
-            }}
-          >
+            }}>
             {t('searchPage.card.viewDetail')}
           </Button>
         </Stack>

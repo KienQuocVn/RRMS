@@ -15,7 +15,7 @@ const summaryCards = [
   {
     title: 'Chi tiêu so với tháng trước',
     value: formatterAmount(1300000),
-    accent: '#16a34a',
+    accent: '#2b7ed7',
     icon: <TrendingUpRoundedIcon sx={{ fontSize: 22 }} />
   },
   {
@@ -33,8 +33,7 @@ function BillingSummarySection() {
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
         gap: 2
-      }}
-    >
+      }}>
       {summaryCards.map((item) => (
         <ProfileSectionCard key={item.title} title={item.title}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
@@ -54,8 +53,7 @@ function BillingSummarySection() {
                 placeItems: 'center',
                 color: item.accent,
                 backgroundColor: `${item.accent}14`
-              }}
-            >
+              }}>
               {item.icon}
             </Box>
           </Box>

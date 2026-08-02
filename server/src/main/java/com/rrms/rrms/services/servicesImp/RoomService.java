@@ -192,7 +192,8 @@ public class RoomService implements IRoomService {
         ContractResponse latestContract = Optional.ofNullable(room.getContracts()).orElse(List.of()).stream()
                 .filter(contract -> contract.getStatus() == ContractStatus.ACTIVE
                         || contract.getStatus() == ContractStatus.EXPIRING
-                        || contract.getStatus() == ContractStatus.TERMINATED)
+                        || contract.getStatus() == ContractStatus.TERMINATED
+                        || contract.getStatus() == ContractStatus.ENDED)
                 .map(contract -> ContractResponse.builder()
                         .contractId(contract.getContractId())
                         .moveInDate(contract.getMoveinDate())
@@ -214,6 +215,7 @@ public class RoomService implements IRoomService {
                 .orElse(null);
 
         response.setLatestContract(latestContract);
+        response.setDebt(latestContract != null ? latestContract.getDebt() : null);
 
         if (room.getReserveAPlaces() != null && !room.getReserveAPlaces().isEmpty()) {
             RoomReservationResponse roomReservationResponse = room.getReserveAPlaces().stream()
