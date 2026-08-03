@@ -17,4 +17,5 @@ public class BrokerCreateRequest implements Serializable {
     String source;
     UUID motelId;
     int commissionRate;
+    boolean createAccount;
 }

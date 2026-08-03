@@ -3,11 +3,13 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   IconButton,
   TextField,
   Typography
@@ -23,7 +25,8 @@ const getInitialData = (motelId, broker) => ({
   name: broker?.name || '',
   phone: broker?.phone || '',
   source: broker?.source || '',
-  commissionRate: broker?.commissionRate ?? 0
+  commissionRate: broker?.commissionRate ?? 0,
+  createAccount: false
 })
 
 const BrokerModal = ({ handleClose, open, refreshBrokers, broker }) => {
@@ -199,6 +202,38 @@ const BrokerModal = ({ handleClose, open, refreshBrokers, broker }) => {
           {...getNonNegativeNumberFieldProps(0, { max: 100 })}
           sx={{ mb: 2.5 }}
         />
+
+        {!isEditing ? (
+          <Box
+            sx={{
+              mb: 2.5,
+              p: 1.5,
+              borderRadius: '10px',
+              bgcolor: '#fff4e5'
+            }}
+          >
+            <FormControlLabel
+              sx={{ alignItems: 'flex-start', m: 0 }}
+              control={
+                <Checkbox
+                  checked={data.createAccount}
+                  onChange={(e) => setData({ ...data, createAccount: e.target.checked })}
+                  sx={{ p: 0, mr: 1.5 }}
+                />
+              }
+              label={
+                <Box>
+                  <Typography sx={{ fontWeight: 700, color: '#20a9e7', lineHeight: 1.35 }}>
+                    Tạo tài khoản môi giới
+                  </Typography>
+                  <Typography sx={{ color: '#1f2937', lineHeight: 1.35 }}>
+                    - Mật khẩu tài khoản trùng với số điện thoại
+                  </Typography>
+                </Box>
+              }
+            />
+          </Box>
+        ) : null}
       </DialogContent>
 
       <DialogActions

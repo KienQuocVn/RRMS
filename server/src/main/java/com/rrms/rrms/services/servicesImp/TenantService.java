@@ -2,7 +2,9 @@ package com.rrms.rrms.services.servicesImp;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -221,25 +223,42 @@ public class TenantService implements ITenantService {
     @Override
     @Transactional(readOnly = true)
     public List<TenantResponse> getAllTenantsByMotelId(UUID motelId) {
-        return contractOccupantRepository.findByContract_Room_Motel_MotelId(motelId).stream()
-                .map(occupant -> {
-                    TenantResponse response = tenantMapper.toTenantResponse(occupant.getTenant());
-                    // Set roomName từ contract để frontend nhóm được theo phòng
-                    if (occupant.getContract() != null && occupant.getContract().getRoom() != null) {
-                        response.setRoomName(occupant.getContract().getRoom().getName());
-                        if (occupant.getContract().getRoom().getMotel() != null) {
-                            response.setMotelAddress(
-                                    occupant.getContract().getRoom().getMotel().getAddress());
-                        }
-                    }
-                    return response;
-                })
-                // loại bỏ trùng lặp nếu cùng tenant ở nhiều hợp đồng
-                .collect(java.util.stream.Collectors.toMap(
-                        TenantResponse::getTenantId, t -> t, (existing, replacement) -> existing))
-                .values()
-                .stream()
-                .collect(Collectors.toList());
+        Map<String, TenantResponse> tenantsByContract = new LinkedHashMap<>();
+
+        contractOccupantRepository.findByContract_Room_Motel_MotelId(motelId).forEach(occupant -> {
+            if (occupant.getTenant() == null || occupant.getContract() == null) {
+                return;
+            }
+
+            TenantResponse response = tenantMapper.toTenantResponse(occupant.getTenant());
+            if (occupant.getContract() != null && occupant.getContract().getRoom() != null) {
+                response.setRoomName(occupant.getContract().getRoom().getName());
+                if (occupant.getContract().getRoom().getMotel() != null) {
+                    response.setMotelAddress(
+                            occupant.getContract().getRoom().getMotel().getAddress());
+                }
+            }
+            String key = response.getTenantId() + ":" + occupant.getContract().getContractId();
+            tenantsByContract.putIfAbsent(key, response);
+        });
+
+        contractRepository.findByRoom_Motel_MotelId(motelId).forEach(contract -> {
+            if (contract.getTenant() == null) {
+                return;
+            }
+
+            TenantResponse response = tenantMapper.toTenantResponse(contract.getTenant());
+            if (contract.getRoom() != null) {
+                response.setRoomName(contract.getRoom().getName());
+                if (contract.getRoom().getMotel() != null) {
+                    response.setMotelAddress(contract.getRoom().getMotel().getAddress());
+                }
+            }
+            String key = response.getTenantId() + ":" + contract.getContractId();
+            tenantsByContract.putIfAbsent(key, response);
+        });
+
+        return new ArrayList<>(tenantsByContract.values());
     }
 
     @Override

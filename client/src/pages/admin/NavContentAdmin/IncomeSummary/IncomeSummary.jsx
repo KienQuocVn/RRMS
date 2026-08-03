@@ -7,7 +7,7 @@ import * as XLSX from 'xlsx'
 import { useParams } from 'react-router-dom'
 import { env } from '~/configs/environment'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
-import YearMonthFilter from '../YearMonthFilter'
+import YearMonthFilter from '../../../../components/YearMonthFilter'
 import { extractEntityId, unwrapApiResult, unwrapPageItems } from '~/utils/apiAdapters'
 import AddExpenseModal from './components/AddExpenseModal'
 import AddReceiptModal from './components/AddReceiptModal'
@@ -23,7 +23,8 @@ const DEFAULT_SUMMARY = {
   profit: 0
 }
 
-const PAYMENT_LOAD_WARNING = 'Không thể tải danh sách phương thức thanh toán. Bạn vẫn có thể xem báo cáo, nhưng thao tác thêm phiếu có thể bị hạn chế.'
+const PAYMENT_LOAD_WARNING =
+  'Không thể tải danh sách phương thức thanh toán. Bạn vẫn có thể xem báo cáo, nhưng thao tác thêm phiếu có thể bị hạn chế.'
 
 const DEFAULT_CATEGORY_OPTIONS = [
   'Thu tiền phòng',
@@ -208,11 +209,19 @@ const IncomeSummary = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
       setSummary(parseSummary(summaryResult.value))
 
       if (paymentsResult.status === 'fulfilled') {
-        setPayments(getSafeArray(unwrapApiResult(paymentsResult.value, paymentsResult.value?.data), parseApiArray(paymentsResult.value)))
+        setPayments(
+          getSafeArray(
+            unwrapApiResult(paymentsResult.value, paymentsResult.value?.data),
+            parseApiArray(paymentsResult.value)
+          )
+        )
       } else {
         setPayments([])
         setError(PAYMENT_LOAD_WARNING)
-        console.error('Không thể tải danh sách phương thức thanh toán:', paymentsResult.reason?.response?.data || paymentsResult.reason?.message)
+        console.error(
+          'Không thể tải danh sách phương thức thanh toán:',
+          paymentsResult.reason?.response?.data || paymentsResult.reason?.message
+        )
       }
     } catch (err) {
       setError(err?.response?.data?.message || err.message || 'Có lỗi xảy ra khi lấy dữ liệu thu chi.')
@@ -371,12 +380,14 @@ const IncomeSummary = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
 
   const availableCategories = buildCategoryOptions(transactions.map((transaction) => transaction.category))
 
-  const paymentMethodOptions = [...new Set(
-    [
-      ...payments.map((payment) => payment.paymentName),
-      ...periodTransactions.map((transaction) => getTransactionPaymentName(transaction))
-    ].filter(Boolean)
-  )]
+  const paymentMethodOptions = [
+    ...new Set(
+      [
+        ...payments.map((payment) => payment.paymentName),
+        ...periodTransactions.map((transaction) => getTransactionPaymentName(transaction))
+      ].filter(Boolean)
+    )
+  ]
 
   const visibleTransactions = periodTransactions
     .filter((transaction) => {

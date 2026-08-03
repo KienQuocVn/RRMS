@@ -235,7 +235,13 @@ public class ContractSeeder {
         List<MotelService> allMotelServices = motelServiceRepository.findAll();
         List<MotelDevice> allMotelDevices = motelDeviceRepository.findAll();
 
-        for (Contract c : contracts) {
+        for (int i = 0; i < contracts.size(); i++) {
+            Contract c = contracts.get(i);
+            Tenant additionalTenant = tenants.get((i + contracts.size()) % tenants.size());
+            if (additionalTenant.getTenantId().equals(c.getTenant().getTenantId())) {
+                additionalTenant = tenants.get((i + contracts.size() + 1) % tenants.size());
+            }
+
             // Occupants
             contractOccupantRepository.save(ContractOccupant.builder()
                     .contract(c)
@@ -245,7 +251,7 @@ public class ContractSeeder {
                     .build());
             contractOccupantRepository.save(ContractOccupant.builder()
                     .contract(c)
-                    .tenant(tenants.get(8))
+                    .tenant(additionalTenant)
                     .moveInDate(LocalDate.now())
                     .isActive(true)
                     .build());

@@ -34,7 +34,7 @@ import {
 } from '~/utils/invoiceDebt'
 
 // Old Modals
-import RentRoomModal from '../../NavContentAdmin/RentRoomModal'
+import RentRoomModal from '../RentRoomModal'
 import ModalCreateContract from '../../NavContentAdmin/ContractManage/ModalCreateContract'
 import ReserveAPlaceModal from '../ReserveAPlace/ReserveAPlaceModal'
 import ReserveAPlaceDetail from '../ReserveAPlace/ReserveAPlaceDetail'
@@ -120,10 +120,7 @@ const MotelDashboard = ({ Motel }) => {
     setColumns((prev) => prev.map((col) => (col.id === colId ? { ...col, visible: !col.visible } : col)))
   }
 
-  const roomGroups = useMemo(
-    () => motelRoomGroups,
-    [motelRoomGroups]
-  )
+  const roomGroups = useMemo(() => motelRoomGroups, [motelRoomGroups])
 
   const fetchRoomGroups = useCallback(async () => {
     if (!isValidRouteParam(activeMotelId)) return
@@ -225,10 +222,7 @@ const MotelDashboard = ({ Motel }) => {
     }
   }
 
-  const roomDebtAmount = roomUnpaidInvoices.reduce(
-    (total, invoice) => total + getInvoiceRemainingAmount(invoice),
-    0
-  )
+  const roomDebtAmount = roomUnpaidInvoices.reduce((total, invoice) => total + getInvoiceRemainingAmount(invoice), 0)
 
   const openCollectPayment = async (room, invoice = null) => {
     try {
@@ -367,15 +361,16 @@ const MotelDashboard = ({ Motel }) => {
     }
 
     const dataToExport = rooms.map((room) => {
-      const statusText = room.latestContract?.status === 'ACTIVE'
-        ? 'Đang ở'
-        : room.latestContract?.status === 'IATExpire'
-          ? 'Sắp kết thúc HĐ'
-          : room.latestContract?.status === 'ReportEnd'
-            ? 'Đang báo KT'
-            : isReserveAPlaceStatus(room.reserveAPlace?.status)
-              ? 'Đang cọc giữ chỗ'
-              : 'Đang trống'
+      const statusText =
+        room.latestContract?.status === 'ACTIVE'
+          ? 'Đang ở'
+          : room.latestContract?.status === 'IATExpire'
+            ? 'Sắp kết thúc HĐ'
+            : room.latestContract?.status === 'ReportEnd'
+              ? 'Đang báo KT'
+              : isReserveAPlaceStatus(room.reserveAPlace?.status)
+                ? 'Đang cọc giữ chỗ'
+                : 'Đang trống'
 
       return {
         'Tên phòng': room.name || 'N/A',
@@ -386,7 +381,9 @@ const MotelDashboard = ({ Motel }) => {
         'Mức ưu tiên': room.prioritize || 'Tất cả',
         'Ngày lập hóa đơn hàng tháng': room.invoiceDate ? `Ngày ${room.invoiceDate}` : 'Ngày 1',
         'Chu kỳ thu tiền (tháng)': room.paymentCircle || 1,
-        'Ngày vào ở': room.latestContract?.moveinDate ? new Date(room.latestContract.moveinDate).toLocaleDateString('vi-VN') : 'N/A',
+        'Ngày vào ở': room.latestContract?.moveinDate
+          ? new Date(room.latestContract.moveinDate).toLocaleDateString('vi-VN')
+          : 'N/A',
         'Thời hạn hợp đồng (tháng)': room.latestContract?.duration || 'N/A',
         'Tình trạng': statusText,
         'Tài chính': room.debt > 0 ? 'Nợ tiền' : 'Chờ kỳ thu mới'
@@ -396,11 +393,8 @@ const MotelDashboard = ({ Motel }) => {
     const ws = XLSX.utils.json_to_sheet(dataToExport)
 
     // Tự động căn chỉnh độ rộng cột
-    const colWidths = Object.keys(dataToExport[0]).map(key => {
-      const maxLength = Math.max(
-        key.length,
-        ...dataToExport.map(row => String(row[key] || '').length)
-      )
+    const colWidths = Object.keys(dataToExport[0]).map((key) => {
+      const maxLength = Math.max(key.length, ...dataToExport.map((row) => String(row[key] || '').length))
       return { wch: maxLength + 2 }
     })
     ws['!cols'] = colWidths
@@ -408,7 +402,7 @@ const MotelDashboard = ({ Motel }) => {
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Danh sách phòng')
     XLSX.writeFile(wb, `Danh_sach_phong_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '_')}.xlsx`)
-    
+
     Swal.fire('Thành công', 'Đã xuất file excel danh sách phòng thành công!', 'success')
   }
 
@@ -540,7 +534,9 @@ const MotelDashboard = ({ Motel }) => {
         onCollected={(paidInvoice) => {
           const nextInvoices = collectInvoices.filter((invoice) => invoice.invoiceId !== paidInvoice?.invoiceId)
           setCollectInvoices(nextInvoices)
-          setRoomUnpaidInvoices((previous) => previous.filter((invoice) => invoice.invoiceId !== paidInvoice?.invoiceId))
+          setRoomUnpaidInvoices((previous) =>
+            previous.filter((invoice) => invoice.invoiceId !== paidInvoice?.invoiceId)
+          )
           setCollectInvoice(nextInvoices[0] || null)
           fetchData()
         }}

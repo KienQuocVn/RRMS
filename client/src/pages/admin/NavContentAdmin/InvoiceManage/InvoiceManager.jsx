@@ -7,7 +7,7 @@ import * as XLSX from 'xlsx'
 import NavAdmin from '~/layouts/admin/NavbarAdmin'
 import { env } from '~/configs/environment'
 import { isValidRouteParam } from '~/utils/apiAdapters'
-import YearMonthFilter from '../YearMonthFilter'
+import YearMonthFilter from '../../../../components/YearMonthFilter'
 import ModalEditInvoice from './ModalEditInvoice'
 import ModalCollectMoneyInvoice from './ModalCollectMoneyInvoice'
 import InvoiceHeader from './components/InvoiceHeader'
@@ -185,9 +185,7 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
 
         setInvoices((prevInvoices) =>
           prevInvoices.map((currentInvoice) =>
-            currentInvoice.invoiceId === invoiceId
-              ? { ...currentInvoice, status: 'Đã bị hủy' }
-              : currentInvoice
+            currentInvoice.invoiceId === invoiceId ? { ...currentInvoice, status: 'Đã bị hủy' } : currentInvoice
           )
         )
 
@@ -300,7 +298,8 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         const isPaid = currentInvoice.paymentStatus === 'PAID'
         const isCanceled = currentInvoice.paymentStatus === 'CANCELED'
         const isOverdue = currentInvoice.dueDate && new Date(currentInvoice.dueDate).setHours(0, 0, 0, 0) < today
-        const isDebt = currentInvoice.paymentStatus === 'PARTIAL' || (currentInvoice.paymentStatus === 'UNPAID' && isOverdue)
+        const isDebt =
+          currentInvoice.paymentStatus === 'PARTIAL' || (currentInvoice.paymentStatus === 'UNPAID' && isOverdue)
         const isUnpaid = currentInvoice.paymentStatus === 'UNPAID' && !isOverdue
 
         const matchesDone = filterStatus.done && isPaid
@@ -340,11 +339,12 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
             0
           ),
           total: currentInvoice.totalAmount,
-          status: currentInvoice.paymentStatus === 'CANCELED'
-            ? 'Đã bị hủy'
-            : currentInvoice.paymentStatus === 'PAID'
-              ? 'Đã thu xong'
-              : 'Chưa thu'
+          status:
+            currentInvoice.paymentStatus === 'CANCELED'
+              ? 'Đã bị hủy'
+              : currentInvoice.paymentStatus === 'PAID'
+                ? 'Đã thu xong'
+                : 'Chưa thu'
         }
       })
 
@@ -397,7 +397,7 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
               <tr>
                 <th>Tên phòng</th>
                 <th>Tiền phòng</th>
-                ${services.map(s => `<th>${s}</th>`).join('')}
+                ${services.map((s) => `<th>${s}</th>`).join('')}
                 <th>Thu/Trả cọc</th>
                 <th>Cộng thêm/Giảm trừ</th>
                 <th>Tổng cộng</th>
@@ -405,17 +405,21 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
               </tr>
             </thead>
             <tbody>
-              ${filteredData.map(row => `
+              ${filteredData
+                .map(
+                  (row) => `
                 <tr>
                   <td><strong>${row.roomName}</strong></td>
                   <td>${row.roomPrice?.toLocaleString('vi-VN')} đ</td>
-                  ${services.map(s => `<td>${(row[s] || 0)?.toLocaleString('vi-VN')} đ</td>`).join('')}
+                  ${services.map((s) => `<td>${(row[s] || 0)?.toLocaleString('vi-VN')} đ</td>`).join('')}
                   <td>${(row.deposit || 0)?.toLocaleString('vi-VN')} đ</td>
                   <td>${(row.adjustments || 0)?.toLocaleString('vi-VN')} đ</td>
                   <td><strong>${row.total?.toLocaleString('vi-VN')} đ</strong></td>
                   <td>${row.status}</td>
                 </tr>
-              `).join('')}
+              `
+                )
+                .join('')}
             </tbody>
           </table>
           <script>
@@ -471,9 +475,10 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, `HoaDon_${selectedMonth}_${selectedYear}`)
 
-    const fileName = type === 'compact'
-      ? `DanhSachHoaDon_RutGon_${selectedMonth}_${selectedYear}.xlsx`
-      : `DanhSachHoaDon_DayDu_${selectedMonth}_${selectedYear}.xlsx`
+    const fileName =
+      type === 'compact'
+        ? `DanhSachHoaDon_RutGon_${selectedMonth}_${selectedYear}.xlsx`
+        : `DanhSachHoaDon_DayDu_${selectedMonth}_${selectedYear}.xlsx`
     XLSX.writeFile(wb, fileName)
     Swal.fire('Thành công!', `Đã xuất file excel ${fileName}`, 'success')
   }
@@ -526,8 +531,7 @@ const InvoiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
           borderRadius: '12px',
           border: '1px solid #e8f4fd',
           overflow: 'hidden'
-        }}
-      >
+        }}>
         <Box sx={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #eee' }}>
           <YearMonthFilter onMonthChange={handleMonthChange} />
         </Box>

@@ -19,11 +19,9 @@ const ContractManager = lazy(() => import('../pages/admin/NavContentAdmin/Contra
 const ContractPreview = lazy(() => import('../pages/admin/NavContentAdmin/ContractManage/ContractPreview'))
 const TenantManager = lazy(() => import('../pages/admin/NavContentAdmin/TenantManage/TenantManager'))
 const IncomeSummary = lazy(() => import('../pages/admin/NavContentAdmin/IncomeSummary/IncomeSummary'))
-const Zalo_history = lazy(() => import('../pages/admin/NavContentAdmin/ZaloHistoryManage/Zalo'))
 const SettingMotel = lazy(() => import('../pages/admin/NavContentAdmin/SettingManage/SettingMotel'))
-const ImportFileExcel = lazy(() => import('../pages/admin/NavContentAdmin/ImportFileExcel/ImportFileExcel'))
 const MotelSetting = lazy(() => import('../pages/admin/MotelSettings/MotelSetting'))
-const ResidenceForm = lazy(() => import('../pages/admin/NavContentAdmin/ResidenceForm'))
+const ResidenceForm = lazy(() => import('../pages/admin/ManagerSettings/ResidenceForm'))
 const AppPromo = lazy(() => import('../pages/admin/NavContentAdmin/AppPromo'))
 const VehicleManager = lazy(() => import('../pages/admin/NavContentAdmin/VehicleManage/VehicleManager'))
 const SoftwareContractPreview = lazy(() => import('../pages/admin/ManagerSettings/components/SoftwareContractPreview'))
@@ -270,34 +268,6 @@ const AdminRoutes = ({ auth, motel }) => {
         element={
           <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
             <SettingMotel
-              motels={motels}
-              setmotels={setMotels}
-              setIsAdmin={setIsAdmin}
-              isNavAdmin={isNavAdmin}
-              setIsNavAdmin={setIsNavAdmin}
-            />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/quanlytro/:motelId/lich-su-gui-zalo"
-        element={
-          <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <Zalo_history
-              motels={motels}
-              setmotels={setMotels}
-              setIsAdmin={setIsAdmin}
-              isNavAdmin={isNavAdmin}
-              setIsNavAdmin={setIsNavAdmin}
-            />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/quanlytro/:motelId/import-data-from-file"
-        element={
-          <ProtectedRoute requiredRoles={['ADMIN', 'HOST']}>
-            <ImportFileExcel
               motels={motels}
               setmotels={setMotels}
               setIsAdmin={setIsAdmin}

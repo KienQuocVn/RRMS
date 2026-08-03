@@ -14,7 +14,7 @@ import {
   TableRow,
   Typography
 } from '@mui/material'
-import TenantMenuUpdate from '../../TenantMenuUpdate'
+import TenantMenuUpdate from '../../../ManagerHome/TenantMenuUpdate'
 
 const EMPTY_VALUE = 'Chưa có'
 

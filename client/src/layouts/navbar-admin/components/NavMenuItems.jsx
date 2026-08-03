@@ -8,8 +8,6 @@ import HistoryEduOutlinedIcon from '@mui/icons-material/HistoryEduOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined'
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined'
-import SendOutlinedIcon from '@mui/icons-material/SendOutlined'
-import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined'
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
 
 const MENU_ITEMS = [
@@ -70,18 +68,6 @@ const MENU_ITEMS = [
     path: (id) => `/quanlytro/${id}/cai-dat-nha-tro`,
     label: 'Cài đặt',
     icon: <SettingsOutlinedIcon sx={{ fontSize: 40, color: '#20a9e7' }} />,
-  },
-  {
-    key: 'zalo',
-    path: (id) => `/quanlytro/${id}/lich-su-gui-zalo`,
-    label: 'Lịch sử gửi zalo',
-    icon: <SendOutlinedIcon sx={{ fontSize: 40, color: '#20a9e7' }} />,
-  },
-  {
-    key: 'import',
-    path: (id) => `/quanlytro/${id}/import-data-from-file`,
-    label: 'Nhập liệu từ file',
-    icon: <UploadFileOutlinedIcon sx={{ fontSize: 40, color: '#20a9e7' }} />,
   },
 ]
 

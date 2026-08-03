@@ -18,6 +18,7 @@ import com.rrms.rrms.database.seed.PropertySeeder;
 import com.rrms.rrms.models.Account;
 import com.rrms.rrms.models.BulletinBoard;
 import com.rrms.rrms.models.Contract;
+import com.rrms.rrms.models.Device;
 import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.models.MotelDevice;
 import com.rrms.rrms.models.MotelService;
@@ -89,7 +90,7 @@ public class DB {
             Map<String, TypeRoom> typeRooms = catalogSeeder.seedTypeRooms();
             catalogSeeder.seedNameMotelServices();
             catalogSeeder.seedCoreServices();
-            catalogSeeder.seedDeviceCatalog();
+            List<Device> devices = catalogSeeder.seedDeviceCatalog();
             catalogSeeder.seedPaymentMethods();
 
             // ── 4. Nhà trọ & Phòng ────────────────────────────────────────────
@@ -111,6 +112,7 @@ public class DB {
             int tenantCount = Math.max(10, (rooms.size() / 7) * 5 + 5);
             List<Tenant> tenants = contractSeeder.seedTenants(tenantCount);
             List<Contract> contracts = contractSeeder.seedContracts(rooms, tenants, host);
+            contractSeeder.seedContractDetails(contracts, tenants, devices);
 
             // ── 7. Vận hành ───────────────────────────────────────────────────
             operationSeeder.seedReservations(rooms);

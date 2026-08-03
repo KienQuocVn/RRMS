@@ -21,7 +21,7 @@ import Swal from 'sweetalert2'
 import { getContractByIdRoom } from '~/apis/contractTemplateAPI'
 import { deleteTenantById } from '~/apis/tenantAPI'
 import { getTenantsByRoomId } from '~/apis/tenantAPI'
-import AddTenantModal from './TenantManage/AddTenant'
+import AddTenantModal from '../NavContentAdmin/TenantManage/AddTenant'
 import EditTenantModal from './EditTenantModal'
 
 function RentRoomModal({ toggleModal, modalOpen, roomId: roomIdProp }) {
