@@ -98,26 +98,44 @@ public class AccountSeeder {
     // ── Accounts ──────────────────────────────────────────────────────────────
 
     public Account seedAdmin() {
+        log.info("[AccountSeeder] Seeding Admin account...");
         return createAccount(
                 "admin", "Kiều Kiến Quốc Admin", "kieukienquocvn@gmail.com", "0919925302", "001001001001", Gender.MALE);
     }
 
     public Account seedHost() {
+        log.info("[AccountSeeder] Seeding Host account...");
         return createAccount("host", "Kiều Kiến Quốc", "host@rrms.vn", "0911000002", "001001001002", Gender.FEMALE);
     }
 
     public Account seedHost2() {
+        log.info("[AccountSeeder] Seeding Host2 account...");
         return createAccount("host2", "Chủ Trọ 2", "host2@rrms.vn", "0911000005", "001001001005", Gender.FEMALE);
     }
 
     public Account seedEmployee() {
+        log.info("[AccountSeeder] Seeding Employee account...");
         return createAccount(
                 "employee", "Kiều Kiến Quốc", "employee@rrms.vn", "0911000003", "001001001003", Gender.MALE);
     }
 
     public Account seedCustomer() {
+        log.info("[AccountSeeder] Seeding Customer account...");
         return createAccount(
                 "customer", "Kiều Kiến Quốc", "customer@rrms.vn", "0911000004", "001001001004", Gender.FEMALE);
+    }
+
+    public Account seedBroker() {
+        log.info("[AccountSeeder] Seeding Broker account...");
+        try {
+            Account broker = createBrokerAccount(
+                    "broker", "Nguyễn Văn Môi Giới", "broker@rrms.vn", "0912345678", "001001001006", Gender.MALE);
+            log.info("[AccountSeeder] Broker account seeded successfully: {}", broker.getUsername());
+            return broker;
+        } catch (Exception e) {
+            log.error("[AccountSeeder] Failed to seed broker account: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     // ── Internal ──────────────────────────────────────────────────────────────
@@ -133,6 +151,10 @@ public class AccountSeeder {
                 .cccd(cccd)
                 .gender(gender)
                 .birthday(LocalDate.of(1995, 1, 1))
+                .address("ho chi minh")
+                .job("IT")
+                .placeOfIssue("cong an")
+                .dateOfIssue(LocalDate.of(2013, 8, 15))
                 .avatar("https://picsum.photos/seed/" + user + "/200/200")
                 .build();
         acc = accountRepository.save(acc);
@@ -151,5 +173,57 @@ public class AccountSeeder {
         auth.setRole(roleRepository.findByRoleName(rName).orElseThrow());
         authRepository.save(auth);
         return acc;
+    }
+
+    private Account createBrokerAccount(
+            String user, String name, String email, String phone, String cccd, Gender gender) {
+        log.info("[AccountSeeder] Creating broker account - Username: {}, Phone: {}, Email: {}", user, phone, email);
+
+        // Check if username already exists
+        if (accountRepository.existsByUsername(user)) {
+            log.warn("[AccountSeeder] Username {} already exists, skipping broker account creation", user);
+            return accountRepository.findByUsername(user).orElse(null);
+        }
+
+        // Check if phone already exists
+        if (accountRepository.existsByPhone(phone)) {
+            log.warn("[AccountSeeder] Phone {} already exists, skipping broker account creation", phone);
+            return accountRepository.findByPhone(phone).orElse(null);
+        }
+
+        // Check if email already exists
+        if (accountRepository.existsAccountByEmail(email)) {
+            log.warn("[AccountSeeder] Email {} already exists, skipping broker account creation", email);
+            return accountRepository.findByEmail(email).orElse(null);
+        }
+
+        BCryptPasswordEncoder pe = new BCryptPasswordEncoder();
+        Account acc = Account.builder()
+                .username(user)
+                .password(pe.encode(phone))
+                .fullName(name)
+                .email(email)
+                .phone(phone)
+                .cccd(cccd)
+                .gender(gender)
+                .birthday(LocalDate.of(1995, 1, 1))
+                .avatar("https://picsum.photos/seed/" + user + "/200/200")
+                .build();
+
+        try {
+            acc = accountRepository.save(acc);
+            log.info("[AccountSeeder] Broker account saved successfully with username: {}", acc.getUsername());
+
+            Auth auth = new Auth();
+            auth.setAccount(acc);
+            auth.setRole(roleRepository.findByRoleName(Roles.BROKER).orElseThrow());
+            authRepository.save(auth);
+            log.info("[AccountSeeder] Broker role assigned successfully to username: {}", acc.getUsername());
+
+            return acc;
+        } catch (Exception e) {
+            log.error("[AccountSeeder] Failed to save broker account: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 }

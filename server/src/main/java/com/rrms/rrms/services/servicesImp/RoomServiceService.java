@@ -145,14 +145,11 @@ public class RoomServiceService implements IRoomServiceService {
     public RoomServiceResponse toRoomServiceResponse(RoomService roomService) {
         return RoomServiceResponse.builder()
                 .roomServiceId(roomService.getRoomServiceId())
-                .roomId(
-                        roomService.getRoom() != null
-                                ? roomService.getRoom().getRoomId()
-                                : null) // Kiểm tra nếu room không null
+                .roomId(roomService.getRoom() != null ? roomService.getRoom().getRoomId() : null)
                 .serviceId(
                         roomService.getService() != null
                                 ? roomService.getService().getMotelServiceId()
-                                : null) // Kiểm tra nếu service không null
+                                : null)
                 .quantity(roomService.getQuantity())
                 .build();
     }
@@ -160,8 +157,24 @@ public class RoomServiceService implements IRoomServiceService {
     public RoomServiceDetailResponse toRoomServiceResponse2(RoomService roomService) {
         return RoomServiceDetailResponse.builder()
                 .roomServiceId(roomService.getRoomServiceId())
-                .room(roomService.getRoom()) // Kiểm tra nếu room không null
-                .service(roomService.getService()) // Kiểm tra nếu service không null
+                .roomId(roomService.getRoom() != null ? roomService.getRoom().getRoomId() : null)
+                .motelServiceId(
+                        roomService.getService() != null
+                                ? roomService.getService().getMotelServiceId()
+                                : null)
+                .serviceName(
+                        roomService.getService() != null
+                                ? roomService.getService().getNameService()
+                                : null)
+                .price(
+                        roomService.getService() != null
+                                        && roomService.getService().getPrice() != null
+                                ? roomService.getService().getPrice().doubleValue()
+                                : null)
+                .unit(
+                        roomService.getService() != null
+                                ? roomService.getService().getChargetype()
+                                : null)
                 .quantity(roomService.getQuantity())
                 .build();
     }

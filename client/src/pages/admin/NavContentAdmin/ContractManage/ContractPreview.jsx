@@ -17,11 +17,11 @@ import {
 import { getContractById } from '~/apis/contractTemplateAPI';
 import { getServiceRoombyRoomId } from '~/apis/roomAPI';
 import { getAllDeviceByRomId } from '~/apis/deviceAPT';
-import { getTRCByusername } from '~/apis/TRCAPI';
+import { getTRCByusername, getTRCByMotelId } from '~/apis/TRCAPI';
 import { getMotelById } from '~/apis/motelAPI';
 import { getProfileByUsername } from '~/apis/accountAPI';
 import { getDefaultContractContent, DEFAULT_CONTRACT_NAME } from '~/utils/templateDefaults';
-
+import { resolveAddress } from '~/utils/addressResolver';
 
 const getUnitLabel = (unit) => {
   const map = { CAI: 'Cái', cai: 'Cái', CHIEC: 'Chiếc', chiec: 'Chiếc', BO: 'Bộ', bo: 'Bộ', CAP: 'Cặp', cap: 'Cặp' };
@@ -50,25 +50,87 @@ const formatCurrency = (value) => {
   return `${Number(value).toLocaleString('vi-VN')}đ`;
 };
 
-const replaceContractMergeTags = ({ html, contract, motel, trc, profile, formatDate }) => {
+const extractTRC = (res) => {
+  if (!res) return null;
+  const resData = res?.data?.result || res?.result || res;
+  if (Array.isArray(resData)) return resData[0] || null;
+  if (resData && typeof resData === 'object') return resData;
+  return null;
+};
+
+const replaceContractMergeTags = ({ html, contract, motel, trc, profile, formatDate, convertToWords }) => {
   let template = html || '';
   const contentCleaned = template.replace(/<[^>]*>/g, '').trim();
   if (contentCleaned === 'Nội dung hợp đồng mẫu...' || contentCleaned === 'Mẫu mặc định' || !contentCleaned || contentCleaned.length < 50) {
     template = getDefaultContractContent(contract?.contractTemplate?.namecontract || contract?.contracttemplate?.namecontract || DEFAULT_CONTRACT_NAME);
   }
 
+  // Ngày lập hợp đồng
+  const createDateObj = contract?.createdate ? new Date(contract.createdate) : (contract?.createdAt ? new Date(contract.createdAt) : (contract?.moveinDate ? new Date(contract.moveinDate) : new Date()));
+  const dayLap = createDateObj.getDate().toString().padStart(2, '0');
+  const monthLap = (createDateObj.getMonth() + 1).toString().padStart(2, '0');
+  const yearLap = createDateObj.getFullYear();
+
+  // Đơn vị hành chính / Tỉnh thành
+  const motelAddr = motel?.address || contract?.room?.motel?.address || '';
+  const addressParts = motelAddr.split(',');
+  const city = addressParts.length > 0 ? addressParts[addressParts.length - 1].trim() : 'TP. Hồ Chí Minh';
+
+  // Thời hạn hợp đồng (bỏ chữ "tháng" thừa nếu có)
+  let rawTerm = String(contract?.leaseTerm || contract?.leaseterm || '').trim();
+  if (rawTerm.endsWith('tháng')) {
+    rawTerm = rawTerm.replace(/tháng/gi, '').trim();
+  }
+
+  // Chu kỳ thanh toán
+  let cycle = String(contract?.room?.invoiceDate || contract?.collectionCycle || contract?.collectioncycle || '').trim();
+  if (!cycle || cycle === 'Hàng tháng' || cycle === 'hang thang' || cycle === 'HANG_THANG') {
+    cycle = '01 hàng tháng';
+  }
+
+  // Địa chỉ thường trú bên B (tránh biến boolean temporaryResidence)
+  const tenantAddress = (typeof contract?.tenant?.permanentAddress === 'string' && contract?.tenant?.permanentAddress)
+    || (typeof contract?.tenant?.permanentaddress === 'string' && contract?.tenant?.permanentaddress)
+    || (typeof contract?.tenant?.address === 'string' && contract?.tenant?.address)
+    || (typeof contract?.tenant?.hometown === 'string' && contract?.tenant?.hometown)
+    || '...............................';
+
   const values = {
     tenHopDong: contract?.contractTemplate?.namecontract || contract?.contracttemplate?.namecontract || DEFAULT_CONTRACT_NAME,
     tenNhaTro: motel?.motelName || contract?.room?.motel?.motelName || '...............................',
-    diaChiNhaTro: motel?.address || contract?.room?.motel?.address || '...............................',
-    benChoThue: trc?.representativename || profile?.fullName || '...............................',
+    diaChiNhaTro: motelAddr || '...............................',
+
+    // Bên A (Chủ trọ)
+    benChoThue: trc?.representativename || trc?.representativeName || profile?.fullName || '...............................',
     sdtBenChoThue: trc?.phone || profile?.phone || '...............................',
+    cccdBenChoThue: trc?.identifier || profile?.cccd || '...............................',
+    ngayCapBenChoThue: formatDate(trc?.dateofissue || trc?.dateOfIssue || profile?.dateOfIssue),
+    noiCapBenChoThue: trc?.placeofissue || trc?.placeOfIssue || profile?.placeOfIssue || '...............................',
+    thuongTruBenChoThue: trc?.permanentaddress || trc?.permanentAddress || profile?.address || '...............................',
+
+    // Bên B (Khách thuê)
     benThue: contract?.tenant?.fullname || contract?.tenant?.fullName || '...............................',
+    sdtBenThue: contract?.tenant?.phone || '...............................',
     cccdBenThue: contract?.tenant?.cccd || '...............................',
+    ngayCapBenThue: formatDate(contract?.tenant?.licenseDate || contract?.tenant?.dateOfIssue || contract?.tenant?.dateofissue),
+    noiCapBenThue: contract?.tenant?.placeOfLicense || contract?.tenant?.placeOfIssue || contract?.tenant?.placeofissue || '...............................',
+    thuongTruBenThue: tenantAddress,
+
+    // Phòng & Hợp đồng
     phongThue: contract?.room?.name || contract?.room?.roomName || '...............................',
+    thoiHanThue: rawTerm || '................',
     giaThue: formatCurrency(contract?.price),
+    giaThueBangChu: contract?.price ? convertToWords(contract.price) : '...............................',
     tienCoc: formatCurrency(contract?.deposit),
-    ngayLap: formatDate(contract?.createdate || contract?.createdAt)
+    tienCocBangChu: contract?.deposit ? convertToWords(contract.deposit) : '...............................',
+    ngayDongTien: cycle,
+
+    // Ngày tháng
+    tinhThanh: city || 'TP. Hồ Chí Minh',
+    ngayLap: dayLap,
+    thangLap: monthLap,
+    namLap: yearLap,
+    ngayLapFull: formatDate(contract?.createdate || contract?.createdAt || contract?.moveinDate)
   };
 
   return Object.entries(values).reduce((content, [key, value]) => {
@@ -85,25 +147,40 @@ const ContractPreview = ({ setIsAdmin }) => {
   const [roomService, setRoomService] = useState([]);
   const [roomDevice, setRoomDevice] = useState([]);
 
-  const fetchContracts = async (id) => {
+  const fetchContracts = async (id, currentMotelId) => {
     if (id) {
       try {
         const dataContract = await getContractById(id);
+        
+        if (dataContract?.tenant) {
+          if (dataContract.tenant.address) dataContract.tenant.address = await resolveAddress(dataContract.tenant.address);
+          if (dataContract.tenant.permanentAddress) dataContract.tenant.permanentAddress = await resolveAddress(dataContract.tenant.permanentAddress);
+          if (dataContract.tenant.permanentaddress) dataContract.tenant.permanentaddress = await resolveAddress(dataContract.tenant.permanentaddress);
+        }
+
         setContract(dataContract);
 
-        const roomId = dataContract.room.roomId;
-        const username = dataContract.username.username;
+        const roomId = dataContract?.room?.roomId;
+        const username = dataContract?.username?.username || (typeof dataContract?.username === 'string' ? dataContract.username : '');
+        const effectiveMotelId = currentMotelId || dataContract?.room?.motel?.motelId;
 
-        const [dataRoomService, dataRoomDevice, dataTRC, dataProfile] = await Promise.all([
-          getServiceRoombyRoomId(roomId || ''),
-          getAllDeviceByRomId(roomId || ''),
-          getTRCByusername(username || ''),
-          getProfileByUsername(username || '')
+        const [dataRoomService, dataRoomDevice, dataTRCUser, dataTRCMotel, dataProfile] = await Promise.all([
+          roomId ? getServiceRoombyRoomId(roomId).catch(() => []) : Promise.resolve([]),
+          roomId ? getAllDeviceByRomId(roomId).catch(() => ({ result: [] })) : Promise.resolve({ result: [] }),
+          username ? getTRCByusername(username).catch(() => null) : Promise.resolve(null),
+          effectiveMotelId ? getTRCByMotelId(effectiveMotelId).catch(() => null) : Promise.resolve(null),
+          username ? getProfileByUsername(username).catch(() => null) : Promise.resolve(null)
         ]);
         
-        setRoomService(dataRoomService);
-        setRoomDevice(dataRoomDevice.result);
-        setTRC(dataTRC.data.result[0] || null);
+        setRoomService(dataRoomService || []);
+        setRoomDevice(dataRoomDevice?.result || []);
+        
+        let trcObj = extractTRC(dataTRCMotel) || extractTRC(dataTRCUser);
+        if (trcObj) {
+          if (trcObj.permanentaddress) trcObj.permanentaddress = await resolveAddress(trcObj.permanentaddress);
+          if (trcObj.permanentAddress) trcObj.permanentAddress = await resolveAddress(trcObj.permanentAddress);
+        }
+        setTRC(trcObj || null);
         setProfile(dataProfile || null);
       } catch (error) {
         console.error('Error fetching contract details:', error);
@@ -115,7 +192,11 @@ const ContractPreview = ({ setIsAdmin }) => {
     if (id) {
       try {
         const dataMotel = await getMotelById(id);
-        setMotel(dataMotel.data.result);
+        const motelResult = dataMotel?.data?.result || dataMotel?.result || dataMotel;
+        if (motelResult && motelResult.address) {
+          motelResult.address = await resolveAddress(motelResult.address);
+        }
+        setMotel(motelResult || {});
       } catch (error) {
         console.error('Error fetching motel:', error);
       }
@@ -200,13 +281,13 @@ const ContractPreview = ({ setIsAdmin }) => {
 
   useEffect(() => {
     setIsAdmin(true);
-    fetchContracts(contractId);
+    fetchContracts(contractId, motelId);
     fetchMotel(motelId);
   }, [contractId, motelId]);
 
   const contractTemplateContent = contract?.contractTemplate?.content || contract?.contracttemplate?.content || '';
   const renderedTemplateContent = contractTemplateContent
-    ? replaceContractMergeTags({ html: contractTemplateContent, contract, motel, trc: TRC, profile, formatDate })
+    ? replaceContractMergeTags({ html: contractTemplateContent, contract, motel, trc: TRC, profile, formatDate, convertToWords })
     : '';
 
   return (
@@ -274,16 +355,16 @@ const ContractPreview = ({ setIsAdmin }) => {
               BÊN A : BÊN CHO THUÊ (PHÒNG TRỌ)
             </Typography>
             <Box sx={{ pl: 2 }}>
-              <Typography>Họ và tên: {TRC?.representativename || profile?.fullName || '...............................'}</Typography>
+              <Typography>Họ và tên: {TRC?.representativename || TRC?.representativeName || profile?.fullName || '...............................'}</Typography>
               <Typography>Năm sinh: {formatDate(TRC?.birth || profile?.birthday)}</Typography>
               <Typography>CMND/CCCD: {TRC?.identifier || profile?.cccd || '...............................'}</Typography>
               <Box sx={{ display: 'flex', gap: 4 }}>
-                <Typography>Ngày cấp: {formatDate(TRC?.dateofissue || profile?.dateOfIssue)}</Typography>
-                <Typography>Nơi cấp: {TRC?.placeofissue || profile?.placeOfIssue || '...............................'}</Typography>
+                <Typography>Ngày cấp: {formatDate(TRC?.dateofissue || TRC?.dateOfIssue || profile?.dateOfIssue)}</Typography>
+                <Typography>Nơi cấp: {TRC?.placeofissue || TRC?.placeOfIssue || profile?.placeOfIssue || '...............................'}</Typography>
               </Box>
               <Typography>Số điện thoại: {TRC?.phone || profile?.phone || '...............................'}</Typography>
-              <Typography>Địa chỉ tòa nhà: {motel?.address || '...................................................'}</Typography>
-              <Typography>Thường trú: {TRC?.permanentaddress || profile?.address || '...................................................'}</Typography>
+              <Typography>Địa chỉ tòa nhà: {motel?.address || contract?.room?.motel?.address || '...................................................'}</Typography>
+              <Typography>Thường trú: {TRC?.permanentaddress || TRC?.permanentAddress || profile?.address || '...................................................'}</Typography>
             </Box>
           </Box>
 
@@ -293,14 +374,14 @@ const ContractPreview = ({ setIsAdmin }) => {
               BÊN B : BÊN THUÊ (PHÒNG TRỌ)
             </Typography>
             <Box sx={{ pl: 2 }}>
-              <Typography>Họ và tên: {contract?.tenant?.fullname || '...............................'}</Typography>
+              <Typography>Họ và tên: {contract?.tenant?.fullname || contract?.tenant?.fullName || '...............................'}</Typography>
               <Typography>Năm sinh: {formatDate(contract?.tenant?.birthday)}</Typography>
               <Typography>CMND/CCCD: {contract?.tenant?.cccd || '...............................'}</Typography>
               <Box sx={{ display: 'flex', gap: 4 }}>
-                <Typography>Ngày cấp: {formatDate(contract?.tenant?.licenseDate)}</Typography>
-                <Typography>Nơi cấp: {contract?.tenant?.placeOfLicense || '...............................'}</Typography>
+                <Typography>Ngày cấp: {formatDate(contract?.tenant?.licenseDate || contract?.tenant?.dateOfIssue || contract?.tenant?.dateofissue)}</Typography>
+                <Typography>Nơi cấp: {contract?.tenant?.placeOfLicense || contract?.tenant?.placeOfIssue || contract?.tenant?.placeofissue || '...............................'}</Typography>
               </Box>
-              <Typography>Thường trú: {contract?.tenant?.temporaryResidence || '...................................................'}</Typography>
+              <Typography>Thường trú: {contract?.tenant?.temporaryResidence || contract?.tenant?.permanentAddress || contract?.tenant?.permanentaddress || contract?.tenant?.address || '...................................................'}</Typography>
             </Box>
           </Box>
 

@@ -129,28 +129,103 @@ export const normalizeRoomCollection = (rooms = []) => {
 const getRoomServiceKey = (roomService = {}) => {
   return (
     roomService.service?.motelServiceId ??
-    roomService.serviceId ??
     roomService.motelServiceId ??
+    roomService.serviceId ??
     roomService.roomServiceId ??
     null
   )
+}
+
+// Các giá trị kỹ thuật cũ cần convert
+const LEGACY_CHARGETYPE_MAP = {
+  'FIXED': 'Tháng',
+  'PER_PERSON': 'Người',
+  'PER_USE': 'Lần',
+  'PER_MONTH': 'Tháng',
+  'PER_DAY': 'Ngày',
+  'PER_KWH': 'kWh',
+  'PER_M3': 'mét khối'
+}
+
+// Danh sách đơn vị hợp lệ (chỉ hiển thị những đơn vị này)
+const VALID_UNITS = new Set(['kWh', 'Khối', 'mét khối', 'Người', 'Tháng', 'Lần', 'Cái', 'Chiếc'])
+
+export const formatChargeType = (chargetype = '') => {
+  if (!chargetype) return ''
+  const upper = chargetype.toUpperCase()
+  // Convert legacy ALL_CAPS values
+  if (LEGACY_CHARGETYPE_MAP[upper]) return LEGACY_CHARGETYPE_MAP[upper]
+  // Nếu đơn vị đã hợp lệ thì giữ nguyên (case-insensitive check)
+  for (const valid of VALID_UNITS) {
+    if (valid.toLowerCase() === chargetype.toLowerCase()) return valid
+  }
+  // Ẩn các giá trị không hợp lệ (METER, số, ...)
+  return ''
 }
 
 export const normalizeRoomServiceCollection = (roomServices = []) => {
   if (!Array.isArray(roomServices)) return []
 
   const uniqueServices = new Map()
-  roomServices.forEach((roomService) => {
-    const serviceKey = getRoomServiceKey(roomService)
-    if (!serviceKey || uniqueServices.has(serviceKey)) return
+  roomServices.forEach((roomService, index) => {
+    if (!roomService) return
+    const serviceKey = getRoomServiceKey(roomService) || `service_${index}`
+    if (uniqueServices.has(serviceKey)) return
+
+    const serviceObj = roomService.service || roomService || {}
+    const nameService =
+      roomService.serviceName ||
+      roomService.nameService ||
+      serviceObj.nameService ||
+      serviceObj.serviceName ||
+      serviceObj.name ||
+      'Dịch vụ'
+
+    const price =
+      Number(
+        roomService.price ??
+        roomService.servicePrice ??
+        serviceObj.price ??
+        0
+      ) || 0
+
+    const rawChargetype =
+      roomService.unit ||
+      roomService.chargetype ||
+      serviceObj.chargetype ||
+      serviceObj.unit ||
+      ''
+    const chargetype = formatChargeType(rawChargetype)
+
+    const motelServiceId =
+      serviceObj.motelServiceId ||
+      roomService.motelServiceId ||
+      roomService.serviceId ||
+      roomService.roomServiceId
 
     const quantity = Number(roomService.quantity ?? 1) || 1
-    const price = Number(roomService.service?.price ?? roomService.servicePrice ?? 0) || 0
+    const isSelected = roomService.isSelected !== undefined ? Boolean(roomService.isSelected) : true
 
     uniqueServices.set(serviceKey, {
       ...roomService,
+      roomServiceId: roomService.roomServiceId,
+      serviceName: nameService,
+      nameService: nameService,
+      servicePrice: price,
+      price: price,
+      chargetype,
+      unit: chargetype,
       quantity,
-      totalPrice: quantity * price
+      isSelected,
+      totalPrice: quantity * price,
+      service: {
+        ...serviceObj,
+        motelServiceId,
+        nameService,
+        price,
+        chargetype,
+        unit: chargetype
+      }
     })
   })
 

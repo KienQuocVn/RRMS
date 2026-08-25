@@ -28,7 +28,7 @@ import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import Swal from 'sweetalert2'
 import { createInvoice } from '~/apis/invoiceAPI'
-import { normalizeRoomServiceCollection } from '~/utils/apiAdapters'
+import { normalizeRoomServiceCollection, formatChargeType } from '~/utils/apiAdapters'
 import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/numberInputUtils'
 
 const invoiceReasons = [
@@ -173,12 +173,26 @@ const InvoiceModal = ({
       .filter((service) => service.isSelected)
       .map((service) => {
         const quantity = Number(service.quantity ?? 1) || 1
-        const price = Number(service.service?.price ?? 0) || 0
+        // Hỗ trợ cả flat response (serviceName, price, unit) và nested (service.nameService, service.price)
+        const price = Number(service.servicePrice ?? service.price ?? service.service?.price ?? 0) || 0
+        const nameService =
+          service.serviceName ||
+          service.nameService ||
+          service.service?.nameService ||
+          service.service?.name ||
+          'Dịch vụ'
+        const rawChargetype =
+          service.chargetype ||
+          service.unit ||
+          service.service?.chargetype ||
+          service.service?.unit ||
+          ''
+        const chargetype = formatChargeType(rawChargetype)
         return {
           roomServiceId: service.roomServiceId,
-          serviceName: service.service?.nameService || 'Dịch vụ',
+          serviceName: nameService,
           servicePrice: price,
-          chargetype: service.service?.chargetype || '',
+          chargetype,
           quantity,
           isSelected: true,
           totalPrice: quantity * price

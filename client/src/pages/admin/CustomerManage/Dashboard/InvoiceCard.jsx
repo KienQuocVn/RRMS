@@ -75,29 +75,46 @@ const InvoiceCard = ({ invoice = {}, onPay }) => {
         <span style={{ fontSize: 18, fontWeight: 500, color: '#20a9e7' }}>{total}</span>
       </div>
 
-      {/* Pay button */}
-      <button
-        onClick={onPay}
-        style={{
-          display: 'block',
-          width: '100%',
-          height: 38,
-          background: '#20a9e7',
-          color: '#ffffff',
-          fontWeight: 500,
-          borderRadius: 8,
-          fontSize: 13,
-          border: 'none',
-          cursor: 'pointer',
-          marginTop: 12,
-          fontFamily: 'inherit',
-          transition: 'background 0.18s'
-        }}
-        onMouseEnter={e => (e.currentTarget.style.background = '#2b7ed7')}
-        onMouseLeave={e => (e.currentTarget.style.background = '#20a9e7')}
-      >
-        Thanh toán
-      </button>
+      {/* Pay button or Paid Notification */}
+      {invoice.isPaid || invoice.invoiceStatus === 'Đã thanh toán' ? (
+        <div
+          style={{
+            marginTop: 12,
+            padding: '10px 14px',
+            background: '#EAF3DE',
+            color: '#27500A',
+            borderRadius: 8,
+            fontSize: 13,
+            fontWeight: 500,
+            textAlign: 'center'
+          }}
+        >
+          ✓ Tháng này đã thanh toán
+        </div>
+      ) : (
+        <button
+          onClick={onPay}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: 38,
+            background: '#20a9e7',
+            color: '#ffffff',
+            fontWeight: 500,
+            borderRadius: 8,
+            fontSize: 13,
+            border: 'none',
+            cursor: 'pointer',
+            marginTop: 12,
+            fontFamily: 'inherit',
+            transition: 'background 0.18s'
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = '#2b7ed7')}
+          onMouseLeave={e => (e.currentTarget.style.background = '#20a9e7')}
+        >
+          Thanh toán
+        </button>
+      )}
     </div>
   )
 }

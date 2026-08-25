@@ -58,7 +58,9 @@ public class RoomDeviceService implements IRoomDeviceService {
                         return null;
                     }
 
-                    RoomDevice roomDevice = mapper.roomDeviceRequestToRoomDevice(roomDeviceRequest);
+                    RoomDevice roomDevice = new RoomDevice();
+                    roomDevice.setRoom(room);
+                    roomDevice.setMotelDevice(motelDevice);
                     roomDevice.setQuantity(quantity);
                     RoomDevice savedRoomDevice = roomDeviceRepository.save(roomDevice);
 

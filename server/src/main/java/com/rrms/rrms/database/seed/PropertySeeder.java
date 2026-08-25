@@ -201,19 +201,19 @@ public class PropertySeeder {
                     .motel(m)
                     .nameService("Điện")
                     .price(3500L)
-                    .chargetype("METER")
+                    .chargetype("kWh")
                     .build());
             motelServiceRepository.save(MotelService.builder()
                     .motel(m)
                     .nameService("Nước")
                     .price(15000L)
-                    .chargetype("METER")
+                    .chargetype("Khối")
                     .build());
             motelServiceRepository.save(MotelService.builder()
                     .motel(m)
                     .nameService("Wifi")
                     .price(100000L)
-                    .chargetype("FIXED")
+                    .chargetype("Tháng")
                     .build());
 
             motelDeviceRepository.save(MotelDevice.builder()

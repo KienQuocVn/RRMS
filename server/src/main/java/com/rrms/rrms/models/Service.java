@@ -33,4 +33,10 @@ public class Service implements Serializable {
 
     @Column(columnDefinition = "VARCHAR(255)")
     private String nameService;
+
+    /**
+     * Đơn vị tính. Chỉ chấp nhận: kWh, Khối, mét khối, Người, Tháng, Lần, Cái, Chiếc
+     */
+    @Column(columnDefinition = "VARCHAR(50)")
+    private String unit;
 }

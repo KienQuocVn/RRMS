@@ -136,4 +136,16 @@ public class TenantController {
                 .result(tenantResponses)
                 .build();
     }
+
+    @Operation(summary = "Get customer dashboard information")
+    @GetMapping("/dashboard")
+    public ApiResponse<com.rrms.rrms.dto.response.CustomerDashboardResponse> getCustomerDashboard(
+            @RequestParam(value = "username", required = false) String username) {
+        com.rrms.rrms.dto.response.CustomerDashboardResponse response = tenantService.getCustomerDashboard(username);
+        return ApiResponse.<com.rrms.rrms.dto.response.CustomerDashboardResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("Lấy thông tin dashboard khách thuê thành công")
+                .result(response)
+                .build();
+    }
 }

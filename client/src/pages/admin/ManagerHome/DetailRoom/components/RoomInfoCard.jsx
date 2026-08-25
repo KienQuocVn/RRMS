@@ -39,7 +39,7 @@ const RoomInfoCard = ({ room, contract }) => {
         room.finance === 'wait' ? (
           <Chip label="Chờ kỳ thu tới" color="success" size="small" />
         ) : (
-          <Typography variant="body2">Không xác định</Typography>
+          'Không xác định'
         )
     }
   ]
@@ -61,7 +61,7 @@ const RoomInfoCard = ({ room, contract }) => {
                 <Typography variant="body2" color="text.secondary">
                   {row.label}
                 </Typography>
-                <Typography variant="body2" fontWeight="500">
+                <Typography component="div" variant="body2" fontWeight="500">
                   {row.value}
                 </Typography>
               </Box>

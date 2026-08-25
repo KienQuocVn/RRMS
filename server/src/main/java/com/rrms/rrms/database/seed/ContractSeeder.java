@@ -22,6 +22,7 @@ import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.models.MotelDevice;
 import com.rrms.rrms.models.MotelService;
 import com.rrms.rrms.models.Room;
+import com.rrms.rrms.models.TemporaryR_contract;
 import com.rrms.rrms.models.Tenant;
 import com.rrms.rrms.repositories.BrokerRepository;
 import com.rrms.rrms.repositories.ContractDeviceHandoverRepository;
@@ -32,9 +33,9 @@ import com.rrms.rrms.repositories.ContractServiceRepository;
 import com.rrms.rrms.repositories.ContractTemplateRepository;
 import com.rrms.rrms.repositories.MotelDeviceRepository;
 import com.rrms.rrms.repositories.MotelServiceRepository;
+import com.rrms.rrms.repositories.TemporaryR_contractRepository;
 import com.rrms.rrms.repositories.TenantRepository;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 
@@ -44,7 +45,6 @@ import net.datafaker.Faker;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class ContractSeeder {
 
     private final TenantRepository tenantRepository;
@@ -57,6 +57,32 @@ public class ContractSeeder {
     private final ContractDeviceHandoverRepository contractDeviceHandoverRepository;
     private final MotelServiceRepository motelServiceRepository;
     private final MotelDeviceRepository motelDeviceRepository;
+    private final TemporaryR_contractRepository temporaryR_contractRepository;
+
+    public ContractSeeder(
+            TenantRepository tenantRepository,
+            ContractTemplateRepository contractTemplateRepository,
+            BrokerRepository brokerRepository,
+            ContractRepository contractRepository,
+            ContractOccupantRepository contractOccupantRepository,
+            ContractServiceRepository contractServiceRepository,
+            ContractDeviceRepository contractDeviceRepository,
+            ContractDeviceHandoverRepository contractDeviceHandoverRepository,
+            MotelServiceRepository motelServiceRepository,
+            MotelDeviceRepository motelDeviceRepository,
+            TemporaryR_contractRepository temporaryR_contractRepository) {
+        this.tenantRepository = tenantRepository;
+        this.contractTemplateRepository = contractTemplateRepository;
+        this.brokerRepository = brokerRepository;
+        this.contractRepository = contractRepository;
+        this.contractOccupantRepository = contractOccupantRepository;
+        this.contractServiceRepository = contractServiceRepository;
+        this.contractDeviceRepository = contractDeviceRepository;
+        this.contractDeviceHandoverRepository = contractDeviceHandoverRepository;
+        this.motelServiceRepository = motelServiceRepository;
+        this.motelDeviceRepository = motelDeviceRepository;
+        this.temporaryR_contractRepository = temporaryR_contractRepository;
+    }
 
     // ── Tenants ───────────────────────────────────────────────────────────────
 
@@ -64,7 +90,29 @@ public class ContractSeeder {
         log.info("[ContractSeeder] Seeding {} Tenants...", count);
         Faker f = new Faker(new Locale("vi"));
         List<Tenant> list = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
+
+        // 1. Seed Customer Tenant for "customer" account
+        list.add(tenantRepository.save(Tenant.builder()
+                .fullName("Kiều Kiến Quốc")
+                .phone("0911000004")
+                .cccd("001001001004")
+                .email("customer@rrms.vn")
+                .birthday(LocalDate.of(1995, 1, 1))
+                .gender(Gender.FEMALE)
+                .address("123 Đường Lê Lợi, Quận 1, TP. HCM")
+                .job("Sinh viên")
+                .licenseDate(LocalDate.of(2018, 5, 20))
+                .placeOfLicense("Công an TP.HCM")
+                .frontPhoto("front.jpg")
+                .backPhoto("back.jpg")
+                .role(true)
+                .relationship("Chủ")
+                .type_of_tenant(true)
+                .temporaryResidence(true)
+                .informationVerify(true)
+                .build()));
+
+        for (int i = 1; i < count; i++) {
             list.add(tenantRepository.save(Tenant.builder()
                     .fullName(f.name().fullName())
                     .phone("09" + f.number().digits(8))
@@ -113,6 +161,27 @@ public class ContractSeeder {
                     .phone("098800011" + i)
                     .motelId(motels.get(i).getMotelId())
                     .commissionRate(10)
+                    .build());
+        }
+    }
+
+    // ── Temporary Contracts ───────────────────────────────────────────────────
+
+    public void seedTemporaryContracts(List<Motel> motels, Account host) {
+        log.info("[ContractSeeder] Seeding Temporary Contracts...");
+        for (Motel m : motels) {
+            temporaryR_contractRepository.save(TemporaryR_contract.builder()
+                    .motel(m)
+                    .tenant(host)
+                    .householdhead("cnlđch")
+                    .representativename("Kiều Kiến Quốc")
+                    .phone("0911000002")
+                    .birth(LocalDate.of(1995, 1, 1))
+                    .permanentaddress("ho chi minh")
+                    .job("IT")
+                    .identifier("001001001002")
+                    .placeofissue("cong an")
+                    .dateofissue(LocalDate.of(2013, 8, 15))
                     .build());
         }
     }

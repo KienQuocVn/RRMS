@@ -65,43 +65,131 @@ const getTimeAgo = (dateTimeStr) => {
   }
 }
 
+// ── Helper phân tích Loại thiết bị & Tên thiết bị nâng cao ────────────────────
+
+export const detectDeviceCategory = (history) => {
+  const dt = (history?.deviceType || '').toUpperCase()
+  const os = (history?.osName || '').toLowerCase()
+  const ua = (history?.userAgent || '').toLowerCase()
+  const devName = (history?.deviceName || '').toLowerCase()
+
+  if (dt === 'TABLET' || os.includes('ipad') || ua.includes('ipad') || devName.includes('ipad')) {
+    return 'TABLET'
+  }
+  if (dt === 'MOBILE' || os.includes('android') || os.includes('ios') || os.includes('iphone') || ua.includes('iphone') || ua.includes('mobile')) {
+    return 'MOBILE'
+  }
+  // Mặc định thiết bị máy tính cá nhân là Laptop
+  return 'LAPTOP'
+}
+
+export const formatOsName = (osName) => {
+  if (!osName || osName === '---') return 'Windows 11'
+  const name = String(osName).trim()
+  if (name.toLowerCase().includes('windows 10') || name.toLowerCase().includes('windows nt 10') || name.toLowerCase() === 'windows') {
+    return 'Windows 11'
+  }
+  return name
+}
+
+export const formatIpAddress = (ip) => {
+  if (!ip || ip === '0:0:0:0:0:0:1' || ip === '::1' || ip === '127.0.0.1') {
+    return '127.0.0.1 (Localhost)'
+  }
+  return ip
+}
+
+export const formatDeviceName = (history, isCurrentSession = false) => {
+  if (!history) return 'Thiết bị không xác định'
+  
+  let rawName = history.deviceName || ''
+  let os = formatOsName(history.osName)
+  let browser = history.browserName || 'Chrome'
+  let ua = (history.userAgent || '').toLowerCase()
+
+  // Xóa bỏ chuỗi hardcode cũ nếu có
+  if (rawName.includes('DESKTOP-HNOPVGE') || rawName.includes('Acer Nitro')) {
+    rawName = ''
+  }
+
+  // 1. Xử lý App di động
+  if (rawName.toLowerCase().includes('expo') || browser.toLowerCase().includes('expo') || ua.includes('expo')) {
+    if (os.toLowerCase().includes('ios') || ua.includes('iphone')) {
+      return 'iPhone (RRMS App)'
+    }
+    if (os.toLowerCase().includes('ipad') || ua.includes('ipad')) {
+      return 'iPad (RRMS App)'
+    }
+    if (os.toLowerCase().includes('android')) {
+      return 'Thiết bị Android (RRMS App)'
+    }
+    return 'Điện thoại di động (RRMS App)'
+  }
+
+  // 2. Xử lý tên thiết bị cho Máy tính / Laptop
+  if (os.toLowerCase().includes('windows')) {
+    return `${browser} trên Windows 11`
+  }
+
+  if (os.toLowerCase().includes('mac')) {
+    return `${browser} trên macOS`
+  }
+
+  if (os.toLowerCase().includes('android')) {
+    return `${browser} trên Android`
+  }
+
+  if (os.toLowerCase().includes('ios') || os.toLowerCase().includes('iphone')) {
+    return `${browser} trên iPhone`
+  }
+
+  return rawName || `${browser} trên ${os}`
+}
+
 // ── DeviceIcon ────────────────────────────────────────────────────────────────
 
-const DeviceIcon = ({ deviceType }) => {
-  const iconProps = { sx: { fontSize: 28 } }
-  const type = (deviceType || '').toUpperCase()
+const DeviceIcon = ({ category }) => {
+  const iconProps = { sx: { fontSize: 26 } }
 
-  if (type === 'MOBILE') {
+  if (category === 'MOBILE') {
     return (
-      <Box sx={{ bgcolor: '#20a9e722', color: '#388e3c', p: 1.2, borderRadius: '50%', display: 'flex' }}>
+      <Box sx={{ bgcolor: '#e8f5e9', color: '#2e7d32', p: 1.2, borderRadius: '50%', display: 'flex' }}>
         <SmartphoneOutlinedIcon {...iconProps} />
       </Box>
     )
   }
-  if (type === 'TABLET') {
+  if (category === 'TABLET') {
     return (
-      <Box sx={{ bgcolor: '#fff3e0', color: '#f57c00', p: 1.2, borderRadius: '50%', display: 'flex' }}>
+      <Box sx={{ bgcolor: '#fff3e0', color: '#ed6c02', p: 1.2, borderRadius: '50%', display: 'flex' }}>
         <TabletOutlinedIcon {...iconProps} />
       </Box>
     )
   }
+  if (category === 'LAPTOP') {
+    return (
+      <Box sx={{ bgcolor: '#e1f5fe', color: '#0288d1', p: 1.2, borderRadius: '50%', display: 'flex' }}>
+        <LaptopMacOutlinedIcon {...iconProps} />
+      </Box>
+    )
+  }
+  // PC / DESKTOP
   return (
-    <Box sx={{ bgcolor: '#e3f2fd', color: '#1976d2', p: 1.2, borderRadius: '50%', display: 'flex' }}>
-      <LaptopMacOutlinedIcon {...iconProps} />
+    <Box sx={{ bgcolor: '#f3e5f5', color: '#7b1fa2', p: 1.2, borderRadius: '50%', display: 'flex' }}>
+      <DesktopWindowsOutlinedIcon {...iconProps} />
     </Box>
   )
 }
 
 // ── DeviceTypeBadge ───────────────────────────────────────────────────────────
 
-const DeviceTypeBadge = ({ deviceType }) => {
-  const type = (deviceType || 'WEB').toUpperCase()
+const DeviceTypeBadge = ({ category }) => {
   const config = {
-    MOBILE: { label: 'Mobile', color: 'success' },
-    TABLET: { label: 'Tablet', color: 'warning' },
-    WEB: { label: 'Web', color: 'info' }
+    MOBILE: { label: 'Điện thoại', color: 'success' },
+    TABLET: { label: 'Máy tính bảng', color: 'warning' },
+    LAPTOP: { label: 'Laptop', color: 'info' },
+    PC: { label: 'PC Desktop', color: 'secondary' }
   }
-  const { label, color } = config[type] || config.WEB
+  const { label, color } = config[category] || config.LAPTOP
   return <Chip label={label} color={color} size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: 11 }} />
 }
 
@@ -320,107 +408,112 @@ const LoginDevicesTab = ({ username }) => {
                 </TableCell>
               </TableRow>
             ) : (
-              histories.map((history, index) => (
-                <TableRow
-                  key={history.id}
-                  hover
-                  sx={{
-                    // Hàng đầu tiên (mới nhất) highlight nhẹ
-                    bgcolor: index === 0 ? '#fafffe' : 'inherit',
-                    '&:hover': { bgcolor: '#f9f9f9' }
-                  }}>
-                  {/* Icon thiết bị */}
-                  <TableCell>
-                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                      <DeviceIcon deviceType={history.deviceType} />
-                    </Box>
-                  </TableCell>
+              histories.map((history, index) => {
+                const category = detectDeviceCategory(history)
+                const formattedName = formatDeviceName(history, index === 0)
 
-                  {/* Loại thiết bị */}
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <DeviceTypeBadge deviceType={history.deviceType} />
-                      {index === 0 && (
-                        <Chip
-                          label="Mới nhất"
-                          size="small"
-                          sx={{ bgcolor: '#20a9e722', color: '#2e7d32', fontWeight: 600, fontSize: 10 }}
-                        />
-                      )}
-                    </Box>
-                  </TableCell>
-
-                  {/* Tên thiết bị */}
-                  <TableCell>
-                    <Typography
-                      variant="body2"
-                      fontWeight={500}
-                      sx={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {history.deviceName || '---'}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Hệ điều hành */}
-                  <TableCell>
-                    <Typography variant="body2">
-                      {history.osName || '---'}
-                      {history.osVersion && (
-                        <Typography component="span" variant="caption" color="text.secondary">
-                          {' '}
-                          {history.osVersion}
-                        </Typography>
-                      )}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Trình duyệt */}
-                  <TableCell>
-                    <Typography variant="body2">
-                      {history.browserName || '---'}
-                      {history.browserVersion && (
-                        <Typography component="span" variant="caption" color="text.secondary">
-                          {' '}
-                          v{history.browserVersion}
-                        </Typography>
-                      )}
-                    </Typography>
-                  </TableCell>
-
-                  {/* IP */}
-                  <TableCell>
-                    <Typography variant="body2" fontFamily="monospace" color="text.secondary">
-                      {history.ipAddress || '---'}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Thời gian */}
-                  <TableCell>
-                    <Tooltip title={formatDateTime(history.loginAt)} placement="top">
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          {getTimeAgo(history.loginAt)}
-                        </Typography>
-                        <Typography variant="caption" color="text.disabled">
-                          {formatDateTime(history.loginAt)}
-                        </Typography>
+                return (
+                  <TableRow
+                    key={history.id}
+                    hover
+                    sx={{
+                      // Hàng đầu tiên (mới nhất) highlight nhẹ
+                      bgcolor: index === 0 ? '#fafffe' : 'inherit',
+                      '&:hover': { bgcolor: '#f9f9f9' }
+                    }}>
+                    {/* Icon thiết bị */}
+                    <TableCell>
+                      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <DeviceIcon category={category} />
                       </Box>
-                    </Tooltip>
-                  </TableCell>
+                    </TableCell>
 
-                  {/* Xóa */}
-                  <TableCell align="center">
-                    <Tooltip title="Xóa phiên đăng nhập này">
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleOpenDelete(history.id, history.deviceName)}
-                        sx={{ '&:hover': { bgcolor: '#ffebee' } }}>
-                        <DeleteOutlineIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))
+                    {/* Loại thiết bị */}
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <DeviceTypeBadge category={category} />
+                        {index === 0 && (
+                          <Chip
+                            label="Phiên hiện tại"
+                            size="small"
+                            sx={{ bgcolor: '#20a9e722', color: '#1565c0', fontWeight: 600, fontSize: 10 }}
+                          />
+                        )}
+                      </Box>
+                    </TableCell>
+
+                    {/* Tên thiết bị */}
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        fontWeight={600}
+                        sx={{ maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#111827' }}>
+                        {formattedName}
+                      </Typography>
+                    </TableCell>
+
+                    {/* Hệ điều hành */}
+                    <TableCell>
+                      <Typography variant="body2">
+                        {formatOsName(history.osName)}
+                        {history.osVersion && (
+                          <Typography component="span" variant="caption" color="text.secondary">
+                            {' '}
+                            {history.osVersion}
+                          </Typography>
+                        )}
+                      </Typography>
+                    </TableCell>
+
+                    {/* Trình duyệt */}
+                    <TableCell>
+                      <Typography variant="body2">
+                        {history.browserName || '---'}
+                        {history.browserVersion && (
+                          <Typography component="span" variant="caption" color="text.secondary">
+                            {' '}
+                            v{history.browserVersion}
+                          </Typography>
+                        )}
+                      </Typography>
+                    </TableCell>
+
+                    {/* IP */}
+                    <TableCell>
+                      <Typography variant="body2" fontFamily="monospace" color="text.secondary">
+                        {formatIpAddress(history.ipAddress)}
+                      </Typography>
+                    </TableCell>
+
+                    {/* Thời gian */}
+                    <TableCell>
+                      <Tooltip title={formatDateTime(history.loginAt)} placement="top">
+                        <Box>
+                          <Typography variant="body2" fontWeight={500}>
+                            {getTimeAgo(history.loginAt)}
+                          </Typography>
+                          <Typography variant="caption" color="text.disabled">
+                            {formatDateTime(history.loginAt)}
+                          </Typography>
+                        </Box>
+                      </Tooltip>
+                    </TableCell>
+
+                    {/* Xóa */}
+                    <TableCell align="center">
+                      <Tooltip title="Xóa phiên đăng nhập này">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleOpenDelete(history.id, history.deviceName)}
+                          sx={{ '&:hover': { bgcolor: '#ffebee' } }}>
+                          <DeleteOutlineIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
             )}
           </TableBody>
         </Table>

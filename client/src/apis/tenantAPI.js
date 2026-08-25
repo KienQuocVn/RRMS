@@ -32,3 +32,15 @@ export const updateTenant = async (id, tenant) => {
     throw error
   }
 }
+
+export const getTenantDashboard = async (username) => {
+  try {
+    const url = username ? `/tenant/dashboard?username=${encodeURIComponent(username)}` : '/tenant/dashboard'
+    const response = await httpClient.get(url)
+    return unwrapApiResult(response, null)
+  } catch (error) {
+    console.error('Error fetching tenant dashboard:', error)
+    return null
+  }
+}
+

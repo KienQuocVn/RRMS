@@ -37,9 +37,10 @@ public class LoginHistoryService implements ILoginHistoryService {
     public void recordLoginSuccess(Account account, HttpServletRequest request) {
         try {
             String userAgent = request.getHeader("User-Agent");
+            String platformVersion = request.getHeader("Sec-CH-UA-Platform-Version");
             String ipAddress = DeviceDetector.extractClientIp(request);
             String deviceType = DeviceDetector.detectDeviceType(userAgent);
-            String osName = DeviceDetector.detectOsName(userAgent);
+            String osName = DeviceDetector.detectOsName(userAgent, platformVersion);
             String osVersion = DeviceDetector.detectOsVersion(userAgent);
             String browserName = DeviceDetector.detectBrowserName(userAgent);
             String browserVersion = DeviceDetector.detectBrowserVersion(userAgent);

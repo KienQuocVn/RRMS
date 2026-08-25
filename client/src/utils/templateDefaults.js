@@ -12,22 +12,22 @@ export const getDefaultContractContent = (namecontract = DEFAULT_CONTRACT_NAME) 
   <p style="text-align:center;margin:4px 0 20px;font-family:'Times New Roman',serif;"><strong>Độc lập – Tự do – Hạnh phúc</strong></p>
   <h2 style="text-align:center;text-transform:uppercase;margin-bottom:24px;font-family:'Times New Roman',serif;">${namecontract}</h2>
 
-  <p style="font-family:'Times New Roman',serif;">Hôm nay, ngày.........tháng …..năm 20…., tại căn nhà số..................Chúng tôi ký tên dưới đây gồm có:</p>
+  <p style="font-family:'Times New Roman',serif;">Hôm nay, ngày <b>{{ngayLap}}</b> tháng <b>{{thangLap}}</b> năm <b>{{namLap}}</b>, tại căn nhà số <b>{{diaChiNhaTro}}</b>. Chúng tôi ký tên dưới đây gồm có:</p>
 
   <p style="font-family:'Times New Roman',serif;"><strong>BÊN CHO THUÊ PHÒNG TRỌ (gọi tắt là Bên A):</strong></p>
-  <p style="font-family:'Times New Roman',serif;">Ông/bà (tên chủ hợp đồng): {{benChoThue}}</p>
-  <p style="font-family:'Times New Roman',serif;">CMND/CCCD số: ................................ cấp ngày: .......................... nơi cấp: ................................</p>
-  <p style="font-family:'Times New Roman',serif;">Thường trú tại: {{diaChiNhaTro}}</p>
+  <p style="font-family:'Times New Roman',serif;">Ông/bà (tên chủ hợp đồng): <b>{{benChoThue}}</b></p>
+  <p style="font-family:'Times New Roman',serif;">CMND/CCCD số: <b>{{cccdBenChoThue}}</b> &nbsp;&nbsp;&nbsp;&nbsp; cấp ngày: <b>{{ngayCapBenChoThue}}</b> &nbsp;&nbsp;&nbsp;&nbsp; nơi cấp: <b>{{noiCapBenChoThue}}</b></p>
+  <p style="font-family:'Times New Roman',serif;">Thường trú tại: <b>{{thuongTruBenChoThue}}</b></p>
 
   <p style="font-family:'Times New Roman',serif;"><strong>BÊN THUÊ PHÒNG TRỌ (gọi tắt là Bên B):</strong></p>
-  <p style="font-family:'Times New Roman',serif;">Ông/bà: {{benThue}}</p>
-  <p style="font-family:'Times New Roman',serif;">CMND/CCCD số: {{cccdBenThue}} cấp ngày: .......................... nơi cấp: ................................</p>
-  <p style="font-family:'Times New Roman',serif;">Thường trú tại: .................................................................................................</p>
+  <p style="font-family:'Times New Roman',serif;">Ông/bà: <b>{{benThue}}</b></p>
+  <p style="font-family:'Times New Roman',serif;">CMND/CCCD số: <b>{{cccdBenThue}}</b> &nbsp;&nbsp;&nbsp;&nbsp; cấp ngày: <b>{{ngayCapBenThue}}</b> &nbsp;&nbsp;&nbsp;&nbsp; nơi cấp: <b>{{noiCapBenThue}}</b></p>
+  <p style="font-family:'Times New Roman',serif;">Thường trú tại: <b>{{thuongTruBenThue}}</b></p>
 
   <p style="font-family:'Times New Roman',serif;">Sau khi thỏa thuận, hai bên thống nhất như sau:</p>
 
   <p style="font-family:'Times New Roman',serif;"><strong>1. Nội dung thuê phòng trọ</strong></p>
-  <p style="font-family:'Times New Roman',serif;">Bên A cho Bên B thuê 01 phòng trọ số: {{phongThue}} tại {{tenNhaTro}}. Với thời hạn là:................ tháng, giá thuê: {{giaThue}} đồng (Bằng chữ: ......................................). Chưa bao gồm chi phí: điện sinh hoạt, nước.</p>
+  <p style="font-family:'Times New Roman',serif;">Bên A cho Bên B thuê 01 phòng trọ số: <b>{{phongThue}}</b> tại <b>{{tenNhaTro}}</b>. Với thời hạn là: <b>{{thoiHanThue}}</b> tháng, giá thuê: <b>{{giaThue}}</b> (Bằng chữ: <i>{{giaThueBangChu}}</i>). Chưa bao gồm chi phí: điện sinh hoạt, nước.</p>
 
   <p style="font-family:'Times New Roman',serif;"><strong>2. Trách nhiệm Bên A</strong></p>
   <ul style="font-family:'Times New Roman',serif;">
@@ -37,7 +37,7 @@ export const getDefaultContractContent = (namecontract = DEFAULT_CONTRACT_NAME) 
 
   <p style="font-family:'Times New Roman',serif;"><strong>3. Trách nhiệm Bên B</strong></p>
   <ul style="font-family:'Times New Roman',serif;">
-    <li>Đặt cọc với số tiền là: {{tienCoc}} đồng (Bằng chữ: ......................................), thanh toán tiền thuê phòng hàng tháng vào ngày ……. + tiền điện + nước.</li>
+    <li>Đặt cọc với số tiền là: <b>{{tienCoc}}</b> (Bằng chữ: <i>{{tienCocBangChu}}</i>), thanh toán tiền thuê phòng hàng tháng vào ngày {{ngayDongTien}} + tiền điện + nước.</li>
     <li>Đảm bảo các thiết bị và sửa chữa các hư hỏng trong phòng trong khi sử dụng. Nếu không sửa chữa thì khi trả phòng, bên A sẽ trừ vào tiền đặt cọc, giá trị cụ thể được tính theo giá thị trường.</li>
     <li>Chỉ sử dụng phòng trọ vào mục đích ở, với số lượng tối đa không quá 04 người (kể cả trẻ em); không chứa các thiết bị gây cháy nổ, hàng cấm... cung cấp giấy tờ tùy thân để đăng ký tạm trú theo quy định, giữ gìn an ninh trật tự, nếp sống văn hóa đô thị; không tụ tập nhậu nhẹt, cờ bạc và các hành vi vi phạm pháp luật khác.</li>
     <li>Không được tự ý cải tạo kiến trúc phòng hoặc trang trí ảnh hưởng tới tường, cột, nền... Nếu có nhu cầu trên phải trao đổi với bên A để được thống nhất.</li>
@@ -46,7 +46,7 @@ export const getDefaultContractContent = (namecontract = DEFAULT_CONTRACT_NAME) 
   <p style="font-family:'Times New Roman',serif;"><strong>4. Điều khoản thực hiện</strong></p>
   <ul style="font-family:'Times New Roman',serif;">
     <li>Hai bên nghiêm túc thực hiện những quy định trên trong thời hạn cho thuê, nếu bên A lấy phòng phải báo cho bên B ít nhất 01 tháng, hoặc ngược lại.</li>
-    <li>Sau thời hạn cho thuê ….. tháng nếu bên B có nhu cầu hai bên tiếp tục thương lượng giá thuê để gia hạn hợp đồng bằng miệng hoặc thực hiện như sau.</li>
+    <li>Sau thời hạn cho thuê {{thoiHanThue}} tháng nếu bên B có nhu cầu hai bên tiếp tục thương lượng giá thuê để gia hạn hợp đồng bằng miệng hoặc thực hiện như sau.</li>
   </ul>
 
   <table style="width:100%;border-collapse:collapse;margin:12px 0;font-family:'Times New Roman',serif;">
@@ -80,12 +80,12 @@ export const getDefaultContractContent = (namecontract = DEFAULT_CONTRACT_NAME) 
     </tbody>
   </table>
 
-  <p style="text-align:right;margin-top:20px;font-family:'Times New Roman',serif;">Ngày lập: {{ngayLap}}</p>
+  <p style="text-align:right;margin-top:20px;font-family:'Times New Roman',serif;font-style:italic;">{{tinhThanh}}, ngày {{ngayLap}} tháng {{thangLap}} năm {{namLap}}</p>
   <table style="width:100%;border-collapse:collapse;margin-top:24px;font-family:'Times New Roman',serif;">
     <tbody>
       <tr>
-        <td style="width:50%;text-align:center;border:none;"><strong>Bên B</strong><br/><em>(Ký, ghi rõ họ tên)</em><br/><br/><br/><br/>{{benThue}}</td>
-        <td style="width:50%;text-align:center;border:none;"><strong>Bên A</strong><br/><em>(Ký, ghi rõ họ tên)</em><br/><br/><br/><br/>{{benChoThue}}</td>
+        <td style="width:50%;text-align:center;border:none;vertical-align:top;"><strong>Bên B</strong><br/><em>(Ký, ghi rõ họ tên)</em><br/><br/><br/><br/><strong>{{benThue}}</strong></td>
+        <td style="width:50%;text-align:center;border:none;vertical-align:top;"><strong>Bên A</strong><br/><em>(Ký, ghi rõ họ tên)</em><br/><br/><br/><br/><strong>{{benChoThue}}</strong></td>
       </tr>
     </tbody>
   </table>

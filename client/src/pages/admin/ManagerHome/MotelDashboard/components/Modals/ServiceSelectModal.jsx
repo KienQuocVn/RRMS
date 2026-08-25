@@ -17,7 +17,7 @@ import InboxIcon from '@mui/icons-material/Inbox'
 import Swal from 'sweetalert2'
 
 import { updateSerivceRoom, DeleteRoomServiceByid } from '~/apis/roomAPI'
-import { normalizeRoomServiceCollection } from '~/utils/apiAdapters'
+import { normalizeRoomServiceCollection, formatChargeType } from '~/utils/apiAdapters'
 import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/numberInputUtils'
 
 const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onUpdateSuccess }) => {
@@ -77,8 +77,8 @@ const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onU
         if (service.roomServiceId) {
           const serviceUpdate = {
             roomServiceId: service.roomServiceId,
-            roomId: service.room.roomId || room.roomId,
-            serviceId: service.service.motelServiceId,
+            roomId: service.room?.roomId ?? room?.roomId,
+            serviceId: service.service?.motelServiceId,
             quantity: service.quantity
           }
           await updateSerivceRoom(service.roomServiceId, serviceUpdate)
@@ -124,7 +124,7 @@ const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onU
                         {rs.service?.nameService}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Giá: {Number(rs.service?.price || 0).toLocaleString('vi-VN')} đ / {rs.service?.chargetype}
+                        Giá: {Number(rs.service?.price || 0).toLocaleString('vi-VN')} đ / {formatChargeType(rs.service?.chargetype || rs.service?.unit || rs.chargetype || rs.unit || '')}
                       </Typography>
                     </Box>
                   }
@@ -139,7 +139,7 @@ const ServiceSelectModal = ({ open, onClose, room, initialRoomServices = [], onU
                   onChange={(e) => handleQuantityChange(rs.service.motelServiceId, e.target.value)}
                   {...getNonNegativeNumberFieldProps()}
                   InputProps={{
-                    endAdornment: <InputAdornment position="end">{rs.service?.chargetype}</InputAdornment>
+                    endAdornment: <InputAdornment position="end">{formatChargeType(rs.service?.chargetype || rs.service?.unit || rs.chargetype || rs.unit || '')}</InputAdornment>
                   }}
                 />
               </Grid>

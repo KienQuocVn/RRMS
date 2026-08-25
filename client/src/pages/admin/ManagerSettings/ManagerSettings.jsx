@@ -52,7 +52,7 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
   const [selectedResidenceTemplateId, setSelectedResidenceTemplateId] = useState(null)
 
   const [formData, setFormData] = useState({
-    householdhead: 'ktlhp',
+    householdhead: 'cnlđch',
     representativename: '',
     phone: '',
     birth: '',
@@ -92,7 +92,7 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
         if (temporaryContract) {
           setFormData((prevData) => ({
             ...prevData,
-            householdhead: temporaryContract.householdhead || prevData.householdhead,
+            householdhead: temporaryContract.householdhead || 'cnlđch',
             representativename: temporaryContract.representativename || '',
             phone: temporaryContract.phone || '',
             birth: temporaryContract.birth || '',
@@ -110,6 +110,7 @@ const ManagerSettings = ({ setIsAdmin, motels, setmotels }) => {
           if (profile) {
             setFormData((prevData) => ({
               ...prevData,
+              householdhead: 'cnlđch',
               representativename: profile.fullName || '',
               phone: profile.phone || '',
               birth: profile.birthday || '',

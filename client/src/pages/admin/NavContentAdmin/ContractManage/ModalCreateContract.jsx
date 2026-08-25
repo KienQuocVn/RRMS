@@ -35,6 +35,7 @@ import {
 import { getMotelById } from '~/apis/motelAPI'
 import { getAllMotelDevices, getAllDeviceByRomId, deleteRoomDevice, insertRoomDevice } from '~/apis/deviceAPT'
 import { getContractTemplatesByMotelId, createTenant, createContract } from '~/apis/contractTemplateAPI'
+import { getBrokers } from '~/apis/brokerAPI'
 import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/numberInputUtils'
 import { formatVndInput, getVndInputFieldProps, parseVndInput } from '~/utils/currencyInputUtils'
 import { deleteTenantById } from '~/apis/tenantAPI'
@@ -74,6 +75,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
   const [loading, setLoading] = useState(false)
   const [roomServices, setRoomServices] = useState([])
   const [roomDevices, setRoomDevices] = useState([])
+  const [brokers, setBrokers] = useState([])
 
   const [tenant, setTenant] = useState({
     fullName: '',
@@ -247,6 +249,18 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
     }
   }
 
+  const fetchBrokers = async (id) => {
+    try {
+      const response = await getBrokers(id)
+      if (response?.data?.result) {
+        setBrokers(response.data.result)
+      }
+    } catch (error) {
+      console.error('Error fetching brokers:', error)
+      setBrokers([])
+    }
+  }
+
   const handleApplyServices = async () => {
     const servicesToDelete = roomServices.filter((s) => !s.isSelected && s.roomServiceId)
     const servicesToUpdateOrAdd = roomServices.filter((s) => s.isSelected)
@@ -272,7 +286,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
     const deletePromises = devicesToDelete.map((d) => deleteRoomDevice(d.roomId, d.motel_device_id))
     const addPromises = devicesToAdd.map((d) => {
       const data = {
-        room: { roomId: d.roomId },
+        room: { roomId: room.roomId },
         motelDevice: { motel_device_id: d.motel_device_id },
         quantity: d.quantity || 1
       }
@@ -366,6 +380,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
       fetchMotelServices(motelId)
       fetchMotelDevices(motelId)
       fetchMotelContractTemplate(motelId)
+      fetchBrokers(motelId)
     }
   }, [modalOpen, roomId, motelId]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -952,8 +967,11 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                   onChange={handleContractChange}
                   size="small">
                   <MenuItem value="">--- Chọn môi giới ---</MenuItem>
-                  <MenuItem value="1">Nguyễn Văn A</MenuItem>
-                  <MenuItem value="2">Trần Thị B</MenuItem>
+                  {brokers.map((broker) => (
+                    <MenuItem key={broker.brokerId} value={broker.brokerId}>
+                      {broker.name} - {broker.phone}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Grid>
               <Grid item xs={6}>

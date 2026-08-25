@@ -50,7 +50,7 @@ const GeneralInfoTab = ({ formData, handleInputChange, handleDateChange, handleS
             fullWidth
             label="Chủ hộ *"
             name="householdhead"
-            value={formData.householdhead}
+            value={formData.householdhead || 'cnlđch'}
             onChange={handleInputChange}
             variant="outlined"
             size="medium"

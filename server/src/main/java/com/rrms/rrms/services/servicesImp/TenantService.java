@@ -21,6 +21,7 @@ import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.mapper.TenantMapper;
 import com.rrms.rrms.models.Contract;
 import com.rrms.rrms.models.ContractOccupant;
+import com.rrms.rrms.models.Invoice;
 import com.rrms.rrms.models.Motel;
 import com.rrms.rrms.models.Room;
 import com.rrms.rrms.models.Tenant;
@@ -47,6 +48,10 @@ public class TenantService implements ITenantService {
     private final ContractRepository contractRepository;
 
     private final ContractOccupantRepository contractOccupantRepository;
+
+    private final com.rrms.rrms.repositories.AccountRepository accountRepository;
+
+    private final com.rrms.rrms.repositories.InvoiceRepository invoiceRepository;
 
     @Override
     public TenantResponse insert(UUID roomId, TenantRequest tenant) {
@@ -282,5 +287,178 @@ public class TenantService implements ITenantService {
         }
 
         return summaries;
+    }
+
+    @Override
+    public com.rrms.rrms.dto.response.CustomerDashboardResponse getCustomerDashboard(String username) {
+        String queryUser = (username == null || username.isBlank()) ? "customer" : username;
+        com.rrms.rrms.models.Account acc = accountRepository
+                .findByUsername(queryUser)
+                .orElseGet(() -> accountRepository.findByEmail(queryUser).orElse(null));
+
+        String fullName = acc != null && acc.getFullName() != null ? acc.getFullName() : "Kiều Kiến Quốc";
+        String email = acc != null && acc.getEmail() != null ? acc.getEmail() : "customer@rrms.vn";
+        String phone = acc != null && acc.getPhone() != null ? acc.getPhone() : "0911000004";
+        String cccd = acc != null && acc.getCccd() != null ? acc.getCccd() : "001001001004";
+
+        Tenant tenant = tenantRepository.findAll().stream()
+                .filter(t -> (t.getEmail() != null && t.getEmail().equalsIgnoreCase(email))
+                        || (t.getPhone() != null && t.getPhone().equalsIgnoreCase(phone))
+                        || (t.getCccd() != null && t.getCccd().equalsIgnoreCase(cccd)))
+                .findFirst()
+                .orElse(null);
+
+        Contract contract = null;
+        if (tenant != null
+                && tenant.getContracts() != null
+                && !tenant.getContracts().isEmpty()) {
+            contract = tenant.getContracts().get(0);
+        } else {
+            contract = contractRepository.findAll().stream()
+                    .filter(c -> c.getTenant() != null
+                            && ((c.getTenant().getEmail() != null
+                                            && c.getTenant().getEmail().equalsIgnoreCase(email))
+                                    || (c.getTenant().getPhone() != null
+                                            && c.getTenant().getPhone().equalsIgnoreCase(phone))
+                                    || (c.getTenant().getCccd() != null
+                                            && c.getTenant().getCccd().equalsIgnoreCase(cccd))))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        Room room = contract != null ? contract.getRoom() : null;
+        Motel motel = room != null ? room.getMotel() : null;
+        com.rrms.rrms.models.Account host =
+                motel != null ? motel.getAccount() : (contract != null ? contract.getAccount() : null);
+
+        String roomStatus =
+                (contract != null && contract.getStatus() == ContractStatus.ACTIVE) ? "Đang thuê" : "Đang thuê";
+        String roomCode = room != null && room.getName() != null ? room.getName() : "PHÒNG 302";
+        String roomAddress =
+                motel != null && motel.getAddress() != null ? motel.getAddress() : "123 Đường Lê Lợi, Quận 1, TP. HCM";
+        String roomArea = (room != null && room.getArea() != null)
+                ? String.format("%d m²", room.getArea())
+                : ((motel != null && motel.getArea() != null) ? String.format("%.0f m²", motel.getArea()) : "25 m²");
+        String roomFloor =
+                (room != null && room.getGroup() != null && !room.getGroup().isBlank())
+                        ? room.getGroup() + " (" + roomCode + ")"
+                        : "Tầng 3 (" + roomCode + ")";
+        Double priceVal = room != null && room.getPrice() != null ? room.getPrice() : 4500000.0;
+        String roomPrice = String.format("%,.0f đ/tháng", priceVal).replace(',', '.');
+
+        String hostName = host != null
+                ? (host.getFullName() + (host.getPhone() != null ? " (" + host.getPhone() + ")" : ""))
+                : "Trần Thị B (090xxxx123)";
+
+        String contractMonths = "4 tháng";
+        String contractExpiry = "Hết hạn 12/2026";
+        if (contract != null && contract.getCloseContract() != null) {
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.setTime(contract.getCloseContract());
+            int expMonth = cal.get(java.util.Calendar.MONTH) + 1;
+            int expYear = cal.get(java.util.Calendar.YEAR);
+            contractExpiry = String.format("Hết hạn %02d/%d", expMonth, expYear);
+
+            long diffMillis = contract.getCloseContract().getTime() - System.currentTimeMillis();
+            long diffDays = diffMillis / (1000 * 60 * 60 * 24);
+            long months = Math.max(1, diffDays / 30);
+            contractMonths = months + " tháng";
+        }
+
+        com.rrms.rrms.models.Invoice invoice = null;
+        if (contract != null) {
+            List<com.rrms.rrms.models.Invoice> invoices =
+                    invoiceRepository.findByContractContractId(contract.getContractId());
+            if (invoices != null && !invoices.isEmpty()) {
+                Invoice rawInv = invoices.get(invoices.size() - 1);
+                invoice = invoiceRepository
+                        .findDetailedByInvoiceId(rawInv.getInvoiceId())
+                        .orElse(rawInv);
+            }
+        }
+
+        boolean isPaid = invoice != null && invoice.getPaymentStatus() == com.rrms.rrms.enums.PaymentStatus.PAID;
+        String invoiceStatusStr = isPaid ? "Đã thanh toán" : "Chưa đóng";
+        String invoiceMonthStr = invoice != null && invoice.getInvoiceCreateMonth() != null
+                ? invoice.getInvoiceCreateMonth().toString()
+                : "2026-08";
+        String invoiceDueStr = invoice != null && invoice.getDueDate() != null
+                ? "Đến hạn "
+                        + String.format(
+                                "%02d/%02d",
+                                invoice.getDueDate().getDayOfMonth(),
+                                invoice.getDueDate().getMonthValue())
+                : "Đến hạn 23/08";
+
+        List<com.rrms.rrms.dto.response.InvoiceItemResponse> invoiceItems = new ArrayList<>();
+        double totalAmount = priceVal;
+
+        // Item 1: Tiền phòng
+        invoiceItems.add(com.rrms.rrms.dto.response.InvoiceItemResponse.builder()
+                .label("Tiền phòng")
+                .amount(String.format("%,.0f đ", priceVal).replace(',', '.'))
+                .build());
+
+        if (invoice != null) {
+            // Service details
+            if (invoice.getDetailInvoices() != null) {
+                for (com.rrms.rrms.models.InvoiceDetail detail : invoice.getDetailInvoices()) {
+                    if (detail.getRoomService() != null
+                            && detail.getRoomService().getService() != null) {
+                        com.rrms.rrms.models.MotelService ms =
+                                detail.getRoomService().getService();
+                        double servicePrice =
+                                ms.getPrice() != null ? ms.getPrice().doubleValue() : 0.0;
+                        int qty = detail.getRoomServiceQuantity() != null ? detail.getRoomServiceQuantity() : 1;
+                        double itemTotal = servicePrice * qty;
+                        totalAmount += itemTotal;
+                        String labelName = ms.getNameService() + (qty > 1 ? (" (" + qty + ")") : "");
+                        invoiceItems.add(com.rrms.rrms.dto.response.InvoiceItemResponse.builder()
+                                .label(labelName)
+                                .amount(String.format("%,.0f đ", itemTotal).replace(',', '.'))
+                                .build());
+                    }
+                }
+            }
+
+            // Addition items (Cộng thêm / Giảm trừ / Phụ phí)
+            if (invoice.getAdditionItems() != null) {
+                for (com.rrms.rrms.models.InvoiceAdditionItem add : invoice.getAdditionItems()) {
+                    double addAmt = add.getAmount() != null ? add.getAmount() : 0.0;
+                    boolean isAdd = add.getIsAddition() != null ? add.getIsAddition() : true;
+                    double effectiveAmt = isAdd ? addAmt : -addAmt;
+                    totalAmount += effectiveAmt;
+                    String reason = add.getReason() != null ? add.getReason() : "Cộng thêm/Giảm trừ";
+                    invoiceItems.add(com.rrms.rrms.dto.response.InvoiceItemResponse.builder()
+                            .label(reason)
+                            .amount(String.format("%,.0f đ", effectiveAmt).replace(',', '.'))
+                            .build());
+                }
+            }
+        }
+
+        String invoiceTotalStr = String.format("%,.0f đ", totalAmount).replace(',', '.');
+        String invoiceAmountStr = String.format("%,.0f", totalAmount).replace(',', '.');
+
+        return com.rrms.rrms.dto.response.CustomerDashboardResponse.builder()
+                .customerName(fullName)
+                .roomStatus(roomStatus)
+                .roomCode(roomCode)
+                .roomAddress(roomAddress)
+                .roomArea(roomArea)
+                .roomFloor(roomFloor)
+                .roomPrice(roomPrice)
+                .hostName(hostName)
+                .invoiceAmount(invoiceAmountStr)
+                .invoiceStatus(invoiceStatusStr)
+                .invoiceDue(invoiceDueStr)
+                .invoiceMonth(invoiceMonthStr)
+                .isInvoicePaid(isPaid)
+                .invoiceItems(invoiceItems)
+                .invoiceTotal(invoiceTotalStr)
+                .contractMonths(contractMonths)
+                .contractExpiry(contractExpiry)
+                .myPosts(null)
+                .build();
     }
 }

@@ -17,6 +17,7 @@ import {
 import { getTRCByMotelId } from '~/apis/TRCAPI'
 import { getProfileByUsername } from '~/apis/accountAPI'
 import { getMotelById } from '~/apis/motelAPI'
+import { resolveAddress } from '~/utils/addressResolver'
 
 const SoftwareContractPreview = ({ setIsAdmin }) => {
   const { motelId } = useParams()
@@ -38,9 +39,22 @@ const SoftwareContractPreview = ({ setIsAdmin }) => {
           username ? getProfileByUsername(username).catch(() => null) : Promise.resolve(null),
           motelId ? getMotelById(motelId).catch(() => null) : Promise.resolve(null)
         ])
-        setTrc(trcRes?.data?.result || null)
+
+        let trcData = trcRes?.data?.result || null
+        if (Array.isArray(trcData)) trcData = trcData[0] || null
+        if (trcData) {
+          if (trcData.permanentaddress) trcData.permanentaddress = await resolveAddress(trcData.permanentaddress)
+          if (trcData.permanentAddress) trcData.permanentAddress = await resolveAddress(trcData.permanentAddress)
+        }
+
+        let motelData = motelRes?.data?.result || null
+        if (motelData && motelData.address) {
+          motelData.address = await resolveAddress(motelData.address)
+        }
+
+        setTrc(trcData)
         setProfile(profileRes || null)
-        setMotel(motelRes?.data?.result || null)
+        setMotel(motelData)
       } catch (err) {
         console.error('Error fetching data for contract preview:', err)
       } finally {
@@ -55,8 +69,9 @@ const SoftwareContractPreview = ({ setIsAdmin }) => {
 
   const formatDate = (dateString) => {
     if (!dateString) return '...............................'
+    if (typeof dateString === 'string' && dateString.includes('/')) return dateString
     const date = new Date(dateString)
-    if (isNaN(date)) return '...............................'
+    if (isNaN(date.getTime())) return '...............................'
     const day = date.getDate().toString().padStart(2, '0')
     const month = (date.getMonth() + 1).toString().padStart(2, '0')
     const year = date.getFullYear()
@@ -71,29 +86,32 @@ const SoftwareContractPreview = ({ setIsAdmin }) => {
   }
 
   const today = new Date()
-  const todayStr = `ngày ${today.getDate()} tháng ${today.getMonth() + 1} năm ${today.getFullYear()}`
 
-  // ── Resolved values: ưu tiên TRC, fallback sang Profile ──────────────────────
+  // ── Resolved values: ưu tiên TRC (Tờ khai tạm trú / Thông tin đại diện), fallback sang Profile ──
 
-  const landlordName = trc?.representativename || profile?.fullName || '...............................'
-  const landlordBirth = formatDate(trc?.birth || profile?.birthday)
-  const landlordCCCD = trc?.identifier || profile?.cccd || '...............................'
-  const landlordDateOfIssue = formatDate(trc?.dateofissue || profile?.dateOfIssue)
-  const landlordPlaceOfIssue = trc?.placeofissue || profile?.placeOfIssue || '...............................'
-  const landlordPhone = trc?.phone || profile?.phone || '...............................'
-  const landlordAddress = trc?.permanentaddress || profile?.address || '...................................................'
+  const trcData = Array.isArray(trc) ? trc[0] : trc
+
+  const landlordName = trcData?.representativename || trcData?.representativeName || profile?.fullName || '...............................'
+  const landlordCCCD = trcData?.identifier || profile?.cccd || '...............................'
+  const landlordDateOfIssue = formatDate(trcData?.dateofissue || trcData?.dateOfIssue || profile?.dateOfIssue)
+  const landlordPlaceOfIssue = trcData?.placeofissue || trcData?.placeOfIssue || profile?.placeOfIssue || '...............................'
+  const landlordAddress = trcData?.permanentaddress || trcData?.permanentAddress || profile?.address || '...................................................'
   const motelAddress = motel?.address || '...................................................'
   const city = getCityFromAddress(motelAddress)
 
-  // ── HTML content của mẫu hợp đồng thuê phòng trọ mới ───────────────────────
+  // ── HTML content của mẫu hợp đồng thuê phòng trọ ───────────────────────────
   const getContractHtml = () => {
+    const currentDay = today.getDate()
+    const currentMonth = today.getMonth() + 1
+    const currentYear = today.getFullYear()
+
     return `
       <div style="font-family:'Times New Roman',serif;font-size:14px;line-height:1.75;color:#111827;">
         <h3 style="text-align:center;margin:0;font-weight:700;font-size:16px;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
         <p style="text-align:center;margin:4px 0 20px;font-weight:bold;">Độc lập – Tự do – Hạnh phúc</p>
         <h2 style="text-align:center;text-transform:uppercase;margin-bottom:24px;font-weight:bold;font-size:20px;">HỢP ĐỒNG CHO THUÊ PHÒNG TRỌ</h2>
         
-        <p>Hôm nay, ngày.........tháng …..năm 20…., tại căn nhà số..................Chúng tôi ký tên dưới đây gồm có:</p>
+        <p>Hôm nay, ngày <b>${currentDay}</b> tháng <b>${currentMonth}</b> năm <b>${currentYear}</b>, tại căn nhà số <b>${motelAddress}</b>. Chúng tôi ký tên dưới đây gồm có:</p>
         
         <p><strong>BÊN CHO THUÊ PHÒNG TRỌ (gọi tắt là Bên A):</strong></p>
         <p>Ông/bà (tên chủ hợp đồng): <b>${landlordName}</b></p>
@@ -161,7 +179,7 @@ const SoftwareContractPreview = ({ setIsAdmin }) => {
           </tbody>
         </table>
         
-        <p style="text-align:right;margin-top:20px;font-style:italic;">${city}, ${todayStr}</p>
+        <p style="text-align:right;margin-top:20px;font-style:italic;">${city}, ngày ${currentDay} tháng ${currentMonth} năm ${currentYear}</p>
         <table style="width:100%;border-collapse:collapse;margin-top:24px;">
           <tbody>
             <tr>

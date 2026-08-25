@@ -33,16 +33,23 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
         return
       }
 
-      const [serviceRes, roomRes, invoiceRes] = await Promise.all([
+      const [serviceRes, roomRes] = await Promise.all([
         getMotelDetail(id),
-        getRoomsByMotelId(id),
-        httpClient.get(`/api/v1/invoices/motel/${id}`)
+        getRoomsByMotelId(id)
       ])
+
+      // Invoice gọi riêng để lỗi 500 không block service+room
+      let fetchedInvoices = []
+      try {
+        const invoiceRes = await httpClient.get(`/api/v1/invoices/motel/${id}`)
+        fetchedInvoices = invoiceRes?.data?.result?.items ?? invoiceRes?.data?.result?.content ?? []
+      } catch (invoiceErr) {
+        console.warn('[ServiceManager] Invoice API error (non-fatal):', invoiceErr?.response?.status, invoiceErr?.message)
+      }
 
       if (serviceRes?.code === 200 && serviceRes.result?.motelServices) {
         const services = serviceRes.result.motelServices || []
         const fetchedRooms = roomRes?.result || []
-        const fetchedInvoices = invoiceRes?.data?.result?.items || []
 
         setRooms(fetchedRooms)
         setInvoices(fetchedInvoices)
@@ -82,7 +89,17 @@ const ServiceManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
     const filterYearMonthStr = `${selectedMonth.year}-${String(selectedMonth.month).padStart(2, '0')}`
 
     // Lọc hóa đơn của tháng được chọn
-    const monthlyInvoices = invoices.filter((inv) => inv.invoiceCreateMonth === filterYearMonthStr)
+    // invoiceCreateMonth có thể là string "2026-08" hoặc object {year, monthValue} từ backend YearMonth
+    const normalizeYearMonth = (ym) => {
+      if (!ym) return ''
+      if (typeof ym === 'string') return ym
+      if (typeof ym === 'object' && ym.year && ym.monthValue) {
+        return `${ym.year}-${String(ym.monthValue).padStart(2, '0')}`
+      }
+      return String(ym)
+    }
+    const monthlyInvoices = invoices.filter((inv) => normalizeYearMonth(inv.invoiceCreateMonth) === filterYearMonthStr)
+
 
     return rooms.map((room) => {
       // Tìm hóa đơn của phòng này trong tháng đó

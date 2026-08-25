@@ -25,4 +25,6 @@ public interface ITenantService {
     List<TenantResponse> getAllTenantsByMotelId(UUID motelId);
 
     List<TenantSummaryDTO> getTenantSummary();
+
+    com.rrms.rrms.dto.response.CustomerDashboardResponse getCustomerDashboard(String username);
 }

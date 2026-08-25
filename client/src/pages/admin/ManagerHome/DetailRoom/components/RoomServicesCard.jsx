@@ -53,18 +53,23 @@ const RoomServicesCard = ({ roomServices }) => {
             <TableBody>
               {roomServices && roomServices.length > 0 ? (
                 roomServices.map((roomService, index) => {
-                  const service = roomService.service
-                  const unit = service.chargetype === 'Theo người' ? 'người' : service.chargetype
+                  const service = roomService?.service || roomService || {}
+                  const chargetype = service?.chargetype || roomService?.chargetype || 'Lần'
+                  const unit = chargetype === 'Theo người' ? 'người' : chargetype
+                  const nameService = service?.nameService || roomService?.nameService || 'Dịch vụ'
+                  const price = service?.price ?? roomService?.price ?? 0
+                  const quantity = roomService?.quantity ?? 1
+
                   return (
                     <TableRow key={index} hover>
                       <TableCell>
                         <Typography variant="body2" fontWeight="500">
-                          {service.nameService}
+                          {nameService}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body2">
-                          {roomService.quantity} {unit}
+                          {quantity} {unit}
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
@@ -74,7 +79,7 @@ const RoomServicesCard = ({ roomServices }) => {
                       </TableCell>
                       <TableCell align="right">
                         <Typography variant="body2" fontWeight="500" color="primary">
-                          {service.price.toLocaleString('vi-VN')}đ/{unit}
+                          {price.toLocaleString('vi-VN')}đ/{unit}
                         </Typography>
                       </TableCell>
                     </TableRow>

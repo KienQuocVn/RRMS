@@ -3,7 +3,6 @@ package com.rrms.rrms.services.servicesImp;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -95,6 +94,7 @@ public class InvoiceService implements IInvoiceService {
     }
 
     @Override
+    @Transactional
     public void cancelInvoice(UUID invoiceId) {
         Invoice invoice = getDetailedInvoice(invoiceId);
 
@@ -111,6 +111,7 @@ public class InvoiceService implements IInvoiceService {
     }
 
     @Override
+    @Transactional
     public InvoiceResponse createInvoice(InvoiceRequest request) {
         Contract contract = contractRepository
                 .findById(request.getContractId())
@@ -246,6 +247,7 @@ public class InvoiceService implements IInvoiceService {
     }
 
     @Override
+    @Transactional
     public void deleteInvoice(UUID invoiceId) {
         Invoice invoice = getDetailedInvoice(invoiceId);
 
@@ -265,6 +267,7 @@ public class InvoiceService implements IInvoiceService {
     }
 
     @Override
+    @Transactional
     public InvoiceResponse updateInvoice(UUID invoiceId, UpdateInvoiceRequest request) {
         Invoice invoice = getDetailedInvoice(invoiceId);
 
@@ -362,7 +365,10 @@ public class InvoiceService implements IInvoiceService {
         if (date == null) {
             return fallback == null ? LocalDate.now() : fallback;
         }
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        if (date instanceof java.sql.Date) {
+            return ((java.sql.Date) date).toLocalDate();
+        }
+        return new java.sql.Date(date.getTime()).toLocalDate();
     }
 
     private double resolveBasePrice(Contract contract, Room room) {

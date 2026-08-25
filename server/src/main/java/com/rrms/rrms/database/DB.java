@@ -29,7 +29,6 @@ import com.rrms.rrms.repositories.AccountRepository;
 import com.rrms.rrms.repositories.MotelDeviceRepository;
 import com.rrms.rrms.repositories.MotelServiceRepository;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -52,7 +51,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Transactional
 @Profile("dev")
-@RequiredArgsConstructor
 public class DB {
 
     private final AccountRepository accountRepository;
@@ -65,6 +63,27 @@ public class DB {
     private final ContractSeeder contractSeeder;
     private final OperationSeeder operationSeeder;
     private final MarketplaceSeeder marketplaceSeeder;
+
+    public DB(
+            AccountRepository accountRepository,
+            MotelServiceRepository motelServiceRepository,
+            MotelDeviceRepository motelDeviceRepository,
+            AccountSeeder accountSeeder,
+            CatalogSeeder catalogSeeder,
+            PropertySeeder propertySeeder,
+            ContractSeeder contractSeeder,
+            OperationSeeder operationSeeder,
+            MarketplaceSeeder marketplaceSeeder) {
+        this.accountRepository = accountRepository;
+        this.motelServiceRepository = motelServiceRepository;
+        this.motelDeviceRepository = motelDeviceRepository;
+        this.accountSeeder = accountSeeder;
+        this.catalogSeeder = catalogSeeder;
+        this.propertySeeder = propertySeeder;
+        this.contractSeeder = contractSeeder;
+        this.operationSeeder = operationSeeder;
+        this.marketplaceSeeder = marketplaceSeeder;
+    }
 
     @Bean
     CommandLineRunner initDatabase() {
@@ -85,6 +104,12 @@ public class DB {
             accountSeeder.seedHost2();
             Account employee = accountSeeder.seedEmployee();
             Account customer = accountSeeder.seedCustomer();
+            Account broker = null;
+            try {
+                broker = accountSeeder.seedBroker();
+            } catch (Exception e) {
+                log.warn("Failed to seed broker account: {}", e.getMessage());
+            }
 
             // ── 3. Danh mục tĩnh ──────────────────────────────────────────────
             Map<String, TypeRoom> typeRooms = catalogSeeder.seedTypeRooms();
@@ -106,6 +131,7 @@ public class DB {
             // ── 5. Hợp đồng template & Môi giới ──────────────────────────────
             contractSeeder.seedContractTemplates(motels);
             contractSeeder.seedBrokers(motels);
+            contractSeeder.seedTemporaryContracts(motels, host);
 
             // ── 6. Tenants & Contracts với đầy đủ trạng thái ─────────────────
             // Số lượng phòng OCCUPIED = rooms có i%7 ∈ {1,2,3,4,6} = 5 phòng/motel × 10 motel = 50
@@ -115,6 +141,7 @@ public class DB {
             contractSeeder.seedContractDetails(contracts, tenants, devices);
 
             // ── 7. Vận hành ───────────────────────────────────────────────────
+            operationSeeder.seedInvoices(contracts);
             operationSeeder.seedReservations(rooms);
             operationSeeder.seedSupports(customer, employee);
 

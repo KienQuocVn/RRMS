@@ -201,7 +201,7 @@ const MotelDashboard = ({ Motel }) => {
           ...s,
           isSelected: true,
           quantity: s.quantity || 1,
-          totalPrice: (s.quantity || 1) * (s.service?.price || 0)
+          totalPrice: (s.quantity || 1) * (s.price || s.service?.price || 0)
         }))
         setRoomServices(mapped)
       } else {

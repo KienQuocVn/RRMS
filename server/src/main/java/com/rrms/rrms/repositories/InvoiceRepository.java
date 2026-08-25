@@ -33,11 +33,11 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
                     + "WHERE m.motelId = :motelId")
     Page<UUID> findInvoiceIdsByMotelId(@Param("motelId") UUID motelId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"contract", "contract.room", "contract.account"})
+    @EntityGraph(attributePaths = {"contract", "contract.room", "contract.room.motel", "contract.account", "tenant"})
     @Query("SELECT DISTINCT i FROM Invoice i WHERE i.invoiceId IN :invoiceIds")
     List<Invoice> findDetailedByInvoiceIdIn(@Param("invoiceIds") Collection<UUID> invoiceIds);
 
-    @EntityGraph(attributePaths = {"contract", "contract.room", "contract.account"})
+    @EntityGraph(attributePaths = {"contract", "contract.room", "contract.room.motel", "contract.account", "tenant"})
     @Query("SELECT i FROM Invoice i WHERE i.invoiceId = :invoiceId")
     Optional<Invoice> findDetailedByInvoiceId(@Param("invoiceId") UUID invoiceId);
 }
