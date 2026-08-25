@@ -18,7 +18,10 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           port: ${{ secrets.VPS_PORT }}
           username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           password: ${{ secrets.VPS_PASSWORD }}
+          timeout: 30s
+          command_timeout: 10m
           script: |
             if [ ! -f /var/www/rrms/rollback.sh ]; then
               echo "Lỗi: Không tìm thấy script /var/www/rrms/rollback.sh trên VPS."

@@ -69,7 +69,10 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           port: ${{ secrets.VPS_PORT }}
           username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           password: ${{ secrets.VPS_PASSWORD }}
+          timeout: 30s
+          command_timeout: 10m
           source: "server/${{ steps.jar.outputs.path }},client/dist,scripts/rollback.sh"
           target: /tmp/rrms-deploy
           debug: true
@@ -81,7 +84,10 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           port: ${{ secrets.VPS_PORT }}
           username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           password: ${{ secrets.VPS_PASSWORD }}
+          timeout: 30s
+          command_timeout: 10m
           script: |
             set -e
 
