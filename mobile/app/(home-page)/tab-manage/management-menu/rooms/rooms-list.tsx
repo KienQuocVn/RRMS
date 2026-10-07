@@ -4,7 +4,7 @@
  * Điều hướng từ: ManagementMenu > "Quản lý phòng"
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -19,7 +19,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { RefreshableScrollView } from "@/components/ui/refreshable-scroll-view";
 import { useAuth } from "@/hooks/use-auth";
 import { safeAsyncStorage } from "@/services/storage/safe-async-storage";
@@ -49,7 +49,7 @@ export default function RoomsListScreen() {
   const [activeFloor, setActiveFloor] = useState(0);
   const [selectedRoom, setSelectedRoom] = useState<RoomResponse2 | null>(null);
   const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
-  const slideAnim = React.useRef(new Animated.Value(600)).current;
+  const [slideAnim] = useState(() => new Animated.Value(600));
 
   const handleOpenBottomSheet = (room: RoomResponse2) => {
     setSelectedRoom(room);
@@ -124,11 +124,13 @@ export default function RoomsListScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.username, params.motelId]);
+  }, [user, params.motelId]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData]),
+  );
 
   // Sinh động danh sách tầng từ dữ liệu phòng thực tế
   const uniqueFloors = useMemo(() => {
@@ -151,9 +153,10 @@ export default function RoomsListScreen() {
   }, [rooms]);
 
   // Lấy tầng đang chọn
+  const safeActiveFloor = Math.min(activeFloor, Math.max(0, uniqueFloors.length - 1));
   const activeFloorName = useMemo(() => {
-    return uniqueFloors[activeFloor] || uniqueFloors[0] || "Tầng trệt";
-  }, [uniqueFloors, activeFloor]);
+    return uniqueFloors[safeActiveFloor] || uniqueFloors[0] || "Tầng trệt";
+  }, [uniqueFloors, safeActiveFloor]);
 
   // Lọc phòng theo tầng đang chọn
   const filteredRooms = useMemo(() => {
@@ -161,13 +164,6 @@ export default function RoomsListScreen() {
       (room) => (room.group?.trim() || "Tầng trệt") === activeFloorName
     );
   }, [rooms, activeFloorName]);
-
-  // Reset tab activeFloor về 0 nếu uniqueFloors thay đổi mà activeFloor vượt quá độ dài
-  useEffect(() => {
-    if (activeFloor >= uniqueFloors.length) {
-      setActiveFloor(0);
-    }
-  }, [uniqueFloors.length, activeFloor]);
 
   return (
     <View style={styles.container}>
@@ -224,7 +220,7 @@ export default function RoomsListScreen() {
               key={floor}
               style={[
                 styles.floorTab,
-                activeFloor === index && styles.floorTabActive,
+                safeActiveFloor === index && styles.floorTabActive,
               ]}
               onPress={() => setActiveFloor(index)}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -233,7 +229,7 @@ export default function RoomsListScreen() {
               <Text
                 style={[
                   styles.floorTabText,
-                  activeFloor === index && styles.floorTabTextActive,
+                  safeActiveFloor === index && styles.floorTabTextActive,
                 ]}
               >
                 {floor}
@@ -280,7 +276,7 @@ export default function RoomsListScreen() {
         onPress={() => {
           if (activeMotel) {
             router.push({
-              pathname: "/tab-manage/management-menu/motel-settings/add-room",
+              pathname: "/tab-manage/management-menu/rooms/add-room",
               params: { motelId: activeMotel.motelId }
             } as any);
           }

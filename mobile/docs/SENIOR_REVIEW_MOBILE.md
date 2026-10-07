@@ -399,7 +399,7 @@ export class ErrorBoundary extends Component<Props, State> {
 - [x] Tách `add-building.tsx` thành sub-components
 - [x] Tách `deposit.tsx` thành sub-components
 - [x] Tách `edit-building.tsx` thành sub-components
-- [ ] Tách `contract.tsx` thành sub-components
+- [x] Tách `contract.tsx` thành sub-components
 - [ ] Implement proper form validation (react-hook-form + zod)
 
 ### UX/UI Enhancement
@@ -449,15 +449,15 @@ Home → Chọn nhà trọ → Load rooms →
   Xóa phòng → Confirm → API call → Refresh list
 ```
 
-### 3. Luồng Hợp đồng (MỚI CHỈ CÓ UI)
+### 3. Luồng Hợp đồng (✅ ĐÃ HOÀN THÀNH - Kết nối API & Bottom Sheet thông báo)
 
 ```
 Chọn phòng → Lập hợp đồng →
   Chọn khách thuê (tìm hoặc tạo mới) →
   Điền thông tin hợp đồng →
-  Preview hợp đồng →
-  Xác nhận → API call →
-    Success → Cập nhật trạng thái phòng
+  Validate dữ liệu bắt buộc (*) →
+  Xác nhận → API call (insertTenant & createContract) →
+    Success → Hiển thị Bottom Sheet thông báo thành công & điều hướng (Thu tiền tháng đầu, Chia sẻ App/Mã kết nối, Về trang chủ, Lập HĐ khác)
 ```
 
 ### 4. Luồng Hóa đơn (MỚI CHỈ CÓ UI)
@@ -501,7 +501,7 @@ Chọn phòng → Lập hóa đơn →
 
 ### Phase 3: Business Flows (3-4 tuần)
 
-1. Luồng tạo hợp đồng hoàn chỉnh
+- [x] 1. Luồng tạo hợp đồng hoàn chỉnh (✅ Đã kết nối API & Bottom Sheet thông báo)
 2. Luồng lập hóa đơn hoàn chỉnh
 3. Luồng thanh toán
 4. Luồng cọc giữ chỗ

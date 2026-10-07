@@ -140,11 +140,14 @@ async function main() {
     !rawExpoArgs.includes('--no-clear') &&
     !rawExpoArgs.includes('--clear') &&
     !rawExpoArgs.includes('-c');
+  const hasHostOrOfflineFlag = rawExpoArgs.some((arg) =>
+    ['--offline', '--host', '--tunnel', '--lan', '--localhost'].includes(arg)
+  );
+
   const expoArgs = [
     'expo',
     'start',
-    '--host',
-    'lan',
+    ...(!hasHostOrOfflineFlag ? ['--host', 'lan'] : []),
     '--port',
     String(metroPort),
     ...(shouldClearCache ? ['-c'] : []),
@@ -155,12 +158,16 @@ async function main() {
     ? ['/d', '/s', '/c', `npx ${expoArgs.map(quoteWindowsArg).join(' ')}`]
     : expoArgs;
 
+  const isOffline = process.env.EXPO_OFFLINE !== undefined ? process.env.EXPO_OFFLINE : '1';
+
   const child = spawn(command, spawnArgs, {
     cwd: process.cwd(),
     stdio: 'inherit',
     shell: false,
     env: {
       ...process.env,
+      EXPO_OFFLINE: isOffline,
+      EXPO_NO_TELEMETRY: '1',
       EXPO_PUBLIC_API_URL: apiUrl,
       EXPO_PUBLIC_API_URL_CANDIDATES: apiCandidates,
       EXPO_PUBLIC_API_PORT: String(DEFAULT_BACKEND_PORT),

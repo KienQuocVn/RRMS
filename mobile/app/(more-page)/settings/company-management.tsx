@@ -175,13 +175,13 @@ const styles = StyleSheet.create({
   },
   bannerContainer: {
     flexDirection: "row",
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     alignItems: "center",
     marginBottom: Spacing.xl,
     borderWidth: 1,
-    borderColor: "#C8E6C9",
+    borderColor: "#20a9e722",
   },
   bannerLeft: {
     width: 80,

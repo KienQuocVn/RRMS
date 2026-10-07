@@ -1,10 +1,8 @@
 thuong
-#2b7ed7
-
+Tình trạng phòng đang thuê trong hệ thống
 
 nhat
 #20a9e722
-
 
 dam
 #0a58ca
@@ -18,84 +16,84 @@ dam
 ## Trụ 1 — Ứng dụng full-stack CRUD (15đ)
 
 - [x] Server REST API đủ 5 endpoint CRUD (GET list, GET chi tiết, POST, PUT, DELETE)
-  — *chưa có bằng chứng, cần xác nhận entity chính (Room? Tenant? Invoice?) đã đủ CRUD.*
+      — _chưa có bằng chứng, cần xác nhận entity chính (Room? Tenant? Invoice?) đã đủ CRUD._
 - [x] Database MySQL sống lại sau reboot VPS
-  — *bằng chứng: K5.3 xác nhận `rrms-mysql`, `rrms-redis` đều `Up (healthy)` sau `sudo reboot` (2026-07-16).*
+      — _bằng chứng: K5.3 xác nhận `rrms-mysql`, `rrms-redis` đều `Up (healthy)` sau `sudo reboot` (2026-07-16)._
 - [x] Dữ liệu CRUD còn nguyên vẹn sau reboot (không chỉ container sống, mà data thật còn)
-  — *cần tự kiểm tra: mở app, xem list Room/Tenant... có còn không.*
+      — _cần tự kiểm tra: mở app, xem list Room/Tenant... có còn không._
 - [x] Client CRUD đủ: form thêm có validate, sửa, xoá có xác nhận, loading/error state
-  — *chưa có bằng chứng, cần tự kiểm tra và chụp màn hình.*
+      — _chưa có bằng chứng, cần tự kiểm tra và chụp màn hình._
 - [x] Endpoint `/api/health` (hoặc `/actuator/health` tương đương của Spring Boot)
-  — *cần xác nhận: `curl -s https://rrms.click/api/health` (hoặc endpoint tương đương) trả về gì?*
+      — _cần xác nhận: `curl -s https://rrms.click/api/health` (hoặc endpoint tương đương) trả về gì?_
 
 ---
 
 ## Trụ 2 — Deploy VPS (20đ)
 
-*Dựa trên Phần A/B/B0/C đã hoàn thành*
+_Dựa trên Phần A/B/B0/C đã hoàn thành_
 
 - [x] Nginx reverse proxy, HTTPS qua domain `rrms.click`
-  — *bằng chứng: `https://rrms.click`, `https://rrms.click/grafana/` hoạt động qua Nginx.*
+      — _bằng chứng: `https://rrms.click`, `https://rrms.click/grafana/` hoạt động qua Nginx._
 - [x] App tự sống bằng `systemd` (Spring Boot, không dùng PM2)
-  — *bằng chứng: K5.3 xác nhận `rrms-backend: active (running)` sau reboot, không cần thao tác tay.*
+      — _bằng chứng: K5.3 xác nhận `rrms-backend: active (running)` sau reboot, không cần thao tác tay._
 - [x] Reboot VPS → app + nginx + DB + monitoring tự sống lại
-  — *bằng chứng đầy đủ, kết quả thực tế ghi rõ ngày 2026-07-16 trong K5.3.*
+      — _bằng chứng đầy đủ, kết quả thực tế ghi rõ ngày 2026-07-16 trong K5.3._
 - [x] HTTP tự redirect sang HTTPS, Certbot tự gia hạn
-  — *giả định đã làm ở Phần A/B, cần xác nhận bằng: `curl -I http://rrms.click` → phải trả `301`/`308` sang `https://`.*
+      — _giả định đã làm ở Phần A/B, cần xác nhận bằng: `curl -I http://rrms.click` → phải trả `301`/`308` sang `https://`._
 - [x] Database có user/mật khẩu riêng, chỉ bind `127.0.0.1`
-  — *giả định đã làm, cần xác nhận: `sudo ss -tlnp | grep 3306` → phải thấy `127.0.0.1:3306`, không phải `0.0.0.0`.*
+      — _giả định đã làm, cần xác nhận: `sudo ss -tlnp | grep 3306` → phải thấy `127.0.0.1:3306`, không phải `0.0.0.0`._
 - [x] `ufw` chỉ mở đúng SSH/80/443
-  — *chưa có bằng chứng, cần chạy `sudo ufw status`.*
+      — _chưa có bằng chứng, cần chạy `sudo ufw status`._
 
 ---
 
 ## Trụ 3 — CI/CD tự động (25đ)
 
-*Dựa trên Phần D đã hoàn thành*
+_Dựa trên Phần D đã hoàn thành_
 
 - [x] CI: mọi push/PR chạy ≥1 unit test thật (test hàm logic, không phải `1 == 1`) + build thử
-  — *chưa có bằng chứng nội dung workflow, cần xem file `.github/workflows/ci.yml`.*
+      — _chưa có bằng chứng nội dung workflow, cần xem file `.github/workflows/ci.yml`._
 - [x] CD: push `main` → build → deploy → health check sau deploy; health fail → workflow đỏ
-  — *giả định đã làm ở Phần D, cần xác nhận có bước health check thật sau deploy không.*
+      — _giả định đã làm ở Phần D, cần xác nhận có bước health check thật sau deploy không._
 - [x] Diễn tập "code hỏng bị chặn": test fail → pipeline dừng → web KHÔNG đổi
-  — *cần làm/quay lại nếu chưa từng diễn tập cảnh này (bắt buộc cho video demo cảnh (c)).*
+      — _cần làm/quay lại nếu chưa từng diễn tập cảnh này (bắt buộc cho video demo cảnh (c))._
 - [x] Secrets nằm trong GitHub Secrets, không hardcode
-  — *giả định đạt: K1 nhắc `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` đã lưu sẵn trong GitHub Secrets từ lab CI/CD.*
+      — _giả định đạt: K1 nhắc `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` đã lưu sẵn trong GitHub Secrets từ lab CI/CD._
 
 ---
 
 ## Trụ 4 — Notify (gộp trong 25đ của Trụ 3)
 
-*Dựa trên Phần D/E đã hoàn thành*
+_Dựa trên Phần D/E đã hoàn thành_
 
 - [x] Bot Telegram tồn tại và dùng được
-  — *bằng chứng: K1 chọn Phương án A — tái sử dụng bot **RRMS Deploy** đã tạo ở lab CI/CD.*
+      — _bằng chứng: K1 chọn Phương án A — tái sử dụng bot **RRMS Deploy** đã tạo ở lab CI/CD._
 - [x] Tin nhắn deploy thành công kèm **tên người push + commit message**; thất bại kèm **link log**
-  — *chưa có bằng chứng nội dung tin nhắn thực tế, cần chụp lại 1 tin ✅ và 1 tin ❌ thật để xác nhận đủ format yêu cầu.*
+      — _chưa có bằng chứng nội dung tin nhắn thực tế, cần chụp lại 1 tin ✅ và 1 tin ❌ thật để xác nhận đủ format yêu cầu._
 
 ---
 
 ## Trụ 5 — Monitoring + Alert (15đ + 15đ)
 
-*Phần F/G/H/J/K đã hoàn thành*
+_Phần F/G/H/J/K đã hoàn thành_
 
 - [x] Metrics máy chủ (node-exporter) — K4.2, K5 xác nhận `up`.
 - [x] Metrics ứng dụng (`/actuator/prometheus`) trả Micrometer, không lộ ra ngoài qua domain
-  — *đã test: nội bộ trả metrics chuẩn (`# HELP`/`# TYPE`); qua `https://rrms.click/actuator/prometheus` cần trả về HTML React, không phải số liệu — đang chờ xác nhận kết quả cuối.*
+      — _đã test: nội bộ trả metrics chuẩn (`# HELP`/`# TYPE`); qua `https://rrms.click/actuator/prometheus` cần trả về HTML React, không phải số liệu — đang chờ xác nhận kết quả cuối._
 - [x] Dashboard Grafana qua HTTPS + Node Exporter Full — K tiêu chí đạt đã tick.
 - [x] Query PromQL app metrics (request/giây) — K tiêu chí đạt đã tick "Explore đọc metric backend".
 - [x] ≥3 quy tắc alert — thực tế có **5 quy tắc** (APIDown, NodeExporterDown, HighCPU, HighRAM, DiskAlmostFull), vượt yêu cầu tối thiểu — K3 đầy đủ.
 - [x] `send_resolved: true` — K2.2 đã cấu hình.
 - [x] Diễn tập APIDown FIRING→RESOLVED, HighCPU FIRING→RESOLVED — K5.1, K5.2 đã thực hiện thật (bằng tay).
 - [ ] **Quay video** diễn tập (`sudo systemctl stop rrms-backend` → FIRING → `start` → RESOLVED, kèm cảnh CPU vọt lên lúc `stress`)
-  — *đã diễn tập bằng tay nhưng chưa có bằng chứng đã quay màn hình — bắt buộc cho video demo.*
+      — _đã diễn tập bằng tay nhưng chưa có bằng chứng đã quay màn hình — bắt buộc cho video demo._
 
 ---
 
 ## Phần RAM (Phần B/G) — đã có quyết định rõ ràng
 
 - [x] Chọn Phương án B: loại bỏ Elasticsearch, phù hợp VPS chỉ 2GB RAM
-  — *bằng chứng: K ghi rõ "đã loại bỏ Elasticsearch, giới hạn `mem_limit` monitoring (Phần B/G)".*
+      — _bằng chứng: K ghi rõ "đã loại bỏ Elasticsearch, giới hạn `mem_limit` monitoring (Phần B/G)"._
 
 ---
 

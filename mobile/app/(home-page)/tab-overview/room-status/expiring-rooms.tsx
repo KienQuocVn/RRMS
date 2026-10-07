@@ -41,7 +41,9 @@ export default function ExpiringRoomsScreen() {
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>Thống kê phòng sắp kết thúc hợp đồng</Text>
+      <Text style={styles.headerTitle}>
+        Thống kê phòng sắp kết thúc hợp đồng
+      </Text>
     </View>
   );
 
@@ -69,9 +71,7 @@ export default function ExpiringRoomsScreen() {
       />
       <Text style={[styles.alertText, { color: "#F57C00" }]}>
         Thống kê danh sách phòng hiện tại{" "}
-        <Text style={{ fontWeight: "bold" }}>
-          Sắp kết thúc hợp đồng
-        </Text>
+        <Text style={{ fontWeight: "bold" }}>Sắp kết thúc hợp đồng</Text>
       </Text>
     </View>
   );
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   roomIconBox: {
     width: 36,
     height: 36,
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",

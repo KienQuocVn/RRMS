@@ -19,11 +19,15 @@ import { FilterTab } from "@/types/deposit.types";
 interface DepositFilterTabsProps {
   activeFilter: FilterTab;
   setActiveFilter: (filter: FilterTab) => void;
+  totalCount?: number;
+  depositingCount?: number;
 }
 
 export const DepositFilterTabs = ({
   activeFilter,
   setActiveFilter,
+  totalCount = 0,
+  depositingCount = 0,
 }: DepositFilterTabsProps) => (
   <View style={styles.filterContainer}>
     <ScrollView
@@ -56,7 +60,7 @@ export const DepositFilterTabs = ({
           Tất cả
         </Text>
         <View style={[styles.tabBadge, { backgroundColor: "#FF9800" }]}>
-          <Text style={styles.tabBadgeText}>5</Text>
+          <Text style={styles.tabBadgeText}>{totalCount}</Text>
         </View>
       </TouchableOpacity>
 
@@ -81,7 +85,7 @@ export const DepositFilterTabs = ({
           Đang cọc giữ chỗ
         </Text>
         <View style={[styles.tabBadge, { backgroundColor: "#FF5722" }]}>
-          <Text style={styles.tabBadgeText}>0</Text>
+          <Text style={styles.tabBadgeText}>{depositingCount}</Text>
         </View>
       </TouchableOpacity>
     </ScrollView>

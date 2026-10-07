@@ -13,6 +13,10 @@ export const roomService = {
     return apiClient.get(API_ENDPOINTS.ROOMS.GET_BY_MOTEL(motelId));
   },
 
+  getRoomsWithoutContract: async (motelId: string): Promise<ApiResponse<RoomResponse2[]>> => {
+    return apiClient.get(API_ENDPOINTS.ROOMS.GET_WITHOUT_CONTRACT(motelId));
+  },
+
   getServicesByRoom: async (roomId: string): Promise<ApiResponse<any[]>> => {
     return apiClient.get(API_ENDPOINTS.SERVICES.GET_BY_ROOM(roomId));
   },

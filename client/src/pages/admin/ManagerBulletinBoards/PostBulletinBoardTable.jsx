@@ -120,10 +120,7 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
             }}>
             {(rowsPerPage > 0 ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : rows).map(
               (row, i) => (
-                <TableRow
-                  hover
-                  key={row.bulletinBoardId ?? `bulletin-row-${page * rowsPerPage + i}`}
-                >
+                <TableRow hover key={row.bulletinBoardId ?? `bulletin-row-${page * rowsPerPage + i}`}>
                   <TableCell>{i + 1}</TableCell>
                   <TableCell
                     sx={{
@@ -148,23 +145,23 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
                   <TableCell>{row.roomArea}</TableCell>
                   <TableCell>
                     <Chip
-                      sx={{ 
-                        bgcolor: row.roomStatus === 'OCCUPIED' ? '#fff3e0' : '#e8f5e9', 
-                        color: row.roomStatus === 'OCCUPIED' ? '#ef6c00' : '#2e7d32', 
-                        fontWeight: '600', 
+                      sx={{
+                        bgcolor: row.roomStatus === 'OCCUPIED' ? '#fff3e0' : '#20a9e722',
+                        color: row.roomStatus === 'OCCUPIED' ? '#ef6c00' : '#2e7d32',
+                        fontWeight: '600',
                         fontSize: '0.75rem',
                         borderRadius: '6px',
-                        border: row.roomStatus === 'OCCUPIED' ? '1px solid #ffe0b2' : '1px solid #c8e6c9'
+                        border: row.roomStatus === 'OCCUPIED' ? '1px solid #ffe0b2' : '1px solid #20a9e722'
                       }}
                       label={row.roomStatus === 'OCCUPIED' ? 'Đang cho thuê' : 'Đang trống'}
                     />
                   </TableCell>
                   <TableCell>
                     <Chip
-                      sx={{ 
-                        bgcolor: 'black', 
-                        color: 'white', 
-                        fontWeight: '500', 
+                      sx={{
+                        bgcolor: 'black',
+                        color: 'white',
+                        fontWeight: '500',
                         fontSize: '0.75rem',
                         borderRadius: '6px'
                       }}
@@ -181,34 +178,37 @@ const PostRoomTable = ({ rows, handleOpen, setBulletinBoardId, refreshBulletinBo
                   </TableCell>
                   <TableCell>
                     <Chip
-                      sx={{ 
-                        bgcolor: (row.isHidden || row.roomStatus === 'OCCUPIED') 
-                          ? '#ffebee' 
-                          : row.isActive
-                            ? '#e8f5e9'
-                            : row.rejectionReason
-                              ? '#fff3e0'
-                              : '#efebe9',
-                        color: (row.isHidden || row.roomStatus === 'OCCUPIED') 
-                          ? '#c62828' 
-                          : row.isActive
-                            ? '#2e7d32'
-                            : row.rejectionReason
-                              ? '#ef6c00'
-                              : '#4e342e',
-                        fontWeight: '600', 
+                      sx={{
+                        bgcolor:
+                          row.isHidden || row.roomStatus === 'OCCUPIED'
+                            ? '#ffebee'
+                            : row.isActive
+                              ? '#20a9e722'
+                              : row.rejectionReason
+                                ? '#fff3e0'
+                                : '#efebe9',
+                        color:
+                          row.isHidden || row.roomStatus === 'OCCUPIED'
+                            ? '#c62828'
+                            : row.isActive
+                              ? '#2e7d32'
+                              : row.rejectionReason
+                                ? '#ef6c00'
+                                : '#4e342e',
+                        fontWeight: '600',
                         fontSize: '0.75rem',
                         borderRadius: '6px',
-                        border: (row.isHidden || row.roomStatus === 'OCCUPIED')
-                          ? '1px solid #ffcdd2'
-                          : row.isActive
-                            ? '1px solid #c8e6c9'
-                            : row.rejectionReason
-                              ? '1px solid #ffe0b2'
-                              : '1px solid #d7ccc8'
+                        border:
+                          row.isHidden || row.roomStatus === 'OCCUPIED'
+                            ? '1px solid #ffcdd2'
+                            : row.isActive
+                              ? '1px solid #20a9e722'
+                              : row.rejectionReason
+                                ? '1px solid #ffe0b2'
+                                : '1px solid #d7ccc8'
                       }}
                       label={
-                        (row.isHidden || row.roomStatus === 'OCCUPIED')
+                        row.isHidden || row.roomStatus === 'OCCUPIED'
                           ? 'Đang ẩn'
                           : row.isActive
                             ? 'Đang đăng'

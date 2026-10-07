@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
   verifiedBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
     alignSelf: "flex-start",
     paddingHorizontal: 8,
     paddingVertical: 4,

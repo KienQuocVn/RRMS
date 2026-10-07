@@ -71,7 +71,8 @@ export default function HomeHeader({
 
       // Đọc active motel id từ storage để đồng bộ
       const storedId = await safeAsyncStorage.getItem("rrms_active_motel_id");
-      const current = list.find((m) => m.motelId === storedId) ?? list[0] ?? null;
+      const current =
+        list.find((m) => m.motelId === storedId) ?? list[0] ?? null;
       setActiveMotel(current);
       if (current) {
         await safeAsyncStorage.setItem("rrms_active_motel_id", current.motelId);
@@ -233,21 +234,36 @@ export default function HomeHeader({
                 >
                   {motels.length === 0 ? (
                     <View style={styles.emptyContainer}>
-                      <Text style={styles.emptyText}>Không tìm thấy nhà trọ nào</Text>
+                      <Text style={styles.emptyText}>
+                        Không tìm thấy nhà trọ nào
+                      </Text>
                     </View>
                   ) : (
                     motels.map((building) => {
-                      const isActive = activeMotel?.motelId === building.motelId;
+                      const isActive =
+                        activeMotel?.motelId === building.motelId;
                       return (
-                        <View key={building.motelId} style={styles.buildingCard}>
+                        <View
+                          key={building.motelId}
+                          style={styles.buildingCard}
+                        >
                           {/* Info row */}
                           <View style={styles.buildingInfoRow}>
                             <View style={styles.buildingIconWrap}>
-                              <Ionicons name="home" size={26} color={Colors.primary} />
+                              <Ionicons
+                                name="home"
+                                size={26}
+                                color={Colors.primary}
+                              />
                             </View>
                             <View style={styles.buildingInfo}>
-                              <Text style={styles.buildingName}>{building.motelName}</Text>
-                              <Text style={styles.buildingAddress} numberOfLines={1}>
+                              <Text style={styles.buildingName}>
+                                {building.motelName}
+                              </Text>
+                              <Text
+                                style={styles.buildingAddress}
+                                numberOfLines={1}
+                              >
                                 {building.address || "Chưa cập nhật địa chỉ"}
                               </Text>
                               <Text style={styles.buildingRooms}>
@@ -283,7 +299,10 @@ export default function HomeHeader({
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                              style={[styles.btnManage, isActive && { backgroundColor: Colors.success }]}
+                              style={[
+                                styles.btnManage,
+                                isActive && { backgroundColor: Colors.success },
+                              ]}
                               activeOpacity={0.8}
                               onPress={() => handleSelectMotel(building)}
                             >
@@ -334,7 +353,11 @@ export default function HomeHeader({
                 style={styles.menuItem}
                 activeOpacity={0.7}
                 onPress={() =>
-                  closeMenu(() => router.push("/menu-management-home/add-building/add-building"))
+                  closeMenu(() =>
+                    router.push(
+                      "/menu-management-home/add-building/add-building",
+                    ),
+                  )
                 }
               >
                 <View style={[styles.menuIconWrap, styles.iconAdd]}>
@@ -361,7 +384,11 @@ export default function HomeHeader({
                 style={styles.menuItem}
                 activeOpacity={0.7}
                 onPress={() =>
-                  closeMenu(() => router.push("/menu-management-home/edit-building/edit-building"))
+                  closeMenu(() =>
+                    router.push(
+                      "/menu-management-home/edit-building/edit-building",
+                    ),
+                  )
                 }
               >
                 <View style={[styles.menuIconWrap, styles.iconDefault]}>
@@ -506,7 +533,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 8,
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -542,7 +569,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
     alignItems: "center",
     justifyContent: "center",
     marginRight: Spacing.md,
@@ -619,7 +646,7 @@ const styles = StyleSheet.create({
     marginRight: Spacing.md,
   },
   iconAdd: {
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
   },
   iconDefault: {
     backgroundColor: Colors.white,

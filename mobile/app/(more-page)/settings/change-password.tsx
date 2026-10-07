@@ -60,7 +60,7 @@ export default function ChangePasswordScreen() {
         {/* Logo Area */}
         <View style={styles.logoContainer}>
           <Text style={styles.logoTextMain}>
-            <Text style={{ color: Colors.textSuccess }}>{'// '}</Text>RRMS
+            <Text style={{ color: Colors.textSuccess }}>{"// "}</Text>RRMS
           </Text>
           <Text style={styles.logoTextSub}>
             Quản lý{" "}
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   hintBox: {
-    backgroundColor: "#F1F8E9", // Light green
+    backgroundColor: "#20a9e722", // Light green
     padding: Spacing.base,
     borderRadius: BorderRadius.md,
     marginTop: Spacing.sm,

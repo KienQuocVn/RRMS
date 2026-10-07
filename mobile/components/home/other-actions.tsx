@@ -46,7 +46,7 @@ const OTHER_ACTIONS: ActionListItem[] = [
   {
     id: "service-summary",
     icon: "bar-chart-outline",
-    iconBg: "#E8F5E9",
+    iconBg: "#20a9e722",
     iconColor: Colors.success,
     title: "Tổng kết dịch vụ khách sử dụng",
     description: "Thống kê dịch vụ điện nước, wifi, rác... khách sử dụng",

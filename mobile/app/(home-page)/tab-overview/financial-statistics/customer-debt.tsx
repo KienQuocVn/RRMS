@@ -170,7 +170,7 @@ export default function CustomerDebtScreen() {
         <View
           style={[
             styles.moneyCol,
-            { backgroundColor: "#E8F5E9", marginHorizontal: 8 },
+            { backgroundColor: "#20a9e722", marginHorizontal: 8 },
           ]}
         >
           <Text style={styles.moneyLabel}>Đã trả</Text>

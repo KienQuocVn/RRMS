@@ -69,9 +69,7 @@ export default function OverdueRoomsScreen() {
       />
       <Text style={[styles.alertText, { color: "#F44336" }]}>
         Thống kê danh sách phòng hiện tại{" "}
-        <Text style={{ fontWeight: "bold" }}>
-          Quá hạn hợp đồng
-        </Text>
+        <Text style={{ fontWeight: "bold" }}>Quá hạn hợp đồng</Text>
       </Text>
     </View>
   );
@@ -112,7 +110,12 @@ export default function OverdueRoomsScreen() {
             />
             <Text style={styles.detailLabel}>Hạn h.đồng</Text>
           </View>
-          <Text style={[styles.detailValue, { color: "#F44336", fontWeight: "bold" }]}>
+          <Text
+            style={[
+              styles.detailValue,
+              { color: "#F44336", fontWeight: "bold" },
+            ]}
+          >
             18/04/2026 - Đã quá hạn
           </Text>
         </View>
@@ -331,7 +334,7 @@ const styles = StyleSheet.create({
   roomIconBox: {
     width: 36,
     height: 36,
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",

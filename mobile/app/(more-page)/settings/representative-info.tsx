@@ -13,13 +13,14 @@ import {
 import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from 'expo-router';
 import { useRouter } from 'expo-router';
 
 import { BorderRadius, Colors, FontSizes, FontWeights, Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
 import { buildProfileUpdatePayload, profileService } from '@/services/api/profile.service';
 import { Profile } from '@/types/profile.types';
+import { CalendarDateField } from '@/components/ui/calendar-date-picker-modal';
 
 type RepresentativeForm = {
   fullName: string;
@@ -307,13 +308,7 @@ export default function RepresentativeInfoScreen() {
               <Text style={styles.label}>
                 Ngày sinh <Text style={styles.required}>*</Text>
               </Text>
-              <TextInput
-                style={styles.input}
-                value={form.birthday}
-                onChangeText={(value) => setField('birthday', value)}
-                placeholder="dd/mm/yyyy hoặc yyyy-mm-dd"
-                placeholderTextColor={Colors.gray400}
-              />
+              <CalendarDateField value={form.birthday} onChange={(value) => setField('birthday', value)} title="Ngày sinh" containerStyle={[styles.input, styles.datePicker]} textStyle={styles.dateInputText} />
             </View>
 
             <View style={styles.inputGroup}>
@@ -372,13 +367,7 @@ export default function RepresentativeInfoScreen() {
                 <Text style={styles.label}>
                   Ngày cấp <Text style={styles.required}>*</Text>
                 </Text>
-                <TextInput
-                  style={styles.input}
-                  value={form.dateOfIssue}
-                  onChangeText={(value) => setField('dateOfIssue', value)}
-                  placeholder="dd/mm/yyyy"
-                  placeholderTextColor={Colors.gray400}
-                />
+                <CalendarDateField value={form.dateOfIssue} onChange={(value) => setField('dateOfIssue', value)} title="Ngày cấp" containerStyle={[styles.input, styles.datePicker]} textStyle={styles.dateInputText} />
               </View>
             </View>
           </ScrollView>
@@ -510,6 +499,8 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     color: Colors.textPrimary,
   },
+  datePicker: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  dateInputText: { fontSize: FontSizes.md, color: Colors.textPrimary },
   footer: {
     flexDirection: 'row',
     padding: Spacing.base,

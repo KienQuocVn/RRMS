@@ -72,7 +72,7 @@ const SectionTitle = ({ icon, title, subtitle }) => (
         width: 40,
         height: 40,
         borderRadius: '50%',
-        bgcolor: '#E8F5E9',
+        bgcolor: '#20a9e722',
         color: '#172B1F',
         display: 'flex',
         alignItems: 'center',
@@ -115,7 +115,9 @@ const SummaryBox = ({ leftTitle, leftDetail, rightTitle = 'Thành tiền', amoun
         <Typography variant="body2" sx={{ color: '#374151' }}>
           {rightTitle}
         </Typography>
-        <Typography sx={{ fontSize: 18, fontWeight: 900, textDecoration: 'underline' }}>{formatCurrency(amount)}</Typography>
+        <Typography sx={{ fontSize: 18, fontWeight: 900, textDecoration: 'underline' }}>
+          {formatCurrency(amount)}
+        </Typography>
       </Box>
     </Stack>
   </Paper>
@@ -243,10 +245,7 @@ const InvoiceModal = ({
   }
 
   const addAdditionItem = () => {
-    setAdditionItems((previous) => [
-      ...previous,
-      { id: Date.now(), isAddition: true, amount: '', reason: '' }
-    ])
+    setAdditionItems((previous) => [...previous, { id: Date.now(), isAddition: true, amount: '', reason: '' }])
   }
 
   const updateAdditionItem = (id, field, value) => {
@@ -366,9 +365,7 @@ const InvoiceModal = ({
             </Box>
             <Typography sx={{ fontSize: 20, fontWeight: 800 }}>Lập hóa đơn cho &quot;{room?.name}&quot;</Typography>
           </Stack>
-          <IconButton
-            onClick={onClose}
-            sx={{ border: '3px solid #FBE6DE', width: 42, height: 42, color: '#111827' }}>
+          <IconButton onClick={onClose} sx={{ border: '3px solid #FBE6DE', width: 42, height: 42, color: '#111827' }}>
             <CloseIcon />
           </IconButton>
         </Stack>
@@ -446,7 +443,14 @@ const InvoiceModal = ({
             title="Thu tiền hằng tháng"
             subtitle={
               <>
-                Ngày vào: <Box component="span" sx={{ color: '#FF4B1F', fontWeight: 800 }}>{contract?.moveInDate || contract?.moveinDate || 'Chưa có'}</Box>. Chu kỳ thu: <Box component="span" sx={{ color: '#FF4B1F' }}>{contract?.collectionCycle || contract?.collectioncycle || 1} tháng, ngày 1 thu</Box>
+                Ngày vào:{' '}
+                <Box component="span" sx={{ color: '#FF4B1F', fontWeight: 800 }}>
+                  {contract?.moveInDate || contract?.moveinDate || 'Chưa có'}
+                </Box>
+                . Chu kỳ thu:{' '}
+                <Box component="span" sx={{ color: '#FF4B1F' }}>
+                  {contract?.collectionCycle || contract?.collectioncycle || 1} tháng, ngày 1 thu
+                </Box>
               </>
             }
           />
@@ -474,11 +478,7 @@ const InvoiceModal = ({
             amount={roomAmount}
           />
 
-          <SectionTitle
-            icon={<Inventory2OutlinedIcon />}
-            title="Tiền dịch vụ"
-            subtitle="Tính tiền dịch vụ khách xài"
-          />
+          <SectionTitle icon={<Inventory2OutlinedIcon />} title="Tiền dịch vụ" subtitle="Tính tiền dịch vụ khách xài" />
 
           <Stack spacing={1}>
             {invoiceData.serviceDetails.map((service) => (
@@ -502,7 +502,11 @@ const InvoiceModal = ({
                       {service.serviceName}
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#374151' }}>
-                      Giá: <Box component="span" sx={{ fontWeight: 800, textDecoration: 'underline' }}>{formatCurrency(service.servicePrice)}</Box> / {service.chargetype}
+                      Giá:{' '}
+                      <Box component="span" sx={{ fontWeight: 800, textDecoration: 'underline' }}>
+                        {formatCurrency(service.servicePrice)}
+                      </Box>{' '}
+                      / {service.chargetype}
                     </Typography>
                   </Box>
                   <TextField
@@ -543,7 +547,10 @@ const InvoiceModal = ({
 
           <Stack spacing={1}>
             {additionItems.map((item) => (
-              <Paper key={item.id} variant="outlined" sx={{ borderColor: '#1769FF', borderRadius: 1, overflow: 'hidden' }}>
+              <Paper
+                key={item.id}
+                variant="outlined"
+                sx={{ borderColor: '#1769FF', borderRadius: 1, overflow: 'hidden' }}>
                 <Grid container>
                   <Grid item xs={3}>
                     <Stack sx={{ height: '100%', borderRight: '1px solid #D1D5DB' }}>

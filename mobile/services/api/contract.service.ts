@@ -56,7 +56,14 @@ export const contractService = {
   /**
    * Lấy toàn bộ mẫu hợp đồng
    */
-  getTemplates: async (): Promise<any[]> => {
+  getTemplates: async (): Promise<any> => {
     return apiClient.get(API_ENDPOINTS.TEMPLATES.BASE);
+  },
+
+  /**
+   * Lấy danh sách mẫu hợp đồng theo Motel ID
+   */
+  getTemplatesByMotel: async (motelId: string): Promise<any> => {
+    return apiClient.get(`${API_ENDPOINTS.TEMPLATES.BASE}/motel/${motelId}`);
   },
 };

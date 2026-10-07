@@ -29,7 +29,7 @@ export default function RentalPost({
       {/* Banner card */}
       <View style={styles.card}>
         <View style={styles.cardContent}>
-          <View style={[styles.iconWrap, { backgroundColor: "#E8F5E9" }]}>
+          <View style={[styles.iconWrap, { backgroundColor: "#20a9e722" }]}>
             <Ionicons name="home-outline" size={32} color={Colors.primary} />
             <View style={styles.postIndicator}>
               <Ionicons

@@ -32,6 +32,7 @@ import { motelService } from "@/services/api/motel.service";
 import { roomService } from "@/services/api/room.service";
 import { contractService } from "@/services/api/contract.service";
 import { safeAsyncStorage } from "@/services/storage/safe-async-storage";
+import { CalendarDateField } from "@/components/ui/calendar-date-picker-modal";
 
 // ── Component ──
 export default function AddContractScreen() {
@@ -96,8 +97,8 @@ export default function AddContractScreen() {
         username: user?.username,
         price: parseFloat(price.replace(/\D/g, "")),
         deposit: parseFloat(deposit.replace(/\D/g, "") || "0"),
-        moveInDate,
-        closeContract: closeContract || undefined,
+        moveInDate: toBackendDate(moveInDate),
+        closeContract: closeContract ? toBackendDate(closeContract) : undefined,
         leaseTerm,
         collectionCycle,
         description,
@@ -238,18 +239,8 @@ export default function AddContractScreen() {
               placeholder="VD: 6000000"
               keyboardType="numeric"
             />
-            <FormInput
-              label="Ngày vào ở * (YYYY-MM-DD)"
-              value={moveInDate}
-              onChangeText={setMoveInDate}
-              placeholder="2026-01-01"
-            />
-            <FormInput
-              label="Ngày hết hạn HĐ (YYYY-MM-DD)"
-              value={closeContract}
-              onChangeText={setCloseContract}
-              placeholder="2027-01-01"
-            />
+            <DateField label="Ngày vào ở *" value={moveInDate} onChange={setMoveInDate} />
+            <DateField label="Ngày hết hạn HĐ" value={closeContract} onChange={setCloseContract} />
             <FormInput
               label="Thời hạn (tháng)"
               value={leaseTerm}
@@ -304,6 +295,15 @@ export default function AddContractScreen() {
       )}
     </KeyboardAvoidingView>
   );
+}
+
+function toBackendDate(date: string) {
+  const parts = date.split('/');
+  return parts.length === 3 ? `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}` : date;
+}
+
+function DateField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return <View style={{ marginBottom: Spacing.sm }}><Text style={styles.label}>{label}</Text><CalendarDateField value={value} onChange={onChange} title={label} containerStyle={styles.picker} textStyle={styles.pickerText} /></View>;
 }
 
 function FormInput({

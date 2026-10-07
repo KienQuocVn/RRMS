@@ -51,6 +51,7 @@ export const API_ENDPOINTS = {
   ROOMS: {
     BASE: '/api/v1/rooms',
     GET_BY_MOTEL: (motelId: string) => `/api/v1/rooms/motel/${motelId}`,
+    GET_WITHOUT_CONTRACT: (motelId: string) => `/api/v1/rooms/motel/${motelId}/without-contract`,
   },
 
   // 🛠️ Services & Devices
@@ -118,6 +119,12 @@ export const API_ENDPOINTS = {
   },
   RESERVE: {
     BASE: '/room-reservations',
+    GET_ALL: '/room-reservations',
+    GET_BY_ID: (id: string) => `/room-reservations/${id}`,
+    GET_BY_ROOM: (roomId: string) => `/room-reservations/room/${roomId}`,
+    CREATE: '/room-reservations',
+    UPDATE: (id: string) => `/room-reservations/${id}`,
+    DELETE: (id: string) => `/room-reservations/${id}`,
   },
   SUPPORT: {
     CREATE: '/support/create',

@@ -30,6 +30,7 @@ import {
 } from "@/constants/theme";
 import { tenantService } from "@/services/api/tenant.service";
 import { Gender, TenantResponse } from "@/types/tenant.types";
+import { CalendarDateField } from "@/components/ui/calendar-date-picker-modal";
 
 // ── Component ──
 export default function TenantDetailScreen() {
@@ -90,7 +91,7 @@ export default function TenantDetailScreen() {
         phone: phone.trim(),
         cccd: cccd.trim() || undefined,
         email: email.trim() || undefined,
-        birthday: birthday.trim() || undefined,
+        birthday: birthday.trim() ? toBackendDate(birthday) : undefined,
         gender,
         address: address.trim() || undefined,
         job: job.trim() || undefined,
@@ -212,12 +213,8 @@ export default function TenantDetailScreen() {
             placeholder="example@gmail.com"
             keyboardType="email-address"
           />
-          <Field
-            label="Ngày sinh (YYYY-MM-DD)"
-            value={birthday}
-            onChangeText={setBirthday}
-            placeholder="2000-01-15"
-          />
+          <Text style={styles.label}>Ngày sinh</Text>
+          <CalendarDateField value={birthday} onChange={setBirthday} title="Ngày sinh" containerStyle={styles.datePicker} textStyle={styles.datePickerText} />
 
           <Text style={styles.label}>Giới tính</Text>
           <View style={styles.genderRow}>
@@ -328,6 +325,11 @@ function Field({ label, value, onChangeText, placeholder, keyboardType }: any) {
   );
 }
 
+function toBackendDate(date: string) {
+  const parts = date.split('/');
+  return parts.length === 3 ? `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}` : date;
+}
+
 // ── Styles ──
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F3F4F6" },
@@ -424,6 +426,8 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     backgroundColor: Colors.white,
   },
+  datePicker: { height: 48, borderWidth: 1, borderColor: Colors.borderLight, borderRadius: BorderRadius.md, paddingHorizontal: Spacing.md, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.white },
+  datePickerText: { fontSize: FontSizes.md, color: Colors.textPrimary },
   genderRow: { flexDirection: "row", gap: Spacing.sm },
   genderChip: {
     flex: 1,

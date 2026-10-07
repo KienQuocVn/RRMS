@@ -69,9 +69,7 @@ export default function EmptyRoomsScreen() {
       />
       <Text style={[styles.alertText, { color: "#F57C00" }]}>
         Thống kê danh sách phòng hiện tại{" "}
-        <Text style={{ fontWeight: "bold" }}>
-          Đang trống
-        </Text>
+        <Text style={{ fontWeight: "bold" }}>Đang trống</Text>
       </Text>
     </View>
   );
@@ -272,7 +270,7 @@ const styles = StyleSheet.create({
   roomIconBox: {
     width: 36,
     height: 36,
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",

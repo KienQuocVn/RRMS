@@ -73,7 +73,7 @@ function ReserveAPlaceDetail({ toggleModal, modalOpen, roomId }) {
                   <path d="M5 12H2a10 10 0 0 0 20 0h-3"></path>
                 </svg>
               </div>
-              <h5 style={{ marginLeft: '10px' }}>Thông tin cọc giữ chỗ - {room ? room.name : <>Không có thông tin </>}</h5>
+              <h5 style={{ marginLeft: '10px' }}>Thông tin cọc giữ chỗ1 - {room ? room.name : <>Không có thông tin </>}</h5>
             </div>
           </ModalHeader>
 

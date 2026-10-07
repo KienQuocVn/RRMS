@@ -49,7 +49,7 @@ export default function RoomDepositScreen() {
     <View
       style={[
         styles.alertBanner,
-        { backgroundColor: "#E8F5E9", borderColor: "#81C784" },
+        { backgroundColor: "#20a9e722", borderColor: "#81C784" },
       ]}
     >
       <Ionicons
@@ -162,7 +162,7 @@ export default function RoomDepositScreen() {
         <View
           style={[
             styles.moneyCol,
-            { backgroundColor: "#E8F5E9", marginHorizontal: 8 },
+            { backgroundColor: "#20a9e722", marginHorizontal: 8 },
           ]}
         >
           <Text style={styles.moneyLabel}>Đã thu</Text>

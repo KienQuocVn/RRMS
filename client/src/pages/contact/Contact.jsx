@@ -273,7 +273,7 @@ const Contact = ({ setIsAdmin }) => {
                       borderRadius: 3,
                       textAlign: 'center',
                       borderColor: 'rgba(34, 197, 94, 0.18)',
-                      background: 'linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%)'
+                      background: 'linear-gradient(180deg, #2b7ed7 0%, #ffffff 100%)'
                     }}>
                     <Icon sx={{ fontSize: 42, color: '#2b7ed7' }} />
                     <Typography sx={{ mt: 1.25, fontSize: 24, fontWeight: 900, color: '#101828' }}>

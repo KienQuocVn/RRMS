@@ -69,9 +69,7 @@ export default function DepositedRoomsScreen() {
       />
       <Text style={[styles.alertText, { color: "#00BCD4" }]}>
         Thống kê danh sách phòng hiện tại{" "}
-        <Text style={{ fontWeight: "bold" }}>
-          Đang cọc giữ chỗ
-        </Text>
+        <Text style={{ fontWeight: "bold" }}>Đang cọc giữ chỗ</Text>
       </Text>
     </View>
   );
@@ -215,7 +213,9 @@ export default function DepositedRoomsScreen() {
               />
               <Text style={styles.priceLabel}>Cọc giữ chỗ</Text>
             </View>
-            <Text style={[styles.priceValue, { color: "#00BCD4" }]}>1.000.000 đ</Text>
+            <Text style={[styles.priceValue, { color: "#00BCD4" }]}>
+              1.000.000 đ
+            </Text>
           </View>
         </View>
       </View>
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   roomIconBox: {
     width: 36,
     height: 36,
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",

@@ -345,7 +345,7 @@ function InvoiceSuccessSheet({
   const actions = [
     {
       icon: "document-text-outline" as const,
-      title: "Chi tiết hóa đơn",
+      title: "Chi tiết hóa đơn1",
       subtitle: "Bạn có thể thu tiền, in, chia sẻ hóa đơn",
       path: `/tab-manage/management-menu/invoices/detail?invoiceId=${invoice?.invoiceId ?? ""}&totalAmount=${total}&roomName=${encodeURIComponent(roomName || invoice?.roomName || "Phòng 1")}`,
     },

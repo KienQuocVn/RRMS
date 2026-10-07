@@ -26,8 +26,8 @@ export default function LoginScreen() {
     authError === 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
       ? null
       : authError;
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('0911000002');
+  const [password, setPassword] = useState('123456789');
 
   const handleLogin = async () => {
     const trimmedPhone = phone.trim();

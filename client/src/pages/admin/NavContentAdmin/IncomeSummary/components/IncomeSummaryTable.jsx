@@ -258,7 +258,7 @@ const IncomeSummaryTable = ({ transactions, reportView, formatCurrency, onOpenDe
                           label={getRecurringLabel(transaction)}
                           sx={{
                             fontWeight: 700,
-                            backgroundColor: '#dcfce7',
+                            backgroundColor: '#20a9e722',
                             color: '#15803d'
                           }}
                         />

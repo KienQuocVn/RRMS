@@ -58,7 +58,7 @@ export default function RentingRoomsScreen() {
     <View
       style={[
         styles.alertBanner,
-        { backgroundColor: "#E8F5E9", borderColor: "#81C784" },
+        { backgroundColor: "#20a9e722", borderColor: "#81C784" },
       ]}
     >
       <Ionicons
@@ -69,9 +69,7 @@ export default function RentingRoomsScreen() {
       />
       <Text style={[styles.alertText, { color: Colors.success }]}>
         Thống kê danh sách phòng hiện tại{" "}
-        <Text style={{ fontWeight: "bold" }}>
-          Đang ở
-        </Text>
+        <Text style={{ fontWeight: "bold" }}>Đang ở</Text>
       </Text>
     </View>
   );
@@ -352,7 +350,7 @@ const styles = StyleSheet.create({
   roomIconBox: {
     width: 36,
     height: 36,
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",

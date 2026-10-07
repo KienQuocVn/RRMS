@@ -12,7 +12,7 @@ function OwnerBookingSection({ stats }) {
         overflow: 'hidden',
         borderRadius: 6,
         border: '1px solid rgba(15, 23, 42, 0.06)',
-        background: 'linear-gradient(135deg, #ecfeff 0%, #f0fdf4 42%, #fff7ed 100%)',
+        background: 'linear-gradient(135deg, #ecfeff 0%, #2b7ed7 42%, #fff7ed 100%)',
         boxShadow: '0 24px 60px rgba(15, 23, 42, 0.08)'
       }}>
       <Grid container spacing={0} alignItems="center">
@@ -31,12 +31,20 @@ function OwnerBookingSection({ stats }) {
                 }}>
                 <BoltRoundedIcon />
               </Box>
-              <Typography sx={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#0f766e' }}>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  fontWeight: 800,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: '#0f766e'
+                }}>
                 Dành Cho Chủ Nhà
               </Typography>
             </Stack>
 
-            <Typography sx={{ mt: 2, fontSize: { xs: 28, md: 38 }, fontWeight: 900, lineHeight: 1.15, color: '#0f172a' }}>
+            <Typography
+              sx={{ mt: 2, fontSize: { xs: 28, md: 38 }, fontWeight: 900, lineHeight: 1.15, color: '#0f172a' }}>
               Sale phòng trọ, lấp phòng trống nhanh hơn với một flow đăng tin rõ ràng và dễ chuyển đổi.
             </Typography>
 
@@ -45,7 +53,9 @@ function OwnerBookingSection({ stats }) {
             </Typography>
 
             <Typography sx={{ mt: 1.5, maxWidth: 680, color: '#475569', lineHeight: 1.8 }}>
-              RRMS đang hiển thị {stats.totalRooms} tin hoạt động, trong đó có {stats.readyRooms} lựa chọn có thể vào ở ngay. Đây là nền tảng phù hợp để chủ nhà tăng khả năng lấp đầy nhanh và theo dõi hiệu quả hiển thị tốt hơn.
+              RRMS đang hiển thị {stats.totalRooms} tin hoạt động, trong đó có {stats.readyRooms} lựa chọn có thể vào ở
+              ngay. Đây là nền tảng phù hợp để chủ nhà tăng khả năng lấp đầy nhanh và theo dõi hiệu quả hiển thị tốt
+              hơn.
             </Typography>
 
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3 }}>

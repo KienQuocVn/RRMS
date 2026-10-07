@@ -1,17 +1,37 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Colors, FontSizes, FontWeights, Spacing, BorderRadius } from '@/constants/theme';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
+import { RefreshableScrollView as ScrollView } from "@/components/ui/refreshable-scroll-view";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  Colors,
+  FontSizes,
+  FontWeights,
+  Spacing,
+  BorderRadius,
+} from "@/constants/theme";
 
 export default function NewChatScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
   const Header = () => (
-    <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : insets.top + Spacing.sm }]}>
+    <View
+      style={[
+        styles.header,
+        {
+          paddingTop:
+            Platform.OS === "ios" ? insets.top : insets.top + Spacing.sm,
+        },
+      ]}
+    >
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
       </TouchableOpacity>
@@ -20,7 +40,12 @@ export default function NewChatScreen() {
         <Text style={styles.headerSub}>Chọn phòng / khách chat</Text>
       </View>
       <TouchableOpacity style={styles.headerRightBtn}>
-        <Ionicons name="home-outline" size={16} color={Colors.textPrimary} style={{ marginRight: 4 }} />
+        <Ionicons
+          name="home-outline"
+          size={16}
+          color={Colors.textPrimary}
+          style={{ marginRight: 4 }}
+        />
         <Text style={styles.headerRightText}>Quoc</Text>
       </TouchableOpacity>
     </View>
@@ -29,17 +54,28 @@ export default function NewChatScreen() {
   const RoomItem = ({ title }: { title: string }) => (
     <View style={styles.roomItem}>
       <View style={styles.roomAvatar}>
-        <MaterialCommunityIcons name="storefront-outline" size={26} color="#8BC34A" />
+        <MaterialCommunityIcons
+          name="storefront-outline"
+          size={26}
+          color="#8BC34A"
+        />
       </View>
       <View style={styles.roomInfo}>
         <Text style={styles.roomTitle}>{title}</Text>
         <View style={styles.roomStatusRow}>
           <Ionicons name="close" size={12} color={Colors.error} />
-          <Text style={styles.roomStatusText}>Chưa kết nối - Chưa sử dụng APP</Text>
+          <Text style={styles.roomStatusText}>
+            Chưa kết nối - Chưa sử dụng APP
+          </Text>
         </View>
       </View>
       <TouchableOpacity style={styles.chatBtn}>
-        <Ionicons name="chatbubble-outline" size={14} color={Colors.white} style={{ marginRight: 6 }} />
+        <Ionicons
+          name="chatbubble-outline"
+          size={14}
+          color={Colors.white}
+          style={{ marginRight: 6 }}
+        />
         <Text style={styles.chatBtnText}>Chat</Text>
       </TouchableOpacity>
     </View>
@@ -48,9 +84,17 @@ export default function NewChatScreen() {
   return (
     <View style={styles.container}>
       <Header />
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
         <TouchableOpacity style={styles.chatAllBtn}>
-          <Ionicons name="home-outline" size={18} color={Colors.success} style={{ marginRight: 8 }} />
+          <Ionicons
+            name="home-outline"
+            size={18}
+            color={Colors.success}
+            style={{ marginRight: 8 }}
+          />
           <Text style={styles.chatAllText}>Chat với phòng</Text>
         </TouchableOpacity>
 
@@ -72,8 +116,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
@@ -84,8 +128,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: Colors.gray50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: Spacing.md,
   },
   headerTitleWrap: {
@@ -102,8 +146,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   headerRightBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -112,7 +156,7 @@ const styles = StyleSheet.create({
   },
   headerRightText: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.textPrimary,
   },
   scrollView: {
@@ -122,19 +166,19 @@ const styles = StyleSheet.create({
     padding: Spacing.base,
   },
   chatAllBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E8F5E9',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#20a9e722",
     paddingVertical: 14,
     borderRadius: 25,
     borderWidth: 1,
-    borderColor: '#C8E6C9',
+    borderColor: "#20a9e722",
     marginBottom: Spacing.lg,
   },
   chatAllText: {
     fontSize: FontSizes.md,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.success,
   },
   listContainer: {
@@ -142,8 +186,8 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.gray50,
   },
   roomItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray50,
@@ -152,9 +196,9 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: Spacing.md,
   },
   roomInfo: {
@@ -162,13 +206,13 @@ const styles = StyleSheet.create({
   },
   roomTitle: {
     fontSize: FontSizes.md,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.textPrimary,
     marginBottom: 4,
   },
   roomStatusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   roomStatusText: {
     fontSize: 12,
@@ -176,8 +220,8 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
   chatBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.success,
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -186,6 +230,6 @@ const styles = StyleSheet.create({
   chatBtnText: {
     color: Colors.white,
     fontSize: 13,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });

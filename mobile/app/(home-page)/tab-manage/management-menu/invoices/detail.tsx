@@ -243,7 +243,7 @@ export default function InvoiceDetailFigmaScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={19} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chi tiết hóa đơn</Text>
+        <Text style={styles.headerTitle}>Chi tiết hóa đơn1</Text>
         <TouchableOpacity style={styles.settingButton}>
           <Ionicons name="settings" size={19} color="#000" />
         </TouchableOpacity>

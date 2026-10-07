@@ -13,20 +13,29 @@ function DownloadOwnerBlockSection({ stats }) {
         overflow: 'hidden',
         borderRadius: 6,
         border: '1px solid rgba(15, 23, 42, 0.06)',
-        background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfeff 56%, #fff7ed 100%)',
+        background: 'linear-gradient(135deg, #2b7ed7 0%, #ecfeff 56%, #fff7ed 100%)',
         boxShadow: '0 24px 60px rgba(15, 23, 42, 0.08)'
       }}>
       <Grid container spacing={0} alignItems="stretch">
         <Grid item xs={12} md={7}>
           <Box sx={{ p: { xs: 2.5, md: 4 } }}>
-            <Typography sx={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#0f766e' }}>
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 800,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: '#0f766e'
+              }}>
               Download Owner Block
             </Typography>
-            <Typography sx={{ mt: 1.2, fontSize: { xs: 28, md: 38 }, fontWeight: 900, lineHeight: 1.12, color: '#0f172a' }}>
+            <Typography
+              sx={{ mt: 1.2, fontSize: { xs: 28, md: 38 }, fontWeight: 900, lineHeight: 1.12, color: '#0f172a' }}>
               Chủ nhà có thể quản lý tin đăng và vận hành danh sách phòng chuyên nghiệp hơn trên RRMS.
             </Typography>
             <Typography sx={{ mt: 1.5, maxWidth: 680, color: '#475569', lineHeight: 1.8 }}>
-              Hệ thống hiện đang hiển thị {stats.totalRooms} tin hoạt động trên {stats.provinces} tỉnh thành. Giao diện mới giúp đội ngũ quản trị tách rõ phần tìm kiếm cho người thuê và phần vận hành cho chủ nhà.
+              Hệ thống hiện đang hiển thị {stats.totalRooms} tin hoạt động trên {stats.provinces} tỉnh thành. Giao diện
+              mới giúp đội ngũ quản trị tách rõ phần tìm kiếm cho người thuê và phần vận hành cho chủ nhà.
             </Typography>
 
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3 }}>

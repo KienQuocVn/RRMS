@@ -3,6 +3,8 @@ import type { TabOwnedScreen } from "../../types";
 export { default as DepositScreen } from "@/app/(home-page)/tab-manage/quick-actions/deposit";
 export { default as ContractScreen } from "@/app/(home-page)/tab-manage/quick-actions/contract";
 export { default as CheckoutScreen } from "@/app/(home-page)/tab-manage/quick-actions/checkout";
+export { default as ReportEndContractScreen } from "@/app/(home-page)/tab-manage/quick-actions/report-end-contract";
+export { default as EndContractScreen } from "@/app/(home-page)/tab-manage/quick-actions/end-contract";
 export { default as InvoiceScreen } from "@/app/(home-page)/tab-manage/quick-actions/invoice";
 export { default as BillScreen } from "@/app/(home-page)/tab-manage/quick-actions/bill";
 export { default as CollectScreen } from "@/app/(home-page)/tab-manage/quick-actions/collect";
@@ -31,6 +33,22 @@ export const homeQuickActionScreens: TabOwnedScreen[] = [
     label: "Thanh ly tra phong",
     route: "/tab-manage/quick-actions/checkout",
     source: "app/(home-page)/tab-manage/quick-actions/checkout.tsx",
+  },
+  {
+    id: "report-end-contract",
+    tab: "home",
+    section: "quick-actions",
+    label: "Bao ket thuc hop dong",
+    route: "/tab-manage/quick-actions/report-end-contract",
+    source: "app/(home-page)/tab-manage/quick-actions/report-end-contract.tsx",
+  },
+  {
+    id: "end-contract",
+    tab: "home",
+    section: "quick-actions",
+    label: "Ket thuc hop dong",
+    route: "/tab-manage/quick-actions/end-contract",
+    source: "app/(home-page)/tab-manage/quick-actions/end-contract.tsx",
   },
   {
     id: "invoice",

@@ -1,17 +1,37 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Colors, FontSizes, FontWeights, Spacing, BorderRadius } from '@/constants/theme';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
+import { RefreshableScrollView as ScrollView } from "@/components/ui/refreshable-scroll-view";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  Colors,
+  FontSizes,
+  FontWeights,
+  Spacing,
+  BorderRadius,
+} from "@/constants/theme";
 
 export default function PermissionsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
   const Header = () => (
-    <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top : insets.top + Spacing.sm }]}>
+    <View
+      style={[
+        styles.header,
+        {
+          paddingTop:
+            Platform.OS === "ios" ? insets.top : insets.top + Spacing.sm,
+        },
+      ]}
+    >
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
       </TouchableOpacity>
@@ -22,7 +42,14 @@ export default function PermissionsScreen() {
     </View>
   );
 
-  const PermissionItem = ({ icon, title, description, status, statusColor, statusIcon }: any) => (
+  const PermissionItem = ({
+    icon,
+    title,
+    description,
+    status,
+    statusColor,
+    statusIcon,
+  }: any) => (
     <View style={styles.permissionItem}>
       <View style={styles.iconWrapper}>
         <Ionicons name={icon} size={24} color={Colors.textPrimary} />
@@ -31,8 +58,15 @@ export default function PermissionsScreen() {
         <Text style={styles.permissionTitle}>{title}</Text>
         <Text style={styles.permissionDesc}>{description}</Text>
         <View style={styles.statusRow}>
-          <Ionicons name={statusIcon} size={16} color={statusColor} style={{ marginRight: 4 }} />
-          <Text style={[styles.statusText, { color: statusColor }]}>{status}</Text>
+          <Ionicons
+            name={statusIcon}
+            size={16}
+            color={statusColor}
+            style={{ marginRight: 4 }}
+          />
+          <Text style={[styles.statusText, { color: statusColor }]}>
+            {status}
+          </Text>
         </View>
       </View>
     </View>
@@ -42,13 +76,17 @@ export default function PermissionsScreen() {
     <View style={styles.container}>
       <Header />
       <ScrollView style={styles.scrollView}>
-        
         <View style={styles.topSection}>
           <Text style={styles.alertText}>
             Cấp tất cả các quyền bên dưới để phần mềm hoạt động tốt nhất!
           </Text>
           <TouchableOpacity style={styles.btnViewAll}>
-            <Ionicons name="settings-outline" size={20} color={Colors.white} style={{ marginRight: 8 }} />
+            <Ionicons
+              name="settings-outline"
+              size={20}
+              color={Colors.white}
+              style={{ marginRight: 8 }}
+            />
             <Text style={styles.btnViewAllText}>Xem tất cả quyền</Text>
           </TouchableOpacity>
         </View>
@@ -91,7 +129,7 @@ export default function PermissionsScreen() {
             title="Quyền nhận thông báo"
             description="Là quyền cho phép ứng dụng nhận thông báo"
             status="Đã từ chối"
-            statusColor={Colors.success} 
+            statusColor={Colors.success}
             statusIcon="checkmark"
           />
           <PermissionItem
@@ -111,11 +149,11 @@ export default function PermissionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
@@ -127,8 +165,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: Colors.gray50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: Spacing.md,
   },
   headerTitleWrap: {
@@ -156,20 +194,20 @@ const styles = StyleSheet.create({
   },
   alertText: {
     fontSize: 13,
-    color: '#E65100',
+    color: "#E65100",
     marginBottom: Spacing.md,
   },
   btnViewAll: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: Colors.success,
     paddingVertical: 14,
     borderRadius: BorderRadius.md,
   },
   btnViewAllText: {
     fontSize: FontSizes.md,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.white,
   },
   listContainer: {
@@ -177,7 +215,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   permissionItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: Spacing.lg,
     paddingHorizontal: Spacing.base,
     borderBottomWidth: 1,
@@ -187,9 +225,9 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#E8F5E9',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#20a9e722",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: Spacing.md,
   },
   permissionInfo: {
@@ -197,7 +235,7 @@ const styles = StyleSheet.create({
   },
   permissionTitle: {
     fontSize: FontSizes.md,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.textPrimary,
     marginBottom: 4,
   },
@@ -208,11 +246,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   statusText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });

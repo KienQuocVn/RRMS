@@ -243,10 +243,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   optionsList: {
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: "#C8E6C9",
+    borderColor: "#20a9e722",
     marginBottom: Spacing.xl,
     overflow: "hidden",
   },
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: "#C8E6C9",
+    borderBottomColor: "#20a9e722",
   },
   optionText: {
     fontSize: FontSizes.md,

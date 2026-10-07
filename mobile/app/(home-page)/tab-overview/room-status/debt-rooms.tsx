@@ -69,9 +69,7 @@ export default function DebtRoomsScreen() {
       />
       <Text style={[styles.alertText, { color: "#F44336" }]}>
         Thống kê danh sách phòng hiện tại{" "}
-        <Text style={{ fontWeight: "bold" }}>
-          Đang nợ tiền
-        </Text>
+        <Text style={{ fontWeight: "bold" }}>Đang nợ tiền</Text>
       </Text>
     </View>
   );
@@ -219,7 +217,9 @@ export default function DebtRoomsScreen() {
               />
               <Text style={styles.priceLabel}>Tiền nợ</Text>
             </View>
-            <Text style={[styles.priceValue, { color: "#F44336" }]}>3.000.000 đ</Text>
+            <Text style={[styles.priceValue, { color: "#F44336" }]}>
+              3.000.000 đ
+            </Text>
           </View>
         </View>
       </View>
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   roomIconBox: {
     width: 36,
     height: 36,
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#20a9e722",
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",

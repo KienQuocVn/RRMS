@@ -1,10 +1,15 @@
-import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
-import { PlatformPressable } from '@react-navigation/elements';
+import { Pressable, type GestureResponderEvent } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
-export function HapticTab(props: BottomTabBarButtonProps) {
+// Thay thế BottomTabBarButtonProps + PlatformPressable từ @react-navigation
+// bằng Pressable thuần của React Native để tương thích SDK 56+
+type TabBarButtonProps = React.ComponentProps<typeof Pressable> & {
+  onPressIn?: (event: GestureResponderEvent) => void;
+};
+
+export function HapticTab(props: TabBarButtonProps) {
   return (
-    <PlatformPressable
+    <Pressable
       {...props}
       onPressIn={(ev) => {
         if (process.env.EXPO_OS === 'ios') {
