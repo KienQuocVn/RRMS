@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Text,
+  ActivityIndicator,
 } from 'react-native';
 import { RefreshableScrollView as ScrollView } from '@/components/ui/refreshable-scroll-view';
 import { useRouter } from 'expo-router';
@@ -18,16 +19,26 @@ import {
 } from '@/components/auth';
 import { Colors, Spacing, FontSizes, FontWeights } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
+import { useApiConnection } from '@/hooks/use-api-connection';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login, isLoading, error: authError } = useAuth();
+  const {
+    isConnected,
+    isChecking: isCheckingApi,
+    connectionError,
+    currentApiUrl,
+    retry,
+  } = useApiConnection();
+
   const visibleAuthError =
     authError === 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
       ? null
       : authError;
-  const [phone, setPhone] = useState('0911000002');
-  const [password, setPassword] = useState('123456789');
+
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     const trimmedPhone = phone.trim();
@@ -37,7 +48,11 @@ export default function LoginScreen() {
       return;
     }
 
-    await login({ phone: trimmedPhone, password: trimmedPassword });
+    const success = await login({ phone: trimmedPhone, password: trimmedPassword });
+
+    if (success) {
+      router.replace('/(tabs)/(home)');
+    }
   };
 
   const handleLoginZalo = () => {
@@ -61,6 +76,35 @@ export default function LoginScreen() {
       >
         <AuthLogo size="normal" />
 
+        {/* Banner trạng thái kết nối backend */}
+        {isCheckingApi && (
+          <View style={styles.connectingBanner}>
+            <ActivityIndicator size="small" color={Colors.primary} />
+            <Text style={styles.connectingText}>Đang kết nối máy chủ...</Text>
+          </View>
+        )}
+
+        {!isCheckingApi && isConnected === false && (
+          <View style={styles.connectionErrorBanner}>
+            <Text style={styles.connectionErrorTitle}>⚠️ Không kết nối được máy chủ</Text>
+            <Text style={styles.connectionErrorText}>
+              Đang thử kết nối tới:{'\n'}
+              <Text style={{ fontWeight: 'bold' }}>{currentApiUrl}</Text>
+              {'\n\n'}Kiểm tra: backend đang chạy, điện thoại cùng Wi-Fi với máy tính, IP trong{' '}
+              <Text style={{ fontFamily: 'monospace' }}>mobile/.env</Text> đúng.
+            </Text>
+            <TouchableOpacity style={styles.retryButton} onPress={retry}>
+              <Text style={styles.retryButtonText}>Thử kết nối lại</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {!isCheckingApi && isConnected === true && (
+          <View style={styles.connectedBanner}>
+            <Text style={styles.connectedText}>✓ Đã kết nối máy chủ</Text>
+          </View>
+        )}
+
         <View style={styles.form}>
           <AuthInput
             label="Số điện thoại"
@@ -82,10 +126,9 @@ export default function LoginScreen() {
 
           <PasswordHints password={password} />
 
-          
-
           {visibleAuthError ? (
             <View style={styles.errorContainer}>
+              <Text style={styles.errorTitle}>Đăng nhập thất bại</Text>
               <Text style={styles.errorText}>{visibleAuthError}</Text>
             </View>
           ) : null}
@@ -95,7 +138,7 @@ export default function LoginScreen() {
             variant="primary"
             onPress={handleLogin}
             loading={isLoading}
-            disabled={!phone.trim() || !password.trim()}
+            disabled={!phone.trim() || !password.trim() || isCheckingApi || isLoading}
           />
 
           <AuthButton
@@ -142,25 +185,67 @@ const styles = StyleSheet.create({
   form: {
     flex: 1,
   },
-  devHintContainer: {
-    backgroundColor: '#EEF7FF',
+  // Banner đang kết nối
+  connectingBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
     padding: Spacing.sm,
     borderRadius: 8,
     marginBottom: Spacing.md,
-    borderWidth: 1,
-    borderColor: '#C9E4FF',
+    gap: 8,
   },
-  devHintTitle: {
+  connectingText: {
     color: '#1565C0',
+    fontSize: FontSizes.sm,
+  },
+  // Banner kết nối thành công
+  connectedBanner: {
+    backgroundColor: '#E8F5E9',
+    padding: Spacing.sm,
+    borderRadius: 8,
+    marginBottom: Spacing.md,
+    alignItems: 'center',
+  },
+  connectedText: {
+    color: '#2E7D32',
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.medium,
+  },
+  // Banner lỗi kết nối
+  connectionErrorBanner: {
+    backgroundColor: '#FFF3E0',
+    padding: Spacing.md,
+    borderRadius: 8,
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: '#FFB74D',
+  },
+  connectionErrorTitle: {
+    color: '#E65100',
     fontSize: FontSizes.sm,
     fontWeight: FontWeights.semiBold,
-    marginBottom: 4,
+    marginBottom: 6,
   },
-  devHintText: {
-    color: '#1565C0',
+  connectionErrorText: {
+    color: '#BF360C',
+    fontSize: FontSizes.xs,
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  retryButton: {
+    backgroundColor: '#FF6F00',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  retryButtonText: {
+    color: '#fff',
     fontSize: FontSizes.sm,
-    lineHeight: 20,
+    fontWeight: FontWeights.medium,
   },
+  // Box lỗi đăng nhập
   errorContainer: {
     backgroundColor: '#FFE5E5',
     padding: Spacing.sm,
@@ -169,10 +254,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FFB2B2',
   },
+  errorTitle: {
+    color: '#C62828',
+    fontSize: FontSizes.sm,
+    fontWeight: FontWeights.semiBold,
+    marginBottom: 4,
+  },
   errorText: {
     color: '#D32F2F',
     fontSize: FontSizes.sm,
-    textAlign: 'center',
+    lineHeight: 20,
   },
   linksRow: {
     flexDirection: 'row',

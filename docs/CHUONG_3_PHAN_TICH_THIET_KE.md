@@ -21,7 +21,7 @@ Hệ thống RRMS phục vụ bốn nhóm tác nhân chính với các vai trò,
 
 ### 3.1.2. Danh sách yêu cầu chức năng (Functional Requirements)
 
-Dựa trên phân tích toàn bộ 39 REST API Controllers của backend Spring Boot và các trang giao diện React Web Frontend, hệ thống RRMS cần đáp ứng các nhóm chức năng sau:
+Dựa trên phân tích toàn bộ 44 REST API Controllers của backend Spring Boot và các trang giao diện React Web Frontend, hệ thống RRMS cần đáp ứng các nhóm chức năng sau:
 
 #### Nhóm chức năng dành cho Quản trị viên (Admin)
 
@@ -31,6 +31,8 @@ Dựa trên phân tích toàn bộ 39 REST API Controllers của backend Spring 
 | A-802 | Quản lý bài đăng tin phòng trọ | `GET/PUT /bulletin-boards` | Cao |
 | A-803 | Quản lý tài khoản người dùng và phân quyền | `GET/POST/PUT/DELETE /api/v1/accounts` | Cao |
 | A-804 | Quản lý hợp đồng và hóa đơn toàn hệ thống | `GET /contracts`, `GET /invoices` | Trung bình |
+| A-805 | Xử lý báo cáo vi phạm (Violation Reports) | `GET/POST/PUT/DELETE /api/v1/violation-reports` | Cao |
+| A-806 | Quản lý môi giới (Broker Management) | `GET/POST/PUT/DELETE /api/v1/brokers` | Trung bình |
 | R-703 | Kiểm duyệt đánh giá và bình luận bài đăng | `GET/PUT /bulletin-board-reviews` | Cao |
 
 #### Nhóm chức năng dành cho Chủ trọ (Host)
@@ -47,6 +49,9 @@ Dựa trên phân tích toàn bộ 39 REST API Controllers của backend Spring 
 | H-508 | Xem báo cáo tài chính khu trọ | `GET /report/{motelId}/total-paid-invoices` | Cao |
 | H-509 | Quản lý đặt cọc giữ chỗ phòng | `GET/POST/PUT /room-reservations` | Trung bình |
 | H-510 | Quản lý mẫu hợp đồng | `GET/POST/PUT /contract-templates` | Thấp |
+| H-511 | Quản lý phương tiện (xe) của khách thuê | `GET/POST/PUT/DELETE /api/v1/cars` | Thấp |
+| H-512 | Gửi thông báo cho khách thuê | `POST /api/v1/notifications` | Trung bình |
+| H-513 | Khai báo lưu trú tạm thời | `GET/POST /temporary-contracts` | Trung bình |
 
 #### Nhóm chức năng dành cho Khách thuê (Tenant/Customer)
 
@@ -83,7 +88,7 @@ Dựa trên phân tích toàn bộ 39 REST API Controllers của backend Spring 
 
 ## 3.2. ĐẶC TẢ CHI TIẾT CÁC CHỨC NĂNG CỐT LÕI (SOFTWARE REQUIREMENTS SPECIFICATION)
 
-Các bảng đặc tả dưới đây được ánh xạ chính xác từ mô hình E-commerce mẫu của trường sang nghiệp vụ quản lý nhà trọ RRMS, dựa trực tiếp trên cấu trúc cơ sở dữ liệu `V1__baseline.sql` và mã nguồn 39 REST Controller hiện tại của dự án.
+Các bảng đặc tả dưới đây được ánh xạ chính xác từ mô hình E-commerce mẫu của trường sang nghiệp vụ quản lý nhà trọ RRMS, dựa trực tiếp trên cấu trúc cơ sở dữ liệu `V1__baseline.sql` (đến `V10__add_motel_id_room_id_to_bulletin_boards.sql`) và mã nguồn 44 REST Controller hiện tại của dự án.
 
 ---
 
@@ -529,9 +534,9 @@ Sơ đồ ca sử dụng dưới đây mô tả mối quan hệ giữa 4 tác nh
 
 ### 3.4.1. Mô hình quan hệ thực thể (Entity Relationship Diagram — ERD)
 
-Hệ thống RRMS sử dụng **MySQL 8.x** với cơ chế lưu trữ **InnoDB** để đảm bảo hỗ trợ giao dịch ACID và khóa ngoại tham chiếu. Toàn bộ schema được quản lý phiên bản bởi **Flyway Migration** (`V1__baseline.sql`, `V2__add_account_representative_fields.sql`, `V3__add_tenant_id_to_cars.sql`).
+Hệ thống RRMS sử dụng **MySQL 8.x** với cơ chế lưu trữ **InnoDB** để đảm bảo hỗ trợ giao dịch ACID và khóa ngoại tham chiếu. Toàn bộ schema được quản lý phiên bản bởi **Flyway Migration** (từ `V1__baseline.sql` đến `V10__add_motel_id_room_id_to_bulletin_boards.sql`).
 
-Cơ sở dữ liệu gồm **50+ bảng** được nhóm thành 7 nhóm chức năng:
+Cơ sở dữ liệu gồm **52+ bảng** được nhóm thành 8 nhóm chức năng:
 
 #### Nhóm 1: Quản lý Tài khoản & Phân quyền
 
@@ -615,6 +620,24 @@ supports ──N:1──► accounts
 
 temporary_contracts ──N:1──► motels
                     ──N:1──► accounts (username_tenant)
+```
+
+#### Nhóm 8: Kiểm soát An ninh & Vi phạm (Security & Violation)
+
+```
+login_histories ──N:1──► accounts
+
+violation_reports ──N:1──► accounts (reporter)
+                  ──N:1──► accounts (reported)
+
+cars ──N:1──► rooms
+     ──N:1──► tenants
+
+rental_amenities ──N:M──► bulletin_boards
+                  (qua bulletin_board_rental_amenities)
+
+motel_room_groups ──N:1──► motels
+                   ──1:N──► rooms
 ```
 
 ---
@@ -811,7 +834,17 @@ server/src/main/java/com/rrms/rrms/
 │   ├── SearchController.java           (Tìm kiếm đa bộ lọc ES)
 │   ├── StatisticsController.java       (Dashboard Admin)
 │   ├── ReportController.java           (Báo cáo tài chính Host)
-│   └── MeterReadingController.java     (Chốt chỉ số điện nước)
+│   ├── MeterReadingController.java     (Chốt chỉ số điện nước)
+│   ├── ViolationReportController.java  (Quản lý báo cáo vi phạm)
+│   ├── BrokerController.java           (Quản lý môi giới)
+│   ├── CarController.java              (Quản lý phương tiện)
+│   ├── NotificationController.java     (Thông báo)
+│   ├── TransactionController.java      (Lịch sử giao dịch)
+│   ├── LoginHistoryController.java     (Lịch sử đăng nhập)
+│   ├── ProfileController.java          (Thông tin cá nhân)
+│   ├── MotelRoomGroupController.java   (Nhóm phòng)
+│   ├── TemporaryContractController.java (Tờ khai lưu trú tạm thời)
+│   └── ResidenceTemplateController.java (Mẫu khai báo lưu trú)
 │
 ├── services/             # Interface + Implementation — Tầng Business Logic
 │   ├── IAccountService.java / servicesImp/AccountService.java
@@ -820,15 +853,22 @@ server/src/main/java/com/rrms/rrms/
 │   ├── ISearchService.java / servicesImp/SearchService.java
 │   ├── IPaymentService.java / servicesImp/PaymentService.java
 │   ├── IStatisticsService.java / servicesImp/StatisticsService.java
+│   ├── IViolationReportService.java / servicesImp/ViolationReportService.java
+│   ├── INotificationService.java / servicesImp/NotificationService.java
+│   ├── ITransactionService.java / servicesImp/TransactionService.java
 │   └── servicesImp/QRCodeService.java  (Tạo mã QR thanh toán)
 │
 ├── repositories/         # Spring Data JPA Repositories — Tầng Data Access
 │
-├── models/               # 48 JPA Entity Classes
+├── models/               # 52 JPA Entity Classes
 │   ├── Account.java, Contract.java, Invoice.java
 │   ├── Motel.java, Room.java, Tenant.java
 │   ├── BulletinBoard.java, BulletinBoardReviews.java
 │   ├── Transaction.java, MeterReading.java
+│   ├── ViolationReport.java, LoginHistory.java
+│   ├── Car.java, MotelRoomGroup.java
+│   ├── RentalAmenities.java, ResidenceTemplate.java
+│   ├── InvoiceAdditionItem.java, InvoiceDetail.java
 │   └── BaseEntity.java   (created_at, updated_at, deleted_at AuditFields)
 │
 ├── dto/                  # Data Transfer Objects
@@ -837,10 +877,14 @@ server/src/main/java/com/rrms/rrms/
 │
 ├── mapper/               # MapStruct Mappers (Entity ↔ DTO tại compile-time)
 ├── configs/              # Spring Security, Redis, Elasticsearch, Swagger
-├── aspects/              # Spring AOP: Audit Logging, Exception Handling
-├── enums/                # ContractStatus, Roles, RoomStatus...
+├── aspects/              # Spring AOP: Audit Logging, Exception Handling, Rate Limiting
+├── annotations/          # Custom annotations (@RateLimited, v.v.)
+├── constants/            # Hằng số hệ thống
+├── database/             # Seeder classes (OperationSeeder, PropertySeeder)
+├── runner/               # Application runners (RedisCheckRunner)
+├── enums/                # ContractStatus, Roles, RoomStatus, ViolationReportStatus...
 ├── exceptions/           # AppException, GlobalExceptionHandler
-└── utils/                # PageableUtils, LogUtils, VNPayConfig...
+└── utils/                # PageableUtils, LogUtils, VNPayConfig, DeviceDetector...
 ```
 
 ### 3.6.3. Cấu trúc mã nguồn Web Frontend (React + Vite)
@@ -850,19 +894,47 @@ client/src/
 │
 ├── pages/
 │   ├── admin/
-│   │   ├── AdminManageBoard.jsx         (Bảng Dashboard Admin)
+│   │   ├── AdminManage/
+│   │   │   ├── Dashboard/               (Bảng Dashboard Admin)
+│   │   │   │   ├── components/charts/   (Biểu đồ thống kê)
+│   │   │   │   ├── components/userManagement/ (Quản lý người dùng)
+│   │   │   │   └── components/violationReports/ (Báo cáo vi phạm)
+│   │   │   └── components/postApproval/ (Duyệt bài đăng)
+│   │   ├── CustomerManage/
+│   │   │   ├── Dashboard/               (Dashboard khách hàng)
+│   │   │   ├── Bills/                   (Quản lý hóa đơn khách)
+│   │   │   ├── Contract/                (Hợp đồng khách)
+│   │   │   └── Room/                    (Phòng trọ khách)
 │   │   ├── ManagerHome/
 │   │   │   ├── MotelDashboard/          (Dashboard khu trọ)
 │   │   │   ├── DetailRoom/              (Chi tiết phòng + HĐ)
+│   │   │   ├── ManagerCar/              (Quản lý phương tiện)
 │   │   │   ├── ReserveAPlace/           (Quản lý đặt cọc)
 │   │   │   └── ModalCreateMotel.jsx     (Form tạo khu trọ mới)
 │   │   ├── ManagerBulletinBoards/       (Quản lý bài đăng tin)
 │   │   ├── ManagerOverallReport/        (Báo cáo tổng quan)
-│   │   └── MotelSettings/              (Cấu hình thiết bị, dịch vụ)
-│   ├── auth/                            (Đăng nhập, Đăng ký, OAuth2)
+│   │   ├── ManagerBroker/               (Quản lý môi giới)
+│   │   ├── ManagerCompanyAT/            (Quản lý doanh nghiệp)
+│   │   ├── ManagerSettings/             (Cài đặt hệ thống)
+│   │   ├── ManagerMyAccount/            (Tài khoản Admin)
+│   │   ├── MotelSettings/               (Cấu hình thiết bị, dịch vụ)
+│   │   └── NavContentAdmin/
+│   │       ├── ContractManage/          (Quản lý hợp đồng)
+│   │       ├── DeviceManage/            (Quản lý thiết bị)
+│   │       ├── IncomeSummary/           (Tổng hợp doanh thu)
+│   │       ├── InvoiceManage/           (Quản lý hóa đơn)
+│   │       ├── ServiceManage/           (Quản lý dịch vụ)
+│   │       ├── SettingManage/           (Cài đặt khu trọ)
+│   │       ├── TenantManage/            (Quản lý khách thuê)
+│   │       └── VehicleManage/           (Quản lý phương tiện)
+│   ├── auth/                            (Đăng nhập, Đăng ký, Quên mật khẩu)
+│   ├── Home/                            (Trang chủ)
+│   ├── introduce/                       (Giới thiệu về RRMS)
+│   ├── Profile/                         (Trang thông tin cá nhân)
+│   ├── RRMS/                            (Trang landing RRMS)
 │   ├── search/                          (Tìm kiếm phòng trọ)
 │   ├── roomDetail/                      (Chi tiết bài đăng phòng trọ)
-│   └── AI/                             (Tích hợp OCR, Face Match)
+│   └── support/                        (Hỗ trợ kỹ thuật)
 │
 ├── apis/                                (Axios API call functions)
 ├── contexts/                            (React Context: Auth, Language)
@@ -879,24 +951,46 @@ mobile/
 │
 ├── app/                                 (Expo Router file-based routing)
 │   ├── (auth)/                          (Màn hình đăng nhập/đăng ký)
-│   ├── (tabs)/
-│   │   ├── (home)/                      (Màn hình chính, danh sách phòng)
-│   │   ├── rooms/                       (Danh sách phòng theo bộ lọc)
-│   │   ├── inbox.tsx                    (Hộp thư thông báo)
-│   │   ├── tasks.tsx                    (Quản lý task/yêu cầu)
+│   ├── (tabs)/                          (Tab navigation chính)
+│   │   ├── (home)/                      (Tab Home — Màn hình chính)
 │   │   ├── find-tenants.tsx             (Tìm kiếm khách thuê)
+│   │   ├── inbox.tsx                    (Hộp thư thông báo)
+│   │   ├── tasks.tsx                    (Quản lý công việc)
 │   │   └── more.tsx                     (Cài đặt thêm)
-│   ├── (home-page)/                     (Landing page)
-│   ├── (mail-box-page)/                 (Inbox chi tiết)
-│   └── (more-page)/                     (Trang cài đặt mở rộng)
+│   ├── (home-page)/                     (Trang quản lý chính)
+│   │   ├── tab-manage/                  (Tab quản lý khu trọ)
+│   │   │   ├── expanded-menu/           (Menu mở rộng: bank, broker)
+│   │   │   ├── management-menu/
+│   │   │   │   ├── assets-list/         (Quản lý tài sản/thiết bị)
+│   │   │   │   ├── contracts/           (Danh sách + thêm hợp đồng)
+│   │   │   │   ├── invoices/            (Danh sách + thêm hóa đơn)
+│   │   │   │   ├── rooms/               (Danh sách + thêm phòng)
+│   │   │   │   ├── service-settings/    (Cấu hình dịch vụ)
+│   │   │   │   ├── tenants/             (Quản lý khách thuê)
+│   │   │   │   └── vehicles/            (Quản lý phương tiện)
+│   │   │   └── quick-actions/           (Hành động nhanh: hóa đơn, hợp đồng, đặt cọc, trả phòng)
+│   │   └── tab-overview/                (Tab tổng quan)
+│   │       ├── financial-statistics/    (Thống kê tài chính: tiền cọc, công nợ)
+│   │       └── room-status/             (Trạng thái phòng: trống/đang thuê/hết hạn...)
+│   ├── (mail-box-page)/                 (Hộp thư & thông báo)
+│   │   ├── messages.tsx
+│   │   ├── notifications.tsx
+│   │   └── (chat)/                      (Tin nhắn chat)
+│   ├── (job-page)/                      (Trang công việc)
+│   └── (more-page)/                     (Cài đặt & tài khoản)
+│       ├── (profile)/                   (Xem & chỉnh sửa hồ sơ)
+│       └── settings/                    (Cài đặt: đổi mật khẩu, thông tin đại diện, quyền,...)
 │
 ├── components/                          (UI Components dùng chung)
 ├── services/
-│   ├── api/                             (Axios service calls)
-│   └── storage/                         (AsyncStorage: JWT token)
-├── hooks/                               (Custom hooks)
+│   ├── api/                             (Axios service calls: auth, motel, room, contract, invoice...)
+│   ├── address/                         (Address lookup service)
+│   └── storage/                         (AsyncStorage: JWT token, safe-async-storage)
+├── hooks/                               (Custom hooks: use-auth, use-contract, use-deposit...)
 ├── constants/                           (Colors, Config)
-└── types/                               (TypeScript type definitions)
+├── types/                               (TypeScript type definitions: auth, room, contract, invoice...)
+├── utils/                               (Tiện ích: room-status)
+└── src/features/tabs/                   (Feature modules: home, inbox, more, tasks, find-tenants)
 ```
 
 ---
@@ -1039,18 +1133,19 @@ Chương III đã trình bày đầy đủ và chi tiết toàn bộ kết quả
 
 **1. Phân tích yêu cầu hệ thống:**
 - Xác định 4 tác nhân chính với cơ chế phân quyền RBAC được thực thi qua Spring Security `@PreAuthorize`.
-- Liệt kê đầy đủ 30+ yêu cầu chức năng phân theo nhóm tác nhân và 8 yêu cầu phi chức năng quan trọng với giải pháp kỹ thuật tương ứng.
+- Liệt kê đầy đủ 35+ yêu cầu chức năng phân theo nhóm tác nhân (bao gồm chức năng quản lý vi phạm, phương tiện, thông báo, khai báo lưu trú tạm thời) và 8 yêu cầu phi chức năng quan trọng với giải pháp kỹ thuật tương ứng.
 
 **2. Đặc tả chi tiết 5 chức năng cốt lõi (R-703, A-801, A-802, A-803, A-804):**
-- Mỗi chức năng được đặc tả theo chuẩn SRS với đầy đủ: vai trò, điều kiện tiên quyết, điều kiện hậu, luồng xử lý chính chi tiết từng bước, luồng thay thế và cấu trúc bảng cơ sở dữ liệu thực tế từ `V1__baseline.sql`.
+- Mỗi chức năng được đặc tả theo chuẩn SRS với đầy đủ: vai trò, điều kiện tiên quyết, điều kiện hậu, luồng xử lý chính chi tiết từng bước, luồng thay thế và cấu trúc bảng cơ sở dữ liệu thực tế từ `V1__baseline.sql` (quản lý schema bởi Flyway đến V10).
 
 **3. Thiết kế cơ sở dữ liệu:**
-- Mô hình ERD phân 7 nhóm quan hệ với 50+ bảng MySQL được tổ chức logic.
+- Mô hình ERD phân 8 nhóm quan hệ với 52+ bảng MySQL được tổ chức logic, bao gồm các bảng mới: `violation_reports`, `login_histories`, `cars`, `motel_room_groups`, `rental_amenities`, `invoice_addition_items`.
 - Thiết kế chi tiết 3 bảng trung tâm quan trọng nhất: `accounts`, `contracts`, `invoices`.
+- Schema được quản lý phiên bản hoàn chỉnh qua 10 Flyway Migration scripts.
 
 **4. Thiết kế kiến trúc phần mềm:**
 - Kiến trúc N-Tier phân tầng rõ ràng: Client (Web + Mobile) → API Gateway (Spring Security) → Controller → Service → Repository → Data Store (MySQL + Redis + Elasticsearch).
-- Cấu trúc mã nguồn thực tế của cả 3 phần dự án: Backend (39 Controllers, 48 Models, 38 Services), Web Frontend (React + Vite + MUI), Mobile App (React Native + Expo Router).
+- Cấu trúc mã nguồn thực tế của cả 3 phần dự án: Backend (44 Controllers, 52 Models, 38+ Services, 15 packages), Web Frontend (React + Vite + MUI với 15+ module trang), Mobile App (React Native + Expo Router với 30+ màn hình).
 
 **5. Thiết kế luồng xử lý nghiệp vụ:**
 - 3 Sequence Diagram mô tả các luồng nghiệp vụ phức tạp nhất: Xác thực JWT, Thanh toán VNPay (với HMAC-SHA512 signature verification) và Tạo hợp đồng với OCR CCCD.

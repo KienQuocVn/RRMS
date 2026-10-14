@@ -1,1 +1,1 @@
-export { default } from "../(mail-box-page)/messages";
+export { default } from "../(mail-box-page)/notifications";

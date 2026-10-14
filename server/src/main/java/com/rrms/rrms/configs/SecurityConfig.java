@@ -3,6 +3,7 @@ package com.rrms.rrms.configs;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,9 @@ import org.springframework.security.oauth2.server.resource.web.DefaultBearerToke
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -72,6 +76,8 @@ public class SecurityConfig {
         "/payment/vnpay-callback/**",
         "/payment/paymentSuccess/**",
         "/payment/paymentFailed/**",
+        "/payment/**",
+        "/api/v1/payment/**",
         "/api/verify-captcha",
         "/api/verify-captcha/**",
         "/api/v1/verify-captcha",
@@ -80,7 +86,11 @@ public class SecurityConfig {
         "/api/v1/api/verify-captcha/**",
         "/support/**",
         "/supports/**",
-        "/api/v1/supports/**"
+        "/api/v1/supports/**",
+        "/notifications/**",
+        "/api/v1/notifications/**",
+        "/transactions/**",
+        "/api/v1/transactions/**"
     };
 
     @Value("${jwt.signer-key}")
@@ -151,6 +161,27 @@ public class SecurityConfig {
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
+    }
+
+    /**
+     * CorsConfigurationSource được Spring Security dùng để xử lý CORS preflight (OPTIONS request).
+     * Quan trọng: phải khai báo bean này để http.cors(withDefaults()) hoạt động đúng,
+     * đặc biệt với Expo Web (localhost:8081) và Expo Go trên LAN.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Cho phép tất cả origin patterns — Spring Security sẽ phản chiếu origin request
+        // (an toàn cho môi trường dev; production dùng allowedOrigins cụ thể)
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     private boolean isCaptchaPublicEndpoint(String servletPath) {

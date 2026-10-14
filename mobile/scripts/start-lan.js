@@ -158,21 +158,25 @@ async function main() {
     ? ['/d', '/s', '/c', `npx ${expoArgs.map(quoteWindowsArg).join(' ')}`]
     : expoArgs;
 
-  const isOffline = process.env.EXPO_OFFLINE !== undefined ? process.env.EXPO_OFFLINE : '1';
+  const childEnv = {
+    ...process.env,
+    EXPO_NO_TELEMETRY: '1',
+    EXPO_ROUTER_DISABLE_RN_NAVIGATION_CHECK: '1',
+    EXPO_PUBLIC_API_URL: apiUrl,
+    EXPO_PUBLIC_API_URL_CANDIDATES: apiCandidates,
+    EXPO_PUBLIC_API_PORT: String(DEFAULT_BACKEND_PORT),
+    REACT_NATIVE_PACKAGER_HOSTNAME: lanHost,
+  };
+
+  if (process.env.EXPO_OFFLINE !== undefined) {
+    childEnv.EXPO_OFFLINE = process.env.EXPO_OFFLINE;
+  }
 
   const child = spawn(command, spawnArgs, {
     cwd: process.cwd(),
     stdio: 'inherit',
     shell: false,
-    env: {
-      ...process.env,
-      EXPO_OFFLINE: isOffline,
-      EXPO_NO_TELEMETRY: '1',
-      EXPO_PUBLIC_API_URL: apiUrl,
-      EXPO_PUBLIC_API_URL_CANDIDATES: apiCandidates,
-      EXPO_PUBLIC_API_PORT: String(DEFAULT_BACKEND_PORT),
-      REACT_NATIVE_PACKAGER_HOSTNAME: lanHost,
-    },
+    env: childEnv,
   });
 
   child.on('exit', (code) => {

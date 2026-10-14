@@ -10,7 +10,7 @@ export const DASHBOARD_COLORS = {
   border: '#e5e7eb',
   textMuted: '#6b7280',
   textDark: '#111827',
-  success: '#16a34a',
+  success: '#4bcffa',
   purple: '#7c3aed',
   orange: '#ea580c',
   green: '#22c55e'

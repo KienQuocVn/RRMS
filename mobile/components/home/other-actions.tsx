@@ -51,22 +51,6 @@ const OTHER_ACTIONS: ActionListItem[] = [
     title: "Tổng kết dịch vụ khách sử dụng",
     description: "Thống kê dịch vụ điện nước, wifi, rác... khách sử dụng",
   },
-  {
-    id: "zalo-history",
-    icon: "chatbubble-ellipses-outline",
-    iconBg: "#E3F2FD",
-    iconColor: "#0068FF",
-    title: "Lịch sử gửi ZALO",
-    description: "Xem lịch sử gửi hóa đơn TỰ ĐỘNG qua zalo",
-  },
-  {
-    id: "transfer-history",
-    icon: "swap-horizontal-outline",
-    iconBg: "#FCE4EC",
-    iconColor: "#E91E63",
-    title: "Lịch sử KHÁCH CHUYỂN KHOẢN",
-    description: "Lịch sử hệ thống tự động gạch nợ khi khách chuyển khoản",
-  },
 ];
 
 interface OtherActionsProps {

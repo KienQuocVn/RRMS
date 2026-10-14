@@ -49,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @RestController
-@RequestMapping("/payment")
+@RequestMapping({"/payment", "/api/v1/payment"})
 public class PaymentController {
     @Value("${stripe.api.publicKey}")
     String publicKey;

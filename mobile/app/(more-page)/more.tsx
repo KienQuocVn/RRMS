@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { RefreshableScrollView as ScrollView } from "@/components/ui/refreshable-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -150,7 +151,7 @@ const MORE_ITEMS: MoreMenuItem[] = [
 export default function MoreScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { logout, user } = useAuth();
+  const { logout, user, isLoading } = useAuth();
 
   const handleLogout = () => {
     Alert.alert(
@@ -158,7 +159,21 @@ export default function MoreScreen() {
       "Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?",
       [
         { text: "Hủy", style: "cancel" },
-        { text: "Đăng xuất", style: "destructive", onPress: () => logout() },
+        {
+          text: "Đăng xuất",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await logout();
+            } catch {
+              Alert.alert(
+                "Lỗi đăng xuất",
+                "Không thể đăng xuất lúc này. Vui lòng thử lại.",
+                [{ text: "OK" }]
+              );
+            }
+          },
+        },
       ],
     );
   };
@@ -298,9 +313,16 @@ export default function MoreScreen() {
           style={styles.logoutBtn}
           activeOpacity={0.7}
           onPress={handleLogout}
+          disabled={isLoading}
         >
-          <Ionicons name="log-out-outline" size={24} color={Colors.error} />
-          <Text style={styles.logoutText}>Đăng xuất tài khoản</Text>
+          {isLoading ? (
+            <ActivityIndicator size="small" color={Colors.error} />
+          ) : (
+            <Ionicons name="log-out-outline" size={24} color={Colors.error} />
+          )}
+          <Text style={styles.logoutText}>
+            {isLoading ? "Đang đăng xuất..." : "Đăng xuất tài khoản"}
+          </Text>
         </TouchableOpacity>
 
         {/* Social Card */}

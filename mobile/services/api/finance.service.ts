@@ -79,4 +79,28 @@ export const financeService = {
   createExpense: async (params: { username: string }, data: any): Promise<any> => {
     return apiClient.post(`${API_ENDPOINTS.TRANSACTIONS.EXPENSES}`, data, { params });
   },
+
+  /**
+   * Lấy danh sách giao dịch theo username
+   */
+  getTransactionsByUsername: async (
+    username: string,
+    params?: { page?: number; size?: number; sortBy?: string; sortDirection?: string }
+  ): Promise<any> => {
+    return apiClient.get(`/api/v1/transactions/${username}`, { params });
+  },
+
+  /**
+   * Lấy tổng hợp thu chi
+   */
+  getTransactionSummary: async (username: string): Promise<any> => {
+    return apiClient.get(`/api/v1/transactions/summary`, { params: { username } });
+  },
+
+  /**
+   * Lấy danh sách phương thức thanh toán
+   */
+  getPaymentList: async (): Promise<any> => {
+    return apiClient.get('/api/v1/payment/list_payment');
+  },
 };

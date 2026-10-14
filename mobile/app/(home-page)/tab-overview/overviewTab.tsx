@@ -1,13 +1,14 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import {
   Colors,
   FontSizes,
@@ -15,9 +16,191 @@ import {
   Spacing,
   BorderRadius,
 } from "@/constants/theme";
+import { useAuth } from "@/hooks/use-auth";
+import { motelService } from "@/services/api/motel.service";
+import { roomService } from "@/services/api/room.service";
+import { authStorage } from "@/services/storage/auth.storage";
+import { safeAsyncStorage } from "@/services/storage/safe-async-storage";
+import {
+  isDeposited,
+  isRenting,
+  isExpiring,
+  isReportedLeaving,
+  isOverdue,
+  isDebt,
+  isAvailable,
+  formatCurrency,
+  getCustomerDebt,
+  getRoomDeposit,
+  getHoldingDeposit,
+} from "@/utils/room-status";
 
 export default function OverviewTab() {
   const router = useRouter();
+  const user = useAuth((state) => state.user);
+
+  const [activeMotelId, setActiveMotelId] = useState<string>("");
+  const [motelName, setMotelName] = useState<string>("Nhà trọ");
+  const [totalRooms, setTotalRooms] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const [stats, setStats] = useState({
+    available: 0,
+    availablePercent: 0,
+    renting: 0,
+    rentingPercent: 0,
+    expiring: 0,
+    expiringPercent: 0,
+    reportedLeaving: 0,
+    reportedLeavingPercent: 0,
+    overdue: 0,
+    overduePercent: 0,
+    debt: 0,
+    debtPercent: 0,
+    deposited: 0,
+    depositedPercent: 0,
+    connectedContracts: 0,
+    customerDebt: 0,
+    deposit: 0,
+    holdingDeposit: 0,
+  });
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const token = await authStorage.getToken();
+      if (!token && !user) {
+        // Chưa đăng nhập: không gọi API được bảo vệ để tránh lỗi 401
+        setLoading(false);
+        return;
+      }
+
+      let targetMotelId = await safeAsyncStorage.getItem("rrms_active_motel_id");
+      let currentMotel: any = null;
+
+      // 1. Lấy danh sách nhà trọ và xác định nhà trọ đang active
+      try {
+        if (user?.username) {
+          const res = await motelService.getMotelsByAccount(user.username);
+          const list = res.result || [];
+          currentMotel = list.find((m: any) => m.motelId === targetMotelId) ?? list[0] ?? null;
+        }
+      } catch (err: any) {
+        if (err?.response?.status === 401) {
+          console.warn("[OverviewTab] Chưa xác thực khi lấy nhà trọ (401)");
+        } else {
+          console.warn("[OverviewTab] Lỗi lấy danh sách nhà trọ:", err);
+        }
+      }
+
+      if (currentMotel) {
+        setMotelName(currentMotel.name || "Nhà trọ");
+        targetMotelId = currentMotel.motelId;
+        await safeAsyncStorage.setItem("rrms_active_motel_id", currentMotel.motelId);
+      }
+
+      if (targetMotelId) {
+        setActiveMotelId(targetMotelId);
+      }
+
+      if (!targetMotelId) {
+        setTotalRooms(0);
+        setLoading(false);
+        return;
+      }
+
+      // 2. Gọi API backend lấy danh sách phòng của nhà trọ
+      let rooms: any[] = [];
+      try {
+        const roomsResponse = await roomService.getRoomsByMotel(targetMotelId);
+        rooms = roomsResponse.result || [];
+      } catch (err: any) {
+        if (err?.response?.status === 401) {
+          console.warn("[OverviewTab] Chưa xác thực khi lấy danh sách phòng (401)");
+          setLoading(false);
+          return;
+        }
+        throw err;
+      }
+
+      const total = rooms.length;
+      setTotalRooms(total);
+
+      const now = Date.now();
+
+      // 3. Đếm số lượng các trạng thái dùng logic chuẩn từ utils/room-status
+      const availableCount = rooms.filter(isAvailable).length;
+      const rentingCount = rooms.filter(isRenting).length;
+      const expiringCount = rooms.filter((r) => isExpiring(r, now)).length;
+      const reportedLeavingCount = rooms.filter(isReportedLeaving).length;
+      const overdueCount = rooms.filter((r) => isOverdue(r, now)).length;
+      const debtCount = rooms.filter(isDebt).length;
+      const depositedCount = rooms.filter(isDeposited).length;
+
+      const calcPercent = (count: number) => {
+        if (!total) return 0;
+        return Math.round((count / total) * 100);
+      };
+
+      // 4. Tính toán số tiền nợ và cọc chuẩn hóa
+      let totalCustomerDebt = 0;
+      let totalDeposit = 0;
+      let totalHoldingDeposit = 0;
+      let connectedContractsCount = 0;
+
+      rooms.forEach((r: any) => {
+        const d = getCustomerDebt(r);
+        if (d > 0) totalCustomerDebt += d;
+
+        const dep = getRoomDeposit(r);
+        totalDeposit += dep;
+
+        const hold = getHoldingDeposit(r);
+        totalHoldingDeposit += hold;
+
+        if (r.latestContract && r.latestContract.status !== "ENDED") {
+          connectedContractsCount += 1;
+        }
+      });
+
+      setStats({
+        available: availableCount,
+        availablePercent: calcPercent(availableCount),
+        renting: rentingCount,
+        rentingPercent: calcPercent(rentingCount),
+        expiring: expiringCount,
+        expiringPercent: calcPercent(expiringCount),
+        reportedLeaving: reportedLeavingCount,
+        reportedLeavingPercent: calcPercent(reportedLeavingCount),
+        overdue: overdueCount,
+        overduePercent: calcPercent(overdueCount),
+        debt: debtCount,
+        debtPercent: calcPercent(debtCount),
+        deposited: depositedCount,
+        depositedPercent: calcPercent(depositedCount),
+        connectedContracts: connectedContractsCount,
+        customerDebt: totalCustomerDebt,
+        deposit: totalDeposit,
+        holdingDeposit: totalHoldingDeposit,
+      });
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        console.warn("[OverviewTab] Chưa đăng nhập hoặc phiên làm việc hết hạn (401)");
+      } else {
+        console.error("[OverviewTab] loadData error:", error);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.username]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
+
   return (
     <View style={styles.container}>
       {/* Thống kê hiện trạng */}
@@ -28,11 +211,11 @@ export default function OverviewTab() {
         </View>
         <View style={styles.rowBetween}>
           <TouchableOpacity>
-            <Text style={styles.greenLink}>Nhà trọ Quoc</Text>
+            <Text style={styles.greenLink}>{motelName}</Text>
             <View style={styles.linkUnderline} />
           </TouchableOpacity>
           <Text style={styles.boldText}>
-            5 <Text style={styles.normalText}>phòng</Text>
+            {totalRooms} <Text style={styles.normalText}>phòng</Text>
           </Text>
         </View>
       </View>
@@ -53,90 +236,100 @@ export default function OverviewTab() {
           icon="cart"
           iconColor={Colors.error}
           title="Số phòng có thể cho thuê"
-          count={0}
-          percent={0}
+          count={stats.available}
+          percent={stats.availablePercent}
           percentColor={Colors.error}
           onPress={() =>
-            router.push("/tab-overview/room-status/available-rooms")
-          }
-        />
-        <RoomStatCard
-          icon="cube"
-          iconColor={Colors.error}
-          title="Số phòng đang trống"
-          count={5}
-          percent={100}
-          percentColor={Colors.error}
-          onPress={() =>
-            router.push("/tab-overview/room-status/empty-rooms")
+            router.push({
+              pathname: "/tab-overview/room-status/available-rooms",
+              params: activeMotelId ? { motelId: activeMotelId } : undefined,
+            } as any)
           }
         />
         <RoomStatCard
           icon="cube-outline"
           iconColor={Colors.primary}
           title="Số phòng đang thuê"
-          count={0}
-          percent={0}
+          count={stats.renting}
+          percent={stats.rentingPercent}
           percentColor={Colors.success}
           onPress={() =>
-            router.push("/tab-overview/room-status/renting-rooms")
+            router.push({
+              pathname: "/tab-overview/room-status/renting-rooms",
+              params: activeMotelId ? { motelId: activeMotelId } : undefined,
+            } as any)
           }
         />
         <RoomStatCard
           icon="warning"
           iconColor={Colors.warning}
           title="Số phòng sắp kết thúc hợp đồng"
-          count={0}
-          percent={0}
+          count={stats.expiring}
+          percent={stats.expiringPercent}
           percentColor={Colors.error}
           onPress={() =>
-            router.push("/tab-overview/room-status/expiring-rooms")
+            router.push({
+              pathname: "/tab-overview/room-status/expiring-rooms",
+              params: activeMotelId ? { motelId: activeMotelId } : undefined,
+            } as any)
           }
         />
         <RoomStatCard
           icon="clipboard-list"
           iconColor={Colors.warning}
           title="Số phòng báo kết thúc hợp đồng"
-          count={0}
-          percent={0}
+          count={stats.reportedLeaving}
+          percent={stats.reportedLeavingPercent}
           percentColor={Colors.error}
           iconType="material"
           onPress={() =>
-            router.push("/tab-overview/room-status/reported-leaving-rooms")
+            router.push({
+              pathname: "/tab-overview/room-status/reported-leaving-rooms",
+              params: activeMotelId ? { motelId: activeMotelId } : undefined,
+            } as any)
           }
         />
         <RoomStatCard
           icon="time"
           iconColor={Colors.textPrimary}
           title="Số phòng quá hạn hợp đồng"
-          count={0}
-          percent={0}
+          count={stats.overdue}
+          percent={stats.overduePercent}
           percentColor={Colors.error}
           onPress={() =>
-            router.push("/tab-overview/room-status/overdue-rooms")
+            router.push({
+              pathname: "/tab-overview/room-status/overdue-rooms",
+              params: activeMotelId ? { motelId: activeMotelId } : undefined,
+            } as any)
           }
         />
         <RoomStatCard
           icon="logo-usd"
           iconColor={Colors.success}
           title="Số phòng đang nợ tiền"
-          count={0}
-          percent={0}
+          count={stats.debt}
+          percent={stats.debtPercent}
           percentColor={Colors.error}
           onPress={() =>
-            router.push("/tab-overview/room-status/debt-rooms")
+            router.push({
+              pathname: "/tab-overview/room-status/debt-rooms",
+              params: activeMotelId ? { motelId: activeMotelId } : undefined,
+            } as any)
           }
         />
         <RoomStatCard
           icon="anchor"
           iconColor="#5B7E91"
           title="Số phòng đang cọc giữ chỗ"
-          count={0}
-          percent={0}
+          count={stats.deposited}
+          percent={stats.depositedPercent}
           percentColor={Colors.success}
           iconType="material"
           onPress={() =>
-            router.push("/tab-overview/room-status/deposited-rooms")
+            router.push({
+              pathname: "/tab-overview/room-status/deposited-rooms",
+              params: activeMotelId ? { motelId: activeMotelId } : undefined,
+            } as any)
           }
         />
       </View>
@@ -145,7 +338,7 @@ export default function OverviewTab() {
       <TouchableOpacity style={styles.bannerContainer}>
         <View style={styles.bannerContent}>
           <Text style={styles.bannerTitle}>
-            Có <Text style={styles.bannerHighlight}>0 hợp đồng</Text> đang kết
+            Có <Text style={styles.bannerHighlight}>{stats.connectedContracts} hợp đồng</Text> đang kết
             nối
           </Text>
           <Text style={styles.bannerDesc}>
@@ -182,9 +375,12 @@ export default function OverviewTab() {
           iconColor={Colors.error}
           title="Số tiền khách nợ"
           subtitle="Tổng tiền khách thuê đang nợ"
-          amount="0 đ"
+          amount={formatCurrency(stats.customerDebt)}
           onPress={() =>
-            router.push("/tab-overview/financial-statistics/customer-debt")
+            router.push({
+              pathname: "/tab-overview/financial-statistics/customer-debt",
+              params: activeMotelId ? { motelId: activeMotelId } : undefined,
+            } as any)
           }
         />
         <FinanceCard
@@ -192,9 +388,12 @@ export default function OverviewTab() {
           iconColor={Colors.gray400}
           title="Số tiền cọc"
           subtitle="Tổng tiền khách thuê đặt cọc khi ở"
-          amount="0 đ"
+          amount={formatCurrency(stats.deposit)}
           onPress={() =>
-            router.push("/tab-overview/financial-statistics/room-deposit")
+            router.push({
+              pathname: "/tab-overview/financial-statistics/room-deposit",
+              params: activeMotelId ? { motelId: activeMotelId } : undefined,
+            } as any)
           }
         />
         <FinanceCard
@@ -202,9 +401,12 @@ export default function OverviewTab() {
           iconColor={Colors.success}
           title="Số tiền khách cọc giữ chỗ"
           subtitle="Tổng tiền khách thuê đang cọc giữ chỗ"
-          amount="0 đ"
+          amount={formatCurrency(stats.holdingDeposit)}
           onPress={() =>
-            router.push("/tab-overview/financial-statistics/holding-deposit")
+            router.push({
+              pathname: "/tab-overview/financial-statistics/holding-deposit",
+              params: activeMotelId ? { motelId: activeMotelId } : undefined,
+            } as any)
           }
         />
       </View>

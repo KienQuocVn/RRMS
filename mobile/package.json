@@ -4,11 +4,12 @@
   "version": "1.0.0",
   "scripts": {
     "start": "node ./scripts/start-lan.js",
+    "start:nologin": "node ./scripts/start-lan.js",
     "start:tunnel": "node ./scripts/start-with-api-tunnel.js",
     "start:tunnell": "npm run start:tunnel",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "node ./scripts/start-lan.js --android",
+    "ios": "node ./scripts/start-lan.js --ios",
     "web": "expo start --web",
     "lint": "expo lint"
   },

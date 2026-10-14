@@ -129,4 +129,9 @@ export const API_ENDPOINTS = {
   SUPPORT: {
     CREATE: '/support/create',
   },
+  NOTIFICATIONS: {
+    BASE: '/api/v1/notifications',
+    UNREAD_COUNT: '/api/v1/notifications/unread-count',
+    MARK_READ: (id: string) => `/api/v1/notifications/mark-read/${id}`,
+  },
 };

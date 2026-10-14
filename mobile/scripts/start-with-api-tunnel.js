@@ -291,6 +291,7 @@ async function main() {
     shell: false,
     env: {
       ...process.env,
+      EXPO_ROUTER_DISABLE_RN_NAVIGATION_CHECK: '1',
       EXPO_PUBLIC_API_URL: apiUrl,
       EXPO_PACKAGER_PROXY_URL: metroUrl,
     },

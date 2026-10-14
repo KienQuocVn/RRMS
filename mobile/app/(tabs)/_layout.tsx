@@ -62,15 +62,15 @@ export default function TabsLayout() {
         }}
       />
 
-      {/* Tab 2: Hộp thư */}
+      {/* Tab 2: Thông báo */}
       <Tabs.Screen
         name="inbox"
         options={{
-          title: 'Hộp thư',
+          title: 'Thông báo',
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconContainer}>
               <Ionicons
-                name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
+                name={focused ? 'notifications' : 'notifications-outline'}
                 size={24}
                 color={color}
               />
@@ -86,6 +86,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="tasks"
         options={{
+          href: null,
           title: 'Công việc',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
@@ -101,6 +102,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="find-tenants"
         options={{
+          href: null,
           title: 'Tìm khách',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons

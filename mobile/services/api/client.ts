@@ -5,10 +5,16 @@ import { authStorage } from '../storage/auth.storage';
 import { safeAsyncStorage } from '../storage/safe-async-storage';
 
 const DEFAULT_API_PORT = Number(process.env.EXPO_PUBLIC_API_PORT?.trim() || '7000');
-const API_PROBE_PATH = process.env.EXPO_PUBLIC_API_PING_PATH?.trim() || '/authen/error';
+const API_PROBE_PATH = process.env.EXPO_PUBLIC_API_PING_PATH?.trim() || '/actuator/health';
 const API_BASE_URL_STORAGE_KEY = 'rrms_last_successful_api_url';
-const API_PROBE_TIMEOUT_MS = 3500;
+const API_PROBE_TIMEOUT_MS = 8000;
 const API_BASE_URL_RECOVERY_LIMIT = 1;
+
+export type ApiConnectionIssue = {
+  message: string;
+  candidates: string[];
+  activeBaseUrl: string;
+};
 
 function getExpoHost() {
   const hostUri =
@@ -67,7 +73,7 @@ function addCandidate(
 function getConfiguredApiCandidates() {
   return (process.env.EXPO_PUBLIC_API_URL_CANDIDATES || '')
     .split(',')
-    .map((value) => value.trim())
+    .map((value: string) => value.trim())
     .filter(Boolean);
 }
 
@@ -136,13 +142,32 @@ function getProbeUrl(baseUrl: string) {
   return new URL(API_PROBE_PATH, `${normalizeBaseUrl(baseUrl)}/`).toString();
 }
 
+function isTunnelUrl(url: string) {
+  try {
+    const hostname = new URL(url).hostname;
+    // Tunnel nếu không phải LAN IP và không phải localhost
+    return (
+      hostname !== 'localhost' &&
+      hostname !== '127.0.0.1' &&
+      !isPrivateIpv4Host(hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 async function fetchWithTimeout(url: string, timeoutMs: number) {
+  // Chỉ gửi custom header khi là tunnel (ngrok, loca.lt, ...)
+  // để tránh CORS preflight OPTIONS khi probe LAN/localhost trên browser
+  const headers: Record<string, string> = {};
+  if (isTunnelUrl(url)) {
+    headers['bypass-tunnel-reminder'] = 'true';
+  }
+
   return Promise.race([
     fetch(url, {
       method: 'GET',
-      headers: {
-        'bypass-tunnel-reminder': 'true',
-      },
+      headers,
     }),
     new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error(`Timed out after ${timeoutMs}ms`)), timeoutMs);
@@ -151,16 +176,22 @@ async function fetchWithTimeout(url: string, timeoutMs: number) {
 }
 
 async function isApiBaseUrlReachable(baseUrl: string) {
-  const response = await fetchWithTimeout(getProbeUrl(baseUrl), API_PROBE_TIMEOUT_MS);
-  return response.status < 500 || response.status === 401 || response.status === 403;
+  try {
+    const response = await fetchWithTimeout(getProbeUrl(baseUrl), API_PROBE_TIMEOUT_MS);
+    return response.status < 500 || response.status === 401 || response.status === 403;
+  } catch {
+    try {
+      const fallbackUrl = new URL('/', `${normalizeBaseUrl(baseUrl)}/`).toString();
+      const response = await fetchWithTimeout(fallbackUrl, 3000);
+      return response.status < 500 || response.status === 401 || response.status === 403;
+    } catch {
+      return false;
+    }
+  }
 }
 
 function prioritizeCandidates(storedBaseUrl: string | null) {
   let nextCandidates = buildApiBaseUrlCandidates();
-
-  if (configuredApiUrl?.trim()) {
-    return nextCandidates;
-  }
 
   if (Platform.OS === 'web') {
     const isWebLocalhost = typeof window !== 'undefined' && 
@@ -172,6 +203,10 @@ function prioritizeCandidates(storedBaseUrl: string | null) {
         ...nextCandidates.filter((c) => c !== localApi)
       ];
     }
+  }
+
+  if (configuredApiUrl?.trim()) {
+    return nextCandidates;
   }
 
   if (!storedBaseUrl) {
@@ -189,6 +224,7 @@ let hasResolvedReachableApiBaseUrl = false;
 let apiBaseUrlResolutionPromise: Promise<string> | null = null;
 
 export let API_BASE_URL_DIAGNOSTICS = buildApiBaseUrlDiagnostics(API_BASE_URL);
+export let API_CONNECTION_ISSUE: ApiConnectionIssue | null = null;
 
 export function getApiBaseUrlCandidates() {
   return [...API_BASE_URL_CANDIDATES];
@@ -197,6 +233,12 @@ export function getApiBaseUrlCandidates() {
 export async function resolveReachableApiBaseUrl(forceRefresh = false) {
   if (!forceRefresh && hasResolvedReachableApiBaseUrl) {
     return API_BASE_URL;
+  }
+
+  // Khi forceRefresh=true, hủy promise đang chạy để probe lại từ đầu
+  if (forceRefresh) {
+    apiBaseUrlResolutionPromise = null;
+    hasResolvedReachableApiBaseUrl = false;
   }
 
   if (apiBaseUrlResolutionPromise) {
@@ -217,6 +259,7 @@ export async function resolveReachableApiBaseUrl(forceRefresh = false) {
 
         setActiveApiBaseUrl(candidate);
         hasResolvedReachableApiBaseUrl = true;
+        API_CONNECTION_ISSUE = null;
         await safeAsyncStorage.setItem(API_BASE_URL_STORAGE_KEY, candidate);
         return candidate;
       } catch (error) {
@@ -229,12 +272,43 @@ export async function resolveReachableApiBaseUrl(forceRefresh = false) {
     setActiveApiBaseUrl(fallbackBaseUrl);
     hasResolvedReachableApiBaseUrl = false;
 
-    console.warn(
-      '[API] Could not verify any API candidate. Falling back to:',
-      fallbackBaseUrl
-    );
+    const errorMessage =
+      `Khong ket noi duoc backend.\n` +
+      `Da thu: ${API_BASE_URL_CANDIDATES.join(', ')}\n\n` +
+      `Kiem tra:\n` +
+      `1. Backend co dang chay tren cong ${DEFAULT_API_PORT}?\n` +
+      `2. Dien thoai co cung mang Wi-Fi voi may tinh?\n` +
+      `3. EXPO_PUBLIC_API_URL trong mobile/.env co dung IP LAN cua may tinh?\n` +
+      `4. Windows Firewall co cho phep inbound port ${DEFAULT_API_PORT}?`;
 
-    return fallbackBaseUrl;
+    API_CONNECTION_ISSUE = {
+      message: errorMessage,
+      candidates: [...API_BASE_URL_CANDIDATES],
+      activeBaseUrl: fallbackBaseUrl,
+    };
+
+    console.warn('[API] Could not verify any API candidate. Falling back to:', fallbackBaseUrl);
+    console.warn('[API] Connection error detail:', errorMessage);
+
+    connectionErrorListeners.forEach((listener) => {
+      try {
+        listener(errorMessage);
+      } catch (e) {
+        console.warn('[API] Error in connection error listener:', e);
+      }
+    });
+
+    const connectionError = new Error(errorMessage) as Error & {
+      code?: string;
+      candidates?: string[];
+      activeBaseUrl?: string;
+      isApiConnectionError?: boolean;
+    };
+    connectionError.code = 'RRMS_API_UNREACHABLE';
+    connectionError.candidates = [...API_BASE_URL_CANDIDATES];
+    connectionError.activeBaseUrl = fallbackBaseUrl;
+    connectionError.isApiConnectionError = true;
+    throw connectionError;
   })();
 
   try {
@@ -244,35 +318,20 @@ export async function resolveReachableApiBaseUrl(forceRefresh = false) {
   }
 }
 
-if (!configuredApiUrl?.trim()) {
-  console.warn(
-    '[API] EXPO_PUBLIC_API_URL is missing. Auto-discovery will probe these candidates:',
-    API_BASE_URL_CANDIDATES
-  );
+export const connectionErrorListeners = new Set<(message: string) => void>();
+
+export function registerConnectionErrorListener(listener: (message: string) => void) {
+  connectionErrorListeners.add(listener);
+  return () => {
+    connectionErrorListeners.delete(listener);
+  };
 }
 
-if (isTunnelWithoutApiUrl) {
-  console.warn(
-    '[API] Expo tunnel/public host detected. Configure EXPO_PUBLIC_API_URL to a reachable backend URL (LAN IP, ngrok, cloudflared, etc.).'
-  );
+export function getApiConnectionIssue() {
+  return API_CONNECTION_ISSUE;
 }
 
-if (API_BASE_URL_DIAGNOSTICS.isLoopbackHost) {
-  console.warn(
-    '[API] API baseURL points to localhost. Real devices cannot reach localhost on your PC; use a LAN IP or public tunnel URL instead.'
-  );
-}
-
-if (
-  configuredApiUrl?.trim() &&
-  API_BASE_URL_DIAGNOSTICS.isPrivateIpv4 &&
-  expoHost &&
-  !isPrivateIpv4Host(expoHost)
-) {
-  console.warn(
-    '[API] Expo is using a tunnel/public host, but EXPO_PUBLIC_API_URL still points to a private LAN IP. Devices on 4G or outside your Wi-Fi will time out. Use npm run start:tunnel to expose backend port 7000 as a public URL.'
-  );
-}
+export let isApiReachable = false;
 
 export const unauthorizedListeners = new Set<() => void>();
 
@@ -346,6 +405,64 @@ function shouldRetryRequest(error: any) {
   }
 
   return timedOut || networkDropped || transientStatus;
+}
+
+export function buildApiErrorMessage(error: any) {
+  const connectionIssue = error?.isApiConnectionError
+    ? {
+        message: error.message,
+        candidates: error.candidates,
+        activeBaseUrl: error.activeBaseUrl,
+      }
+    : API_CONNECTION_ISSUE;
+  const status = error?.response?.status;
+  const method = error?.config?.method?.toUpperCase();
+  const requestPath = error?.config?.url;
+  const baseUrl = error?.config?.baseURL || connectionIssue?.activeBaseUrl || API_BASE_URL;
+  const timeoutError = error?.code === 'ECONNABORTED';
+  const networkError =
+    error?.message === 'Network Error' ||
+    error?.code === 'ERR_NETWORK' ||
+    error?.code === 'RRMS_API_UNREACHABLE' ||
+    (!error?.response && (!!error?.config || error?.isApiConnectionError));
+
+  if (connectionIssue || timeoutError || networkError) {
+    const triedUrls = connectionIssue?.candidates?.length
+      ? connectionIssue.candidates.join(', ')
+      : baseUrl;
+    const reason = timeoutError
+      ? 'Request qua thoi gian cho.'
+      : 'Mobile khong cham duoc backend.';
+
+    return (
+      `${reason}\n\n` +
+      `API dang goi: ${method ? `${method} ` : ''}${baseUrl}${requestPath || ''}\n` +
+      `Da thu base URL: ${triedUrls}\n\n` +
+      `Can kiem tra:\n` +
+      `1. Backend dang chay port ${DEFAULT_API_PORT}.\n` +
+      `2. IP trong mobile/.env la IP LAN cua may tinh, khong dung localhost khi test bang dien thoai that.\n` +
+      `3. Dien thoai va may tinh cung Wi-Fi.\n` +
+      `4. Firewall cho phep port ${DEFAULT_API_PORT}.`
+    );
+  }
+
+  if (status === 401) {
+    return 'So dien thoai hoac mat khau khong dung, hoac phien dang nhap da het han.';
+  }
+
+  if (status === 403) {
+    return 'Tai khoan khong co quyen truy cap API nay.';
+  }
+
+  if (status === 404) {
+    return `Khong tim thay API: ${method ? `${method} ` : ''}${baseUrl}${requestPath || ''}`;
+  }
+
+  if (status >= 500) {
+    return `Backend tra loi loi ${status}. Kiem tra log server cho API: ${method ? `${method} ` : ''}${requestPath || ''}`;
+  }
+
+  return error?.response?.data?.message || error?.message || 'Da xay ra loi khi goi API.';
 }
 
 async function retryWithRecoveredBaseUrl(error: any) {

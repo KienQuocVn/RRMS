@@ -1,18 +1,22 @@
 /**
  * RoomDepositScreen - Màn hình thống kê tiền cọc phòng
  * Dùng cho: Thống kê và quản lý các phòng hiện tại đã thu tiền cọc của khách thuê khi đang ở
+ * Tuân thủ: CODING_STANDARDS.md
  */
 
-import React from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Platform,
+  ActivityIndicator,
+  Linking,
+  Alert,
 } from "react-native";
 import { RefreshableScrollView as ScrollView } from "@/components/ui/refreshable-scroll-view";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -23,10 +27,75 @@ import {
   BorderRadius,
   Shadows,
 } from "@/constants/theme";
+import { useAuth } from "@/hooks/use-auth";
+import { safeAsyncStorage } from "@/services/storage/safe-async-storage";
+import { authStorage } from "@/services/storage/auth.storage";
+import { motelService } from "@/services/api/motel.service";
+import { roomService } from "@/services/api/room.service";
+import {
+  getRoomDeposit,
+  formatCurrency,
+  formatDisplayDate,
+  getTenantInfo,
+} from "@/utils/room-status";
 
 export default function RoomDepositScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ motelId?: string }>();
+  const user = useAuth((state) => state.user);
+
+  const [rooms, setRooms] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const loadData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const token = await authStorage.getToken();
+      if (!token && !user) {
+        setIsLoading(false);
+        return;
+      }
+
+      let targetMotelId = params.motelId;
+      if (!targetMotelId) {
+        targetMotelId =
+          (await safeAsyncStorage.getItem("rrms_active_motel_id")) || undefined;
+      }
+      if (!targetMotelId && user?.username) {
+        const res = await motelService.getMotelsByAccount(user.username);
+        const list = res.result || [];
+        if (list.length > 0) {
+          targetMotelId = list[0].motelId;
+        }
+      }
+
+      if (!targetMotelId) {
+        setRooms([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const roomsRes = await roomService.getRoomsByMotel(targetMotelId);
+      const allRooms = roomsRes.result || [];
+      const depositRooms = allRooms.filter((r) => getRoomDeposit(r) > 0);
+      setRooms(depositRooms);
+    } catch (error) {
+      console.error("[RoomDepositScreen] Lỗi tải dữ liệu phòng cọc:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.username, params.motelId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
+
+  const totalDeposit = useMemo(() => {
+    return rooms.reduce((acc, r) => acc + getRoomDeposit(r), 0);
+  }, [rooms]);
 
   const Header = () => (
     <View
@@ -38,10 +107,20 @@ export default function RoomDepositScreen() {
         },
       ]}
     >
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.back()}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        accessibilityLabel="Quay lại"
+      >
         <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>Thống kê tiền cọc</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.headerTitle}>Thống kê tiền cọc phòng</Text>
+        <Text style={styles.headerSubtitle}>
+          {rooms.length} phòng • Tổng: {formatCurrency(totalDeposit)}
+        </Text>
+      </View>
     </View>
   );
 
@@ -58,125 +137,184 @@ export default function RoomDepositScreen() {
         color={Colors.success}
         style={{ marginRight: 8 }}
       />
-      <Text style={[styles.alertText, { color: Colors.success }]}>
-        Thống kê danh sách phòng hiện tại{" "}
-        <Text style={{ fontWeight: "bold" }}>Đã thu tiền cọc</Text>
-      </Text>
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.alertText, { color: Colors.success }]}>
+          Thống kê danh sách phòng hiện tại{" "}
+          <Text style={{ fontWeight: "bold" }}>Đã thu tiền cọc</Text>
+        </Text>
+        <Text style={styles.alertTotalText}>
+          Tổng tiền cọc: <Text style={{ color: Colors.primaryDark, fontWeight: "bold" }}>{formatCurrency(totalDeposit)}</Text>
+        </Text>
+      </View>
     </View>
   );
 
-  const DepositCard = () => (
-    <View style={styles.card}>
-      {/* ── Top Info Row ── */}
-      <View style={styles.cardHeader}>
-        {/* Date Badge */}
-        <View style={styles.dateBadge}>
-          <View style={styles.dateBadgeTop}>
-            <Text style={styles.dateBadgeTopText}>T.4</Text>
-          </View>
-          <View style={styles.dateBadgeBottom}>
-            <Text style={styles.dateBadgeBottomText}>2026</Text>
-          </View>
-        </View>
+  const DepositCardItem = ({ room }: { room: any }) => {
+    const deposit = getRoomDeposit(room);
+    const tenant = getTenantInfo(room);
+    const contract = room.latestContract;
 
-        {/* Info Column */}
-        <View style={styles.infoCol}>
-          <Text style={styles.roomTitle}>
-            Phòng 1 <Text style={styles.dateSubtext}>(18/04/2026)</Text>
-          </Text>
-          <Text style={styles.descText}>Tiền đặt cọc hợp đồng thuê</Text>
+    const dateObj = contract?.moveinDate ? new Date(contract.moveinDate) : new Date();
+    const month = dateObj.getMonth() + 1;
+    const year = dateObj.getFullYear();
+    const dateFormatted = formatDisplayDate(contract?.moveinDate) || "18/04/2026";
 
-          <View style={styles.appStatusRow}>
-            <Ionicons
-              name="checkmark-circle-outline"
-              size={14}
-              color={Colors.success}
-              style={{ marginRight: 4 }}
-            />
-            <Text style={styles.appStatusText}>Hợp đồng đang hiệu lực</Text>
-          </View>
+    const handleCall = () => {
+      if (tenant.phone) {
+        Linking.openURL(`tel:${tenant.phone}`).catch(() => {
+          Alert.alert("Không thể gọi", `Số điện thoại: ${tenant.phone}`);
+        });
+      } else {
+        Alert.alert("Thông báo", "Phòng này chưa cập nhật số điện thoại khách thuê.");
+      }
+    };
 
-          <View style={styles.tagsRow}>
-            <View style={styles.tagBadge}>
-              <View style={[styles.dot, { backgroundColor: Colors.success }]} />
-              <Text style={styles.tagText}>Đã thu cọc</Text>
+    return (
+      <View style={styles.card}>
+        {/* ── Top Info Row ── */}
+        <View style={styles.cardHeader}>
+          {/* Date Badge */}
+          <View style={styles.dateBadge}>
+            <View style={styles.dateBadgeTop}>
+              <Text style={styles.dateBadgeTopText}>T.{month}</Text>
+            </View>
+            <View style={styles.dateBadgeBottom}>
+              <Text style={styles.dateBadgeBottomText}>{year}</Text>
             </View>
           </View>
+
+          {/* Info Column */}
+          <View style={styles.infoCol}>
+            <Text style={styles.roomTitle}>
+              {room.name} <Text style={styles.dateSubtext}>({dateFormatted})</Text>
+            </Text>
+            <Text style={styles.descText}>
+              {tenant.name} {tenant.phone ? `• ${tenant.phone}` : ""}
+            </Text>
+
+            <View style={styles.appStatusRow}>
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={14}
+                color={Colors.success}
+                style={{ marginRight: 4 }}
+              />
+              <Text style={styles.appStatusText}>Hợp đồng đang hiệu lực</Text>
+            </View>
+
+            <View style={styles.tagsRow}>
+              <View style={styles.tagBadge}>
+                <View style={[styles.dot, { backgroundColor: Colors.success }]} />
+                <Text style={styles.tagText}>Đã thu cọc</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Detail Button */}
+          <TouchableOpacity
+            style={styles.detailBtn}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            onPress={() => {
+              if (room.roomId) {
+                router.push({
+                  pathname: "/(home-page)/tab-manage/management-menu/rooms/[id]",
+                  params: { id: room.roomId },
+                } as any);
+              }
+            }}
+          >
+            <Text style={styles.detailBtnText}>Chi tiết</Text>
+            <Ionicons name="chevron-forward" size={12} color="#2196F3" />
+          </TouchableOpacity>
         </View>
 
-        {/* Detail Button */}
-        <TouchableOpacity style={styles.detailBtn}>
-          <Text style={styles.detailBtnText}>Chi tiết</Text>
-          <Ionicons name="chevron-forward" size={12} color="#2196F3" />
-        </TouchableOpacity>
-      </View>
+        {/* ── Action Buttons Row ── */}
+        <View style={styles.actionGrid}>
+          <TouchableOpacity
+            style={[styles.actionGridBtn, styles.actionCall]}
+            onPress={handleCall}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons
+              name="call"
+              size={16}
+              color="#2196F3"
+              style={{ marginRight: 6 }}
+            />
+            <Text style={[styles.actionGridText, { color: "#2196F3" }]}>Gọi</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionGridBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            onPress={() => {
+              Alert.alert("Hoàn cọc", `Lập thủ tục hoàn tiền cọc cho phòng ${room.name}?`);
+            }}
+          >
+            <Ionicons
+              name="cash-outline"
+              size={16}
+              color={Colors.textPrimary}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.actionGridText}>Hoàn cọc</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionGridBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            onPress={() => {
+              Alert.alert("Thu thêm", `Thu thêm tiền cọc cho phòng ${room.name}?`);
+            }}
+          >
+            <Ionicons
+              name="add-circle-outline"
+              size={16}
+              color={Colors.textPrimary}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.actionGridText}>Thu thêm</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionGridBtn, { borderRightWidth: 0 }]}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            onPress={() => {
+              Alert.alert("In phiếu cọc", `In biên lai thu tiền cọc phòng ${room.name}`);
+            }}
+          >
+            <Ionicons
+              name="print-outline"
+              size={16}
+              color={Colors.textPrimary}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.actionGridText}>In phiếu</Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* ── Action Buttons Row ── */}
-      <View style={styles.actionGrid}>
-        <TouchableOpacity style={[styles.actionGridBtn, styles.actionCall]}>
-          <Ionicons
-            name="call"
-            size={16}
-            color="#2196F3"
-            style={{ marginRight: 6 }}
-          />
-          <Text style={[styles.actionGridText, { color: "#2196F3" }]}>Gọi</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionGridBtn}>
-          <Ionicons
-            name="cash-outline"
-            size={16}
-            color={Colors.textPrimary}
-            style={{ marginRight: 6 }}
-          />
-          <Text style={styles.actionGridText}>Hoàn cọc</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionGridBtn}>
-          <Ionicons
-            name="add-circle-outline"
-            size={16}
-            color={Colors.textPrimary}
-            style={{ marginRight: 6 }}
-          />
-          <Text style={styles.actionGridText}>Thu thêm</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionGridBtn, { borderRightWidth: 0 }]}
-        >
-          <Ionicons
-            name="print-outline"
-            size={16}
-            color={Colors.textPrimary}
-            style={{ marginRight: 6 }}
-          />
-          <Text style={styles.actionGridText}>In phiếu</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* ── Money Summary Row ── */}
-      <View style={styles.moneySummary}>
-        <View style={[styles.moneyCol, { backgroundColor: "#F9FAFB" }]}>
-          <Text style={styles.moneyLabel}>Tiền cọc yêu cầu</Text>
-          <Text style={styles.moneyValue}>3.000.000 đ</Text>
-        </View>
-        <View
-          style={[
-            styles.moneyCol,
-            { backgroundColor: "#20a9e722", marginHorizontal: 8 },
-          ]}
-        >
-          <Text style={styles.moneyLabel}>Đã thu</Text>
-          <Text style={[styles.moneyValue, { color: "#20a9e7" }]}>
-            3.000.000 đ
-          </Text>
-        </View>
-        <View style={[styles.moneyCol, { backgroundColor: "#FFF3E0" }]}>
-          <Text style={styles.moneyLabel}>Còn thiếu</Text>
-          <Text style={[styles.moneyValue, { color: "#F57C00" }]}>0 đ</Text>
+        {/* ── Money Summary Row ── */}
+        <View style={styles.moneySummary}>
+          <View style={[styles.moneyCol, { backgroundColor: "#F9FAFB" }]}>
+            <Text style={styles.moneyLabel}>Tiền cọc yêu cầu</Text>
+            <Text style={styles.moneyValue}>{formatCurrency(room.price || deposit)}</Text>
+          </View>
+          <View
+            style={[
+              styles.moneyCol,
+              { backgroundColor: "#20a9e722", marginHorizontal: 8 },
+            ]}
+          >
+            <Text style={styles.moneyLabel}>Đã thu</Text>
+            <Text style={[styles.moneyValue, { color: Colors.primaryDark }]}>
+              {formatCurrency(deposit)}
+            </Text>
+          </View>
+          <View style={[styles.moneyCol, { backgroundColor: "#FFF3E0" }]}>
+            <Text style={styles.moneyLabel}>Còn thiếu</Text>
+            <Text style={[styles.moneyValue, { color: "#F57C00" }]}>0 đ</Text>
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -184,9 +322,23 @@ export default function RoomDepositScreen() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
+        onRefreshContent={loadData}
       >
         <AlertBanner />
-        <DepositCard />
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+          </View>
+        ) : rooms.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="wallet-outline" size={48} color={Colors.gray400} />
+            <Text style={styles.emptyText}>Chưa có phòng nào đóng tiền cọc</Text>
+          </View>
+        ) : (
+          rooms.map((room) => (
+            <DepositCardItem key={room.roomId || room.name} room={room} />
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -217,7 +369,11 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.base,
     fontWeight: FontWeights.bold,
     color: Colors.textPrimary,
-    flex: 1,
+  },
+  headerSubtitle: {
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
   scrollView: {
     flex: 1,
@@ -235,9 +391,27 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   alertText: {
-    flex: 1,
     fontSize: 13,
     lineHeight: 20,
+  },
+  alertTotalText: {
+    fontSize: 13,
+    marginTop: 4,
+  },
+  loadingContainer: {
+    paddingVertical: Spacing.xl,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyContainer: {
+    paddingVertical: Spacing["3xl"],
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    marginTop: Spacing.sm,
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
   },
   card: {
     backgroundColor: Colors.white,

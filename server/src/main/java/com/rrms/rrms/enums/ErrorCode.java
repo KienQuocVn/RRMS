@@ -60,6 +60,10 @@ public enum ErrorCode {
             "New password cannot be the same as the old password",
             HttpStatus.BAD_REQUEST),
     OTP_INVALID_OR_EXPIRED(HttpStatus.BAD_REQUEST.value(), "OTP is invalid or expired", HttpStatus.BAD_REQUEST),
+    TOO_MANY_REQUESTS(
+            HttpStatus.TOO_MANY_REQUESTS.value(),
+            "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
+            HttpStatus.TOO_MANY_REQUESTS),
 
     INVOICE_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Invoice not found", HttpStatus.NOT_FOUND),
     INVOICE_ALREADY_CANCELED(HttpStatus.CONFLICT.value(), "Invoice was already canceled", HttpStatus.CONFLICT),

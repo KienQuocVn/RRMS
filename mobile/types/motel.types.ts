@@ -15,3 +15,5 @@ export interface MotelResponse {
   paymentdeadline: number;
   motelServices?: MotelServiceItem[];
 }
+
+export type MotelServiceResponse = MotelServiceItem;

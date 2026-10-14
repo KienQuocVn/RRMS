@@ -1,18 +1,20 @@
 /**
  * DepositedRoomsScreen - Màn hình thống kê phòng đang cọc giữ chỗ
- * Dùng cho: Quản lý danh sách các phòng trống đang có khách đặt cọc giữ chỗ trước
+ * Dùng cho: Quản lý danh sách phòng đã nhận tiền đặt cọc giữ chỗ của khách chuẩn bị vào ở
+ * Tuân thủ: CODING_STANDARDS.md
  */
 
-import React from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { RefreshableScrollView as ScrollView } from "@/components/ui/refreshable-scroll-view";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -23,10 +25,79 @@ import {
   BorderRadius,
   Shadows,
 } from "@/constants/theme";
+import { useAuth } from "@/hooks/use-auth";
+import { safeAsyncStorage } from "@/services/storage/safe-async-storage";
+import { authStorage } from "@/services/storage/auth.storage";
+import { motelService } from "@/services/api/motel.service";
+import { roomService } from "@/services/api/room.service";
+import {
+  isDeposited,
+  formatCurrency,
+  getTenantInfo,
+  extractUniqueFloors,
+} from "@/utils/room-status";
 
 export default function DepositedRoomsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ motelId?: string }>();
+  const user = useAuth((state) => state.user);
+
+  const [rooms, setRooms] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [activeFloor, setActiveFloor] = useState<string>("Tất cả");
+
+  const loadData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const token = await authStorage.getToken();
+      if (!token && !user) {
+        setIsLoading(false);
+        return;
+      }
+
+      let targetMotelId = params.motelId;
+      if (!targetMotelId) {
+        targetMotelId =
+          (await safeAsyncStorage.getItem("rrms_active_motel_id")) || undefined;
+      }
+      if (!targetMotelId && user?.username) {
+        const res = await motelService.getMotelsByAccount(user.username);
+        const list = res.result || [];
+        if (list.length > 0) {
+          targetMotelId = list[0].motelId;
+        }
+      }
+
+      if (!targetMotelId) {
+        setRooms([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const roomsRes = await roomService.getRoomsByMotel(targetMotelId);
+      const allRooms = roomsRes.result || [];
+      const matched = allRooms.filter(isDeposited);
+      setRooms(matched);
+    } catch (error) {
+      console.error("[DepositedRoomsScreen] Lỗi tải dữ liệu phòng:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.username, params.motelId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
+
+  const floors = useMemo(() => extractUniqueFloors(rooms), [rooms]);
+
+  const displayedRooms = useMemo(() => {
+    if (activeFloor === "Tất cả") return rooms;
+    return rooms.filter((r) => (r.group?.trim() || "Tầng trệt") === activeFloor);
+  }, [rooms, activeFloor]);
 
   const Header = () => (
     <View
@@ -38,18 +109,45 @@ export default function DepositedRoomsScreen() {
         },
       ]}
     >
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.back()}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        accessibilityLabel="Quay lại"
+      >
         <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>Thống kê phòng đang cọc giữ chỗ</Text>
+      <Text style={styles.headerTitle}>
+        Thống kê phòng đang cọc giữ chỗ ({rooms.length})
+      </Text>
     </View>
   );
 
   const Tabs = () => (
     <View style={styles.tabsContainer}>
-      <View style={styles.tabActive}>
-        <Text style={styles.tabTextActive}>Tầng trệt</Text>
-      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {floors.map((floor) => {
+          const isActive = activeFloor === floor;
+          return (
+            <TouchableOpacity
+              key={floor}
+              style={[styles.tabItem, isActive && styles.tabActive]}
+              onPress={() => setActiveFloor(floor)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityLabel={floor}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  isActive ? styles.tabTextActive : styles.tabTextInactive,
+                ]}
+              >
+                {floor}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
       <View style={styles.tabBorder} />
     </View>
   );
@@ -58,169 +156,195 @@ export default function DepositedRoomsScreen() {
     <View
       style={[
         styles.alertBanner,
-        { backgroundColor: "#E0F7FA", borderColor: "#4DD0E1" },
+        { backgroundColor: "#E0F7FA", borderColor: "#80DEEA" },
       ]}
     >
       <Ionicons
-        name="information-circle"
+        name="bookmark"
         size={24}
         color="#00BCD4"
         style={{ marginRight: 8 }}
       />
-      <Text style={[styles.alertText, { color: "#00BCD4" }]}>
+      <Text style={[styles.alertText, { color: "#00838F" }]}>
         Thống kê danh sách phòng hiện tại{" "}
         <Text style={{ fontWeight: "bold" }}>Đang cọc giữ chỗ</Text>
       </Text>
     </View>
   );
 
-  const RoomCardRenting = ({ title }: { title: string }) => (
-    <View style={[styles.card, { borderLeftColor: "#00BCD4" }]}>
-      <View style={styles.cardHeader}>
-        <View style={styles.roomIconBox}>
-          <Ionicons name="storefront" size={20} color={Colors.gray700} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.roomTitle}>{title}</Text>
-          <View style={styles.tenantInfo}>
-            <Ionicons
-              name="call-outline"
-              size={12}
-              color={Colors.textSecondary}
-              style={{ marginRight: 4 }}
-            />
-            <Text style={styles.tenantLink}>Test1 - 0919925302</Text>
-          </View>
-        </View>
-        <TouchableOpacity style={styles.dotsBtn}>
-          <Ionicons name="ellipsis-vertical" size={18} color="#2196F3" />
-        </TouchableOpacity>
-      </View>
+  const RoomCardDeposited = ({ room }: { room: any }) => {
+    const tenant = getTenantInfo(room);
+    const holdDeposit =
+      Number(room.roomReservation?.deposit) ||
+      Number(room.reserveAPlace?.deposit) ||
+      Number(room.deposit) ||
+      0;
 
-      <View style={styles.cardDivider} />
-
-      <View style={styles.detailsList}>
-        <View style={styles.detailRow}>
-          <View style={styles.detailLeft}>
-            <Ionicons
-              name="calendar-outline"
-              size={14}
-              color={Colors.textPrimary}
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.detailLabel}>Hạn h.đồng</Text>
+    return (
+      <View style={[styles.card, { borderLeftColor: "#00BCD4" }]}>
+        <View style={styles.cardHeader}>
+          <View style={styles.roomIconBox}>
+            <Ionicons name="storefront" size={20} color={Colors.gray700} />
           </View>
-          <Text style={styles.detailValue}>Chưa ký hợp đồng chính thức</Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <View style={styles.detailLeft}>
-            <Ionicons
-              name="phone-portrait-outline"
-              size={14}
-              color={Colors.textPrimary}
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.detailLabel}>Sử dụng APP</Text>
-          </View>
-          <View style={styles.flexRow}>
-            <Ionicons
-              name="information-circle-outline"
-              size={12}
-              color="#F57C00"
-              style={{ marginRight: 4 }}
-            />
-            <Text style={[styles.detailValue, { color: "#F57C00" }]}>
-              Chưa sử dụng app
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.detailRow}>
-          <View style={styles.detailLeft}>
-            <Ionicons
-              name="pencil-outline"
-              size={14}
-              color={Colors.textPrimary}
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.detailLabel}>Cọc giữ chỗ</Text>
-          </View>
-          <View style={styles.flexRow}>
-            <Ionicons
-              name="checkmark"
-              size={12}
-              color="#00BCD4"
-              style={{ marginRight: 4 }}
-            />
-            <Text style={[styles.detailValue, { color: "#00BCD4" }]}>
-              Đã thu cọc giữ chỗ
-            </Text>
-          </View>
-        </View>
-
-        <View
-          style={[
-            styles.detailRow,
-            {
-              borderBottomWidth: 0,
-              paddingBottom: 0,
-              alignItems: "flex-start",
-            },
-          ]}
-        >
-          <View style={styles.detailLeft}>
-            <Ionicons
-              name="pricetag-outline"
-              size={14}
-              color={Colors.textPrimary}
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.detailLabel}>Trạng thái</Text>
-          </View>
-          <View style={{ alignItems: "flex-end", gap: 6 }}>
-            <View style={styles.statusBadge}>
-              <View style={[styles.dot, { backgroundColor: "#00BCD4" }]} />
-              <Text style={styles.statusText}>Đang cọc giữ chỗ</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.cardDivider} />
-
-      <View style={[styles.cardFooter, { paddingVertical: Spacing.sm }]}>
-        <View style={styles.priceRow}>
-          <View style={styles.priceCol}>
-            <View style={styles.priceLabelRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.roomTitle}>{room.name}</Text>
+            <View style={styles.tenantInfo}>
               <Ionicons
-                name="cash"
+                name="call-outline"
                 size={12}
-                color={Colors.success}
+                color={Colors.textSecondary}
                 style={{ marginRight: 4 }}
               />
-              <Text style={styles.priceLabel}>Giá thuê dự kiến</Text>
+              <Text style={styles.tenantLink}>
+                {tenant.name}
+                {tenant.phone ? ` - ${tenant.phone}` : ""}
+              </Text>
             </View>
-            <Text style={styles.priceValue}>3.000.000 đ</Text>
           </View>
-          <View style={[styles.priceCol, { marginLeft: 16 }]}>
-            <View style={styles.priceLabelRow}>
+          <TouchableOpacity
+            style={styles.dotsBtn}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel={`Tùy chọn ${room.name}`}
+            onPress={() => {
+              if (room.roomId) {
+                router.push({
+                  pathname: "/(home-page)/tab-manage/management-menu/rooms/[id]",
+                  params: { id: room.roomId },
+                } as any);
+              }
+            }}
+          >
+            <Ionicons name="ellipsis-vertical" size={18} color="#2196F3" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.cardDivider} />
+
+        <View style={styles.detailsList}>
+          <View style={styles.detailRow}>
+            <View style={styles.detailLeft}>
               <Ionicons
-                name="cash"
+                name="calendar-outline"
+                size={14}
+                color={Colors.textPrimary}
+                style={{ marginRight: 6 }}
+              />
+              <Text style={styles.detailLabel}>Hạn h.đồng</Text>
+            </View>
+            <Text style={styles.detailValue}>Chưa ký hợp đồng chính thức</Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <View style={styles.detailLeft}>
+              <Ionicons
+                name="phone-portrait-outline"
+                size={14}
+                color={Colors.textPrimary}
+                style={{ marginRight: 6 }}
+              />
+              <Text style={styles.detailLabel}>Sử dụng APP</Text>
+            </View>
+            <View style={styles.flexRow}>
+              <Ionicons
+                name="information-circle-outline"
                 size={12}
-                color={Colors.success}
+                color="#F57C00"
                 style={{ marginRight: 4 }}
               />
-              <Text style={styles.priceLabel}>Cọc giữ chỗ</Text>
+              <Text style={[styles.detailValue, { color: "#F57C00" }]}>
+                Chưa sử dụng app
+              </Text>
             </View>
-            <Text style={[styles.priceValue, { color: "#00BCD4" }]}>
-              1.000.000 đ
-            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <View style={styles.detailLeft}>
+              <Ionicons
+                name="pencil-outline"
+                size={14}
+                color={Colors.textPrimary}
+                style={{ marginRight: 6 }}
+              />
+              <Text style={styles.detailLabel}>Cọc giữ chỗ</Text>
+            </View>
+            <View style={styles.flexRow}>
+              <Ionicons
+                name="checkmark"
+                size={12}
+                color="#00BCD4"
+                style={{ marginRight: 4 }}
+              />
+              <Text style={[styles.detailValue, { color: "#00BCD4" }]}>
+                Đã thu cọc giữ chỗ
+              </Text>
+            </View>
+          </View>
+
+          <View
+            style={[
+              styles.detailRow,
+              {
+                borderBottomWidth: 0,
+                paddingBottom: 0,
+                alignItems: "flex-start",
+              },
+            ]}
+          >
+            <View style={styles.detailLeft}>
+              <Ionicons
+                name="pricetag-outline"
+                size={14}
+                color={Colors.textPrimary}
+                style={{ marginRight: 6 }}
+              />
+              <Text style={styles.detailLabel}>Trạng thái</Text>
+            </View>
+            <View style={{ alignItems: "flex-end", gap: 6 }}>
+              <View style={styles.statusBadge}>
+                <View style={[styles.dot, { backgroundColor: "#00BCD4" }]} />
+                <Text style={styles.statusText}>Đang cọc giữ chỗ</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.cardDivider} />
+
+        <View style={[styles.cardFooter, { paddingVertical: Spacing.sm }]}>
+          <View style={styles.priceRow}>
+            <View style={styles.priceCol}>
+              <View style={styles.priceLabelRow}>
+                <Ionicons
+                  name="cash"
+                  size={12}
+                  color={Colors.success}
+                  style={{ marginRight: 4 }}
+                />
+                <Text style={styles.priceLabel}>Giá thuê dự kiến</Text>
+              </View>
+              <Text style={styles.priceValue}>
+                {formatCurrency(room.price || 0)}
+              </Text>
+            </View>
+            <View style={[styles.priceCol, { marginLeft: 16 }]}>
+              <View style={styles.priceLabelRow}>
+                <Ionicons
+                  name="cash"
+                  size={12}
+                  color={Colors.success}
+                  style={{ marginRight: 4 }}
+                />
+                <Text style={styles.priceLabel}>Cọc giữ chỗ</Text>
+              </View>
+              <Text style={[styles.priceValue, { color: "#00BCD4" }]}>
+                {formatCurrency(holdDeposit)}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -229,10 +353,25 @@ export default function DepositedRoomsScreen() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
+        onRefreshContent={loadData}
       >
         <AlertBanner />
-        <RoomCardRenting title="Phòng 1" />
-        <RoomCardRenting title="Phòng 2" />
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+          </View>
+        ) : displayedRooms.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="bed-outline" size={48} color={Colors.gray400} />
+            <Text style={styles.emptyText}>
+              Không có phòng nào đang cọc giữ chỗ
+            </Text>
+          </View>
+        ) : (
+          displayedRooms.map((room) => (
+            <RoomCardDeposited key={room.roomId || room.name} room={room} />
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -270,16 +409,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingHorizontal: Spacing.base,
   },
-  tabActive: {
+  tabItem: {
     paddingVertical: 12,
-    borderBottomWidth: 3,
-    borderBottomColor: Colors.success,
+    paddingHorizontal: Spacing.xs,
     marginRight: Spacing.lg,
+    borderBottomWidth: 3,
+    borderBottomColor: "transparent",
+  },
+  tabActive: {
+    borderBottomColor: Colors.success,
+  },
+  tabText: {
+    fontSize: FontSizes.sm,
   },
   tabTextActive: {
     color: Colors.textPrimary,
     fontWeight: FontWeights.bold,
-    fontSize: FontSizes.sm,
+  },
+  tabTextInactive: {
+    color: Colors.textSecondary,
+    fontWeight: FontWeights.medium,
   },
   tabBorder: {
     position: "absolute",
@@ -309,6 +458,21 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     lineHeight: 20,
+  },
+  loadingContainer: {
+    paddingVertical: Spacing.xl,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyContainer: {
+    paddingVertical: Spacing["3xl"],
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    marginTop: Spacing.sm,
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
   },
   card: {
     backgroundColor: Colors.white,
