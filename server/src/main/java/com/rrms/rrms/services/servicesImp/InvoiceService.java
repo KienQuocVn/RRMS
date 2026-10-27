@@ -212,6 +212,10 @@ public class InvoiceService implements IInvoiceService {
                                     : detail.getRoomDevice().getMotelDevice().getDeviceName());
                     deviceResponse.setDevicePrice(
                             detail.getRoomDevice().getMotelDevice() == null
+                                            || detail.getRoomDevice()
+                                                            .getMotelDevice()
+                                                            .getValue()
+                                                    == null
                                     ? 0.0
                                     : detail.getRoomDevice().getMotelDevice().getValue());
                     deviceResponse.setQuantity(

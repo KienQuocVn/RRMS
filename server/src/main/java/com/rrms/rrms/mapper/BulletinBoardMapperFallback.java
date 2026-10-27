@@ -231,8 +231,8 @@ public class BulletinBoardMapperFallback implements BulletinBoardMapper {
         bulletinBoard.setWaterPrice(request.getWaterPrice());
         bulletinBoard.setMaxPerson(request.getMaxPerson());
         bulletinBoard.setMoveInDate(request.getMoveInDate());
-        bulletinBoard.openingHours(request.getOpeningHours());
-        bulletinBoard.closeHours(request.getCloseHours());
+        bulletinBoard.setOpeningHours(request.getOpeningHours());
+        bulletinBoard.setCloseHours(request.getCloseHours());
         bulletinBoard.setAddress(request.getAddress());
         bulletinBoard.setLongitude(request.getLongitude());
         bulletinBoard.setLatitude(request.getLatitude());
@@ -258,8 +258,7 @@ public class BulletinBoardMapperFallback implements BulletinBoardMapper {
             list.add(BulletinBoardReviewsResponse.builder()
                     .bulletinBoardReviewsId(review.getBulletinBoardReviewsId())
                     .rating(review.getRating())
-                    .comment(review.getComment())
-                    .createdAt(review.getCreatedAt())
+                    .content(review.getContent())
                     .build());
         }
         return list;

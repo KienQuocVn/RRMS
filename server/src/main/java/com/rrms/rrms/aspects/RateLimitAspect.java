@@ -1,6 +1,10 @@
 package com.rrms.rrms.aspects;
 
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -42,6 +46,20 @@ public class RateLimitAspect {
         }
 
         String key = rateLimited.key() + ":" + ipAddress;
+        // Login limits must be per account as well as per IP. A shared NAT IP
+        // should not let one user's attempts lock out every other user.
+        if ("login".equals(rateLimited.key()) && joinPoint.getArgs().length > 0) {
+            Object body = joinPoint.getArgs()[0];
+            try {
+                Method phoneGetter = body.getClass().getMethod("getPhone");
+                Object phone = phoneGetter.invoke(body);
+                if (phone != null && !phone.toString().isBlank()) {
+                    key += ":" + sha256(phone.toString().trim().toLowerCase());
+                }
+            } catch (ReflectiveOperationException ignored) {
+                // Keep the IP-only protection if the request has no phone field.
+            }
+        }
         int maxAttempts = rateLimited.maxAttempts();
         int windowSeconds = rateLimited.windowSeconds();
 
@@ -50,5 +68,14 @@ public class RateLimitAspect {
         }
 
         return joinPoint.proceed();
+    }
+
+    private String sha256(String value) {
+        try {
+            return HexFormat.of()
+                    .formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 is unavailable", exception);
+        }
     }
 }

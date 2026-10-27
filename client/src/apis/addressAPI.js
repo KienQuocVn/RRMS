@@ -1,30 +1,31 @@
 import axios from 'axios'
+import { env } from '~/configs/environment'
 
-const NEW_API_BASE = 'https://esgoo.net/api-tinhthanh-new'
-const OLD_API_BASE = 'https://esgoo.net/api-tinhthanh'
+const ADDRESS_PROXY_BASE = `${env.API_URL}/public/address`
+const getAddressData = (api, level, id) => axios.get(`${ADDRESS_PROXY_BASE}/${api}/${level}/${id}.htm`)
 
 /** API 34 tỉnh thành mới: Tỉnh/Thành -> Phường/Xã */
 export const getTinhThanh = async () => {
-  return axios.get(`${NEW_API_BASE}/1/0.htm`)
+  return getAddressData('new', 1, 0)
 }
 
 export const getPhuongXaByTinh = async (provinceId) => {
-  return axios.get(`${NEW_API_BASE}/2/${provinceId}.htm`)
+  return getAddressData('new', 2, provinceId)
 }
 
 export const getFullAddressData = async () => {
-  return axios.get(`${NEW_API_BASE}/4/0.htm`)
+  return getAddressData('new', 4, 0)
 }
 
 export const getLocationById = async (id) => {
-  return axios.get(`${NEW_API_BASE}/5/${id}.htm`)
+  return getAddressData('new', 5, id)
 }
 
 /** API cũ 3 cấp (Tỉnh -> Quận/Huyện -> Phường/Xã) — dùng cho màn hình chưa migrate */
 export const getQuanHuyen = async (provinceId) => {
-  return axios.get(`${OLD_API_BASE}/2/${provinceId}.htm`)
+  return getAddressData('old', 2, provinceId)
 }
 
 export const getPhuongXa = async (districtId) => {
-  return axios.get(`${OLD_API_BASE}/3/${districtId}.htm`)
+  return getAddressData('old', 3, districtId)
 }

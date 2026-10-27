@@ -55,6 +55,7 @@ public class SecurityConfig {
         "/favicon.ico",
         "/",
         "/authen/login",
+        "/public/address/**",
         "/authen/error",
         "/authen/success",
         "/authen/**",

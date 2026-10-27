@@ -161,11 +161,13 @@ export const useLogin = ({ setUsername, setAvatar }) => {
           showError(t('auth.login.alerts.passwordWrong'))
         } else if (status === 401 || status === 404) {
           showError(t('auth.login.alerts.accountMissing'))
+        } else if (status === 429) {
+          showError(error.response?.data?.message || 'Bạn đã thử đăng nhập quá nhiều lần. Vui lòng thử lại sau vài phút.')
         } else {
           showError(t('auth.login.alerts.serverError'))
         }
       } else {
-        showError(t('auth.login.alerts.serverError'))
+        showError('Không kết nối được máy chủ. Hãy kiểm tra kết nối mạng hoặc địa chỉ API rồi thử lại.')
       }
     }
   }
