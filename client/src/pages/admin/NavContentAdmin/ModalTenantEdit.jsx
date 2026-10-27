@@ -23,6 +23,7 @@ import { useEffect, useState } from 'react'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import AddIcon from '@mui/icons-material/Add'
 import axios from 'axios'
+import { getTinhThanh, getPhuongXaByTinh } from '~/apis/addressAPI'
 import Swal from 'sweetalert2'
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
 import { storage } from '~/configs/firebaseConfig'
@@ -44,8 +45,6 @@ const VisuallyHiddenInput = styled('input')({
 const EditTenantModal = ({ open, onClose, reloadData }) => {
   const [provinces, setProvinces] = useState([])
   const [selectedProvince, setSelectedProvince] = useState('')
-  const [districts, setDistricts] = useState([])
-  const [selectedDistrict, setSelectedDistrict] = useState('')
   const [wards, setWards] = useState([])
   const [addressDetail, setAddressDetail] = useState('')
   const [selectedWard, setSelectedWard] = useState('')
@@ -146,32 +145,25 @@ const EditTenantModal = ({ open, onClose, reloadData }) => {
     setCheckedStates(newCheckedStates)
   }
 
+  // Lấy danh sách tỉnh/thành từ API proxy
   const fetchProvinces = async () => {
     try {
-      const response = await fetch('https://esgoo.net/api-tinhthanh/1/0.htm')
-      const data = await response.json()
-      setProvinces(data.data)
+      const response = await getTinhThanh()
+      if (response.data.error === 0) {
+        setProvinces(response.data.data)
+      }
     } catch (error) {
       console.error('Lỗi khi lấy danh sách tỉnh/thành:', error)
     }
   }
 
-  // Hàm để lấy danh sách quận/huyện theo tỉnh/thành từ API
-  const fetchDistricts = async (provinceId) => {
+  // Lấy danh sách phường/xã theo tỉnh (API mới 2 cấp, không có quận/huyện)
+  const fetchWards = async (provinceId) => {
     try {
-      const response = await fetch(`https://esgoo.net/api-tinhthanh/2/${provinceId}.htm`)
-      const data = await response.json()
-      setDistricts(data.data)
-    } catch (error) {
-      console.error('Lỗi khi lấy danh sách quận/huyện:', error)
-    }
-  }
-  // Lấy danh sách phường/xã dựa trên quận/huyện đã chọn
-  const fetchWards = async (districtId) => {
-    try {
-      const response = await fetch(`https://esgoo.net/api-tinhthanh/3/${districtId}.htm`)
-      const data = await response.json()
-      setWards(data.data)
+      const response = await getPhuongXaByTinh(provinceId)
+      if (response.data.error === 0) {
+        setWards(response.data.data)
+      }
     } catch (error) {
       console.error('Lỗi khi lấy danh sách phường/xã:', error)
     }
@@ -182,26 +174,23 @@ const EditTenantModal = ({ open, onClose, reloadData }) => {
     fetchProvinces()
   }, [])
 
-  // Hàm xử lý khi chọn tỉnh/thành
+  // Hàm xử lý khi chọn tỉnh/thành — tải ngay phường/xã (2 cấp)
   const handleProvinceChange = (event) => {
     const provinceId = event.target.value
     setSelectedProvince(provinceId)
-    setDistricts([]) // Xóa dữ liệu quận/huyện khi chọn tỉnh mới
     setWards([]) // Xóa dữ liệu phường/xã khi chọn tỉnh mới
-    fetchDistricts(provinceId)
-  }
-
-  // Hàm xử lý khi chọn quận/huyện
-  const handleDistrictChange = (event) => {
-    const districtId = event.target.value
-    setSelectedDistrict(districtId)
-    setWards([]) // Xóa dữ liệu phường/xã khi chọn quận mới
-    fetchWards(districtId)
+    setSelectedWard('')
+    if (provinceId) {
+      fetchWards(provinceId)
+    }
+    updateAddress(provinceId, '', addressDetail)
   }
 
   // Hàm xử lý khi chọn phường/xã
   const handleWardChange = (event) => {
-    setSelectedWard(event.target.value)
+    const wardId = event.target.value
+    setSelectedWard(wardId)
+    updateAddress(selectedProvince, wardId, addressDetail)
   }
 
   const [tenant, setTenant] = useState({
@@ -241,18 +230,15 @@ const EditTenantModal = ({ open, onClose, reloadData }) => {
 
   const handleAddressDetailChange = (event) => {
     setAddressDetail(event.target.value)
-    updateAddress(selectedProvince, selectedDistrict, selectedWard, event.target.value)
+    updateAddress(selectedProvince, selectedWard, event.target.value)
   }
 
-  const updateAddress = (provinceId, districtId, wardId, addressDetailValue) => {
+  const updateAddress = (provinceId, wardId, addressDetailValue) => {
     const provinceName = provinces.find((p) => p.id === provinceId)?.full_name || ''
-    const districtName = districts.find((d) => d.id === districtId)?.full_name || ''
     const wardName = wards.find((w) => w.id === wardId)?.full_name || ''
-    const fullAddress = `${addressDetailValue}, ${wardName}, ${districtName}, ${provinceName}`.replace(
-      /(^, )|( ,$)/g,
-      ''
-    )
-    setTenant({ ...tenant, address: fullAddress })
+    const parts = [addressDetailValue, wardName, provinceName].filter((part) => !!part && part.trim() !== '')
+    const fullAddress = parts.join(', ')
+    setTenant((prevTenant) => ({ ...prevTenant, address: fullAddress }))
   }
 
   const saveTenant = async (e) => {
@@ -482,7 +468,7 @@ const EditTenantModal = ({ open, onClose, reloadData }) => {
               </Grid>
             </Grid>
             <Grid container spacing={1} sx={{ mt: 1 }}>
-              <Grid item xs={6} sm={6}>
+              <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <InputLabel id="province-label">Chọn Tỉnh/Thành phố</InputLabel>
                   <Select
@@ -492,7 +478,7 @@ const EditTenantModal = ({ open, onClose, reloadData }) => {
                     value={selectedProvince}
                     onChange={handleProvinceChange}
                     label="Chọn Tỉnh/Thành phố">
-                    <MenuItem value=""></MenuItem>
+                    <MenuItem value="">-- Chọn Tỉnh/Thành phố --</MenuItem>
                     {provinces.map((province) => (
                       <MenuItem key={province.id} value={province.id}>
                         {province.full_name}
@@ -502,42 +488,24 @@ const EditTenantModal = ({ open, onClose, reloadData }) => {
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel id="province-label">Chọn Quận/Huyện</InputLabel>
+                <FormControl fullWidth disabled={!selectedProvince}>
+                  <InputLabel id="ward-label">Chọn Phường/Xã</InputLabel>
                   <Select
-                    labelId="district-label"
-                    id="quan"
+                    labelId="ward-label"
+                    id="phuong"
                     fullWidth
-                    value={selectedDistrict}
-                    onChange={handleDistrictChange}
-                    label="Chọn Quận/Huyện">
-                    <MenuItem value=""></MenuItem>
-                    {districts.map((district) => (
-                      <MenuItem key={district.id} value={district.id}>
-                        {district.full_name}
+                    value={selectedWard}
+                    onChange={handleWardChange}
+                    label="Chọn Phường/Xã">
+                    <MenuItem value="">-- Chọn Phường/Xã --</MenuItem>
+                    {wards.map((ward) => (
+                      <MenuItem key={ward.id} value={ward.id}>
+                        {ward.full_name}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
               </Grid>
-            </Grid>
-            <Grid item xs={12} sx={{ mt: 2 }}>
-              <FormControl fullWidth>
-                <InputLabel>Chọn Phường/Xã</InputLabel>
-                <Select
-                  value={selectedWard}
-                  onChange={handleWardChange}
-                  labelId="address-label"
-                  id="phuong"
-                  label="Chọn Phường/Xã"
-                  fullWidth>
-                  {wards.map((ward) => (
-                    <MenuItem key={ward.id} value={ward.id}>
-                      {ward.full_name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
             </Grid>
             <Grid item xs={12} sx={{ mt: 1 }}>
               <TextField

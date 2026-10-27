@@ -2,6 +2,7 @@ package com.rrms.rrms.services;
 
 import java.util.List;
 
+import com.rrms.rrms.dto.request.CreateViolationReportRequest;
 import com.rrms.rrms.dto.request.ResolveViolationReportRequest;
 import com.rrms.rrms.dto.response.ViolationReportCaseResponse;
 import com.rrms.rrms.dto.response.ViolationReportStatsResponse;
@@ -12,4 +13,7 @@ public interface IViolationReportService {
     ViolationReportStatsResponse getStats();
 
     ViolationReportCaseResponse resolveCase(String caseKey, ResolveViolationReportRequest request);
+
+    void submitReport(String reporterUsername, CreateViolationReportRequest request);
 }
+

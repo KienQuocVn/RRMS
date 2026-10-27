@@ -3,9 +3,12 @@ package com.rrms.rrms.controllers;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.rrms.rrms.dto.request.CreateViolationReportRequest;
 import com.rrms.rrms.dto.request.ResolveViolationReportRequest;
 import com.rrms.rrms.dto.response.ApiResponse;
 import com.rrms.rrms.dto.response.ViolationReportCaseResponse;
@@ -24,6 +27,23 @@ import lombok.experimental.FieldDefaults;
 public class ViolationReportController {
 
     IViolationReportService violationReportService;
+
+    @Operation(summary = "Submit a new violation report")
+    @PostMapping
+    public ApiResponse<Void> submitViolationReport(@RequestBody CreateViolationReportRequest request) {
+        String currentUsername = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getPrincipal())) {
+            currentUsername = authentication.getName();
+        }
+        violationReportService.submitReport(currentUsername, request);
+        return ApiResponse.<Void>builder()
+                .message("Gửi báo cáo vi phạm thành công")
+                .code(HttpStatus.CREATED.value())
+                .build();
+    }
+
 
     @Operation(summary = "Get aggregated violation report cases for admin dashboard")
     @GetMapping

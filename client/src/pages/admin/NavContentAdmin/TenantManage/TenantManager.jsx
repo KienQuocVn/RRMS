@@ -372,7 +372,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
               Thêm khách thuê
             </Button>
 
-            <Button
+            {/* <Button
               variant="contained"
               startIcon={<AccessTimeOutlinedIcon />}
               onClick={() => showComingSoon('Danh sách hết tạm trú/Visa')}
@@ -384,7 +384,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                 '&:hover': { bgcolor: '#5a6268' }
               }}>
               Hết tạm trú/Visa
-            </Button>
+            </Button> */}
 
             <Button
               variant="contained"
@@ -400,7 +400,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
               Xuất excel
             </Button>
 
-            <Button
+            {/* <Button
               variant="contained"
               startIcon={<SearchOutlinedIcon />}
               onClick={() => showComingSoon('Tra cứu khách thuê cũ')}
@@ -412,7 +412,7 @@ const TenantManager = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
                 '&:hover': { bgcolor: '#2b7ed7' }
               }}>
               Tra cứu khách thuê cũ
-            </Button>
+            </Button> */}
 
             <Box sx={{ position: 'relative' }}>
               <Chip

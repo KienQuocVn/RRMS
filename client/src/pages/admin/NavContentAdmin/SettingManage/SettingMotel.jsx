@@ -171,6 +171,9 @@ const SettingMotel = ({ setIsAdmin, setIsNavAdmin, motels, setmotels }) => {
             <Button
               variant="contained"
               startIcon={<SaveOutlinedIcon />}
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('save-motel-settings'))
+              }}
               sx={{
                 backgroundColor: '#20a9e7',
                 color: '#fff',

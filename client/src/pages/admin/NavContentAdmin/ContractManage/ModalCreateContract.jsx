@@ -38,6 +38,7 @@ import { getContractTemplatesByMotelId, createTenant, createContract } from '~/a
 import { getNonNegativeNumberFieldProps, isNegativeNumberValue } from '~/utils/numberInputUtils'
 import { formatVndInput, getVndInputFieldProps, parseVndInput } from '~/utils/currencyInputUtils'
 import { deleteTenantById } from '~/apis/tenantAPI'
+import { getBrokers } from '~/apis/brokerAPI'
 
 const getErrorMessage = (error, fallback) => {
   return error?.response?.data?.message || error?.message || fallback
@@ -74,6 +75,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
   const [loading, setLoading] = useState(false)
   const [roomServices, setRoomServices] = useState([])
   const [roomDevices, setRoomDevices] = useState([])
+  const [brokers, setBrokers] = useState([])
 
   const [tenant, setTenant] = useState({
     fullName: '',
@@ -247,6 +249,17 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
     }
   }
 
+  const fetchBrokers = async (id) => {
+    try {
+      const response = await getBrokers(id)
+      const list = response?.data?.result ?? response?.result ?? response ?? []
+      setBrokers(Array.isArray(list) ? list : [])
+    } catch (error) {
+      console.error('Error fetching brokers:', error)
+      setBrokers([])
+    }
+  }
+
   const handleApplyServices = async () => {
     const servicesToDelete = roomServices.filter((s) => !s.isSelected && s.roomServiceId)
     const servicesToUpdateOrAdd = roomServices.filter((s) => s.isSelected)
@@ -328,11 +341,17 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
         })
         return
       }
-      const { contracttemplateId, ...rest } = contract
+      const isValidUuid = (val) =>
+        typeof val === 'string' &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val)
+
+      const { contracttemplateId, brokerId, ...rest } = contract
       const updatedContract = {
         ...rest,
+        roomId: room.roomId || roomId,
         tenantId: createdTenantId,
-        contractTemplateId: contracttemplateId,
+        contractTemplateId: isValidUuid(contracttemplateId) ? contracttemplateId : null,
+        brokerId: isValidUuid(brokerId) ? brokerId : null,
         language: contract.language || 'Tiếng Việt'
       }
       const createdContract = await createContract(updatedContract)
@@ -366,6 +385,7 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
       fetchMotelServices(motelId)
       fetchMotelDevices(motelId)
       fetchMotelContractTemplate(motelId)
+      fetchBrokers(motelId)
     }
   }, [modalOpen, roomId, motelId]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -952,8 +972,11 @@ function ModalCreateContract({ toggleModal, modalOpen, roomId, motelId, onSucces
                   onChange={handleContractChange}
                   size="small">
                   <MenuItem value="">--- Chọn môi giới ---</MenuItem>
-                  <MenuItem value="1">Nguyễn Văn A</MenuItem>
-                  <MenuItem value="2">Trần Thị B</MenuItem>
+                  {brokers.map((b) => (
+                    <MenuItem key={b.brokerId} value={b.brokerId}>
+                      {b.fullname || b.name || b.phone}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Grid>
               <Grid item xs={6}>

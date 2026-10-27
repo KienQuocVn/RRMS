@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.rrms.rrms.dto.request.CreateViolationReportRequest;
 import com.rrms.rrms.dto.request.ResolveViolationReportRequest;
 import com.rrms.rrms.dto.response.*;
 import com.rrms.rrms.enums.ErrorCode;
@@ -19,6 +20,9 @@ import com.rrms.rrms.enums.ViolationResolutionAction;
 import com.rrms.rrms.enums.ViolationSubjectType;
 import com.rrms.rrms.exceptions.AppException;
 import com.rrms.rrms.models.*;
+import com.rrms.rrms.repositories.AccountRepository;
+import com.rrms.rrms.repositories.BulletinBoardRepository;
+import com.rrms.rrms.repositories.BulletinBoardReviewsRepository;
 import com.rrms.rrms.repositories.ViolationReportRepository;
 import com.rrms.rrms.services.IBulletinBoard;
 import com.rrms.rrms.services.IViolationReportService;
@@ -35,6 +39,10 @@ public class ViolationReportService implements IViolationReportService {
 
     private final ViolationReportRepository violationReportRepository;
     private final IBulletinBoard bulletinBoardService;
+    private final AccountRepository accountRepository;
+    private final BulletinBoardRepository bulletinBoardRepository;
+    private final BulletinBoardReviewsRepository bulletinBoardReviewsRepository;
+
 
     @Override
     @Transactional(readOnly = true)
@@ -102,6 +110,58 @@ public class ViolationReportService implements IViolationReportService {
 
         applyResolutionAction(reports.get(0), request);
         return toCaseResponse(reports);
+    }
+
+    @Override
+    public void submitReport(String reporterUsername, CreateViolationReportRequest request) {
+        if (request == null || request.getReason() == null || request.getReason().isBlank()) {
+            throw new AppException(ErrorCode.INVALID_INPUT);
+        }
+
+        String username = (reporterUsername != null && !reporterUsername.isBlank())
+                ? reporterUsername
+                : request.getReporterUsername();
+
+        Account reporter = null;
+        if (username != null && !username.isBlank()) {
+            reporter = accountRepository.findByUsername(username).orElse(null);
+        }
+
+        ViolationSubjectType subjectType = request.getSubjectType() != null
+                ? request.getSubjectType()
+                : ViolationSubjectType.POST;
+
+        BulletinBoard bulletinBoard = null;
+        Account reportedAccount = null;
+        BulletinBoardReviews review = null;
+
+        if (request.getBulletinBoardId() != null) {
+            bulletinBoard = bulletinBoardRepository.findById(request.getBulletinBoardId()).orElse(null);
+            if (bulletinBoard != null && bulletinBoard.getAccount() != null) {
+                reportedAccount = bulletinBoard.getAccount();
+            }
+        }
+
+        if (request.getReportedUsername() != null && !request.getReportedUsername().isBlank()) {
+            reportedAccount = accountRepository.findByUsername(request.getReportedUsername()).orElse(reportedAccount);
+        }
+
+        if (request.getReviewId() != null) {
+            review = bulletinBoardReviewsRepository.findById(request.getReviewId()).orElse(null);
+        }
+
+        ViolationReport violationReport = ViolationReport.builder()
+                .reporter(reporter)
+                .subjectType(subjectType)
+                .bulletinBoard(bulletinBoard)
+                .reportedAccount(reportedAccount)
+                .review(review)
+                .reason(request.getReason())
+                .content(request.getContent())
+                .status(ViolationReportStatus.PENDING)
+                .build();
+
+        violationReportRepository.save(violationReport);
     }
 
     private void applyResolutionAction(ViolationReport sample, ResolveViolationReportRequest request) {

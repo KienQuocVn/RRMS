@@ -73,7 +73,7 @@ const InvoiceHeader = ({ selectedMonth, selectedYear, onCreateInvoice, onPrint, 
       {/* Right: Action buttons */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
         {/* Add button */}
-        <Tooltip title="Tạo hóa đơn mới" placement="top">
+        {/* <Tooltip title="Tạo hóa đơn mới" placement="top">
           <IconButton
             onClick={onCreateInvoice}
             sx={{
@@ -87,7 +87,7 @@ const InvoiceHeader = ({ selectedMonth, selectedYear, onCreateInvoice, onPrint, 
           >
             <AddIcon sx={{ fontSize: '1.3rem' }} />
           </IconButton>
-        </Tooltip>
+        </Tooltip> */}
 
         {/* Cài đặt hóa đơn */}
         <Button

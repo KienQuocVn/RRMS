@@ -14,3 +14,9 @@ export const resolveViolationReport = async (payload) => {
   const response = await httpClient.put('/api/v1/violation-reports/resolve', payload)
   return response.data
 }
+
+export const createViolationReport = async (payload) => {
+  const response = await httpClient.post('/api/v1/violation-reports', payload)
+  return response.data
+}
+

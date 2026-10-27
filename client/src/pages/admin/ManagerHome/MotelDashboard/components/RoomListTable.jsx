@@ -182,8 +182,8 @@ const RoomListTable = ({ rooms, columns = [], onActionClick }) => {
       { icon: <BuildIcon />, label: 'Thiết lập tài sản', action: 'devices' },
       { icon: <PrintIcon />, label: 'In văn bản hợp đồng', action: 'print_contract' },
       { icon: <ShareIcon />, label: 'Chia sẻ văn bản hợp đồng', action: 'share_contract' },
-      { icon: <EditIcon />, label: 'Ghi chú', action: 'edit', color: '#2e7d32' },
-      { icon: <ShareIcon />, label: 'Chia sẻ mã kết nối', action: 'share_code' },
+      // { icon: <EditIcon />, label: 'Ghi chú', action: 'edit', color: '#2e7d32' },
+      // { icon: <ShareIcon />, label: 'Chia sẻ mã kết nối', action: 'share_code' },
       { icon: <DirectionsCarIcon />, label: 'Quản lý xe', action: 'list_car' },
       { icon: <CloseIcon />, label: 'Đóng menu', action: 'close' }
     ]

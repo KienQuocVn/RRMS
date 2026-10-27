@@ -1,22 +1,20 @@
 // components/LocationSelect.js
 import { useState, useEffect } from 'react'
 import { MenuItem, FormControl, InputLabel, Select, Box } from '@mui/material'
-import { getPhuongXa, getQuanHuyen, getTinhThanh } from '~/apis/addressAPI'
+import { getPhuongXaByTinh, getTinhThanh } from '~/apis/addressAPI'
 
 const LocationSelect = ({ onChangeProvince, onChangeDistrict, onChangeWard }) => {
   const [provinces, setProvinces] = useState([])
-  const [districts, setDistricts] = useState([])
   const [wards, setWards] = useState([])
   const [selectedProvince, setSelectedProvince] = useState('')
-  const [selectedDistrict, setSelectedDistrict] = useState('')
   const [selectedWard, setSelectedWard] = useState('')
   const [openTinhThanh, setOpenTinhThanh] = useState(false)
-  const [openQuanHuyen, setOpenQuanHuyen] = useState(false)
   const [openPhuongXa, setOpenPhuongXa] = useState(false)
+
   useEffect(() => {
     getTinhThanh()
       .then((response) => {
-        if (response.data.error === 0) {
+        if (response.data && response.data.error === 0) {
           setProvinces(response.data.data)
         }
       })
@@ -27,32 +25,22 @@ const LocationSelect = ({ onChangeProvince, onChangeDistrict, onChangeWard }) =>
 
   useEffect(() => {
     if (selectedProvince) {
-      getQuanHuyen(selectedProvince)
+      getPhuongXaByTinh(selectedProvince)
         .then((response) => {
-          if (response.data.error === 0) {
-            setDistricts(response.data.data)
-            setWards([]) // Reset wards when province changes
-          }
-        })
-        .catch((error) => {
-          console.error('Error fetching districts:', error)
-        })
-    }
-  }, [selectedProvince])
-
-  useEffect(() => {
-    if (selectedDistrict) {
-      getPhuongXa(selectedDistrict)
-        .then((response) => {
-          if (response.data.error === 0) {
+          if (response.data && response.data.error === 0) {
             setWards(response.data.data)
+          } else {
+            setWards([])
           }
         })
         .catch((error) => {
           console.error('Error fetching wards:', error)
+          setWards([])
         })
+    } else {
+      setWards([])
     }
-  }, [selectedDistrict])
+  }, [selectedProvince])
 
   const handleCloseTinhThanh = () => {
     setOpenTinhThanh(false)
@@ -61,13 +49,7 @@ const LocationSelect = ({ onChangeProvince, onChangeDistrict, onChangeWard }) =>
   const handleOpenTinhThanh = () => {
     setOpenTinhThanh(true)
   }
-  const handleCloseQuanHuyen = () => {
-    setOpenQuanHuyen(false)
-  }
 
-  const handleOpenQuanHuyen = () => {
-    setOpenQuanHuyen(true)
-  }
   const handleClosePhuongXa = () => {
     setOpenPhuongXa(false)
   }
@@ -88,16 +70,21 @@ const LocationSelect = ({ onChangeProvince, onChangeDistrict, onChangeWard }) =>
           onClose={handleCloseTinhThanh}
           onOpen={handleOpenTinhThanh}
           onChange={(e) => {
-            setSelectedProvince(e.target.value)
+            const provId = e.target.value
+            setSelectedProvince(provId)
+            setSelectedWard('')
             handleCloseTinhThanh()
-            const selected = provinces.find((item) => item.id === e.target.value)
+            const selected = provinces.find((item) => item.id === provId)
             if (selected) {
-              onChangeProvince(selected.full_name)
+              onChangeProvince && onChangeProvince(selected.full_name)
+            }
+            if (onChangeDistrict) {
+              onChangeDistrict('')
             }
           }}
           label="Chọn Tỉnh Thành">
           <MenuItem value="">
-            <em>Tỉnh Thành</em>
+            <em>-- Chọn Tỉnh Thành --</em>
           </MenuItem>
           {provinces.map((province) => (
             <MenuItem key={province.id} value={province.id}>
@@ -107,36 +94,7 @@ const LocationSelect = ({ onChangeProvince, onChangeDistrict, onChangeWard }) =>
         </Select>
       </FormControl>
 
-      <FormControl fullWidth sx={{ marginBottom: 2 }} disabled={!selectedProvince}>
-        <InputLabel id="district-label">Chọn Quận Huyện</InputLabel>
-        <Select
-          labelId="district-label"
-          id="district"
-          value={selectedDistrict}
-          open={openQuanHuyen}
-          onClose={handleCloseQuanHuyen}
-          onOpen={handleOpenQuanHuyen}
-          onChange={(e) => {
-            handleCloseQuanHuyen()
-            setSelectedDistrict(e.target.value)
-            const selected = districts.find((item) => item.id === e.target.value)
-            if (selected) {
-              onChangeDistrict(selected.full_name)
-            }
-          }}
-          label="Chọn Quận Huyện">
-          <MenuItem value="">
-            <em>Quận Huyện</em>
-          </MenuItem>
-          {districts.map((district) => (
-            <MenuItem key={district.id} value={district.id}>
-              {district.full_name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth disabled={!selectedDistrict}>
+      <FormControl fullWidth disabled={!selectedProvince}>
         <InputLabel id="ward-label">Chọn Phường Xã</InputLabel>
         <Select
           labelId="ward-label"
@@ -148,14 +106,16 @@ const LocationSelect = ({ onChangeProvince, onChangeDistrict, onChangeWard }) =>
           onChange={(e) => {
             handleClosePhuongXa()
             setSelectedWard(e.target.value)
-            onChangeWard(e.target.value)
+            const selected = wards.find((item) => item.id === e.target.value || item.full_name === e.target.value)
+            const wardName = selected ? selected.full_name : e.target.value
+            onChangeWard && onChangeWard(wardName)
           }}
           label="Chọn Phường Xã">
           <MenuItem value="">
-            <em>Phường Xã</em>
+            <em>-- Chọn Phường Xã --</em>
           </MenuItem>
           {wards.map((ward) => (
-            <MenuItem key={ward.id} value={ward.full_name}>
+            <MenuItem key={ward.id} value={ward.id}>
               {ward.full_name}
             </MenuItem>
           ))}

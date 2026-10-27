@@ -214,7 +214,7 @@ const normalizeBulletinBoard = (data = {}) => {
   }
 }
 
-const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }) => {
+const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId, motelId: propMotelId }) => {
   const isEditMode = Boolean(bulletinBoardId)
   const { motelId: routeMotelId } = useParams()
   const { motels } = useMotel()
@@ -244,8 +244,9 @@ const PostModal = ({ open, handleClose, refreshBulletinBoards, bulletinBoardId }
 
   const activeMotelId = useMemo(() => {
     if (isValidRouteParam(routeMotelId)) return routeMotelId
+    if (isValidRouteParam(propMotelId)) return propMotelId
     return motels?.[0]?.motelId || ''
-  }, [routeMotelId, motels])
+  }, [routeMotelId, propMotelId, motels])
 
   const [bulletinBoard, setBulletinBoard] = useState(defaultBulletinBoard)
   const rentalAmenities = bulletinBoard.bulletinBoards_RentalAm ?? []

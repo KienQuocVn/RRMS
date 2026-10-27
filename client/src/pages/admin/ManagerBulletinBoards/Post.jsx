@@ -5,6 +5,7 @@ import PostModal from './PostModal'
 import PostRoomTable from './PostBulletinBoardTable'
 import { getBulletinBoardTable } from '~/apis/bulletinBoardAPI'
 import { introspect } from '~/apis/accountAPI'
+import { useMotel } from '~/hooks/useMotel'
 
 const Post = () => {
   const [open, setOpen] = useState(false)
@@ -12,6 +13,8 @@ const Post = () => {
   const handleClose = () => setOpen(false)
   const [rows, setRows] = useState([])
   const [bulletinBoardId, setBulletinBoardId] = useState()
+  const { motels } = useMotel()
+  const motelId = motels?.[0]?.motelId || ''
 
   const refreshBulletinBoards = () => {
     introspect().then((res) => {
@@ -99,6 +102,7 @@ const Post = () => {
           setOpen={setOpen}
           refreshBulletinBoards={refreshBulletinBoards}
           bulletinBoardId={bulletinBoardId}
+          motelId={motelId}
         />
       </Box>
 
