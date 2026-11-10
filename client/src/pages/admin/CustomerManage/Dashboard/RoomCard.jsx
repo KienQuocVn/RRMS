@@ -10,15 +10,35 @@ const ArrowRightIcon = () => (
   </svg>
 )
 
-const RoomCard = ({ room = {} }) => {
-  const {
-    imageUrl,
-    address = '123 Đường Lê Lợi, Quận 1, TP. HCM',
-    area = '25 m²',
-    floor = 'Tầng 3 (Phòng 302)',
-    price = '4.500.000 đ/tháng',
-    hostName = 'Trần Thị B (090xxxx123)'
-  } = room
+const RoomCard = ({ room }) => {
+  if (!room) {
+    return (
+      <div
+        style={{
+          background: '#ffffff',
+          border: '0.5px solid #e5e7eb',
+          borderRadius: 12,
+          padding: 16,
+          flex: '0 0 55%',
+          minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          minHeight: 120
+        }}
+      >
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M9 22V12h6v10M9 7h.01M15 7h.01"/>
+        </svg>
+        <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>Chưa có thông tin phòng</p>
+      </div>
+    )
+  }
+
+  const { imageUrl, address, area, floor, price, hostName } = room
 
   const infoItems = [
     { label: 'ĐỊA CHỈ', value: address },

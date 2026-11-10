@@ -3,17 +3,37 @@ import { Box, Typography } from '@mui/material';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 
 const PhotoGallery = ({ photos = [] }) => {
-  const defaultPhotos = [
-    'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=cover&w=800&q=80', // Phòng ngủ chính
-    'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=cover&w=400&q=80', // Nhà vệ sinh
-    'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=cover&w=400&q=80', // Ban công
-    'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=cover&w=400&q=80', // Nhà bếp
-  ];
+  const displayPhotos = photos.filter(Boolean);
 
-  const displayPhotos = photos.length > 0 ? photos : defaultPhotos;
+  // Không có ảnh nào → hiện empty state
+  if (displayPhotos.length === 0) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: '260px',
+          borderRadius: '12px',
+          bgcolor: '#f0f2f5',
+          border: '0.5px dashed #d1d5db',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1,
+        }}
+      >
+        <ImageOutlinedIcon sx={{ fontSize: 40, color: '#9ca3af' }} />
+        <Typography sx={{ fontSize: 13, color: '#9ca3af' }}>Chưa có ảnh phòng</Typography>
+      </Box>
+    );
+  }
+
+  // Pad mảng đến 4 phần tử nếu thiếu (dùng ảnh đầu làm fallback)
+  const padded = [...displayPhotos];
+  while (padded.length < 4) padded.push(displayPhotos[0]);
 
   const handlePhotoClick = (index) => {
-    alert(`Mở ảnh lớn thứ ${index + 1} ở chế độ Fullscreen Lightbox`);
+    window.open(padded[index], '_blank');
   };
 
   return (
@@ -40,7 +60,7 @@ const PhotoGallery = ({ photos = [] }) => {
       >
         <Box
           component="img"
-          src={displayPhotos[0]}
+          src={padded[0]}
           alt="Main Room Photo"
           sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
@@ -60,7 +80,7 @@ const PhotoGallery = ({ photos = [] }) => {
         >
           <Box
             component="img"
-            src={displayPhotos[1]}
+            src={padded[1]}
             alt="Second Room Photo"
             sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
@@ -87,7 +107,7 @@ const PhotoGallery = ({ photos = [] }) => {
           >
             <Box
               component="img"
-              src={displayPhotos[2]}
+              src={padded[2]}
               alt="Third Room Photo"
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
@@ -106,7 +126,7 @@ const PhotoGallery = ({ photos = [] }) => {
           >
             <Box
               component="img"
-              src={displayPhotos[3]}
+              src={padded[3]}
               alt="Fourth Room Photo"
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
@@ -127,7 +147,7 @@ const PhotoGallery = ({ photos = [] }) => {
             >
               <ImageOutlinedIcon sx={{ color: '#ffffff', fontSize: '15px' }} />
               <Typography sx={{ color: '#ffffff', fontSize: '13px', fontWeight: 500 }}>
-                5 ảnh
+                {displayPhotos.length > 4 ? `+${displayPhotos.length - 3} ảnh` : `${displayPhotos.length} ảnh`}
               </Typography>
             </Box>
           </Box>

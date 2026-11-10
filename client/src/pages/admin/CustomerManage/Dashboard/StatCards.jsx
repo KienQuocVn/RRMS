@@ -64,19 +64,21 @@ const bottomTextStyle = {
   display: 'block'
 }
 
+const dash = (v) => v ?? '—'
+
 const StatCards = ({ data = {} }) => {
   const {
-    roomStatus = 'Đang thuê',
-    roomCode = 'PHÒNG 302',
-    roomAddress = '123 Đường Lê Lợi, Quận 1',
-    invoiceAmount = '1.250.000',
-    invoiceStatus = 'Chưa đóng',
-    invoiceDue = 'Đến hạn 12/2026',
-    contractMonths = '4 tháng',
-    contractExpiry = 'Hết hạn 12/2026',
-    postCount = '2 bài',
-    postActive = '1 đang hiển thị',
-    postPending = '1 đang chờ duyệt'
+    roomStatus,
+    roomCode,
+    roomAddress,
+    invoiceAmount,
+    invoiceStatus,
+    invoiceDue,
+    contractMonths,
+    contractExpiry,
+    postCount,
+    postActive,
+    postPending
   } = data
 
   return (
@@ -87,54 +89,62 @@ const StatCards = ({ data = {} }) => {
         <div style={{ position: 'absolute', top: 14, right: 14 }}><BuildingIcon /></div>
         <span style={labelStyle}>Trạng thái phòng</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 18, fontWeight: 500, color: '#1a1a1a' }}>{roomStatus}</span>
-          <span
-            style={{
-              background: '#EAF3DE',
-              color: '#27500A',
-              fontSize: 10,
-              padding: '2px 8px',
-              borderRadius: 4,
-              fontWeight: 500,
-              whiteSpace: 'nowrap'
-            }}
-          >
-            {roomCode}
-          </span>
+          <span style={{ fontSize: 18, fontWeight: 500, color: '#1a1a1a' }}>{dash(roomStatus)}</span>
+          {roomCode && (
+            <span
+              style={{
+                background: '#EAF3DE',
+                color: '#27500A',
+                fontSize: 10,
+                padding: '2px 8px',
+                borderRadius: 4,
+                fontWeight: 500,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {roomCode}
+            </span>
+          )}
         </div>
-        <span style={bottomTextStyle}>{roomAddress}</span>
+        <span style={bottomTextStyle}>{dash(roomAddress)}</span>
       </div>
 
       {/* Card 2 — Hóa đơn tháng này */}
       <div style={cardBase}>
         <div style={{ position: 'absolute', top: 14, right: 14 }}><ReceiptIcon /></div>
         <span style={labelStyle}>Hóa đơn tháng này</span>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, flexWrap: 'wrap' }}>
-          <span style={valueStyle}>{invoiceAmount}</span>
-          <span style={{ fontSize: 13, color: '#6b7280' }}>đ</span>
-          <span
-            style={{
-              background: '#FAEEDA',
-              color: '#BA7517',
-              fontSize: 10,
-              padding: '2px 8px',
-              borderRadius: 4,
-              fontWeight: 500,
-              marginLeft: 4
-            }}
-          >
-            {invoiceStatus}
-          </span>
-        </div>
-        <span style={bottomTextStyle}>{invoiceDue}</span>
+        {invoiceAmount ? (
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, flexWrap: 'wrap' }}>
+            <span style={valueStyle}>{invoiceAmount}</span>
+            <span style={{ fontSize: 13, color: '#6b7280' }}>đ</span>
+            {invoiceStatus && (
+              <span
+                style={{
+                  background: '#FAEEDA',
+                  color: '#BA7517',
+                  fontSize: 10,
+                  padding: '2px 8px',
+                  borderRadius: 4,
+                  fontWeight: 500,
+                  marginLeft: 4
+                }}
+              >
+                {invoiceStatus}
+              </span>
+            )}
+          </div>
+        ) : (
+          <span style={valueStyle}>—</span>
+        )}
+        <span style={bottomTextStyle}>{dash(invoiceDue)}</span>
       </div>
 
       {/* Card 3 — Hợp đồng còn lại */}
       <div style={cardBase}>
         <div style={{ position: 'absolute', top: 14, right: 14 }}><FileTextIcon /></div>
         <span style={labelStyle}>Hợp đồng còn lại</span>
-        <span style={valueStyle}>{contractMonths}</span>
-        <span style={bottomTextStyle}>{contractExpiry}</span>
+        <span style={valueStyle}>{dash(contractMonths)}</span>
+        <span style={bottomTextStyle}>{dash(contractExpiry)}</span>
       </div>
 
       {/* Card 4 — Bài đăng của tôi */}
@@ -142,10 +152,10 @@ const StatCards = ({ data = {} }) => {
         <div style={{ position: 'absolute', top: 14, right: 14 }}><NewsIcon /></div>
         <span style={labelStyle}>Bài đăng của tôi</span>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-          <span style={valueStyle}>{postCount}</span>
-          <span style={{ fontSize: 11, color: '#20a9e7' }}>{postActive}</span>
+          <span style={valueStyle}>{dash(postCount)}</span>
+          {postActive && <span style={{ fontSize: 11, color: '#20a9e7' }}>{postActive}</span>}
         </div>
-        <span style={{ ...bottomTextStyle, color: '#BA7517' }}>{postPending}</span>
+        {postPending && <span style={{ ...bottomTextStyle, color: '#BA7517' }}>{postPending}</span>}
       </div>
 
     </div>

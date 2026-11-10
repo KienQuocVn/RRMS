@@ -33,10 +33,14 @@ export const email_valid = async (email) => {
   const response = await httpClient.get(`/authen/checkMail?email=${email}`)
   return response.data
 }
-export const sendOTP = async (data) => {
-  const response = await httpClient.post('/authen/forgetpassword', data)
+
+// Gửi OTP về email - timeout 30s vì gửi mail thường chậm
+export const sendOTP = async (email) => {
+  const response = await httpClient.post('/authen/forgetpassword', { email }, { timeout: 30000 })
   return response.data
 }
+
+// Xác thực OTP và đổi mật khẩu
 export const acceptChangePassword = async (data) => {
   const response = await httpClient.post('/authen/acceptChangePassword', data)
   return response.data

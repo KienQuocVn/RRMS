@@ -452,4 +452,14 @@ public class ContractService implements IContractService {
         // Nếu không có hợp đồng đang hoạt động, lấy hợp đồng bất kỳ (mới nhất)
         throw new EntityNotFoundException("Không tìm thấy hợp đồng cho phòng với id: " + roomId);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ContractResponse> getContractsForTenant(String username) {
+        Account tenantAccount = accountRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found: " + username));
+        return contractRepository.findByTenant_EmailOrderByCreatedAtDesc(tenantAccount.getEmail()).stream()
+                .map(contractMapper::toResponse)
+                .toList();
+    }
 }

@@ -112,6 +112,10 @@ public class DB {
             int tenantCount = Math.max(10, (rooms.size() / 7) * 5 + 5);
             List<Tenant> tenants = contractSeeder.seedTenants(tenantCount);
             List<Contract> contracts = contractSeeder.seedContracts(rooms, tenants, host);
+            Contract employeeContract = contractSeeder.seedEmployeeRental(rooms, motels, employee);
+            if (employeeContract != null) operationSeeder.seedInvoice(employeeContract);
+            Contract customerContract = contractSeeder.seedRentalForAccount(rooms, motels, customer);
+            if (customerContract != null) operationSeeder.seedInvoice(customerContract);
             contractSeeder.seedContractDetails(contracts, tenants, devices);
 
             // ── 7. Vận hành ───────────────────────────────────────────────────

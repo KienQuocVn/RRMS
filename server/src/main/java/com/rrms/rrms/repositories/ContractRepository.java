@@ -116,6 +116,8 @@ public interface ContractRepository extends JpaRepository<Contract, UUID> {
 
     List<Contract> findByRoom_Motel(Motel motel);
 
+    List<Contract> findByTenant_EmailOrderByCreatedAtDesc(String email);
+
     // tính tổng tiền cọc
     @Query("SELECT SUM(c.deposit) FROM Contract c JOIN c.room r WHERE r.motel.motelId = :motelId")
     Double findTotalDepositByMotelId(@Param("motelId") UUID motelId);

@@ -38,6 +38,8 @@ public interface IContractService {
 
     ContractResponse getAllContractsByRoomId(UUID motelId);
 
+    List<ContractResponse> getContractsForTenant(String username);
+
     int updateContractStatus(UUID roomId, ContractStatus newStatus, Date reportCloseDate);
 
     void updateContractDetailsByContractId(UUID contractId, UUID roomId, Double deposit, Double price, Double debt);

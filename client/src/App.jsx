@@ -3,6 +3,7 @@ import { useEffect, Suspense, useRef, useMemo, useCallback, useState } from 'rea
 import Header from './layouts/Header/Header'
 import Footer from './layouts/Footer/Footer'
 import { getMotelByUsername } from './apis/motelAPI'
+import httpClient from './apis/httpClient'
 import i18n from './i18n/i18n'
 import { Box, CircularProgress } from '@mui/material'
 import { getProfileByUsername } from './apis/accountAPI'
@@ -34,10 +35,63 @@ function AppShell() {
     authRoutesWithoutChrome.includes(location.pathname) ||
     location.pathname.toLowerCase().startsWith('/residenceform')
 
-  const fetchMotelsByUsername = useCallback(async (targetUsername) => {
-    getMotelByUsername(targetUsername).then((res) => {
-      setMotels(res.data.result)
-    })
+  const fetchMotelsByUsername = useCallback(async (targetUsername, role) => {
+    try {
+      if (['EMPLOYEE', 'CUSTOMER'].includes(role?.[0] ?? role)) {
+        const profileResponse = await getProfileByUsername(targetUsername)
+        const profile = normalizeProfileResponse(profileResponse ?? {})
+        const userEmail = profile.email
+        const rentalResponse = await httpClient.get('/contracts/account/me')
+        const contracts = rentalResponse?.data?.result ?? rentalResponse?.data ?? []
+        const rentals = await Promise.all((Array.isArray(contracts) ? contracts : [contracts])
+          .filter((contract) => contract?.tenant?.email === userEmail && ['ACTIVE', 'EXPIRING', 'TERMINATED'].includes(contract.status))
+          .map(async (contract) => {
+            const room = contract.room ?? {}
+            const tenant = contract.tenant ?? {}
+            let motel = {}
+            try {
+              const motelResponse = await getMotelByUsername(contract.username?.username)
+              motel = motelResponse?.data?.result?.find((item) => item.motelId === room.motelId) ?? {}
+            } catch { /* Contract and room remain usable if owner motel details are unavailable. */ }
+            const owner = motel.account ?? contract.username ?? {}
+            const address = tenant.motelAddress ?? tenant.address ?? motel.address
+            const normalizedRoom = {
+              ...room,
+              roomName: room.name,
+              address,
+              motelName: motel.motelName,
+              ownerName: tenant.hostName ?? owner.fullName,
+              ownerPhone: owner.phone,
+              ownerEmail: owner.email,
+              ownerAvatar: owner.avatar,
+              startDate: contract.moveInDate,
+              floor: room.group,
+              maxPeople: contract.countTenant
+            }
+            return {
+              ...motel,
+              motelId: room.motelId ?? motel.motelId,
+              address,
+              ownerName: tenant.hostName ?? owner.fullName,
+              ownerPhone: owner.phone,
+              ownerEmail: owner.email,
+              ownerAvatar: owner.avatar,
+              roomId: room.roomId,
+              room: normalizedRoom,
+              contract
+            }
+          }))
+        setMotels(rentals)
+        return
+      }
+
+      const res = await getMotelByUsername(targetUsername)
+      setMotels(res.data.result ?? [])
+    } catch (err) {
+      // 403 = user không phải chủ trọ hoặc chưa có motel → bỏ qua
+      console.error('fetchMotelsByUsername error:', err?.response?.status, err?.response?.data ?? err?.message)
+      setMotels([])
+    }
   }, [setMotels])
 
   const toggleLanguage = useCallback(() => {
@@ -89,10 +143,11 @@ function AppShell() {
     if (lastFetchedUsernameRef.current === user.username) return
 
     lastFetchedUsernameRef.current = user.username
+    fetchMotelsByUsername(user.username, user.roles?.[0])
     getProfileByUsername(user.username).then((accountResponse) => {
-      setAccount(normalizeProfileResponse(accountResponse ?? {}))
+      const profile = normalizeProfileResponse(accountResponse ?? {})
+      setAccount(profile)
     })
-    fetchMotelsByUsername(user.username)
   }, [fetchMotelsByUsername, location.pathname, setAccount, setAvatar, setToken, setUsername])
 
   const routeContext = useMemo(() => ({ auth, motel }), [auth, motel])

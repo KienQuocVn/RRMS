@@ -14,66 +14,97 @@ import KitchenOutlinedIcon from '@mui/icons-material/KitchenOutlined';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import LocalParkingOutlinedIcon from '@mui/icons-material/LocalParkingOutlined';
 
-const RoomMainInfo = () => {
+const SERVICE_ICON_MAP = {
+  wifi: <WifiIcon sx={{ fontSize: '13px', color: '#20a9e7' }} />,
+  'điều hòa': <AcUnitOutlinedIcon sx={{ fontSize: '13px', color: '#20a9e7' }} />,
+  'máy nước nóng': <OpacityOutlinedIcon sx={{ fontSize: '13px', color: '#20a9e7' }} />,
+  'tủ lạnh': <KitchenOutlinedIcon sx={{ fontSize: '13px', color: '#20a9e7' }} />,
+  'bảo vệ': <SecurityOutlinedIcon sx={{ fontSize: '13px', color: '#20a9e7' }} />,
+  'chỗ để xe': <LocalParkingOutlinedIcon sx={{ fontSize: '13px', color: '#20a9e7' }} />,
+};
+
+const getServiceIcon = (name = '') => {
+  const key = name.toLowerCase();
+  for (const [k, icon] of Object.entries(SERVICE_ICON_MAP)) {
+    if (key.includes(k)) return icon;
+  }
+  return <WifiIcon sx={{ fontSize: '13px', color: '#20a9e7' }} />;
+};
+
+const dash = (v) => v ?? '—';
+
+const fmt = (date) => {
+  if (!date) return null;
+  try { return new Date(date).toLocaleDateString('vi-VN'); } catch { return date; }
+};
+
+const fmtCurrency = (val) => {
+  if (val == null) return null;
+  return Number(val).toLocaleString('vi-VN') + ' đ/tháng';
+};
+
+const RoomMainInfo = ({ room = {}, services = [] }) => {
   const [showFullDesc, setShowFullDesc] = useState(false);
 
-  const fullDescription = "Phòng trọ cao cấp tọa lạc tại vị trí đắc địa ngay trung tâm Quận 1. Không gian sống được thiết kế thông minh, tối ưu hóa diện tích với ánh sáng tự nhiên ngập tràn. Được trang bị đầy đủ nội thất hiện đại nhập khẩu bao gồm hệ thống điều hòa thế hệ mới, tủ lạnh thông minh, giường đệm cao cấp. An ninh đảm bảo tuyệt đối 24/7 với camera giám sát, khóa vân tay tiện lợi và chỗ đậu xe rộng rãi. Phù hợp cho người đi làm hoặc sinh viên muốn tìm kiếm không gian sinh hoạt yên tĩnh, văn minh.";
+  const {
+    roomName, roomCode, address, area, floor, direction,
+    roomType, maxPeople, startDate, price, description
+  } = room;
 
-  const truncatedDescription = "Phòng trọ cao cấp tọa lạc tại vị trí đắc địa ngay trung tâm Quận 1. Không gian sống được thiết kế thông minh, tối ưu hóa diện tích với ánh sáng tự nhiên ngập tràn...";
+  const title = roomName ?? roomCode ?? '—';
+  const priceStr = fmtCurrency(price);
+  const startStr = fmt(startDate);
+  const desc = description ?? '';
+  const truncated = desc.length > 160 ? desc.slice(0, 157) + '...' : desc;
 
   const infoGridCells = [
-    { label: 'DIỆN TÍCH', value: '25 m²', icon: <AspectRatioOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7' }} /> },
-    { label: 'TẦNG', value: 'Tầng 1', icon: <LayersOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7' }} /> },
-    { label: 'HƯỚNG', value: 'Đông Nam', icon: <ExploreOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7' }} /> },
-    { label: 'LOẠI PHÒNG', value: 'Studio', icon: <HomeOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7' }} /> },
-    { label: 'SỐ NGƯỜI', value: 'Max 2 người', icon: <PeopleOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7' }} /> },
-    { label: 'NGÀY BẮT ĐẦU', value: '01/05/2024', icon: <CalendarTodayOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7' }} /> },
+    { label: 'DIỆN TÍCH', value: area != null ? `${area} m²` : '—', icon: <AspectRatioOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7' }} /> },
+    { label: 'TẦNG', value: dash(floor), icon: <LayersOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7' }} /> },
+    { label: 'HƯỚNG', value: dash(direction), icon: <ExploreOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7' }} /> },
+    { label: 'LOẠI PHÒNG', value: dash(roomType), icon: <HomeOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7' }} /> },
+    { label: 'SỐ NGƯỜI', value: maxPeople != null ? `Max ${maxPeople} người` : '—', icon: <PeopleOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7' }} /> },
+    { label: 'NGÀY BẮT ĐẦU', value: dash(startStr), icon: <CalendarTodayOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7' }} /> },
   ];
 
-  const amenities = [
-    { label: 'Wifi miễn phí', icon: <WifiIcon sx={{ fontSize: '13px', color: '#20a9e7' }} /> },
-    { label: 'Điều hòa', icon: <AcUnitOutlinedIcon sx={{ fontSize: '13px', color: '#20a9e7' }} /> },
-    { label: 'Máy nước nóng', icon: <OpacityOutlinedIcon sx={{ fontSize: '13px', color: '#20a9e7' }} /> },
-    { label: 'Tủ lạnh', icon: <KitchenOutlinedIcon sx={{ fontSize: '13px', color: '#20a9e7' }} /> },
-    { label: 'Bảo vệ', icon: <SecurityOutlinedIcon sx={{ fontSize: '13px', color: '#20a9e7' }} /> },
-    { label: 'Chỗ để xe', icon: <LocalParkingOutlinedIcon sx={{ fontSize: '13px', color: '#20a9e7' }} /> },
-  ];
+  const amenities = services.map(svc => ({
+    label: svc.serviceName ?? svc.name ?? '',
+    icon: getServiceIcon(svc.serviceName ?? svc.name ?? ''),
+  }));
 
   return (
     <Box sx={{ flex: '0 0 58%', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      
+
       {/* Title & Price Row */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography sx={{ fontSize: '24px', fontWeight: 500, color: '#1a1a1a' }}>
-          Phòng 102
+          {title}
         </Typography>
-        <Box
-          sx={{
-            bgcolor: '#E6F1FB',
-            borderRadius: '20px',
-            border: '0.5px solid #b3ddf5',
-            padding: '6px 16px',
-            display: 'flex',
-            alignItems: 'baseline',
-            gap: '2px',
-          }}
-        >
-          <Typography sx={{ fontSize: '18px', fontWeight: 500, color: '#20a9e7' }}>
-            3.5M
-          </Typography>
-          <Typography sx={{ fontSize: '12px', color: '#6b7280' }}>
-            /tháng
-          </Typography>
-        </Box>
+        {priceStr && (
+          <Box
+            sx={{
+              bgcolor: '#E6F1FB',
+              borderRadius: '20px',
+              border: '0.5px solid #b3ddf5',
+              padding: '6px 16px',
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '2px',
+            }}
+          >
+            <Typography sx={{ fontSize: '15px', fontWeight: 500, color: '#20a9e7' }}>
+              {priceStr}
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       {/* Address Row */}
-      <Box sx={{ display: 'flex', alignItems: 'center', color: '#6b7280' }}>
-        <LocationOnOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7', mr: '6px' }} />
-        <Typography sx={{ fontSize: '13px' }}>
-          123 Đường Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh
-        </Typography>
-      </Box>
+      {address && (
+        <Box sx={{ display: 'flex', alignItems: 'center', color: '#6b7280' }}>
+          <LocationOnOutlinedIcon sx={{ fontSize: '14px', color: '#20a9e7', mr: '6px' }} />
+          <Typography sx={{ fontSize: '13px' }}>{address}</Typography>
+        </Box>
+      )}
 
       {/* Info Grid Card */}
       <Box
@@ -116,68 +147,73 @@ const RoomMainInfo = () => {
       </Box>
 
       {/* Amenities Section */}
-      <Box>
-        <Typography sx={{ fontSize: '14px', fontWeight: 500, color: '#1a1a1a', mb: '10px' }}>
-          Tiện ích đi kèm
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-          {amenities.map((item, index) => (
-            <Box
-              key={index}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                bgcolor: '#f5f7fa',
-                border: '0.5px solid #e5e7eb',
-                borderRadius: '20px',
-                padding: '5px 12px',
-              }}
-            >
-              {item.icon}
-              <Typography sx={{ fontSize: '12px', color: '#374151' }}>
-                {item.label}
-              </Typography>
-            </Box>
-          ))}
+      {amenities.length > 0 && (
+        <Box>
+          <Typography sx={{ fontSize: '14px', fontWeight: 500, color: '#1a1a1a', mb: '10px' }}>
+            Tiện ích đi kèm
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {amenities.map((item, index) => (
+              <Box
+                key={index}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  bgcolor: '#f5f7fa',
+                  border: '0.5px solid #e5e7eb',
+                  borderRadius: '20px',
+                  padding: '5px 12px',
+                }}
+              >
+                {item.icon}
+                <Typography sx={{ fontSize: '12px', color: '#374151' }}>
+                  {item.label}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
         </Box>
-      </Box>
+      )}
 
       {/* Description Section */}
-      <Box
-        sx={{
-          bgcolor: '#ffffff',
-          borderRadius: '12px',
-          border: '0.5px solid #e5e7eb',
-          padding: '16px',
-        }}
-      >
-        <Typography sx={{ fontSize: '14px', fontWeight: 500, color: '#1a1a1a', mb: '8px' }}>
-          Mô tả chi tiết
-        </Typography>
-        <Typography sx={{ fontSize: '13px', color: '#374151', lineHeight: 1.7 }}>
-          {showFullDesc ? fullDescription : truncatedDescription}
-        </Typography>
-        <Link
-          component="button"
-          onClick={() => setShowFullDesc(!showFullDesc)}
+      {desc && (
+        <Box
           sx={{
-            fontSize: '13px',
-            color: '#20a9e7',
-            fontWeight: 500,
-            textDecoration: 'none',
-            mt: '6px',
-            border: 'none',
-            bgcolor: 'transparent',
-            cursor: 'pointer',
-            p: 0,
-            fontFamily: 'inherit',
+            bgcolor: '#ffffff',
+            borderRadius: '12px',
+            border: '0.5px solid #e5e7eb',
+            padding: '16px',
           }}
         >
-          {showFullDesc ? 'Thu gọn' : 'Xem thêm'}
-        </Link>
-      </Box>
-
+          <Typography sx={{ fontSize: '14px', fontWeight: 500, color: '#1a1a1a', mb: '8px' }}>
+            Mô tả chi tiết
+          </Typography>
+          <Typography sx={{ fontSize: '13px', color: '#374151', lineHeight: 1.7 }}>
+            {showFullDesc ? desc : truncated}
+          </Typography>
+          {desc.length > 160 && (
+            <Link
+              component="button"
+              onClick={() => setShowFullDesc(!showFullDesc)}
+              sx={{
+                fontSize: '13px',
+                color: '#20a9e7',
+                fontWeight: 500,
+                textDecoration: 'none',
+                mt: '6px',
+                border: 'none',
+                bgcolor: 'transparent',
+                cursor: 'pointer',
+                p: 0,
+                fontFamily: 'inherit',
+              }}
+            >
+              {showFullDesc ? 'Thu gọn' : 'Xem thêm'}
+            </Link>
+          )}
+        </Box>
+      )}
     </Box>
   );
 };

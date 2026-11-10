@@ -38,7 +38,6 @@ const PublicRoutes = ({ auth }) => {
       <Route path="/contact" element={<Contact setIsAdmin={setIsAdmin} />} />
       <Route path="/introduce" element={<Introduce setIsAdmin={setIsAdmin} />} />
       <Route path="/profile" element={<Profile setIsAdmin={setIsAdmin} username={username} />} />
-      <Route path="/customerManage" element={<CustomerManage setIsAdmin={setIsAdmin} />} />
       <Route path="/customerManage/*" element={<CustomerManage setIsAdmin={setIsAdmin} />} />
       <Route path="/payment" element={<PaymentPage setIsAdmin={setIsAdmin} />} />
       <Route path="/support" element={<Support setIsAdmin={setIsAdmin} />} />

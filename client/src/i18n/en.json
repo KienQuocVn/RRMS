@@ -700,11 +700,18 @@
       "resend": "Resend code",
       "confirmOtp": "Confirm code",
       "copyright": "Copyright @ RRMS - Rooms, apartments, housing",
+      "step1Description": "Enter the email linked to your account. We will send an OTP code to verify your identity.",
+      "submitSendOtp": "Send verification code",
+      "backToEmail": "Back to email input",
       "errors": {
-        "emailRequired": "Please enter Gmail",
-        "passwordRequired": "Please enter password",
+        "emailRequired": "Please enter your Gmail",
+        "emailFormat": "Invalid email format",
+        "emailInvalid": "Email does not exist in the system",
+        "passwordRequired": "Please enter a password",
+        "passwordTooShort": "Password must be at least 6 characters",
         "passwordMismatch": "Passwords do not match",
-        "emailInvalid": "Invalid email"
+        "otpRequired": "Please enter all 5 OTP digits",
+        "otpInvalid": "OTP code is incorrect or has expired"
       },
       "alerts": {
         "sendOtpSuccessTitle": "OTP sent successfully",

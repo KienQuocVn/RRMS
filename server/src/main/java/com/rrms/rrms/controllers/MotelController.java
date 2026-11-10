@@ -23,14 +23,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-@Tag(name = "Motel Controller", description = "Controller for Motel operations (ADMIN & HOST)")
+@Tag(name = "Motel Controller", description = "Controller for Motel operations (ADMIN & HOST & CUSTOMER)")
 @RestController
 @RequestMapping("/api/v1/motels")
-@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class MotelController {
     IMotelService motelService;
 
     @Operation(summary = "Get all motels")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     @GetMapping
     public ApiResponse<List<MotelResponse>> getMotels() {
         List<MotelResponse> motelResponses = motelService.findAll();
@@ -42,6 +42,7 @@ public class MotelController {
     }
 
     @Operation(summary = "Get motel by ID")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     @GetMapping("/{id}")
     public ApiResponse<MotelResponse> getMotelById(@PathVariable UUID id) {
         MotelResponse motelResponse = motelService.findById(id);
@@ -53,6 +54,7 @@ public class MotelController {
     }
 
     @Operation(summary = "Get motels by account username")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST', 'ROLE_CUSTOMER')")
     @GetMapping("/account/{username}")
     public ApiResponse<List<MotelResponse>> getMotelsByAccount(@PathVariable String username) {
         List<MotelResponse> motelResponses = motelService.findMotelByAccount_Username(username);
@@ -64,6 +66,7 @@ public class MotelController {
     }
 
     @Operation(summary = "Create a new motel")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     @PostMapping
     public ApiResponse<MotelResponse> createMotel(@RequestBody MotelRequest motelRequest) {
         MotelResponse motelResponse = motelService.insert(motelRequest);
@@ -75,6 +78,7 @@ public class MotelController {
     }
 
     @Operation(summary = "Get motel area summary")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     @GetMapping("/{id}/area-summary")
     public ApiResponse<MotelAreaSummaryResponse> getMotelAreaSummary(@PathVariable UUID id) {
         MotelAreaSummaryResponse summary = motelService.getAreaSummary(id);
@@ -86,6 +90,7 @@ public class MotelController {
     }
 
     @Operation(summary = "Update motel by ID")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     @PutMapping("/{id}")
     public ApiResponse<MotelResponse> updateMotel(@PathVariable("id") UUID id, @RequestBody MotelRequest motelRequest) {
         MotelResponse motelResponse = motelService.update(id, motelRequest);
@@ -97,6 +102,7 @@ public class MotelController {
     }
 
     @Operation(summary = "Delete motel by ID")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     @DeleteMapping("/{id}")
     public ApiResponse<Boolean> deleteMotel(@PathVariable("id") UUID id) {
         try {

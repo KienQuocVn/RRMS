@@ -80,7 +80,7 @@ public class BulletinBoardController {
 
     @Operation(summary = "Get bulletin board table")
     @GetMapping("/table/{username}")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST', 'ROLE_CUSTOMER')")
     public ApiResponse<List<BulletinBoardTableResponse>> getBulletinBoardTable(@PathVariable String username) {
         List<BulletinBoardTableResponse> bulletinBoardResponse = bulletinBoardService.getBulletinBoardTable(username);
         return ApiResponse.<List<BulletinBoardTableResponse>>builder()

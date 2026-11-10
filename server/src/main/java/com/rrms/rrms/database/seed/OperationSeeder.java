@@ -101,6 +101,25 @@ public class OperationSeeder {
         }
     }
 
+    public Invoice seedInvoice(Contract contract) {
+        Invoice invoice = invoiceRepository.save(Invoice.builder()
+                .contract(contract)
+                .tenant(contract.getTenant())
+                .invoiceReason("Tien phong thang " + LocalDate.now().getMonthValue())
+                .invoiceCreateMonth(YearMonth.now())
+                .invoiceCreateDate(LocalDate.now())
+                .dueDate(LocalDate.now().plusDays(5))
+                .paymentStatus(PaymentStatus.UNPAID)
+                .build());
+        invoiceAdditionItemRepository.save(InvoiceAdditionItem.builder()
+                .invoice(invoice)
+                .reason("Phi ve sinh")
+                .amount(50000.0)
+                .isAddition(true)
+                .build());
+        return invoice;
+    }
+
     // ── Transactions ──────────────────────────────────────────────────────────
 
     public void seedTransactions(List<Invoice> invoices, Account host) {

@@ -4,7 +4,14 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import GetAppIcon from '@mui/icons-material/GetApp';
 
-const ContractStatusBanner = ({ title = "Hợp đồng thuê phòng 102", status = "ĐANG HIỆU LỰC", expiryDate = "31/10/2026", onDownloadPDF }) => {
+const ContractStatusBanner = ({
+  title = 'Hợp đồng thuê phòng',
+  status = '—',
+  statusBgColor = '#EAF3DE',
+  statusColor = '#27500A',
+  expiryDate = '—',
+  onDownloadPDF,
+}) => {
   return (
     <Box
       sx={{
@@ -48,8 +55,8 @@ const ContractStatusBanner = ({ title = "Hợp đồng thuê phòng 102", status
             </Typography>
             <Box
               sx={{
-                bgcolor: '#EAF3DE',
-                color: '#27500A',
+                bgcolor: statusBgColor,
+                color: statusColor,
                 fontSize: '11px',
                 fontWeight: 500,
                 padding: '3px 10px',

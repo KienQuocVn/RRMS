@@ -23,13 +23,14 @@ const SummaryMetric = ({ value, label, color }) => (
 )
 
 function PromotionSection({ room, stats, onExplorePromotions }) {
+  const resolvedAddress = useAddressResolver(room?.address)
+
   if (!room) {
     return null
   }
 
   const effectivePrice = getEffectivePrice(room)
   const promotionPercent = getPromotionPercent(room)
-  const resolvedAddress = useAddressResolver(room?.address)
 
   return (
     <Box id="promotion-section" sx={{ mt: 7 }}>

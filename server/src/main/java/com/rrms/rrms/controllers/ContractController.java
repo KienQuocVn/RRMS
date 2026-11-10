@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.request.ContractRequest;
@@ -27,13 +28,19 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/contracts")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
 public class ContractController {
 
     private final IContractService contractService;
 
+    @GetMapping("/account/me")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
+    public ResponseEntity<List<ContractResponse>> getContractsForCurrentAccount(Authentication authentication) {
+        return ResponseEntity.ok(contractService.getContractsForTenant(authentication.getName()));
+    }
+
     // Tạo mới hợp đồng
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     public ResponseEntity<ContractResponse> createContract(@RequestBody ContractRequest request) {
         ContractResponse response = contractService.createContract(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -41,6 +48,7 @@ public class ContractController {
 
     // Lấy hợp đồng theo ID
     @GetMapping("/{contractId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST', 'ROLE_CUSTOMER')")
     public ResponseEntity<ContractResponse> getContractById(@PathVariable UUID contractId) {
         ContractResponse response = contractService.getContractById(contractId);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -48,6 +56,7 @@ public class ContractController {
 
     // Cập nhật hợp đồng
     @PutMapping("/{contractId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     public ResponseEntity<ContractResponse> updateContract(
             @PathVariable UUID contractId, @RequestBody ContractRequest request) {
         ContractResponse response = contractService.updateContract(contractId, request);
@@ -78,6 +87,7 @@ public class ContractController {
     }
 
     @GetMapping("/motel/{motelId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST')")
     public ResponseEntity<List<ContractResponse>> getAllContractsByMotelId(@PathVariable UUID motelId) {
         List<ContractResponse> responses = contractService.getAllContractsByMotelId(motelId);
         return new ResponseEntity<>(responses, HttpStatus.OK);
@@ -85,6 +95,7 @@ public class ContractController {
 
     // Lấy hợp đồng theo roomId
     @GetMapping("room/{roomId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_HOST', 'ROLE_CUSTOMER')")
     public ResponseEntity<ContractResponse> getContractByRoomId(@PathVariable UUID roomId) {
         try {
             ContractResponse response = contractService.getAllContractsByRoomId(roomId);

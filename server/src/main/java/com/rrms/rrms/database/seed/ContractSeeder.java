@@ -225,6 +225,79 @@ public class ContractSeeder {
         return contracts;
     }
 
+    /** Creates one active lease for a customer portal demo account. */
+    public Contract seedEmployeeRental(List<Room> rooms, List<Motel> motels, Account tenantAccount) {
+        if (rooms.isEmpty() || motels.isEmpty()) {
+            log.warn("[ContractSeeder] No room/motel available for employee rental seed.");
+            return null;
+        }
+
+        Motel hostMotel = motels.get(0);
+        Room room = rooms.stream()
+                .filter(candidate -> candidate.getMotel().getMotelId().equals(hostMotel.getMotelId()))
+                .filter(candidate -> candidate.getStatus() == com.rrms.rrms.enums.RoomStatus.OCCUPIED)
+                .filter(candidate -> contractRepository.findByRoomRoomId(candidate.getRoomId()).isEmpty())
+                .findFirst()
+                .orElse(null);
+        if (room == null) {
+            log.warn("[ContractSeeder] No occupied room available for employee rental seed.");
+            return null;
+        }
+
+        LocalDate moveIn = LocalDate.now().minusMonths(2);
+        LocalDate close = LocalDate.now().plusMonths(10);
+        Tenant tenant = tenantRepository.save(Tenant.builder()
+                .fullName(tenantAccount.getFullName())
+                .phone(tenantAccount.getPhone())
+                .cccd(tenantAccount.getCccd())
+                .email(tenantAccount.getEmail())
+                .birthday(tenantAccount.getBirthday())
+                .gender(tenantAccount.getGender())
+                .address("TP. Ho Chi Minh")
+                .job("IT")
+                .licenseDate(moveIn)
+                .placeOfLicense("Cong an")
+                .role(true)
+                .relationship("Chu hop dong")
+                .type_of_tenant(true)
+                .temporaryResidence(true)
+                .informationVerify(true)
+                .build());
+
+        List<ContractTemplate> templates = contractTemplateRepository.findAll();
+        Contract contract = contractRepository.save(Contract.builder()
+                .room(room)
+                .tenant(tenant)
+                .account(hostMotel.getAccount())
+                .contractTemplate(templates.stream()
+                        .filter(template -> template.getMotel() != null
+                                && template.getMotel().getMotelId().equals(hostMotel.getMotelId()))
+                        .findFirst().orElse(null))
+                .price(room.getPrice())
+                .actualPrice(room.getPrice())
+                .deposit(room.getDeposit())
+                .moveinDate(java.sql.Date.valueOf(moveIn))
+                .closeContract(java.sql.Date.valueOf(close))
+                .leaseTerm("12 thang")
+                .collectioncycle("Hang thang")
+                .status(ContractStatus.ACTIVE)
+                .createdate(moveIn)
+                .signcontract("da_ky")
+                .language("VN")
+                .countTenant(1)
+                .build());
+
+        // Two demo accounts need distinct active rooms in the same host motel.
+        room.setStatus(com.rrms.rrms.enums.RoomStatus.OCCUPIED);
+        log.info("[ContractSeeder] Seeded customer portal rental: account={}, motelId={}, roomId={}, contractId={}",
+                tenantAccount.getUsername(), hostMotel.getMotelId(), room.getRoomId(), contract.getContractId());
+        return contract;
+    }
+
+    public Contract seedRentalForAccount(List<Room> rooms, List<Motel> motels, Account tenantAccount) {
+        return seedEmployeeRental(rooms, motels, tenantAccount);
+    }
+
     // ── Contract Details ──────────────────────────────────────────────────────
 
     /**

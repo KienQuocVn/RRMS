@@ -112,7 +112,7 @@ public class AccountSeeder {
 
     public Account seedEmployee() {
         return createAccount(
-                "employee", "Kiều Kiến Quốc", "employee@rrms.vn", "0911000003", "001001001003", Gender.MALE);
+                "employee", "Quốc Nhân Viên", "employee@rrms.vn", "0911000003", "001001001003", Gender.MALE);
     }
 
     public Account seedCustomer() {

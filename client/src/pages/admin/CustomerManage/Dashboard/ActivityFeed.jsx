@@ -88,7 +88,7 @@ const ArrowRight = () => (
   </svg>
 )
 
-const ActivityFeed = ({ items = DEFAULT_FEED }) => {
+const ActivityFeed = ({ items = [] }) => {
   return (
     <div
       style={{
@@ -123,56 +123,62 @@ const ActivityFeed = ({ items = DEFAULT_FEED }) => {
 
       {/* Feed list */}
       <div>
-        {items.map((item, idx) => (
-          <div
-            key={item.id}
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              padding: '10px 0',
-              borderBottom: idx < items.length - 1 ? '0.5px solid #f5f5f5' : 'none'
-            }}
-          >
-            {/* Icon circle */}
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                background: item.iconBg,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}
-            >
-              {item.icon}
-            </div>
-
-            {/* Text */}
-            <div style={{ flex: 1, margin: '0 12px', minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: '#1a1a1a', lineHeight: 1.4 }}>
-                {item.title}
-              </p>
-              <p style={{ margin: '2px 0 0', fontSize: 11, color: '#6b7280', lineHeight: 1.5 }}>
-                {item.sub}
-              </p>
-            </div>
-
-            {/* Time */}
-            <span
-              style={{
-                fontSize: 11,
-                color: '#9ca3af',
-                whiteSpace: 'nowrap',
-                alignSelf: 'center',
-                flexShrink: 0
-              }}
-            >
-              {item.time}
-            </span>
+        {items.length === 0 ? (
+          <div style={{ padding: '16px 0', textAlign: 'center' }}>
+            <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>Chưa có thông báo nào</p>
           </div>
-        ))}
+        ) : (
+          items.map((item, idx) => (
+            <div
+              key={item.id}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                padding: '10px 0',
+                borderBottom: idx < items.length - 1 ? '0.5px solid #f5f5f5' : 'none'
+              }}
+            >
+              {/* Icon circle */}
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: item.iconBg,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}
+              >
+                {item.icon}
+              </div>
+
+              {/* Text */}
+              <div style={{ flex: 1, margin: '0 12px', minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: '#1a1a1a', lineHeight: 1.4 }}>
+                  {item.title}
+                </p>
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: '#6b7280', lineHeight: 1.5 }}>
+                  {item.sub}
+                </p>
+              </div>
+
+              {/* Time */}
+              <span
+                style={{
+                  fontSize: 11,
+                  color: '#9ca3af',
+                  whiteSpace: 'nowrap',
+                  alignSelf: 'center',
+                  flexShrink: 0
+                }}
+              >
+                {item.time}
+              </span>
+            </div>
+          ))
+        )}
       </div>
     </div>
   )

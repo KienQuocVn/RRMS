@@ -700,11 +700,18 @@
       "resend": "Gửi lại mã",
       "confirmOtp": "Xác nhận mã",
       "copyright": "Copyright @ RRMS - Tìm trọ, căn hộ, nhà ở",
+      "step1Description": "Nhập email đã gắn với tài khoản, chúng tôi sẽ gửi mã OTP để xác nhận.",
+      "submitSendOtp": "Gửi mã xác thực",
+      "backToEmail": "Quay lại nhập email",
       "errors": {
         "emailRequired": "Vui lòng điền gmail",
+        "emailFormat": "Định dạng email không hợp lệ",
+        "emailInvalid": "Email không tồn tại trong hệ thống",
         "passwordRequired": "Vui lòng điền mật khẩu",
+        "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự",
         "passwordMismatch": "Mật khẩu không khớp nhau",
-        "emailInvalid": "Email không hợp lệ"
+        "otpRequired": "Vui lòng nhập đủ 5 số OTP",
+        "otpInvalid": "Mã OTP không đúng hoặc đã hết hạn"
       },
       "alerts": {
         "sendOtpSuccessTitle": "Gửi mã thành công",
