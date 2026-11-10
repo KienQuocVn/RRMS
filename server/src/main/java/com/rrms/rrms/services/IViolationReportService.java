@@ -16,4 +16,3 @@ public interface IViolationReportService {
 
     void submitReport(String reporterUsername, CreateViolationReportRequest request);
 }
-

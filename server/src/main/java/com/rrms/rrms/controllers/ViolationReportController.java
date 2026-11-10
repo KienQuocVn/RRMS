@@ -3,9 +3,9 @@ package com.rrms.rrms.controllers;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.rrms.rrms.dto.request.CreateViolationReportRequest;
@@ -33,7 +33,8 @@ public class ViolationReportController {
     public ApiResponse<Void> submitViolationReport(@RequestBody CreateViolationReportRequest request) {
         String currentUsername = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()
+        if (authentication != null
+                && authentication.isAuthenticated()
                 && !"anonymousUser".equals(authentication.getPrincipal())) {
             currentUsername = authentication.getName();
         }
@@ -43,7 +44,6 @@ public class ViolationReportController {
                 .code(HttpStatus.CREATED.value())
                 .build();
     }
-
 
     @Operation(summary = "Get aggregated violation report cases for admin dashboard")
     @GetMapping

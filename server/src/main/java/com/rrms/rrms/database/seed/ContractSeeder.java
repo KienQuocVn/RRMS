@@ -236,7 +236,9 @@ public class ContractSeeder {
         Room room = rooms.stream()
                 .filter(candidate -> candidate.getMotel().getMotelId().equals(hostMotel.getMotelId()))
                 .filter(candidate -> candidate.getStatus() == com.rrms.rrms.enums.RoomStatus.OCCUPIED)
-                .filter(candidate -> contractRepository.findByRoomRoomId(candidate.getRoomId()).isEmpty())
+                .filter(candidate -> contractRepository
+                        .findByRoomRoomId(candidate.getRoomId())
+                        .isEmpty())
                 .findFirst()
                 .orElse(null);
         if (room == null) {
@@ -272,7 +274,8 @@ public class ContractSeeder {
                 .contractTemplate(templates.stream()
                         .filter(template -> template.getMotel() != null
                                 && template.getMotel().getMotelId().equals(hostMotel.getMotelId()))
-                        .findFirst().orElse(null))
+                        .findFirst()
+                        .orElse(null))
                 .price(room.getPrice())
                 .actualPrice(room.getPrice())
                 .deposit(room.getDeposit())
@@ -289,8 +292,12 @@ public class ContractSeeder {
 
         // Two demo accounts need distinct active rooms in the same host motel.
         room.setStatus(com.rrms.rrms.enums.RoomStatus.OCCUPIED);
-        log.info("[ContractSeeder] Seeded customer portal rental: account={}, motelId={}, roomId={}, contractId={}",
-                tenantAccount.getUsername(), hostMotel.getMotelId(), room.getRoomId(), contract.getContractId());
+        log.info(
+                "[ContractSeeder] Seeded customer portal rental: account={}, motelId={}, roomId={}, contractId={}",
+                tenantAccount.getUsername(),
+                hostMotel.getMotelId(),
+                room.getRoomId(),
+                contract.getContractId());
         return contract;
     }
 

@@ -156,22 +156,74 @@ public class AddressProxyController {
                 if (code == 79 || code == 2) {
                     // Danh sách chuẩn các phường xã mới của TP.HCM sau sáp nhập theo esgoo.net (Ảnh 2)
                     String[] hcmWards = {
-                        "Phường An Hội Tây", "Phường An Hội Đông", "Phường An Khánh", "Phường An Lạc",
-                        "Xã An Long", "Phường An Nhơn", "Xã An Nhơn Tây", "Phường An Phú", "Phường An Phú Đông",
-                        "Xã An Thới Đông", "Phường An Đông", "Phường Bà Rịa", "Xã Bà Điểm", "Xã Bắc Tân Uyên",
-                        "Phường Bàn Cờ", "Xã Bàu Bàng", "Xã Bàu Lâm", "Phường Bảy Hiền", "Phường Bến Cát",
-                        "Phường Bến Nghé", "Phường Bến Thành", "Phường Bình An", "Phường Bình Chiểu",
-                        "Phường Bình Chánh", "Phường Bình Hòa", "Phường Bình Hưng", "Phường Bình Hưng Hòa",
-                        "Phường Bình Khánh", "Phường Bình Thạnh", "Phường Bình Thọ", "Phường Cần Giờ",
-                        "Phường Cát Lái", "Phường Cầu Kho", "Phường Cầu Ông Lãnh", "Phường Củ Chi",
-                        "Phường Đa Kao", "Phường Dĩ An", "Phường Gia Định", "Phường Gò Vấp", "Phường Hạnh Thông",
-                        "Phường Hiệp Bình", "Phường Hiệp Phước", "Phường Hiệp Thành", "Phường Hóc Môn",
-                        "Phường Lái Thiêu", "Phường Linh Chiểu", "Phường Linh Trung", "Phường Linh Xuân",
-                        "Phường Long Bình", "Phường Long Phước", "Phường Long Thành", "Phường Nhà Bè",
-                        "Phường Phú Cường", "Phường Phú Định", "Phường Phú Nhuận", "Phường Phước Long",
-                        "Phường Tam Bình", "Phường Tân Bình", "Phường Tân Định", "Phường Tân Phú",
-                        "Phường Tân Tạo", "Phường Tân Thuận", "Phường Thắng Nhất", "Phường Thạnh Mỹ Lợi",
-                        "Phường Thủ Dầu Một", "Phường Thủ Đức", "Phường Thuận An", "Phường Vũng Tàu"
+                        "Phường An Hội Tây",
+                        "Phường An Hội Đông",
+                        "Phường An Khánh",
+                        "Phường An Lạc",
+                        "Xã An Long",
+                        "Phường An Nhơn",
+                        "Xã An Nhơn Tây",
+                        "Phường An Phú",
+                        "Phường An Phú Đông",
+                        "Xã An Thới Đông",
+                        "Phường An Đông",
+                        "Phường Bà Rịa",
+                        "Xã Bà Điểm",
+                        "Xã Bắc Tân Uyên",
+                        "Phường Bàn Cờ",
+                        "Xã Bàu Bàng",
+                        "Xã Bàu Lâm",
+                        "Phường Bảy Hiền",
+                        "Phường Bến Cát",
+                        "Phường Bến Nghé",
+                        "Phường Bến Thành",
+                        "Phường Bình An",
+                        "Phường Bình Chiểu",
+                        "Phường Bình Chánh",
+                        "Phường Bình Hòa",
+                        "Phường Bình Hưng",
+                        "Phường Bình Hưng Hòa",
+                        "Phường Bình Khánh",
+                        "Phường Bình Thạnh",
+                        "Phường Bình Thọ",
+                        "Phường Cần Giờ",
+                        "Phường Cát Lái",
+                        "Phường Cầu Kho",
+                        "Phường Cầu Ông Lãnh",
+                        "Phường Củ Chi",
+                        "Phường Đa Kao",
+                        "Phường Dĩ An",
+                        "Phường Gia Định",
+                        "Phường Gò Vấp",
+                        "Phường Hạnh Thông",
+                        "Phường Hiệp Bình",
+                        "Phường Hiệp Phước",
+                        "Phường Hiệp Thành",
+                        "Phường Hóc Môn",
+                        "Phường Lái Thiêu",
+                        "Phường Linh Chiểu",
+                        "Phường Linh Trung",
+                        "Phường Linh Xuân",
+                        "Phường Long Bình",
+                        "Phường Long Phước",
+                        "Phường Long Thành",
+                        "Phường Nhà Bè",
+                        "Phường Phú Cường",
+                        "Phường Phú Định",
+                        "Phường Phú Nhuận",
+                        "Phường Phước Long",
+                        "Phường Tam Bình",
+                        "Phường Tân Bình",
+                        "Phường Tân Định",
+                        "Phường Tân Phú",
+                        "Phường Tân Tạo",
+                        "Phường Tân Thuận",
+                        "Phường Thắng Nhất",
+                        "Phường Thạnh Mỹ Lợi",
+                        "Phường Thủ Dầu Một",
+                        "Phường Thủ Đức",
+                        "Phường Thuận An",
+                        "Phường Vũng Tàu"
                     };
                     for (int i = 0; i < hcmWards.length; i++) {
                         String name = hcmWards[i];
@@ -186,7 +238,9 @@ public class AddressProxyController {
                             .uri(OPEN_API + "/p/{code}?depth=3", code)
                             .retrieve()
                             .body(JsonNode.class);
-                    if (res != null && res.has("districts") && res.get("districts").isArray()) {
+                    if (res != null
+                            && res.has("districts")
+                            && res.get("districts").isArray()) {
                         Set<String> seen = new java.util.HashSet<>();
                         for (JsonNode d : res.get("districts")) {
                             if (d.has("wards") && d.get("wards").isArray()) {

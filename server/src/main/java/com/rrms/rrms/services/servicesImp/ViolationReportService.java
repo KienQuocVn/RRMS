@@ -43,7 +43,6 @@ public class ViolationReportService implements IViolationReportService {
     private final BulletinBoardRepository bulletinBoardRepository;
     private final BulletinBoardReviewsRepository bulletinBoardReviewsRepository;
 
-
     @Override
     @Transactional(readOnly = true)
     public List<ViolationReportCaseResponse> getAggregatedCases() {
@@ -114,7 +113,9 @@ public class ViolationReportService implements IViolationReportService {
 
     @Override
     public void submitReport(String reporterUsername, CreateViolationReportRequest request) {
-        if (request == null || request.getReason() == null || request.getReason().isBlank()) {
+        if (request == null
+                || request.getReason() == null
+                || request.getReason().isBlank()) {
             throw new AppException(ErrorCode.INVALID_INPUT);
         }
 
@@ -127,27 +128,33 @@ public class ViolationReportService implements IViolationReportService {
             reporter = accountRepository.findByUsername(username).orElse(null);
         }
 
-        ViolationSubjectType subjectType = request.getSubjectType() != null
-                ? request.getSubjectType()
-                : ViolationSubjectType.POST;
+        ViolationSubjectType subjectType =
+                request.getSubjectType() != null ? request.getSubjectType() : ViolationSubjectType.POST;
 
         BulletinBoard bulletinBoard = null;
         Account reportedAccount = null;
         BulletinBoardReviews review = null;
 
         if (request.getBulletinBoardId() != null) {
-            bulletinBoard = bulletinBoardRepository.findById(request.getBulletinBoardId()).orElse(null);
+            bulletinBoard = bulletinBoardRepository
+                    .findById(request.getBulletinBoardId())
+                    .orElse(null);
             if (bulletinBoard != null && bulletinBoard.getAccount() != null) {
                 reportedAccount = bulletinBoard.getAccount();
             }
         }
 
-        if (request.getReportedUsername() != null && !request.getReportedUsername().isBlank()) {
-            reportedAccount = accountRepository.findByUsername(request.getReportedUsername()).orElse(reportedAccount);
+        if (request.getReportedUsername() != null
+                && !request.getReportedUsername().isBlank()) {
+            reportedAccount = accountRepository
+                    .findByUsername(request.getReportedUsername())
+                    .orElse(reportedAccount);
         }
 
         if (request.getReviewId() != null) {
-            review = bulletinBoardReviewsRepository.findById(request.getReviewId()).orElse(null);
+            review = bulletinBoardReviewsRepository
+                    .findById(request.getReviewId())
+                    .orElse(null);
         }
 
         ViolationReport violationReport = ViolationReport.builder()

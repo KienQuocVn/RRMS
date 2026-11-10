@@ -456,7 +456,8 @@ public class ContractService implements IContractService {
     @Override
     @Transactional(readOnly = true)
     public List<ContractResponse> getContractsForTenant(String username) {
-        Account tenantAccount = accountRepository.findByUsername(username)
+        Account tenantAccount = accountRepository
+                .findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("Account not found: " + username));
         return contractRepository.findByTenant_EmailOrderByCreatedAtDesc(tenantAccount.getEmail()).stream()
                 .map(contractMapper::toResponse)

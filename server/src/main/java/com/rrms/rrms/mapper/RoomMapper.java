@@ -5,6 +5,7 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
+
 import com.rrms.rrms.dto.request.BulletinBoardRoomRequest;
 import com.rrms.rrms.dto.request.RoomImageRequest;
 import com.rrms.rrms.dto.response.*;
