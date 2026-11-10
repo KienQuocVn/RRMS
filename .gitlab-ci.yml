@@ -1,43 +1,28 @@
 # .gitlab-ci.yml
-# Tương đương với 3 workflow GitHub Actions: ci.yml, deploy.yml, rollback.yml
-# Chạy MIỄN PHÍ trên GitLab.com (400 phút/tháng với shared runner)
-# hoặc KHÔNG GIỚI HẠN nếu dùng self-hosted GitLab Runner trên VPS
-
-# ─────────────────────────── STAGES ───────────────────────────
 stages:
-  - test      # CI: chạy unit test
-  - build     # CI: đóng gói .jar + build frontend dist
-  - deploy    # CD: copy lên VPS và restart
-  - rollback  # CD: rollback thủ công (manual)
+  - test
+  - build
+  - deploy
+  - rollback
 
-# ─────────────────────────── VARIABLES ───────────────────────────
 variables:
-  # Các biến nhạy cảm đặt trong GitLab → Settings → CI/CD → Variables
-  # VPS_HOST, VPS_PORT, VPS_USER, VPS_PASSWORD
-  # TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
-  JAVA_VERSION: "17"
-  NODE_VERSION: "20"
 
-# ─────────────────────────── CACHE ───────────────────────────
-# Cache Maven dependencies để không phải tải lại mỗi lần
+# ─── CACHE ───────────────────────────────────────────────────
 .maven-cache: &maven-cache
   cache:
     key: "maven-$CI_COMMIT_REF_SLUG"
     paths:
       - .m2/repository
-    policy: pull-push
 
-# Cache npm node_modules
 .npm-cache: &npm-cache
   cache:
     key: "npm-$CI_COMMIT_REF_SLUG"
     paths:
       - client/node_modules
-    policy: pull-push
 
 # ═══════════════════════════════════════════════════════════════
-#  STAGE 1: TEST
+# STAGE 1: TEST
 # ═══════════════════════════════════════════════════════════════
 
 test:backend:
@@ -48,8 +33,7 @@ test:backend:
     - chmod +x server/mvnw
     - |
       if [ -f server/src/test/resources/application-test.properties ]; then
-        cp server/src/test/resources/application-test.properties \
-           server/src/test/resources/test.properties
+        cp server/src/test/resources/application-test.properties server/src/test/resources/test.properties
       fi
   script:
     - cd server && ./mvnw -B test
@@ -70,9 +54,7 @@ test:frontend:
   before_script:
     - cd client && npm ci --legacy-peer-deps
   script:
-    # Nếu dự án có unit test frontend, thêm lệnh ở đây
-    # Hiện tại chỉ kiểm tra lint / build thành công
-    - npm run build
+    - cd client && npm run build
   only:
     - main
     - merge_requests
@@ -82,7 +64,7 @@ test:frontend:
     expire_in: 1 hour
 
 # ═══════════════════════════════════════════════════════════════
-#  STAGE 2: BUILD  (chỉ chạy khi push vào main)
+# STAGE 2: BUILD
 # ═══════════════════════════════════════════════════════════════
 
 build:backend:
@@ -93,8 +75,7 @@ build:backend:
     - chmod +x server/mvnw
     - |
       if [ -f server/src/test/resources/application-test.properties ]; then
-        cp server/src/test/resources/application-test.properties \
-           server/src/test/resources/test.properties
+        cp server/src/test/resources/application-test.properties server/src/test/resources/test.properties
       fi
   script:
     - cd server && ./mvnw -B package -DskipTests
@@ -103,7 +84,8 @@ build:backend:
   artifacts:
     paths:
       - server/target/*.jar
-      - "!server/target/*-original.jar"
+    exclude:
+      - server/target/*-original.jar
     expire_in: 1 hour
 
 build:frontend:
@@ -122,7 +104,7 @@ build:frontend:
     expire_in: 1 hour
 
 # ═══════════════════════════════════════════════════════════════
-#  STAGE 3: DEPLOY  (chỉ chạy khi push vào main)
+# STAGE 3: DEPLOY
 # ═══════════════════════════════════════════════════════════════
 
 deploy:production:
@@ -132,118 +114,89 @@ deploy:production:
     - build:backend
     - build:frontend
   before_script:
-    # Cài sshpass và openssh-client để SCP/SSH với password
     - apk add --no-cache openssh-client sshpass curl
-    # Tắt strict host key checking để không bị hỏi xác nhận fingerprint
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
     - echo "StrictHostKeyChecking no" >> ~/.ssh/config
     - echo "UserKnownHostsFile /dev/null" >> ~/.ssh/config
   script:
-    # ---------- Tìm file jar ----------
+    # Tìm file jar
     - JAR_FILE=$(ls server/target/*.jar | grep -v original | head -n 1)
-    - echo "JAR file: $JAR_FILE"
+    - echo ">> Deploying JAR $JAR_FILE"
 
-    # ---------- Copy jar lên VPS ----------
-    - >
-      sshpass -p "$VPS_PASSWORD"
-      scp -P "$VPS_PORT"
-      "$JAR_FILE"
-      "$VPS_USER@$VPS_HOST:/tmp/rrms-new.jar"
+    # Copy jar lên VPS
+    - sshpass -p "$VPS_PASSWORD" scp -P "$VPS_PORT" "$JAR_FILE" "$VPS_USER@$VPS_HOST:/tmp/rrms-new.jar"
 
-    # ---------- Copy frontend dist lên VPS ----------
-    - >
-      sshpass -p "$VPS_PASSWORD"
-      scp -P "$VPS_PORT" -r
-      client/dist
-      "$VPS_USER@$VPS_HOST:/tmp/rrms-dist"
+    # Copy frontend dist lên VPS
+    - sshpass -p "$VPS_PASSWORD" scp -P "$VPS_PORT" -r client/dist "$VPS_USER@$VPS_HOST:/tmp/rrms-dist"
 
-    # ---------- Copy rollback script (nếu có) ----------
+    # Copy rollback script nếu có
     - |
       if [ -f scripts/rollback.sh ]; then
-        sshpass -p "$VPS_PASSWORD" \
-          scp -P "$VPS_PORT" \
-          scripts/rollback.sh \
-          "$VPS_USER@$VPS_HOST:/tmp/rollback.sh"
+        sshpass -p "$VPS_PASSWORD" scp -P "$VPS_PORT" scripts/rollback.sh "$VPS_USER@$VPS_HOST:/tmp/rollback.sh"
       fi
 
-    # ---------- SSH vào VPS: backup + swap + restart ----------
+    # SSH vào VPS: backup + swap + restart
     - |
-      sshpass -p "$VPS_PASSWORD" \
-        ssh -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" bash -s << 'REMOTE_SCRIPT'
+      sshpass -p "$VPS_PASSWORD" ssh -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" '
         set -e
 
-        # Đảm bảo các thư mục tồn tại
-        mkdir -p /var/www/rrms/server/target \
-                 /var/www/rrms/client \
-                 /var/www/rrms/releases
+        mkdir -p /var/www/rrms/server/target /var/www/rrms/client /var/www/rrms/releases
 
-        # Backup bản hiện tại
         TIMESTAMP=$(date +%Y%m%d_%H%M%S)
         RELEASE_DIR="/var/www/rrms/releases/${TIMESTAMP}"
         mkdir -p "$RELEASE_DIR"
+        echo ">> Backing up to $RELEASE_DIR"
 
-        echo ">> Backing up current version to $RELEASE_DIR"
         [ -f /var/www/rrms/server/target/rrms-0.0.1-SNAPSHOT.jar ] && \
           cp /var/www/rrms/server/target/rrms-0.0.1-SNAPSHOT.jar "$RELEASE_DIR/"
         [ -d /var/www/rrms/client/dist ] && \
           cp -r /var/www/rrms/client/dist "$RELEASE_DIR/"
 
-        # Giữ 5 bản backup gần nhất
-        cd /var/www/rrms/releases
-        ls -1t | tail -n +6 | xargs -I{} rm -rf {}
-        cd - > /dev/null
+        cd /var/www/rrms/releases && ls -1t | tail -n +6 | xargs -I{} rm -rf {} ; cd -
 
-        # Di chuyển backend jar mới
         mv -f /tmp/rrms-new.jar /var/www/rrms/server/target/rrms-0.0.1-SNAPSHOT.jar
-
-        # Thay thế frontend dist mới
         rm -rf /var/www/rrms/client/dist
         mv /tmp/rrms-dist /var/www/rrms/client/dist
 
-        # Cập nhật rollback script
-        [ -f /tmp/rollback.sh ] && \
-          mv /tmp/rollback.sh /var/www/rrms/rollback.sh && \
-          chmod +x /var/www/rrms/rollback.sh
+        [ -f /tmp/rollback.sh ] && mv /tmp/rollback.sh /var/www/rrms/rollback.sh && chmod +x /var/www/rrms/rollback.sh
 
-        # Khởi động lại backend
         echo ">> Restarting rrms-backend..."
         systemctl restart rrms-backend
 
-        # Kiểm tra backend đã sống chưa (tối đa 60 giây)
         echo ">> Waiting for backend to start..."
-        for i in $(seq 1 12); do
+        i=0
+        while [ $i -lt 12 ]; do
           sleep 5
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            --max-time 3 http://127.0.0.1:7000/api/v1/search 2>/dev/null || echo "000")
+          i=$((i+1))
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 3 http://127.0.0.1:7000/api/v1/search 2>/dev/null || echo "000")
           if [ "$HTTP_CODE" != "000" ]; then
             echo ">> Backend UP (HTTP $HTTP_CODE) after $((i*5))s"
             exit 0
           fi
-          echo "   Attempt $i/12: not ready yet (HTTP $HTTP_CODE)..."
+          echo "   Attempt $i/12: not ready (HTTP $HTTP_CODE)..."
         done
-        echo "ERROR: Backend did not start within 60 seconds"
+        echo "ERROR: Backend did not start within 60s"
         systemctl status rrms-backend --no-pager || true
         exit 1
-      REMOTE_SCRIPT
+      '
 
-    # ---------- Thông báo Telegram: thành công ----------
-    - >
-      curl -s -X POST
-      "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
-      -d "chat_id=${TELEGRAM_CHAT_ID}"
-      -d "parse_mode=HTML"
-      --data-urlencode "text=✅ <b>RRMS deploy THÀNH CÔNG</b>
+    # Telegram: thành công
+    - |
+      if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+          -d "chat_id=${TELEGRAM_CHAT_ID}" \
+          -d "parse_mode=HTML" \
+          --data-urlencode "text=✅ <b>RRMS deploy THÀNH CÔNG</b>
       👤 <b>Người thực hiện:</b> ${GITLAB_USER_NAME}
       📝 <b>Commit:</b> ${CI_COMMIT_MESSAGE}
       🔗 <a href='https://rrms.click'>Xem website</a>"
+      fi
+
   after_script:
-    # Thông báo Telegram khi thất bại (after_script luôn chạy kể cả lúc lỗi)
     - |
-      if [ "$CI_JOB_STATUS" = "failed" ]; then
+      if [ "$CI_JOB_STATUS" = "failed" ] && [ -n "$TELEGRAM_BOT_TOKEN" ]; then
         apk add --no-cache curl 2>/dev/null || true
-        curl -s -X POST \
-          "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
           -d "chat_id=${TELEGRAM_CHAT_ID}" \
           -d "parse_mode=HTML" \
           --data-urlencode "text=❌ <b>RRMS deploy THẤT BẠI!</b>
@@ -258,16 +211,15 @@ deploy:production:
     url: https://rrms.click
 
 # ═══════════════════════════════════════════════════════════════
-#  STAGE 4: ROLLBACK  (chạy thủ công qua GitLab UI)
+# STAGE 4: ROLLBACK (thủ công)
 # ═══════════════════════════════════════════════════════════════
-# Cách dùng:
-#   GitLab → CI/CD → Pipelines → Run pipeline
-#   Truyền biến: ROLLBACK_RELEASE=20260724_152000 (tên thư mục trong /var/www/rrms/releases/)
+# Cách dùng: GitLab → CI/CD → Pipelines → Run pipeline
+# Thêm biến: ROLLBACK_RELEASE=20260724_152000
 
 rollback:production:
   stage: rollback
   image: alpine:latest
-  when: manual          # Phải bấm tay trên GitLab UI mới chạy
+  when: manual
   allow_failure: false
   before_script:
     - apk add --no-cache openssh-client sshpass curl
@@ -279,59 +231,36 @@ rollback:production:
       if [ -z "$ROLLBACK_RELEASE" ]; then
         echo "ERROR: Biến ROLLBACK_RELEASE chưa được đặt."
         echo "Hãy chạy pipeline với biến ROLLBACK_RELEASE=<tên thư mục release>"
-        echo "Ví dụ: ROLLBACK_RELEASE=20260724_152000"
         exit 1
       fi
-
     - |
-      sshpass -p "$VPS_PASSWORD" \
-        ssh -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" bash -s << REMOTE_SCRIPT
+      sshpass -p "$VPS_PASSWORD" ssh -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "
         set -e
-        RELEASE_DIR="/var/www/rrms/releases/${ROLLBACK_RELEASE}"
-
-        if [ ! -d "\$RELEASE_DIR" ]; then
-          echo "ERROR: Không tìm thấy release '\$RELEASE_DIR'"
+        RELEASE_DIR=\"/var/www/rrms/releases/${ROLLBACK_RELEASE}\"
+        if [ ! -d \"\$RELEASE_DIR\" ]; then
+          echo 'ERROR: Không tìm thấy release' \"\$RELEASE_DIR\"
           ls /var/www/rrms/releases/
           exit 1
         fi
-
-        echo ">> Rolling back to: \$RELEASE_DIR"
-
-        if [ -f "\$RELEASE_DIR/rrms-0.0.1-SNAPSHOT.jar" ]; then
-          cp "\$RELEASE_DIR/rrms-0.0.1-SNAPSHOT.jar" \
-             /var/www/rrms/server/target/rrms-0.0.1-SNAPSHOT.jar
-        fi
-
-        if [ -d "\$RELEASE_DIR/dist" ]; then
+        echo \">> Rolling back to: \$RELEASE_DIR\"
+        [ -f \"\$RELEASE_DIR/rrms-0.0.1-SNAPSHOT.jar\" ] && \
+          cp \"\$RELEASE_DIR/rrms-0.0.1-SNAPSHOT.jar\" /var/www/rrms/server/target/rrms-0.0.1-SNAPSHOT.jar
+        if [ -d \"\$RELEASE_DIR/dist\" ]; then
           rm -rf /var/www/rrms/client/dist
-          cp -r "\$RELEASE_DIR/dist" /var/www/rrms/client/dist
+          cp -r \"\$RELEASE_DIR/dist\" /var/www/rrms/client/dist
         fi
-
         systemctl restart rrms-backend
-        echo ">> Rollback hoàn tất!"
-      REMOTE_SCRIPT
-
-    - >
-      curl -s -X POST
-      "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
-      -d "chat_id=${TELEGRAM_CHAT_ID}"
-      -d "parse_mode=HTML"
-      --data-urlencode "text=🔄 <b>RRMS ROLLBACK THÀNH CÔNG</b>
+        echo '>> Rollback hoàn tất!'
+      "
+    - |
+      if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+          -d "chat_id=${TELEGRAM_CHAT_ID}" \
+          -d "parse_mode=HTML" \
+          --data-urlencode "text=🔄 <b>RRMS ROLLBACK THÀNH CÔNG</b>
       👤 <b>Người thực hiện:</b> ${GITLAB_USER_NAME}
       ⏪ <b>Phiên bản:</b> ${ROLLBACK_RELEASE}
       🔗 <a href='https://rrms.click'>Xem website</a>"
-  after_script:
-    - |
-      if [ "$CI_JOB_STATUS" = "failed" ]; then
-        apk add --no-cache curl 2>/dev/null || true
-        curl -s -X POST \
-          "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-          -d "chat_id=${TELEGRAM_CHAT_ID}" \
-          -d "parse_mode=HTML" \
-          --data-urlencode "text=❌ <b>RRMS ROLLBACK THẤT BẠI!</b>
-        👤 <b>Người thực hiện:</b> ${GITLAB_USER_NAME}
-        ⏪ <b>Phiên bản:</b> ${ROLLBACK_RELEASE}
-        🔍 <a href='${CI_PIPELINE_URL}'>Xem chi tiết log lỗi</a>" || true
       fi
   only:
     - main
