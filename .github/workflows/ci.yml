@@ -29,9 +29,13 @@ jobs:
         run: cp src/test/resources/application-test.properties src/test/resources/test.properties
 
       - name: Chạy unit test
+        env:
+          HOME: /root
         run: ./mvnw -B test
 
       - name: Build thử (đóng gói .jar)
+        env:
+          HOME: /root
         run: ./mvnw -B package -DskipTests
 
   frontend:
@@ -52,4 +56,6 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Build thử
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: npm run build

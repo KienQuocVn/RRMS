@@ -36,6 +36,8 @@ jobs:
 
       - name: Build .jar
         working-directory: server
+        env:
+          HOME: /root
         run: ./mvnw -B package -DskipTests
 
       # ---------- 2. Build frontend React ----------
@@ -47,6 +49,8 @@ jobs:
 
       - name: Build frontend
         working-directory: client
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: |
           npm ci --legacy-peer-deps
           npm run build
